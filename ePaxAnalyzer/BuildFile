@@ -1,0 +1,20 @@
+<use name=FWCore/MessageLogger>
+<use name=FWCore/Framework>
+<use name=Foundation/PluginManager>
+<use name=FWCore/ParameterSet>
+<use name=ePaxPxl/ePax>
+<use name=SimDataFormats/HepMCProduct>
+<use name=clhep>
+<use name=DataFormats/MuonReco>
+<flags SEAL_PLUGIN_NAME="ePaxDemoePaxAnalyzer">
+<export>
+   <lib name=ePaxDemoePaxAnalyzer>
+   <use name=FWCore/MessageLogger>
+   <use name=FWCore/Framework>
+   <use name=Foundation/PluginManager>
+   <use name=FWCore/ParameterSet>
+   <use name=ePaxPxl/ePax>
+   <use name=SimDataFormats/HepMCProduct>   
+   <use name=clhep>
+   <use name=DataFormats/MuonReco>   
+</export>
