@@ -1,0 +1,6 @@
+<use name=zlib>
+<flags SEAL_PLUGIN_NAME="ePaxPxlePax">
+<export>
+  <lib name=ePaxPxlePax>
+  <use name=zlib>
+</export>
