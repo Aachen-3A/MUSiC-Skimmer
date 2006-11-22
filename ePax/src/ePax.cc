@@ -1,4 +1,4 @@
-#include "ePaxPxl/ePax/interface/ePAX.h"
+#include "ePaxPxl/ePax/interface/ePax.h"
 #ifndef MERGED_PXL
 	#include "pcl.hh"
 #endif
@@ -1135,4 +1135,3 @@ std::ostream& ePax::ePaxAnalysisFork::print(int level, std::ostream& os, int pan
 ptl::WkPtrBase* ePax::ePaxAnalysisFork::createSelfWkPtr() {return new ePaxAnalysisForkWkPtr(*this);}
 void ePax::ePaxAnalysisFork::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-
