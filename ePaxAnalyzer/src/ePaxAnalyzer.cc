@@ -88,38 +88,6 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    analyzeRecMET(iEvent, RecEvtView);
    analyzeRecGammas(iEvent, RecEvtView);
 
-/*   edm::Handle<reco::MuonCollection> muons;
-   iEvent.getByLabel(fMuonRecoLabel, muons);
-
- 
-
-   cout << "We got " << muons->size() << " Muons" << endl;
-   for(reco::MuonCollection::const_iterator  muon = muons->begin(); 
-         muon != muons->end(); ++muon ) {
-	 
-//    ptl::SpyObject<CmsTestClass>& mu = ev.set().create<ptl::SpyObject<CmsTestClass> >(&(*muon));
-//    mu.linkMother(vx);
-	 
-      ePaxParticleRef pa = evRec.set().create<ePaxParticle>();
-      pa.linkMother(vx);
-      pa.set().setName("muon");
-      pa.set().setCharge(muon->charge());
-      pa.set().vector(ePax::set).setPx(muon->px());
-      pa.set().vector(ePax::set).setPy(muon->py());
-      pa.set().vector(ePax::set).setPz(muon->pz());
-      pa.set().vector(ePax::set).setE(muon->energy());
-      pa.set().setUserRecord("isolation", 0.9);
-      
-      //pa.get().findUserRecord("isolation"); // kracht"s wenns ihn nicht gibt
-      //pa.get().findUserRecord("isolation", 0.); // default wenns ihn nicht gibt
-      
-
-//       cout << " Found a Rec Muon: \n" 
-//            << "    pt : " << muon->pt() << endl
-// 	   << "    eta: " << muon->eta() << endl
-// 	   << "    q  : " << muon->charge() << endl;
-   }
-*/  
    GenVtx.printDecayTree();
    RecVtx.printDecayTree();    
    
@@ -180,7 +148,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePax::ePaxEventViewR
          if ( GammaMC_cuts(p) ) { 
             ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
             part.set().setName("GenGamma");
-            part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
+            part.set().setCharge(0);
             part.set().vector(ePax::set).setPx((*p)->momentum().x());
             part.set().vector(ePax::set).setPy((*p)->momentum().y());
             part.set().vector(ePax::set).setPz((*p)->momentum().z());
@@ -248,10 +216,6 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, ePax::ePaxEventViewRe
       part.set().setUserRecord("sumEt", genmet.sumEt());
       part.set().setUserRecord("mEtSig", genmet.mEtSig());
       numMETMC++; 
-      /*
-      fMETMC_Ez[0] = genmet.e_longitudinal();   //is currently(?) empty
-      fMETMC_EmEnergy[0] = genmet.emEnergy();  //is currently(?) empty
-      fMETMC_HadEnergy[0] = genmet.hadEnergy();//is currently(?) empty*/
    }
    EvtView.set().setUserRecord("NumMETMC", numMETMC);
 }
@@ -326,21 +290,76 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, ePax::ePaxEvent
 
 void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
 
+   edm::Handle<reco::CaloJetCollection> jets;
+   iEvent.getByLabel(fJetRecoLabel, jets);
+   
+   int numJetRec = 0;
 
+   for(reco::CaloJetCollection::const_iterator jet = jets->begin(); 
+           jet != jets->end(); ++jet ) {
+      if (Jet_cuts(jet)) { 
+         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         part.set().setName("RecJet");
+         part.set().vector(ePax::set).setPx(jet->px());
+         part.set().vector(ePax::set).setPy(jet->py());
+         part.set().vector(ePax::set).setPz(jet->pz());
+         part.set().vector(ePax::set).setE(jet->energy());         
+	 numJetRec++;
+      }
+   }
+   EvtView.set().setUserRecord("NumJetRec", numJetRec);
 }
 
 // ------------ reading Reconstructed MET ------------
 
 void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
 
-
+   //MET produces segmentation violation?!!!
+   edm::Handle<reco::CaloMETCollection> CaloMet;
+   iEvent.getByLabel(fMETRecoLabel, CaloMet);
+   const CaloMETCollection *calometcol = CaloMet.product();
+   const CaloMET calomet = calometcol->front();  // MET exists only once!
+ 
+   int numMETRec = 0;
+   //there is always MET in event, just decide if cuts passed
+   //WHAT IS SIZE OF MET-COLLECTION???
+   if (MET_cuts(calomet)) { 
+      ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+      part.set().setName("RecMET");
+      part.set().vector(ePax::set).setPx(calomet.px());
+      part.set().vector(ePax::set).setPy(calomet.py());
+      part.set().vector(ePax::set).setPz(0.);
+      part.set().vector(ePax::set).setMass(0.);
+      part.set().setUserRecord("sumEt", calomet.sumEt());
+      part.set().setUserRecord("mEtSig", calomet.mEtSig());
+      numMETRec++; 
+   }
+   EvtView.set().setUserRecord("NumMETRec", numMETRec);
 }
 
 // ------------ reading Reconstructed Gammas ------------
 
 void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
 
+   edm::Handle<reco::PhotonCollection> Photons;
+   iEvent.getByLabel(fGammaRecoLabel, Photons);
+   
+   int numGammaRec = 0;
 
+   for (reco::PhotonCollection::const_iterator photon = Photons->begin(); 
+	photon != Photons->end(); ++photon) {  
+      if ( Gamma_cuts(photon) ) { 
+         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         part.set().setName("RecGamma");
+         part.set().setCharge(0);
+         part.set().vector(ePax::set).setPx(photon->px());
+         part.set().vector(ePax::set).setPy(photon->py());
+         part.set().vector(ePax::set).setPz(photon->pz());
+         part.set().vector(ePax::set).setE(photon->energy());
+	 numGammaRec++;
+      }	 
+   }
+   EvtView.set().setUserRecord("NumGammaRec", numGammaRec);
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -352,6 +371,9 @@ void ePaxAnalyzer::beginJob(const edm::EventSetup&) {
 
 void ePaxAnalyzer::endJob() {
 
+   cout << "++++++++++++++++++++++++++++++++++++++" << endl;
+   cout << "analyzed " << fNumEvt << " events " << endl;
+   
 }
 
 // ------------ method to define MC-MUON-cuts
@@ -386,7 +408,7 @@ bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) cons
 
 bool ePaxAnalyzer::METMC_cuts(const reco::GenMET MCmet) const {
   // 
-  return (MCmet.pt() > 10) ? 1 : 0;
+  return (MCmet.pt() > 30) ? 1 : 0;
 }
 
 // ------------ method to define MUON-cuts
@@ -418,7 +440,40 @@ bool ePaxAnalyzer::Gamma_cuts(reco::PhotonCollection::const_iterator photon) con
 
 bool ePaxAnalyzer::MET_cuts(const reco::MET met) const {
   // 
-  return (met.pt() > 10) ? 1 : 0;
+  return (met.pt() > 30) ? 1 : 0;
 }
 //define this as a plug-in
 DEFINE_FWK_MODULE(ePaxAnalyzer)
+
+/*   edm::Handle<reco::MuonCollection> muons;
+   iEvent.getByLabel(fMuonRecoLabel, muons);
+
+ 
+
+   cout << "We got " << muons->size() << " Muons" << endl;
+   for(reco::MuonCollection::const_iterator  muon = muons->begin(); 
+         muon != muons->end(); ++muon ) {
+	 
+//    ptl::SpyObject<CmsTestClass>& mu = ev.set().create<ptl::SpyObject<CmsTestClass> >(&(*muon));
+//    mu.linkMother(vx);
+	 
+      ePaxParticleRef pa = evRec.set().create<ePaxParticle>();
+      pa.linkMother(vx);
+      pa.set().setName("muon");
+      pa.set().setCharge(muon->charge());
+      pa.set().vector(ePax::set).setPx(muon->px());
+      pa.set().vector(ePax::set).setPy(muon->py());
+      pa.set().vector(ePax::set).setPz(muon->pz());
+      pa.set().vector(ePax::set).setE(muon->energy());
+      pa.set().setUserRecord("isolation", 0.9);
+      
+      //pa.get().findUserRecord("isolation"); // kracht"s wenns ihn nicht gibt
+      //pa.get().findUserRecord("isolation", 0.); // default wenns ihn nicht gibt
+      
+
+//       cout << " Found a Rec Muon: \n" 
+//            << "    pt : " << muon->pt() << endl
+// 	   << "    eta: " << muon->eta() << endl
+// 	   << "    q  : " << muon->charge() << endl;
+   }
+*/  
