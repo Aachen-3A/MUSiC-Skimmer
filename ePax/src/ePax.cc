@@ -7,7 +7,7 @@
 #include <sys/times.h>
 #include <unistd.h>
 //----------------------------------------------------------------------
-namespace pcl {
+namespace pxl {
 //----------------------------------------------------------------------
 double getCpuTime()
 {
@@ -19,11 +19,11 @@ double getCpuTime()
 //----------------------------------------------------------------------
 void exception(const std::string& rout, const std::string& msg) {
   std::cerr << rout << ": " << msg << std::endl; 
-  std::cerr << "pcl::exception(): throwing pcl::Exception." << std::endl; 
-  throw pcl::Exception(rout, msg);
+  std::cerr << "pxl::exception(): throwing pxl::Exception." << std::endl; 
+  throw pxl::Exception(rout, msg);
 }
 //----------------------------------------------------------------------
-} // namespace pcl
+} // namespace pxl
 //----------------------------------------------------------------------
 #include <assert.h>
 
@@ -33,15 +33,20 @@ void exception(const std::string& rout, const std::string& msg) {
 //
 //
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(char,        "\1c",      __char, data, {pcl::BasicIoStreamer::storeBasicTypeChar(_buffer, data);}   , {pcl::BasicIoStreamer::restoreBasicTypeChar(_buffer, data);})
-iotl__declareDataTypeExplicit(std::string, "\1s", std__string, data, {pcl::BasicIoStreamer::storeBasicTypeString(_buffer, data);} , {pcl::BasicIoStreamer::restoreBasicTypeString(_buffer, data);})
-iotl__declareDataTypeExplicit(bool,        "\1b",      __bool, data, {pcl::BasicIoStreamer::storeBasicTypeBool(_buffer, data);}  , {pcl::BasicIoStreamer::restoreBasicTypeBool(_buffer, data);})
-iotl__declareDataTypeExplicit(int,         "\1i",       __int, data, {pcl::BasicIoStreamer::storeBasicTypeInt(_buffer, data);}   , {pcl::BasicIoStreamer::restoreBasicTypeInt(_buffer, data);})
-iotl__declareDataTypeExplicit(float,       "\1f",     __float, data, {pcl::BasicIoStreamer::storeBasicTypeFloat(_buffer, data);}  , {pcl::BasicIoStreamer::restoreBasicTypeFloat(_buffer, data);})
-iotl__declareDataTypeExplicit(double,      "\1d",    __double, data, {pcl::BasicIoStreamer::storeBasicTypeDouble(_buffer, data);} , {pcl::BasicIoStreamer::restoreBasicTypeDouble(_buffer, data);})
+iotl__declareDataTypeExplicit(char,        "\1c",      __char, data, {pxl::BasicIoStreamer::storeBasicTypeChar(_buffer, data);}   , {pxl::BasicIoStreamer::restoreBasicTypeChar(_buffer, data);})
+iotl__declareDataTypeExplicit(std::string, "\1s", std__string, data, {pxl::BasicIoStreamer::storeBasicTypeString(_buffer, data);} , {pxl::BasicIoStreamer::restoreBasicTypeString(_buffer, data);})
+iotl__declareDataTypeExplicit(bool,        "\1b",      __bool, data, {pxl::BasicIoStreamer::storeBasicTypeBool(_buffer, data);}  , {pxl::BasicIoStreamer::restoreBasicTypeBool(_buffer, data);})
+iotl__declareDataTypeExplicit(int,         "\1i",       __int, data, {pxl::BasicIoStreamer::storeBasicTypeInt(_buffer, data);}   , {pxl::BasicIoStreamer::restoreBasicTypeInt(_buffer, data);})
+iotl__declareDataTypeExplicit(float,       "\1f",     __float, data, {pxl::BasicIoStreamer::storeBasicTypeFloat(_buffer, data);}  , {pxl::BasicIoStreamer::restoreBasicTypeFloat(_buffer, data);})
+iotl__declareDataTypeExplicit(double,      "\1d",    __double, data, {pxl::BasicIoStreamer::storeBasicTypeDouble(_buffer, data);} , {pxl::BasicIoStreamer::restoreBasicTypeDouble(_buffer, data);})
 //----------------------------------------------------------------------
-void iotl::oStreamer::getEvent(std::ostream& cxxx, char compressionMode) {
+void pxl::oStreamer::getEvent(std::ostream& cxxx, const std::string& info, char compressionMode) {
 
+  // info block:
+  const char* cInfo = info.c_str(); 
+  int lengthInfo = info.length();
+
+  // zip block:
   const std::string& strBuffer = _buffer.str();
   
   const char* cBuffer = strBuffer.c_str();
@@ -60,68 +65,74 @@ void iotl::oStreamer::getEvent(std::ostream& cxxx, char compressionMode) {
     cZipSpace = new char[lengthZipSpace];
     switch (compress2((Bytef *) cZipSpace, (uLongf *) &lengthZipSpace, (const Bytef *) cBuffer, lengthBuffer, 6)) {
       case Z_MEM_ERROR:
-	pcl::exception("iotl::oStreamer::getEvent()", "zlib: not enough memory");
+	pxl::exception("pxl::oStreamer::getEvent()", "zlib: not enough memory");
        case Z_BUF_ERROR:
-	 pcl::exception("iotl::oStreamer::getEvent()", "zlib: buffer too small");
+	 pxl::exception("pxl::oStreamer::getEvent()", "zlib: buffer too small");
        case Z_STREAM_ERROR:
-	 pcl::exception("iotl::oStreamer::getEvent()", "zlib: level parameter invalid");
+	 pxl::exception("pxl::oStreamer::getEvent()", "zlib: level parameter invalid");
        default:
 	 break;
        }
     cZip = cZipSpace;
     lengthZip = lengthZipSpace;
   }
-  else {pcl::exception("iotl::oStreamer::getEvent()","Invalid compression mode.");}
-
-  dumpMemory(cxxx, iotl__eventMarker, 4);      // Event-Marker
-  dumpMemory(cxxx, &compressionMode, 1);        // Compression-Mode
-  dumpMemory(cxxx, (const char*)&lengthZip, 4); // Fwd-Jumper
+  else {pxl::exception("pxl::oStreamer::getEvent()","Invalid compression mode.");}
   
-  cxxx.rdbuf()->sputn(cZip, lengthZip);          // compressed data block
+  // write event
+  dumpMemory(cxxx, iotl__eventMarker, 4);          // Event-Marker
+  storeBasicTypeChar(cxxx, compressionMode);       // Compression-Mode
+  
+  storeBasicTypeInt(cxxx, lengthInfo);             // Fwd-Jumper
+  cxxx.rdbuf()->sputn(cInfo, lengthInfo);          // info block
   cxxx.rdbuf()->pubsync();
+  storeBasicTypeInt(cxxx, lengthInfo);             // Bwd-Jumper & consistency check
   
-  dumpMemory(cxxx, (const char*)&lengthZip, 4); // Bwd-Jumper & consistency check
+  storeBasicTypeInt(cxxx, lengthZip);              // Fwd-Jumper
+  cxxx.rdbuf()->sputn(cZip, lengthZip);            // compressed zip block
+  cxxx.rdbuf()->pubsync();
+  storeBasicTypeInt(cxxx, lengthZip);               // Bwd-Jumper & consistency check
   
   if (cZipSpace) {delete [] cZipSpace;}
   
   _buffer.str("");
+  _buffer.clear();
 
 }
 //
 //
 //----------------------------------------------------------------------
-namespace iotl {
-template<> void oStreamer::storeData<ptl::Relations>(const ptl::Relations& relations) {
+namespace pxl {
+template<> void oStreamer::storeData<pxl::Relations>(const pxl::Relations& relations) {
 
   storeData<int>(relations.getSize());
-  for (ptl::Relations::StlConstIterator iter = relations.begin(); 
+  for (pxl::Relations::StlConstIterator iter = relations.begin(); 
                                       iter != relations.end(); 
 				      iter++) {
-       const ptl::WkPtrBase& ptr = (*iter->second);
+       const pxl::WkPtrBase& ptr = (*iter->second);
        if (ptr.valid()) {storeId(ptr.pointer()->id());}
        else             {storeId(0);}
        }
 
 }
 //----------------------------------------------------------------------
-template<> void iotl::oStreamer::storeData<ptl::Objects>(const ptl::Objects& objects) {
+template<> void pxl::oStreamer::storeData<pxl::Objects>(const pxl::Objects& objects) {
 
   // objects
   storeData<int>(objects.getSize());
-  for (ptl::Objects::StlConstIterator iter = objects.begin(); iter != objects.end(); iter++) {
+  for (pxl::Objects::StlConstIterator iter = objects.begin(); iter != objects.end(); iter++) {
   	  storeAbstractObject(**iter);
   	  }
 
   // index
   storeData<int>(objects._index.getSize());
-  for (ptl::Index::StlConstIterator iter = objects._index.begin(); iter != objects._index.end(); iter++) {
+  for (pxl::Index::StlConstIterator iter = objects._index.begin(); iter != objects._index.end(); iter++) {
       storeData<std::string>(iter->first);
       storeId(iter->second->id());
       }
 
 }
 //----------------------------------------------------------------------
-template<> void iotl::oStreamer::storeData<ptl::Layout>(const ptl::Layout& properties) {
+template<> void pxl::oStreamer::storeData<pxl::Layout>(const pxl::Layout& properties) {
   storeData<int>(properties._type);
   storeData<int>(properties._style);
   storeData<int>(properties._color);
@@ -131,42 +142,59 @@ template<> void iotl::oStreamer::storeData<ptl::Layout>(const ptl::Layout& prope
   storeData<double>(properties._d);
 }
 //----------------------------------------------------------------------
-template<> void iotl::oStreamer::storeData<ptl::ObjectBase>(const ptl::ObjectBase& object) {
+template<> void pxl::oStreamer::storeData<pxl::ObjectBase>(const pxl::ObjectBase& object) {
 
-  ptl::Id id = object.id();
+  pxl::Id id = object.id();
   storeId(id);
   
-  storeData<ptl::Relations>(object._motherRelations);
-  storeData<ptl::Relations>(object._daughterRelations);
+  storeData<pxl::Relations>(object._motherRelations);
+  storeData<pxl::Relations>(object._daughterRelations);
   
-  if (object._ptrLayout) {storeData<bool>( true  ); storeData<ptl::Layout>(*object._ptrLayout);}
+  if (object._ptrLayout) {storeData<bool>( true  ); storeData<pxl::Layout>(*object._ptrLayout);}
   else                   {storeData<bool>( false );}  
 
 }
 //----------------------------------------------------------------------
-} // namespace iotl
+} // namespace pxl
 //----------------------------------------------------------------------
 //
 //
 //
 //----------------------------------------------------------------------
-bool iotl::iStreamer::putEvent(std::istream& cxxx, bool ignore) {
+bool pxl::iStreamer::putEvent(std::istream& cxxx, int mode, const std::string& infoCondition) {
 
+  // clear the buffer stringstream
   _buffer.str("");
-  
+  _buffer.clear();
+
   char eventMarker[4] = {' ',' ',' ','\0'};
-  char compressionMode;
+  std::string info = "";
+  char compressionMode = ' ';
+  
+  int lengthInfo;
+  int lengthInfoVerify;
+
   int lengthZip;
   int lengthZipVerify;
    
-  redumpMemory(cxxx, eventMarker, 4);       // Event-Marker
+  redumpMemory(cxxx, eventMarker, 4);            // Event-Marker
   if (!cxxx.good()) {return false;}
-  if (strcmp(iotl__eventMarker, eventMarker)) {pcl::exception("iotl::iStreamer::getEvent()","Invalid event marker while reading event header.");}
+  if (strcmp(iotl__eventMarker, eventMarker)) {pxl::exception("pxl::iStreamer::getEvent()","Invalid event marker while reading event header.");}
+  restoreBasicTypeChar(cxxx, compressionMode);   // Compression-Mode
   
-  redumpMemory(cxxx, &compressionMode, 1);        // Compression-Mode
-  redumpMemory(cxxx, (char*)&lengthZip, 4);       // Fwd-Jumper
+  restoreBasicTypeInt(cxxx, lengthInfo);         // Fwd-Jumper
+  if (lengthInfo) {                              // info block
+	    char* buffer = new char[lengthInfo];
+	    cxxx.read(buffer, lengthInfo);
+	    info.assign(buffer, lengthInfo);
+	    delete [] buffer;
+	  }
+  restoreBasicTypeInt(cxxx, lengthInfoVerify);   // Bwd-Jumper & consistency check
   
-  if (ignore) {
+  if (mode == -1 && infoCondition != info) {mode = 0;}
+  
+  restoreBasicTypeInt(cxxx, lengthZip);          // Fwd-Jumper
+  if (mode == 0) {                               // zip block
   	// ignore the data
   	cxxx.ignore(lengthZip);
   	}
@@ -178,7 +206,7 @@ bool iotl::iStreamer::putEvent(std::istream& cxxx, bool ignore) {
 		if (iotl__iStreamer__lengthUnzipBuffer > bytes) {have = bytes;}
 		else {have = iotl__iStreamer__lengthUnzipBuffer;}
 		redumpMemory(cxxx, (char*)_outputBuffer, have);
-	        _buffer.write((char*)_outputBuffer, have);
+	    _buffer.write((char*)_outputBuffer, have);
 		bytes -= have;
         }
      }
@@ -186,40 +214,51 @@ bool iotl::iStreamer::putEvent(std::istream& cxxx, bool ignore) {
      // unzip the data:
      unzipEventData(cxxx, lengthZip);
      }
+  restoreBasicTypeInt(cxxx, lengthZipVerify);        // Bwd-Jumper & consistency check
+
+  // seek the beginning:
+  _buffer.seekg(0);
   
-  redumpMemory(cxxx, (char*)&lengthZipVerify, 4); // Bwd-Jumper & consistency check
-  
-  return (lengthZip == lengthZipVerify);
+  return ((lengthInfo == lengthInfoVerify) && (lengthZip == lengthZipVerify));
 }
 //----------------------------------------------------------------------
-bool iotl::iStreamer::previous(std::istream& cxxx) {
+bool pxl::iStreamer::previous(std::istream& cxxx) {
   
   int pos = cxxx.tellg();   
+  int lengthInfoVerify;
   int lengthZipVerify;
 
-  // seek previous block length information:
+  // read zip length information:
   pos -= 4;
   if (pos >= 0) {cxxx.seekg(pos);} 
   else {return false;}
-
-  // read block length information:
-  redumpMemory(cxxx, (char*)&lengthZipVerify, 4); // Bwd-Jumper & consistency check
+  restoreBasicTypeInt(cxxx, lengthZipVerify); // Bwd-Jumper & consistency check
+  if (lengthZipVerify < 0) {pxl::exception("pxl::iStreamer::previous()","Invalid zip block length information.");}
   
-  if (lengthZipVerify < 0) {pcl::exception("iotl::iStreamer::previous()","Invalid block length information.");}
+  pos -= lengthZipVerify; // zip block
+  pos -= 4; // zip block length
   
-  pos -= lengthZipVerify; // block
-  pos -= 4; // block length
+  // read info length information:
+  pos -= 4;
+  if (pos >= 0) {cxxx.seekg(pos);} 
+  else {return false;}
+  restoreBasicTypeInt(cxxx, lengthInfoVerify); // Bwd-Jumper & consistency check
+  if (lengthInfoVerify < 0) {pxl::exception("pxl::iStreamer::previous()","Invalid info block length information.");}
+  
+  pos -= lengthInfoVerify; // info block
+  pos -= 4; // info block length
+  
   pos -= 1; // compression mode
   pos -= 4; // event marker
   
   if (pos >= 0) {cxxx.seekg(pos); return true;}
    
-  pcl::exception("iotl::iStreamer::previous()","Invalid block length information.");
+  pxl::exception("pxl::iStreamer::previous()","Invalid block length information.");
   return false;
   
 }
 //----------------------------------------------------------------------
-int iotl::iStreamer::unzipEventData( std::istream &in, int nBytes) {
+int pxl::iStreamer::unzipEventData( std::istream &in, int nBytes) {
 	
   int ret, length = 0;
   unsigned int have;
@@ -290,54 +329,55 @@ int iotl::iStreamer::unzipEventData( std::istream &in, int nBytes) {
     
   return length;
 }
+
 //----------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------
-namespace iotl {
+namespace pxl {
 //----------------------------------------------------------------------
-template<> ptl::Id iotl::iStreamer::restoreData<ptl::Relations>(ptl::Relations& relations) {
+template<> pxl::Id pxl::iStreamer::restoreData<pxl::Relations>(pxl::Relations& relations) {
 
   relations.clearContainer();
 
   int size; restoreData<int>(size);
   for (int i=0; i<size; i++) {
-       ptl::MutableId persistentId = 0; 
+       pxl::MutableId persistentId = 0; 
        restoreId(persistentId);
        // provide orphan relation
-       if (persistentId != 0) relations.set(persistentId, new ptl::WkPtr<iotl::Orphan>);
+       if (persistentId != 0) relations.set(persistentId, new pxl::WkPtr<pxl::Orphan>);
        }
   return 0;       
 }
 //----------------------------------------------------------------------
-template<> ptl::Id iotl::iStreamer::restoreData<ptl::Objects>(ptl::Objects& objects) {
+template<> pxl::Id pxl::iStreamer::restoreData<pxl::Objects>(pxl::Objects& objects) {
 
-  //std::cerr << "iotl::iStreamer::restoreData<ptl::Objects>(ptl::Objects& objects): START" << std::endl;
+  //std::cerr << "pxl::iStreamer::restoreData<pxl::Objects>(pxl::Objects& objects): START" << std::endl;
 
   objects.clearContainer();
 
   int size;   
   std::string key;
-  ptl::MutableId persistentId = 0;
+  pxl::MutableId persistentId = 0;
 
   // reload objects (with orphan relations)  
   restoreData<int>(size);
   for (int i=0; i<size; i++) {
-      ptl::ObjectBase* item = 0;
+      pxl::ObjectBase* item = 0;
       persistentId = restoreAbstractObject(&item);
       objects.set(*item);
       objects._copyHistory.set(persistentId, item);
       }
 
   // redirect relations: loop in PTL style
-  for (ptl::Objects::PtlIterator iter(objects); !iter.isDone(); iter.next()) {
-       ptl::ObjectBase* pNew = iter.item();
+  for (pxl::Objects::Iterator iter(objects); !iter.isDone(); iter.next()) {
+       pxl::ObjectBase* pNew = iter.item();
        
        // mother relations
-       for (ptl::Relations::PtlTypeIterator<ptl::WkPtr<iotl::Orphan> > iterRelations(pNew->_motherRelations); !iterRelations.isDone(); iterRelations.next()) {
-		   ptl::ObjectBase* pNewRel = objects._copyHistory.find(iterRelations.key(), 0);
+       for (pxl::Relations::TypeIterator<pxl::WkPtr<pxl::Orphan> > iterRelations(pNew->_motherRelations); !iterRelations.isDone(); iterRelations.next()) {
+		   pxl::ObjectBase* pNewRel = objects._copyHistory.find(iterRelations.key(), 0);
 		   if (pNewRel) {pNew->linkMother(*pNewRel);}
-		   else {std::cerr << "iotl::iStreamer::restoreData<ptl::Objects>(...): WARNING: some original objects seem to have invalid relations. (persistent id is " << iterRelations.key() << ")" << std::endl;}
+		   else {std::cerr << "pxl::iStreamer::restoreData<pxl::Objects>(...): WARNING: some original objects seem to have invalid relations. (persistent id is " << iterRelations.key() << ")" << std::endl;}
        }
 
        // daughter relations
@@ -345,17 +385,17 @@ template<> ptl::Id iotl::iStreamer::restoreData<ptl::Objects>(ptl::Objects& obje
 
        // remove orphan relations
        // mother relations
-       ptl::Relations::PtlTypeIterator<ptl::WkPtr<iotl::Orphan> > iterM(pNew->_motherRelations); 
+       pxl::Relations::TypeIterator<pxl::WkPtr<pxl::Orphan> > iterM(pNew->_motherRelations); 
        while (!iterM.isDone()) {
-		   ptl::Id id = iterM.key();
+		   pxl::Id id = iterM.key();
 		   iterM.next();
 		   pNew->_motherRelations.remove(id);
            }
        
        // daughter relations
-       ptl::Relations::PtlTypeIterator<ptl::WkPtr<iotl::Orphan> > iterD(pNew->_daughterRelations); 
+       pxl::Relations::TypeIterator<pxl::WkPtr<pxl::Orphan> > iterD(pNew->_daughterRelations); 
        while (!iterD.isDone()) {
-		   ptl::Id id = iterD.key();
+		   pxl::Id id = iterD.key();
 		   iterD.next();
 		   pNew->_daughterRelations.remove(id);
            }
@@ -367,21 +407,21 @@ template<> ptl::Id iotl::iStreamer::restoreData<ptl::Objects>(ptl::Objects& obje
       restoreData<std::string>(key);
       restoreId(persistentId);
             
-      ptl::ObjectBase* pNew = objects._copyHistory.find(persistentId, 0);
+      pxl::ObjectBase* pNew = objects._copyHistory.find(persistentId, 0);
       
       if (pNew) {objects._index.set(key, pNew);}
 	  else {
-	  	std::cerr << "iotl::iStreamer::restoreData<ptl::Objects>(...): WARNING: some original indices could not be reconstructed." << std::endl;
+	  	std::cerr << "pxl::iStreamer::restoreData<pxl::Objects>(...): WARNING: some original indices could not be reconstructed." << std::endl;
 	  	std::cerr << key << ": " << persistentId << std::endl;
 	  	}
       }
 
-  //std::cerr << "iotl::iStreamer::restoreData<ptl::Objects>(ptl::Objects& objects): END" << std::endl;
+  //std::cerr << "pxl::iStreamer::restoreData<pxl::Objects>(pxl::Objects& objects): END" << std::endl;
       
   return 0;       
 }
 //----------------------------------------------------------------------
-template<> ptl::Id iotl::iStreamer::restoreData<ptl::Layout>(ptl::Layout& properties) {
+template<> pxl::Id pxl::iStreamer::restoreData<pxl::Layout>(pxl::Layout& properties) {
   restoreData<int>(properties._type);
   restoreData<int>(properties._style);
   restoreData<int>(properties._color);
@@ -392,52 +432,52 @@ template<> ptl::Id iotl::iStreamer::restoreData<ptl::Layout>(ptl::Layout& proper
   return 0;
 }
 //----------------------------------------------------------------------
-template<> ptl::Id iotl::iStreamer::restoreData<ptl::ObjectBase>(ptl::ObjectBase& object) {
+template<> pxl::Id pxl::iStreamer::restoreData<pxl::ObjectBase>(pxl::ObjectBase& object) {
 
-  ptl::MutableId persistentId;
+  pxl::MutableId persistentId;
   bool hasLayout;
   
   restoreId(persistentId);
   
-  restoreData<ptl::Relations>(object._motherRelations);
-  restoreData<ptl::Relations>(object._daughterRelations);
+  restoreData<pxl::Relations>(object._motherRelations);
+  restoreData<pxl::Relations>(object._daughterRelations);
   
   restoreData<bool>(hasLayout);
-  if (hasLayout) {restoreData<ptl::Layout>( object.layout() );}
+  if (hasLayout) {restoreData<pxl::Layout>( object.layout() );}
   else           {delete object._ptrLayout; object._ptrLayout = 0;}
   
   return persistentId;
 }
 //----------------------------------------------------------------------
-ptl::Id iotl::iStreamer::restoreAbstractObject(ptl::ObjectBase** ppobj) {
+pxl::Id pxl::iStreamer::restoreAbstractObject(pxl::ObjectBase** ppobj) {
 
   std::string objectTypeId; 
   std::string dataTypeId;
    
-  pcl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, objectTypeId);   
-  pcl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, dataTypeId); 
+  pxl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, objectTypeId);   
+  pxl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, dataTypeId); 
   
-  return iotl::TypeManager::instance().restoreObject(*this, ppobj, objectTypeId, dataTypeId);
+  return pxl::TypeManager::instance().restoreObject(*this, ppobj, objectTypeId, dataTypeId);
 }
 //----------------------------------------------------------------------
-} // namespace iotl
+} // namespace pxl
 //----------------------------------------------------------------------
-void iotl::TypeManager::registerAgent(iotl::TypeAgentBase* agent) {
+void pxl::TypeManager::registerAgent(pxl::TypeAgentBase* agent) {
   
   // for debugging purposes:
-//  std::cout << "iotl::TypeManager::registerAgent(): type registered: [" 
+//  std::cout << "pxl::TypeManager::registerAgent(): type registered: [" 
 //            << agent->getObjectTypeId() << "," << agent->getDataTypeId() 
 //            << "]" << std::endl;
 //            //<< "] = '" << agent->getCppTypeId() << "'" << std::endl;
 
   // add entries to maps:
-  _agentsByIotlTypeId.set(iotl::TypeIdKey(agent->getObjectTypeId(), agent->getDataTypeId()), agent);
+  _agentsByIotlTypeId.set(pxl::TypeIdKey(agent->getObjectTypeId(), agent->getDataTypeId()), agent);
   _agentsByCppTypeId.set(agent->getCppTypeId(), agent);
 }
 //----------------------------------------------------------------------
-ptl::Id iotl::TypeManager::restoreObject(iStreamer& input, ptl::ObjectBase** ppobj, const std::string& objectTypeId, const std::string& dataTypeId) const {
+pxl::Id pxl::TypeManager::restoreObject(iStreamer& input, pxl::ObjectBase** ppobj, const std::string& objectTypeId, const std::string& dataTypeId) const {
 
-  TypeAgentBase* agent = _agentsByIotlTypeId.find(iotl::TypeIdKey(objectTypeId, dataTypeId), 0);
+  TypeAgentBase* agent = _agentsByIotlTypeId.find(pxl::TypeIdKey(objectTypeId, dataTypeId), 0);
   
   if (agent) {return agent->restoreObject(input, ppobj);}
   
@@ -447,12 +487,12 @@ ptl::Id iotl::TypeManager::restoreObject(iStreamer& input, ptl::ObjectBase** ppo
   message += ","; 
   message += dataTypeId; 
   message += "]"; 
-  pcl::exception("iotl::TypeManager::restoreObject()", message); 
+  pxl::exception("pxl::TypeManager::restoreObject()", message); 
 
   return 0;
  }
 //----------------------------------------------------------------------
-ptl::Id iotl::TypeManager::restoreObject(iotl::iStreamer& input,  ptl::ObjectBase& obj,  const std::string& cppTypeId) const {
+pxl::Id pxl::TypeManager::restoreObject(pxl::iStreamer& input,  pxl::ObjectBase& obj,  const std::string& cppTypeId) const {
 
   TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
   
@@ -462,12 +502,12 @@ ptl::Id iotl::TypeManager::restoreObject(iotl::iStreamer& input,  ptl::ObjectBas
   message += "undeclared C++ type: '";
   message += cppTypeId;
   message += "'";
-  pcl::exception("iotl::TypeManager::restoreObject()", message); 
+  pxl::exception("pxl::TypeManager::restoreObject()", message); 
 
   return 0;
  }
 //----------------------------------------------------------------------
-void iotl::TypeManager::storeObject(oStreamer& output, const ptl::ObjectBase& obj, const std::string& cppTypeId) const {
+void pxl::TypeManager::storeObject(oStreamer& output, const pxl::ObjectBase& obj, const std::string& cppTypeId) const {
 
   TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
   
@@ -477,12 +517,12 @@ void iotl::TypeManager::storeObject(oStreamer& output, const ptl::ObjectBase& ob
   message += "undeclared C++ type: '";
   message += cppTypeId;
   message += "'";
-  pcl::exception("iotl::TypeManager::storeObject()", message); 
+  pxl::exception("pxl::TypeManager::storeObject()", message); 
  }
 //----------------------------------------------------------------------
-namespace iotl {TypeManager* TypeManager::_instance = 0;}
+namespace pxl {TypeManager* TypeManager::_instance = 0;}
 //----------------------------------------------------------------------
-iotl::TypeManager& iotl::TypeManager::instance() {
+pxl::TypeManager& pxl::TypeManager::instance() {
   if (!_instance) {_instance = new TypeManager;}
   return *_instance;	
 }
@@ -490,11 +530,11 @@ iotl::TypeManager& iotl::TypeManager::instance() {
 //
 //
 //
-template class iotl::oDiskFileVx<iotl::oStreamer>;
-template class iotl::iDiskFileVx<iotl::iStreamer>;
+template class pxl::oDiskFileVx<pxl::oStreamer>;
+template class pxl::iDiskFileVx<pxl::iStreamer>;
 
-template class iotl::TypeAgent<ptl::Object<int> >;
-template class iotl::TypeAgent<ptl::CowObject<int> >;
+template class pxl::TypeAgent<pxl::Object<int> >;
+template class pxl::TypeAgent<pxl::CowObject<int> >;
 
 #ifndef MERGED_PXL
 	#include "iotl.pol.cci"
@@ -506,16 +546,16 @@ template class iotl::TypeAgent<ptl::CowObject<int> >;
 //
 //
 //----------------------------------------------------------------------
-iotl__declareObjectTypeExplicit(pol::BasicObject, "\3Bo", pol__BasicObject)
-iotl__declareObjectTypeExplicit(pol::BasicObjectManager, "\3Bom", pol__BasicObjectManager)
-iotl__declareObjectTypeExplicit(pol::Particle, "\3Pa", pol__Particle)
-iotl__declareObjectTypeExplicit(pol::Vertex, "\3Vx", pol__Vertex)
-// iotl__declareObjectExplicit(pol::Collision, "\3Co", pol__Collision)
-iotl__declareObjectTypeExplicit(pol::EventView, "\3Ev", pol__EventView)
-iotl__declareObjectTypeExplicit(pol::AnalysisProcess, "\3Ap", pol__AnalysisProcess)
-iotl__declareObjectTypeExplicit(pol::AnalysisFork, "\3Af", pol__AnalysisFork)
+iotl__declareObjectTypeExplicit(pxl::BasicObject, "\3Bo", pol__BasicObject)
+iotl__declareObjectTypeExplicit(pxl::BasicObjectManager, "\3Bom", pol__BasicObjectManager)
+iotl__declareObjectTypeExplicit(pxl::Particle, "\3Pa", pol__Particle)
+iotl__declareObjectTypeExplicit(pxl::Vertex, "\3Vx", pol__Vertex)
+// iotl__declareObjectExplicit(pxl::Collision, "\3Co", pol__Collision)
+iotl__declareObjectTypeExplicit(pxl::EventView, "\3Ev", pol__EventView)
+iotl__declareObjectTypeExplicit(pxl::AnalysisProcess, "\3Ap", pol__AnalysisProcess)
+iotl__declareObjectTypeExplicit(pxl::AnalysisFork, "\3Af", pol__AnalysisFork)
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::BasicObjectData, "\3BoD", pol__BasicObjectData, data,
+iotl__declareDataTypeExplicit(pxl::BasicObjectData, "\3BoD", pol__BasicObjectData, data,
 {
   storeData<bool>(data._locked);
   storeData<int>(data._monteCarloMode);
@@ -523,7 +563,7 @@ iotl__declareDataTypeExplicit(pol::BasicObjectData, "\3BoD", pol__BasicObjectDat
   storeData<int>(data._status);
   storeData<int>(data._workflag);
   storeData(data._userRecords);
-  // storeData<pol::CppPointers>(_cppPointers); // we don't store the c++ pointers!
+  // storeData<pxl::CppPointers>(_cppPointers); // we don't store the c++ pointers!
 },{
   restoreData<bool>(data._locked);
   restoreData<int>(data._monteCarloMode);
@@ -531,19 +571,19 @@ iotl__declareDataTypeExplicit(pol::BasicObjectData, "\3BoD", pol__BasicObjectDat
   restoreData<int>(data._status);
   restoreData<int>(data._workflag);
   restoreData(data._userRecords);
-  // restoreData<pol::CppPointers>(_cppPointers); // we don't restore the c++ pointers!
+  // restoreData<pxl::CppPointers>(_cppPointers); // we don't restore the c++ pointers!
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::BasicObjectManagerData, "\3BomD", pol__BasicObjectManagerData, data,
+iotl__declareDataTypeExplicit(pxl::BasicObjectManagerData, "\3BomD", pol__BasicObjectManagerData, data,
 {
-  storeData<pol::Objects>(data._objects);
-  storeData<pol::BasicObjectData>(data);
+  storeData<pxl::Objects>(data._objects);
+  storeData<pxl::BasicObjectData>(data);
 },{
-  restoreData<pol::Objects>(data._objects);
-  restoreData<pol::BasicObjectData>(data);
+  restoreData<pxl::Objects>(data._objects);
+  restoreData<pxl::BasicObjectData>(data);
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::Basic4VectorData, "\3B4vD", pol__Basic4VectorData, data,
+iotl__declareDataTypeExplicit(pxl::Basic4VectorData, "\3B4vD", pol__Basic4VectorData, data,
 {
   storeData<double>(data._x);
   storeData<double>(data._y);
@@ -556,7 +596,7 @@ iotl__declareDataTypeExplicit(pol::Basic4VectorData, "\3B4vD", pol__Basic4Vector
   restoreData<double>(data._t);
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::Basic3VectorData, "\3B3vD", pol__Basic3VectorData, data,
+iotl__declareDataTypeExplicit(pxl::Basic3VectorData, "\3B3vD", pol__Basic3VectorData, data,
 {
   storeData<double>(data._x);
   storeData<double>(data._y);
@@ -567,54 +607,54 @@ iotl__declareDataTypeExplicit(pol::Basic3VectorData, "\3B3vD", pol__Basic3Vector
   restoreData<double>(data._z);
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::ParticleData, "\3PaD", pol__ParticleData, data,
+iotl__declareDataTypeExplicit(pxl::ParticleData, "\3PaD", pol__ParticleData, data,
 {
   storeData<double>(data._charge);
   storeData<int>(data._particleId);
   storeData(data.vector());
-  storeData<pol::BasicObjectData>(data);
+  storeData<pxl::BasicObjectData>(data);
 },{
   restoreData<double>(data._charge);
   restoreData<int>(data._particleId);
-  restoreData(data.vector(pol::set));
-  restoreData<pol::BasicObjectData>(data);
+  restoreData(data.vector(pxl::set));
+  restoreData<pxl::BasicObjectData>(data);
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::VertexData, "\3VxD", pol__VertexData, data,
+iotl__declareDataTypeExplicit(pxl::VertexData, "\3VxD", pol__VertexData, data,
 {
   storeData(data.vector());
-  storeData<pol::BasicObjectData>(data);
+  storeData<pxl::BasicObjectData>(data);
 },{
-  restoreData(data.vector(pol::set));
-  restoreData<pol::BasicObjectData>(data);
+  restoreData(data.vector(pxl::set));
+  restoreData<pxl::BasicObjectData>(data);
 })
 //----------------------------------------------------------------------
-// iotl__declareDataExplicit(pol::CollisionData, "\3CoD", pol__CollisionData, data,
+// iotl__declareDataExplicit(pxl::CollisionData, "\3CoD", pol__CollisionData, data,
 // {
-//   storeData<pol::BasicObjectData>(data);
+//   storeData<pxl::BasicObjectData>(data);
 // },{
-//   restoreData<pol::BasicObjectData>(data);
+//   restoreData<pxl::BasicObjectData>(data);
 // })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::EventViewData, "\3EvD", pol__EventViewData, data,
+iotl__declareDataTypeExplicit(pxl::EventViewData, "\3EvD", pol__EventViewData, data,
 {
-  storeData<pol::BasicObjectManagerData>(data);
+  storeData<pxl::BasicObjectManagerData>(data);
 },{
-  restoreData<pol::BasicObjectManagerData>(data);
+  restoreData<pxl::BasicObjectManagerData>(data);
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::AnalysisProcessData, "\3ApD", pol__AnalysisProcessData, data,
+iotl__declareDataTypeExplicit(pxl::AnalysisProcessData, "\3ApD", pol__AnalysisProcessData, data,
 {
-  storeData<pol::BasicObjectManagerData>(data);
+  storeData<pxl::BasicObjectManagerData>(data);
 },{
-  restoreData<pol::BasicObjectManagerData>(data);
+  restoreData<pxl::BasicObjectManagerData>(data);
 })
 //----------------------------------------------------------------------
-iotl__declareDataTypeExplicit(pol::AnalysisForkData, "\3AfD", pol__AnalysisForkData, data, 
+iotl__declareDataTypeExplicit(pxl::AnalysisForkData, "\3AfD", pol__AnalysisForkData, data, 
 {
-  storeData<pol::BasicObjectManagerData>(data);
+  storeData<pxl::BasicObjectManagerData>(data);
 },{
-  restoreData<pol::BasicObjectManagerData>(data);
+  restoreData<pxl::BasicObjectManagerData>(data);
 })
 //----------------------------------------------------------------------
 #ifndef MERGED_PXL
@@ -625,36 +665,36 @@ iotl__declareDataTypeExplicit(pol::AnalysisForkData, "\3AfD", pol__AnalysisForkD
 //----------------------------------------------------------------------
 // MEMBER FUNCTIONS
 //----------------------------------------------------------------------
-ptl::Objects::Objects() : ptl::Vector<ptl::ObjectBase*>(), _copyHistory(), _index() {;}
-ptl::Objects::Objects(const ptl::Objects& original) : ptl::Vector<ptl::ObjectBase*>(), _copyHistory(), _index() {
+pxl::ObjectOwner::ObjectOwner() : pxl::Vector<pxl::ObjectBase*>(), _copyHistory(), _index() {;}
+pxl::ObjectOwner::ObjectOwner(const pxl::ObjectOwner& original) : pxl::Vector<pxl::ObjectBase*>(), _copyHistory(), _index() {
 
   // copy objects: loop in STL style
-  for (ptl::Objects::StlConstIterator iter = original.begin(); 
+  for (pxl::ObjectOwner::StlConstIterator iter = original.begin(); 
                                       iter != original.end(); 
 				      iter++) {
-       ptl::ObjectBase* pOld = *iter;
-       ptl::ObjectBase* pNew = pOld->clone();
+       pxl::ObjectBase* pOld = *iter;
+       pxl::ObjectBase* pNew = pOld->clone();
 
        set(*pNew);
        _copyHistory.set(pOld->id(), pNew);
       }
   
   // redirect relations: loop in PTL style
-  for (ptl::Objects::PtlIterator iter(original); !iter.isDone(); iter.next()) {
-       ptl::ObjectBase* pOld = iter.item();
-       ptl::ObjectBase* pNew = _copyHistory.find(pOld->id(), 0);
+  for (pxl::ObjectOwner::Iterator iter(original); !iter.isDone(); iter.next()) {
+       pxl::ObjectBase* pOld = iter.item();
+       pxl::ObjectBase* pNew = _copyHistory.find(pOld->id(), 0);
        
        // mother relations
-       for (ptl::Relations::PtlIterator iter(pOld->getMotherRelations()); !iter.isDone(); iter.next()) {
-	   ptl::ObjectBase* pOldRel = iter.item()->pointer();
-	   ptl::ObjectBase* pNewRel = _copyHistory.find(pOldRel->id(), 0);
+       for (pxl::Relations::Iterator iter(pOld->getMotherRelations()); !iter.isDone(); iter.next()) {
+	   pxl::ObjectBase* pOldRel = iter.item()->pointer();
+	   pxl::ObjectBase* pNewRel = _copyHistory.find(pOldRel->id(), 0);
 	   
 	   if (pOldRel) {	   
 	      if (pNewRel) {pNew->linkMother(*pNewRel);}
-	      else {std::cerr << "ptl::Objects::Objects(...): WARNING: some original objects had relations to objects of other holders." << std::endl;}
+	      else {std::cerr << "pxl::ObjectOwner::ObjectOwner(...): WARNING: some original objects had relations to objects of other owners." << std::endl;}
 	      }
 	   else {
-	      std::cerr << "ptl::Objects::Objects(...): WARNING: some originally related objects no longer exist" << std::endl;
+	      std::cerr << "pxl::ObjectOwner::ObjectOwner(...): WARNING: some originally related objects no longer exist" << std::endl;
 	      }   
        }
 
@@ -663,16 +703,16 @@ ptl::Objects::Objects(const ptl::Objects& original) : ptl::Vector<ptl::ObjectBas
       }
   
   // redirect index:
-  for (ptl::Index::PtlIterator iter(original._index); !iter.isDone(); iter.next()) {
-       ptl::ObjectBase* pOld = iter.item();
-       ptl::ObjectBase* pNew = _copyHistory.find(pOld->id(), 0);
+  for (pxl::Index::Iterator iter(original._index); !iter.isDone(); iter.next()) {
+       pxl::ObjectBase* pOld = iter.item();
+       pxl::ObjectBase* pNew = _copyHistory.find(pOld->id(), 0);
        
        if (pNew) {_index.set(iter.key(),pNew);}
-       else {std::cerr << "ptl::Objects::Objects(...): WARNING: some original indices pointed to objects of other holders." << std::endl;}
+       else {std::cerr << "pxl::ObjectOwner::ObjectOwner(...): WARNING: some original indices pointed to objects of other owners." << std::endl;}
       }
 }
 //----------------------------------------------------------------------
-void ptl::Objects::clearContainer() {
+void pxl::Objects::clearContainer() {
   for (StlConstIterator iter = _container.begin(); iter != _container.end(); iter++) {
       delete (*iter);
       }
@@ -681,17 +721,17 @@ void ptl::Objects::clearContainer() {
   _index.clearContainer();
 }
 //----------------------------------------------------------------------
-void ptl::Objects::set(ptl::ObjectBase& item) {item._refObjects = this; _container.push_back(&item);}
+void pxl::Objects::set(pxl::ObjectBase& item) {item._refObjectOwner = this; _container.push_back(&item);}
 //----------------------------------------------------------------------
-void ptl::Objects::remove(ptl::ObjectBase& item) {
+void pxl::Objects::remove(pxl::ObjectBase& item) {
 
   // search & remove possible indices (multiple occurrences possible!)
-  for (ptl::Index::StlConstIterator iter = _index.begin(); iter != _index.end(); iter++) {
+  for (pxl::Index::StlConstIterator iter = _index.begin(); iter != _index.end(); iter++) {
        if (&item == iter->second) {_index.remove(iter->first);}
       }
   
   // search & remove possible copy history (multiple occurrences *not* possible!)
-  for (ptl::CopyHistory::StlConstIterator iter = _copyHistory.begin(); iter != _copyHistory.end(); iter++) {
+  for (pxl::CopyHistory::StlConstIterator iter = _copyHistory.begin(); iter != _copyHistory.end(); iter++) {
        if (&item == iter->second) {_copyHistory.remove(iter->first);break;}
       }
 
@@ -706,34 +746,9 @@ void ptl::Objects::remove(ptl::ObjectBase& item) {
   	  
 }
 //----------------------------------------------------------------------
-bool ptl::Objects::has(const ptl::ObjectBase& item) const {return (item._refObjects == this);}
+bool pxl::Objects::has(const pxl::ObjectBase& item) const {return (item._refObjectOwner == this);}
 //----------------------------------------------------------------------
-ptl::Relations::Relations() : ptl::Map<ptl::Id, ptl::WkPtrBase*>() {;}
-ptl::Relations::Relations(const ptl::Relations& original) : ptl::Map<ptl::Id, ptl::WkPtrBase*>() {
-  for (StlConstIterator iter = original._container.begin(); iter != original._container.end(); iter++) {
-      set(iter->first, iter->second->clone());
-      }
-}
-
-void ptl::Relations::set(ptl::Id id, ptl::WkPtrBase* wptr) {
-	ptl::Relations::remove(id); 
-	_container.insert(StlPair(id, wptr));
-}
-
-void ptl::Relations::clearContainer() {
-  for (StlConstIterator iter = _container.begin(); iter != _container.end(); iter++) {
-      delete iter->second;
-      }
-  _container.clear();
-}
-
-void ptl::Relations::remove(ptl::ObjectBase& object) {delete find(object.id(), 0); _container.erase(object.id());}
-void ptl::Relations::remove(ptl::Id id)              {delete find(id, 0); _container.erase(id);}
-
-bool ptl::Relations::has(const ptl::ObjectBase& object) const {return (0 != find(object.id(), 0) );}
-bool ptl::Relations::has(ptl::Id id) const                {return (0 != find(id, 0) );}
-//----------------------------------------------------------------------
-void ptl::WkPtrBase::notifyDeleted() {
+void pxl::WkPtrBase::notifyDeleted() {
 
   _objectRef = 0; 
   if (_notifyChainOut) _notifyChainOut->notifyDeleted(); 
@@ -742,7 +757,7 @@ void ptl::WkPtrBase::notifyDeleted() {
 
 }
 //----------------------------------------------------------------------
-void ptl::WkPtrBase::connect(ptl::ObjectBase* pointer) {
+void pxl::WkPtrBase::connect(pxl::ObjectBase* pointer) {
 
   // disconnect:
   if (_objectRef) {
@@ -767,47 +782,47 @@ void ptl::WkPtrBase::connect(ptl::ObjectBase* pointer) {
   
 }
 //----------------------------------------------------------------------
-void ptl::ObjectBase::linkMother(ptl::ObjectBase& target)  {
+void pxl::ObjectBase::linkMother(pxl::ObjectBase& target)  {
 
-  ptl::WkPtrBase* pTarget = target.createSelfWkPtr();
-  ptl::WkPtrBase* pThis   = this->createSelfWkPtr();
+  pxl::WkPtrBase* pTarget = target.createSelfWkPtr();
+  pxl::WkPtrBase* pThis   = this->createSelfWkPtr();
   
-  if (target._refObjects != this->_refObjects) {std::cerr << "ptl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object holder!" << std::endl;}
+  if (target._refObjectOwner != this->_refObjectOwner) {std::cerr << "pxl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object owner!" << std::endl;}
 
   this->_motherRelations.set(target.id(), pTarget);
   target._daughterRelations.set(this->id(), pThis);
 
 }
 //----------------------------------------------------------------------
-void ptl::ObjectBase::linkDaughter(ptl::ObjectBase& target) {
+void pxl::ObjectBase::linkDaughter(pxl::ObjectBase& target) {
 
-  ptl::WkPtrBase* pTarget = target.createSelfWkPtr();
-  ptl::WkPtrBase* pThis   = this->createSelfWkPtr();
+  pxl::WkPtrBase* pTarget = target.createSelfWkPtr();
+  pxl::WkPtrBase* pThis   = this->createSelfWkPtr();
   
-  if (target._refObjects != this->_refObjects) {std::cerr << "ptl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object holder!" << std::endl;}
+  if (target._refObjectOwner != this->_refObjectOwner) {std::cerr << "pxl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object owner!" << std::endl;}
   
   this->_daughterRelations.set(target.id(), pTarget);
   target._motherRelations.set(this->id(), pThis);
 
 }
 //----------------------------------------------------------------------
-void ptl::ObjectBase::unlinkMother(ptl::ObjectBase& target)  {
+void pxl::ObjectBase::unlinkMother(pxl::ObjectBase& target)  {
 
   this->_motherRelations.remove(target.id());
   target._daughterRelations.remove(this->id());
 
 }
 //----------------------------------------------------------------------
-void ptl::ObjectBase::unlinkDaughter(ptl::ObjectBase& target) {
+void pxl::ObjectBase::unlinkDaughter(pxl::ObjectBase& target) {
 
   this->_daughterRelations.remove(target.id());
   target._motherRelations.remove(this->id());
 
 }
 //----------------------------------------------------------------------
-void ptl::ObjectBase::unlinkMothers() {
+void pxl::ObjectBase::unlinkMothers() {
 
-  for (ptl::Relations::PtlIterator iter(_motherRelations); !iter.isDone(); iter.next()) {
+  for (pxl::Relations::Iterator iter(_motherRelations); !iter.isDone(); iter.next()) {
        if (iter.item()->_objectRef) {
        	  iter.item()->_objectRef->_daughterRelations.remove(this->id());
        	  }
@@ -816,9 +831,9 @@ void ptl::ObjectBase::unlinkMothers() {
   
 }  
 //----------------------------------------------------------------------
-void ptl::ObjectBase::unlinkDaughters() {
+void pxl::ObjectBase::unlinkDaughters() {
 
-  for (ptl::Relations::PtlIterator iter(_daughterRelations); !iter.isDone(); iter.next()) {
+  for (pxl::Relations::Iterator iter(_daughterRelations); !iter.isDone(); iter.next()) {
        if (iter.item()->_objectRef) {
        	  iter.item()->_objectRef->_motherRelations.remove(this->id());
        	  }
@@ -827,13 +842,13 @@ void ptl::ObjectBase::unlinkDaughters() {
 
 }
 //----------------------------------------------------------------------
-std::ostream& ptl::ObjectBase::printDecayTree(int level, std::ostream& os, int pan) const {
+std::ostream& pxl::ObjectBase::printDecayTree(int level, std::ostream& os, int pan) const {
 
   int daughters = 0;
   
   print(level, os, pan);
 
-  for (ptl::Relations::PtlIterator iter(_daughterRelations); !iter.isDone(); iter.next()) {
+  for (pxl::Relations::Iterator iter(_daughterRelations); !iter.isDone(); iter.next()) {
        if (iter.item()->_objectRef) {
           iter.item()->_objectRef->printDecayTree(level, os, pan+1);
 	  daughters++;
@@ -849,43 +864,43 @@ std::ostream& ptl::ObjectBase::printDecayTree(int level, std::ostream& os, int p
 
 }
 //----------------------------------------------------------------------
-std::ostream& ptl::ObjectBase::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::ObjectBase with id: " << id() << std::endl;}
+std::ostream& pxl::ObjectBase::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::ObjectBase with id: " << id() << std::endl;}
 //----------------------------------------------------------------------
-std::ostream& ptl::ObjectBase::printPan1st(std::ostream& os, int pan) const {for (int p=0;p<pan-2;p++) {os << "|  ";} if (pan-1 > 0) os << "+--"; if (pan) os << "{ "; return os;}
-std::ostream& ptl::ObjectBase::printPan(std::ostream& os, int pan) const {for (int p=0;p<pan-1;p++) {os << "|  ";}; if (pan) os << "| "; return os;}
+std::ostream& pxl::ObjectBase::printPan1st(std::ostream& os, int pan) const {for (int p=0;p<pan-2;p++) {os << "|  ";} if (pan-1 > 0) os << "+--"; if (pan) os << "{ "; return os;}
+std::ostream& pxl::ObjectBase::printPan(std::ostream& os, int pan) const {for (int p=0;p<pan-1;p++) {os << "|  ";}; if (pan) os << "| "; return os;}
 //----------------------------------------------------------------------
-namespace ptl
+namespace pxl
 {
-template <> std::ostream& ptl::Object<int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::Object<int> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::Object<unsigned int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::Object<unsigned int> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::Object<bool>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::Object<bool> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::Object<double>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::Object<double> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::Object<float>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::Object<float> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::Object<int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::Object<int> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::Object<unsigned int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::Object<unsigned int> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::Object<bool>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::Object<bool> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::Object<double>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::Object<double> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::Object<float>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::Object<float> with id: " << id() << " is " << get() << std::endl;}
 //----------------------------------------------------------------------
-template <> std::ostream& ptl::CowObject<int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::CowObject<int> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::CowObject<unsigned int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::CowObject<unsigned int> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::CowObject<bool>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::CowObject<bool> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::CowObject<double>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::CowObject<double> with id: " << id() << " is " << get() << std::endl;}
-template <> std::ostream& ptl::CowObject<float>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "ptl::CowObject<float> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::CowObject<int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::CowObject<int> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::CowObject<unsigned int>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::CowObject<unsigned int> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::CowObject<bool>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::CowObject<bool> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::CowObject<double>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::CowObject<double> with id: " << id() << " is " << get() << std::endl;}
+template <> std::ostream& pxl::CowObject<float>::print(int level, std::ostream& os, int pan) const {return printPan1st(os, pan) << "pxl::CowObject<float> with id: " << id() << " is " << get() << std::endl;}
 }
 //----------------------------------------------------------------------
-std::ostream& operator << (std::ostream& cxxx, const ptl::ObjectBase& obj) {return obj.print(0, cxxx, 0);}
+std::ostream& operator << (std::ostream& cxxx, const pxl::ObjectBase& obj) {return obj.print(0, cxxx, 0);}
 //----------------------------------------------------------------------
 // EXPLICIT INSTANCIATION
-template class ptl::Vector<int>;
-template class ptl::Map<int,int>;
-template class ptl::Objects::PtlTypeIterator<ptl::Object<int> >;
-template class ptl::Relations::PtlTypeIterator<ptl::Object<int> >;
+template class pxl::Vector<int>;
+template class pxl::Map<int,int>;
+template class pxl::Objects::TypeIterator<pxl::WkPtr<int> >;
+template class pxl::Relations::TypeIterator<pxl::WkPtr<int> >;
 
-template class ptl::Ptr<int>;
-template class ptl::WkPtrSpec<int, ptl::Object<int> >;
-template class ptl::WkPtr<int>;
-template class ptl::CowWkPtr<int>;
-template class ptl::SpyWkPtr<int>;
+template class pxl::Ptr<int>;
+template class pxl::WkPtrSpec<int, pxl::Object<int> >;
+template class pxl::WkPtr<int>;
+template class pxl::CowWkPtr<int>;
+template class pxl::SpyWkPtr<int>;
 
-template class ptl::Object<int>;
-template class ptl::CowObject<int>;
-template class ptl::SpyObject<int>;
+template class pxl::Object<int>;
+template class pxl::CowObject<int>;
+template class pxl::SpyObject<int>;
 //----------------------------------------------------------------------
 #ifndef MERGED_PXL
 	#include "pol.hh"
@@ -893,135 +908,135 @@ template class ptl::SpyObject<int>;
 //
 //
 //----------------------------------------------------------------------
-namespace pol {
+namespace pxl {
 //----------------------------------------------------------------------
-bool const operator==(const pol::Basic4VectorData& obj1, const pol::Basic4VectorData& obj2)
+bool const operator==(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2)
 {return (obj1.getX() == obj2.getX() && obj1.getY() == obj2.getY() && obj1.getZ() == obj2.getZ() && obj1.getE() == obj2.getE());}
 
-bool const operator!=(const pol::Basic4VectorData& obj1, const pol::Basic4VectorData& obj2)
+bool const operator!=(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2)
 {return (obj1.getX() != obj2.getX() || obj1.getY() != obj2.getY() || obj1.getZ() != obj2.getZ() || obj1.getE() != obj2.getE());}
 //----------------------------------------------------------------------
-bool const operator==(const pol::Basic3VectorData& obj1, const pol::Basic3VectorData& obj2) 
+bool const operator==(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2) 
 {return (obj1.getX() == obj2.getX() && obj1.getY() == obj2.getY() && obj1.getZ() == obj2.getZ());}
 
-bool const operator!=(const pol::Basic3VectorData& obj1, const pol::Basic3VectorData& obj2) 
+bool const operator!=(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2) 
 {return (obj1.getX() != obj2.getX() || obj1.getY() != obj2.getY() || obj1.getZ() != obj2.getZ());}
 //----------------------------------------------------------------------
-bool const operator==(const pol::VertexData& obj1, const pol::VertexData& obj2)
+bool const operator==(const pxl::VertexData& obj1, const pxl::VertexData& obj2)
 {return (obj1.vector() == obj2.vector());}
 
-bool const operator!=(const pol::VertexData& obj1, const pol::VertexData& obj2) 
+bool const operator!=(const pxl::VertexData& obj1, const pxl::VertexData& obj2) 
 {return (obj1.vector() != obj2.vector());}
 //----------------------------------------------------------------------
-bool const operator==(const pol::ParticleData& obj1, const pol::ParticleData& obj2) 
-{return (obj1.vector() == obj2.vector() && obj1.getCharge() != obj2.getCharge());}
+bool const operator==(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2) 
+{return (obj1.vector() == obj2.vector() && obj1.getCharge() == obj2.getCharge());}
 
-bool const operator!=(const pol::ParticleData& obj1, const pol::ParticleData& obj2) 
+bool const operator!=(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2) 
 {return (obj1.vector() != obj2.vector() || obj1.getCharge() != obj2.getCharge());}
 //----------------------------------------------------------------------
-} // namespace pol
+} // namespace pxl
 //----------------------------------------------------------------------
-ptl::ObjectBase* pol::AnalysisProcess::clone() const {return new AnalysisProcess(*this);}
-ptl::WkPtrBase* pol::AnalysisProcess::createSelfWkPtr() {return new AnalysisProcessWkPtr(*this);}
-void pol::AnalysisProcess::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* pxl::AnalysisProcess::clone() const {return new AnalysisProcess(*this);}
+pxl::WkPtrBase* pxl::AnalysisProcess::createSelfWkPtr() {return new AnalysisProcessWkPtr(*this);}
+void pxl::AnalysisProcess::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-void pol::AnalysisFork::beginJob(const pol::Objects* input) {
+void pxl::AnalysisFork::beginJob(const pxl::Objects* input) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().beginJob(input);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().beginJob(input);
       }
       
 }
 //----------------------------------------------------------------------
-void pol::AnalysisFork::buildTemplate(int mode) {
+void pxl::AnalysisFork::buildTemplate(int mode) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().buildTemplate(mode);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().buildTemplate(mode);
       }
       
 }
 //----------------------------------------------------------------------
-void pol::AnalysisFork::beginRun(const pol::Objects* input) {
+void pxl::AnalysisFork::beginRun(const pxl::Objects* input) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().beginRun(input);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().beginRun(input);
       }
       
 }
 //----------------------------------------------------------------------
-void pol::AnalysisFork::analyseEvent(const pol::Objects* input) {
+void pxl::AnalysisFork::analyseEvent(const pxl::Objects* input) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().analyseEvent(input);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().analyseEvent(input);
       }
       
 }
 //----------------------------------------------------------------------
-void pol::AnalysisFork::finishEvent(const pol::Objects* input) {
+void pxl::AnalysisFork::finishEvent(const pxl::Objects* input) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().finishEvent(input);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().finishEvent(input);
       }
       
 }
 //----------------------------------------------------------------------
-void pol::AnalysisFork::endRun(const pol::Objects* input) {
+void pxl::AnalysisFork::endRun(const pxl::Objects* input) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().endRun(input);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().endRun(input);
       }
       
 }
 //----------------------------------------------------------------------
-void pol::AnalysisFork::endJob(const pol::Objects* input) {
+void pxl::AnalysisFork::endJob(const pxl::Objects* input) {
 
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().endJob(input);
       }
       
-  for (pol::Objects::PtlTypeIterator<pol::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects()); !iter.isDone(); iter.next()) {
       iter.object().endJob(input);
       }
       
 }
 //----------------------------------------------------------------------
-ptl::ObjectBase* pol::AnalysisFork::clone() const {return new AnalysisFork(*this);}
-ptl::WkPtrBase* pol::AnalysisFork::createSelfWkPtr() {return new AnalysisForkWkPtr(*this);}
-void pol::AnalysisFork::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* pxl::AnalysisFork::clone() const {return new AnalysisFork(*this);}
+pxl::WkPtrBase* pxl::AnalysisFork::createSelfWkPtr() {return new AnalysisForkWkPtr(*this);}
+void pxl::AnalysisFork::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
 //
 //
 //
 //----------------------------------------------------------------------
-namespace ptl {
+namespace pxl {
 //----------------------------------------------------------------------
-template <>  std::ostream& ptl::CowObject<pol::ParticleData>::print(int level, std::ostream& os, int pan) const {
+template <>  std::ostream& pxl::CowObject<pxl::ParticleData>::print(int level, std::ostream& os, int pan) const {
 
-//  printPan1st(os, pan) << "ptl::CowObject<pol::ParticleData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
+//  printPan1st(os, pan) << "pxl::CowObject<pxl::ParticleData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
 //  printPan(os, pan)    << "     name: " << get().getName() << std::endl;
   printPan1st(os, pan) << "Particle: '" << get().getName() << "', p = (" 
                              << get().vector().getPt() << ", " 
@@ -1031,9 +1046,9 @@ template <>  std::ostream& ptl::CowObject<pol::ParticleData>::print(int level, s
 
 }
 //----------------------------------------------------------------------
-template <>  std::ostream& ptl::CowObject<pol::VertexData>::print(int level, std::ostream& os, int pan) const {
+template <>  std::ostream& pxl::CowObject<pxl::VertexData>::print(int level, std::ostream& os, int pan) const {
 
-//  printPan1st(os, pan) << "ptl::CowObject<pol::VertexData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
+//  printPan1st(os, pan) << "pxl::CowObject<pxl::VertexData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
 //  printPan(os, pan)    << "     name: " << get().getName() << std::endl;
   printPan1st(os, pan) << "Vertex: '" << get().getName() << "', x = (" 
                              << get().vector().getX() << ", " 
@@ -1043,45 +1058,45 @@ template <>  std::ostream& ptl::CowObject<pol::VertexData>::print(int level, std
 
 }
 //----------------------------------------------------------------------
-template <>  std::ostream& ptl::CowObject<pol::CollisionData>::print(int level, std::ostream& os, int pan) const {
+template <>  std::ostream& pxl::CowObject<pxl::CollisionData>::print(int level, std::ostream& os, int pan) const {
 
-//  printPan1st(os, pan) << "ptl::CowObject<pol::CollisionData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
+//  printPan1st(os, pan) << "pxl::CowObject<pxl::CollisionData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
 //  printPan(os, pan)    << "     name: " << get().getName() << std::endl;
   printPan1st(os, pan) << "Collision: " << get().getName() << std::endl;
   return os;
 
 }
 //----------------------------------------------------------------------
-template <>  std::ostream& ptl::Object<pol::EventViewData>::print(int level, std::ostream& os, int pan) const {
+template <>  std::ostream& pxl::Object<pxl::EventViewData>::print(int level, std::ostream& os, int pan) const {
 
-//  printPan1st(os, pan) << "ptl::CowObject<pol::EventViewData> with id: " << id() << std::endl;
+//  printPan1st(os, pan) << "pxl::CowObject<pxl::EventViewData> with id: " << id() << std::endl;
 //  printPan(os, pan)    << "     name: " << get().getName() << std::endl;
   printPan1st(os, pan) << "EventView: " << get().getName() << std::endl;
-  for (pol::Objects::PtlIterator iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::Iterator iter(get().getObjects()); !iter.isDone(); iter.next()) {
       if (iter.object().getMotherRelations().getSize() == 0) {iter.object().printDecayTree(level, os, pan);}
       }
   return os;
 
 }
 //----------------------------------------------------------------------
-template <>  std::ostream& ptl::Object<pol::AnalysisProcessData>::print(int level, std::ostream& os, int pan) const {
+template <>  std::ostream& pxl::Object<pxl::AnalysisProcessData>::print(int level, std::ostream& os, int pan) const {
 
-//  printPan1st(os, pan) << "ptl::CowObject<pol::AnalysisProcessData> with id: " << id() << std::endl;
+//  printPan1st(os, pan) << "pxl::CowObject<pxl::AnalysisProcessData> with id: " << id() << std::endl;
 //  printPan(os, pan)    << "     name: " << get().getName() << std::endl;
   printPan1st(os, pan) << "AnalysisProcess: " << get().getName() << std::endl;
-  for (pol::Objects::PtlIterator iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::Iterator iter(get().getObjects()); !iter.isDone(); iter.next()) {
       if (iter.object().getMotherRelations().getSize() == 0) {iter.object().printDecayTree(level, os, pan);}
       }
   return os;
 
 }
 //----------------------------------------------------------------------
-template <>  std::ostream& ptl::Object<pol::AnalysisForkData>::print(int level, std::ostream& os, int pan) const {
+template <>  std::ostream& pxl::Object<pxl::AnalysisForkData>::print(int level, std::ostream& os, int pan) const {
 
-//  printPan1st(os, pan) << "ptl::CowObject<pol::AnalysisForkData> with id: " << id() << std::endl;
+//  printPan1st(os, pan) << "pxl::CowObject<pxl::AnalysisForkData> with id: " << id() << std::endl;
 //  printPan(os, pan)    << "     name: " << get().getName() << std::endl;
   printPan1st(os, pan) << "AnalysisFork: " << get().getName() << std::endl;
-  for (pol::Objects::PtlIterator iter(get().getObjects()); !iter.isDone(); iter.next()) {
+  for (pxl::Objects::Iterator iter(get().getObjects()); !iter.isDone(); iter.next()) {
       if (iter.object().getMotherRelations().getSize() == 0) {iter.object().printDecayTree(level, os, pan);}
       }
   return os;
@@ -1091,47 +1106,47 @@ template <>  std::ostream& ptl::Object<pol::AnalysisForkData>::print(int level, 
 }
 //----------------------------------------------------------------------
 #ifndef MERGED_PXL
-	#include "ePax.hh"
+	#include "ePaxPxl/ePax/interface/ePax.h"
 #endif	
 //
 //
 //----------------------------------------------------------------------
 // ePax
 //----------------------------------------------------------------------
-iotl__declareObjectTypeExplicit(ePax::ePaxParticle,  "\4ePa", ePax__ePaxParticle)
-iotl__declareObjectTypeExplicit(ePax::ePaxVertex,    "\4eVe", ePax__ePaxVertex)
-iotl__declareObjectTypeExplicit(ePax::ePaxCollision, "\4eCo", ePax__ePaxCollision)
-iotl__declareObjectTypeExplicit(ePax::ePaxEventView, "\4eEv", ePax__ePaxEventView)
-iotl__declareObjectTypeExplicit(ePax::ePaxAnalysisProcess, "\4eAp", ePax__ePaxAnalysisProcess)
-iotl__declareObjectTypeExplicit(ePax::ePaxAnalysisFork,    "\4eAf", ePax__ePaxAnalysisFork)
+iotl__declareObjectTypeExplicit(ePaxParticle,  "\4ePa", ePaxParticle)
+iotl__declareObjectTypeExplicit(ePaxVertex,    "\4eVe", ePaxVertex)
+iotl__declareObjectTypeExplicit(ePaxCollision, "\4eCo", ePaxCollision)
+iotl__declareObjectTypeExplicit(ePaxEventView, "\4eEv", ePaxEventView)
+iotl__declareObjectTypeExplicit(ePaxAnalysisProcess, "\4eAp", ePaxAnalysisProcess)
+iotl__declareObjectTypeExplicit(ePaxAnalysisFork,    "\4eAf", ePaxAnalysisFork)
 //----------------------------------------------------------------------
-ptl::ObjectBase* ePax::ePaxParticle::clone() const {return new ePaxParticle(*this);}
-std::ostream& ePax::ePaxParticle::print(int level, std::ostream& os, int pan) const {return ptl::CowObject<pol::ParticleData>::print(level, os, pan);}
-ptl::WkPtrBase* ePax::ePaxParticle::createSelfWkPtr() {return new ePaxParticleWkPtr(*this);}
-void ePax::ePaxParticle::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* ePaxParticle::clone() const {return new ePaxParticle(*this);}
+std::ostream& ePaxParticle::print(int level, std::ostream& os, int pan) const {return pxl::CowObject<pxl::ParticleData>::print(level, os, pan);}
+pxl::WkPtrBase* ePaxParticle::createSelfWkPtr() {return new ePaxParticleWkPtr(*this);}
+void ePaxParticle::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-ptl::ObjectBase* ePax::ePaxVertex::clone() const {return new ePaxVertex(*this);}
-std::ostream& ePax::ePaxVertex::print(int level, std::ostream& os, int pan) const {return ptl::CowObject<pol::VertexData>::print(level, os, pan);}
-ptl::WkPtrBase* ePax::ePaxVertex::createSelfWkPtr() {return new ePaxVertexWkPtr(*this);}
-void ePax::ePaxVertex::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* ePaxVertex::clone() const {return new ePaxVertex(*this);}
+std::ostream& ePaxVertex::print(int level, std::ostream& os, int pan) const {return pxl::CowObject<pxl::VertexData>::print(level, os, pan);}
+pxl::WkPtrBase* ePaxVertex::createSelfWkPtr() {return new ePaxVertexWkPtr(*this);}
+void ePaxVertex::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-ptl::ObjectBase* ePax::ePaxCollision::clone() const {return new ePaxCollision(*this);}
-std::ostream& ePax::ePaxCollision::print(int level, std::ostream& os, int pan) const {return ptl::CowObject<pol::CollisionData>::print(level, os, pan);}
-ptl::WkPtrBase* ePax::ePaxCollision::createSelfWkPtr() {return new ePaxCollisionWkPtr(*this);}
-void ePax::ePaxCollision::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* ePaxCollision::clone() const {return new ePaxCollision(*this);}
+std::ostream& ePaxCollision::print(int level, std::ostream& os, int pan) const {return pxl::CowObject<pxl::CollisionData>::print(level, os, pan);}
+pxl::WkPtrBase* ePaxCollision::createSelfWkPtr() {return new ePaxCollisionWkPtr(*this);}
+void ePaxCollision::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-ptl::ObjectBase* ePax::ePaxEventView::clone() const {return new ePaxEventView(*this);}
-std::ostream& ePax::ePaxEventView::print(int level, std::ostream& os, int pan) const {return ptl::Object<pol::EventViewData>::print(level, os, pan);}
-ptl::WkPtrBase* ePax::ePaxEventView::createSelfWkPtr() {return new ePaxEventViewWkPtr(*this);}
-void ePax::ePaxEventView::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* ePaxEventView::clone() const {return new ePaxEventView(*this);}
+std::ostream& ePaxEventView::print(int level, std::ostream& os, int pan) const {return pxl::Object<pxl::EventViewData>::print(level, os, pan);}
+pxl::WkPtrBase* ePaxEventView::createSelfWkPtr() {return new ePaxEventViewWkPtr(*this);}
+void ePaxEventView::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-ptl::ObjectBase* ePax::ePaxAnalysisProcess::clone() const {return new ePaxAnalysisProcess(*this);}
-std::ostream& ePax::ePaxAnalysisProcess::print(int level, std::ostream& os, int pan) const {return ptl::Object<pol::AnalysisProcessData>::print(level, os, pan);}
-ptl::WkPtrBase* ePax::ePaxAnalysisProcess::createSelfWkPtr() {return new ePaxAnalysisProcessWkPtr(*this);}
-void ePax::ePaxAnalysisProcess::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* ePaxAnalysisProcess::clone() const {return new ePaxAnalysisProcess(*this);}
+std::ostream& ePaxAnalysisProcess::print(int level, std::ostream& os, int pan) const {return pxl::Object<pxl::AnalysisProcessData>::print(level, os, pan);}
+pxl::WkPtrBase* ePaxAnalysisProcess::createSelfWkPtr() {return new ePaxAnalysisProcessWkPtr(*this);}
+void ePaxAnalysisProcess::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-ptl::ObjectBase* ePax::ePaxAnalysisFork::clone() const {return new ePaxAnalysisFork(*this);}
-std::ostream& ePax::ePaxAnalysisFork::print(int level, std::ostream& os, int pan) const {return ptl::Object<pol::AnalysisForkData>::print(level, os, pan);}
-ptl::WkPtrBase* ePax::ePaxAnalysisFork::createSelfWkPtr() {return new ePaxAnalysisForkWkPtr(*this);}
-void ePax::ePaxAnalysisFork::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+pxl::ObjectBase* ePaxAnalysisFork::clone() const {return new ePaxAnalysisFork(*this);}
+std::ostream& ePaxAnalysisFork::print(int level, std::ostream& os, int pan) const {return pxl::Object<pxl::AnalysisForkData>::print(level, os, pan);}
+pxl::WkPtrBase* ePaxAnalysisFork::createSelfWkPtr() {return new ePaxAnalysisForkWkPtr(*this);}
+void ePaxAnalysisFork::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------

@@ -1,3 +1,7 @@
+#ifndef ePAX_hh
+#define ePAX_hh
+#ifndef PXL_hh
+#define PXL_hh
 #define MERGED_PXL
 #ifndef pcl_hh
 #define pcl_hh
@@ -6,7 +10,7 @@
 
 #include <iostream>
 //----------------------------------------------------------------------
-namespace pcl {
+namespace pxl {
 //----------------------------------------------------------------------
 extern double getCpuTime();
 //----------------------------------------------------------------------
@@ -139,7 +143,7 @@ class BasicLinuxIoStreamer {
 //
 typedef BasicLinuxIoStreamer BasicIoStreamer;
 //----------------------------------------------------------------------
-} // namespace pcl
+} // namespace pxl
 //----------------------------------------------------------------------
 #endif // pcl_hh
 #ifndef ptl_hh
@@ -156,7 +160,7 @@ typedef BasicLinuxIoStreamer BasicIoStreamer;
 //----------------------------------------------------------------------
 // necessary ptl class declarations
 //----------------------------------------------------------------------
-namespace ptl {
+namespace pxl {
   class WkPtrBase;
   template<class datatype, class objecttype> class WkPtrSpec;
   template<class datatype> class WkPtr;
@@ -173,7 +177,7 @@ namespace ptl {
 //----------------------------------------------------------------------
 // necessary iotl class declarations
 //----------------------------------------------------------------------
-namespace iotl {
+namespace pxl {
   class oStreamer;
   class iStreamer;
   class TypeManager;
@@ -183,7 +187,7 @@ namespace iotl {
 //----------------------------------------------------------------------
 // ptl namespace definitions
 //----------------------------------------------------------------------
-namespace ptl {
+namespace pxl {
 //
 //
 //----------------------------------------------------------------------
@@ -192,8 +196,8 @@ namespace ptl {
 class Get {public: Get() {;} ~Get() {;}}; 
 class Set {public: Set() {;} ~Set() {;}}; 
 //----------------------------------------------------------------------
-static const ptl::Get get;
-static const ptl::Set set;
+static const pxl::Get get;
+static const pxl::Set set;
 //----------------------------------------------------------------------
 typedef int MutableId;
 typedef const MutableId Id;
@@ -224,10 +228,10 @@ template<class itemtype> class Vector {
     inline int getSize() const {return _container.size();} 
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    class PtlIterator {
+    class Iterator {
       public:
-		PtlIterator(const ptl::Vector<itemtype>::PtlIterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
-		PtlIterator(const ptl::Vector<itemtype>& vector) : _containerRef(&vector) {first();}
+		Iterator(const pxl::Vector<itemtype>::Iterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
+		Iterator(const pxl::Vector<itemtype>& vector) : _containerRef(&vector) {first();}
 		
 		inline void first()  {_iter = _containerRef->begin();}
 		inline void next()   {_iter++;}
@@ -235,18 +239,18 @@ template<class itemtype> class Vector {
 		
 		inline itemtype item() {return *_iter;} 
 	  private:
-		PtlIterator() : _containerRef(0) {;}
+		Iterator() : _containerRef(0) {;}
 		
 		StlConstIterator   _iter;
-		const ptl::Vector<itemtype>* _containerRef;
+		const pxl::Vector<itemtype>* _containerRef;
     };
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -    
 
   protected:
     StlContainer _container;
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
 //----------------------------------------------------------------------
 template<class keytype, class itemtype> class Map {
@@ -262,7 +266,7 @@ template<class keytype, class itemtype> class Map {
     void set   (const keytype& key, const itemtype& item)    {_container.erase(key); _container.insert(StlPair(key, item));}
     void remove(const keytype& key)                          {_container.erase(key);}
     itemtype find(const keytype& key, itemtype defaultitem) const {StlConstIterator found = _container.find(key); if (found != _container.end()) return found->second; return defaultitem;}
-    itemtype find(const keytype& key)                       const {StlConstIterator found = _container.find(key); if (found != _container.end()) return found->second; pcl::exception("ptl::Map::find(...)","key not found and no default item provided");throw;}
+    itemtype find(const keytype& key)                       const {StlConstIterator found = _container.find(key); if (found != _container.end()) return found->second; pxl::exception("pxl::Map::find(...)","key not found and no default item provided");throw;}
 
     // navigation
     const StlConstIterator begin() const {return _container.begin();}
@@ -274,10 +278,10 @@ template<class keytype, class itemtype> class Map {
     inline int getSize() const {return _container.size();} 
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    class PtlIterator {
+    class Iterator {
       public:
-		PtlIterator(const ptl::Map<keytype, itemtype>::PtlIterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
-		PtlIterator(const ptl::Map<keytype, itemtype>& map) : _containerRef(&map) {first();}
+		Iterator(const pxl::Map<keytype, itemtype>::Iterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
+		Iterator(const pxl::Map<keytype, itemtype>& map) : _containerRef(&map) {first();}
 		
 		inline void first()  {_iter = _containerRef->begin();}
 		inline void next()   {_iter++;}
@@ -286,77 +290,77 @@ template<class keytype, class itemtype> class Map {
 		inline keytype  key()  {return _iter->first;} 
 		inline itemtype item() {return _iter->second;} 
 	  private:
-		PtlIterator() : _containerRef(0) {;}
+		Iterator() : _containerRef(0) {;}
 		
 		StlConstIterator             _iter;
-		const ptl::Map<keytype, itemtype>* _containerRef;
+		const pxl::Map<keytype, itemtype>* _containerRef;
     };
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -    
     
   protected:
     StlContainer _container;
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;
 };
 //----------------------------------------------------------------------
-typedef ptl::Map<ptl::Id,ptl::ObjectBase*> CopyHistory;
+typedef pxl::Map<pxl::Id, pxl::ObjectBase*> CopyHistory;
 //----------------------------------------------------------------------
-typedef ptl::Map<std::string, ptl::ObjectBase*> Index;
+typedef pxl::Map<std::string, pxl::ObjectBase*> Index;
 //----------------------------------------------------------------------
-class Objects : public ptl::Vector<ptl::ObjectBase*> {
+class ObjectOwner : public pxl::Vector<pxl::ObjectBase*> {
 
   public:
-    Objects();
-    Objects(const ptl::Objects& original);
-    virtual ~Objects() {ptl::Objects::clearContainer();}
+    ObjectOwner();
+    ObjectOwner(const pxl::ObjectOwner& original);
+    virtual ~ObjectOwner() {pxl::ObjectOwner::clearContainer();}
     
-    template<class objecttype> inline objecttype& create()                                       {objecttype* pitem = new objecttype;           pitem->_refObjects = this; _container.push_back(static_cast<ptl::ObjectBase*>(pitem)); return *pitem;}
-    template<class objecttype> inline objecttype& create(const objecttype& original)             {objecttype* pitem = new objecttype(original); pitem->_refObjects = this; _container.push_back(static_cast<ptl::ObjectBase*>(pitem)); return *pitem;}
-    template<class objecttype, class ctrtype> inline objecttype& create(const ctrtype& original) {objecttype* pitem = new objecttype(original); pitem->_refObjects = this; _container.push_back(static_cast<ptl::ObjectBase*>(pitem)); return *pitem;}
+    template<class objecttype> inline objecttype& create()                                       {objecttype* pitem = new objecttype;           pitem->_refObjectOwner = this; _container.push_back(static_cast<pxl::ObjectBase*>(pitem)); return *pitem;}
+    template<class objecttype> inline objecttype& create(const objecttype& original)             {objecttype* pitem = new objecttype(original); pitem->_refObjectOwner = this; _container.push_back(static_cast<pxl::ObjectBase*>(pitem)); return *pitem;}
+    template<class objecttype, class ctrtype> inline objecttype& create(const ctrtype& original) {objecttype* pitem = new objecttype(original); pitem->_refObjectOwner = this; _container.push_back(static_cast<pxl::ObjectBase*>(pitem)); return *pitem;}
     
-    void set(ptl::ObjectBase& item);
-    void remove(ptl::ObjectBase& item);    
-    bool has(const ptl::ObjectBase& item) const;
+    void set(pxl::ObjectBase& item);
+    void remove(pxl::ObjectBase& item);    
+    bool has(const pxl::ObjectBase& item) const;
     
     virtual void clearContainer();
     
-    template<class objecttype> inline objecttype* findObject(const std::string idx)           const {return dynamic_cast<objecttype*>(_index.find(idx, 0));}                  // goes via Index & casts
-    template<class objecttype> inline objecttype* findCopyOf(const ptl::ObjectBase& original) const;  // goes via CopyHistory & casts
+    template<class objecttype> inline objecttype* findObject(const std::string& idx)           const {return dynamic_cast<objecttype*>(_index.find(idx, 0));}                  // goes via Index & casts
+    template<class objecttype> inline objecttype* findCopyOf(const pxl::ObjectBase& original) const;  // goes via CopyHistory & casts
 
-    inline const ptl::CopyHistory& getCopyHistory() const {return _copyHistory;}
+    inline const pxl::CopyHistory& getCopyHistory() const {return _copyHistory;}
     inline void                    clearCopyHistory() {_copyHistory.clearContainer();}
     
-    inline bool setIndex(const std::string& idx, ptl::ObjectBase& obj) {if (idx == "") return false; if (!has(obj)) return false; _index.set(idx, &obj); return true;}
+    inline bool setIndex(const std::string& idx, pxl::ObjectBase& obj) {if (idx == "") return false; if (!has(obj)) return false; _index.set(idx, &obj); return true;}
 
-    inline const ptl::Index& getIndex() const {return _index;}
+    inline const pxl::Index& getIndex() const {return _index;}
     inline void              removeIndex(const std::string& idx) {_index.remove(idx);}
     inline void              clearIndex() {_index.clearContainer();}
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    class PtlIterator {
+    class Iterator {
       public:
-		PtlIterator(const ptl::Objects::PtlIterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
-		PtlIterator(const ptl::Objects& vector) : _containerRef(&vector) {first();}
+		Iterator(const pxl::ObjectOwner::Iterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
+		Iterator(const pxl::ObjectOwner& vector) : _containerRef(&vector) {first();}
 		
 		inline void first()  {_iter = _containerRef->begin();}
 		inline void next()   {_iter++;}
 		inline bool isDone() {return (_iter == _containerRef->end());}
 		
-		inline ptl::ObjectBase* item() {return *_iter;} 
-		inline ptl::ObjectBase& object() {return *item();}
+		inline pxl::ObjectBase* item() {return *_iter;} 
+		inline pxl::ObjectBase& object() {return *item();}
 		 
 	  private:
-		PtlIterator() : _containerRef(0) {;}
+		Iterator() : _containerRef(0) {;}
 		
 		StlConstIterator   _iter;
-		const ptl::Objects* _containerRef;
+		const pxl::ObjectOwner* _containerRef;
     };
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    template<class objecttype> class PtlTypeIterator {
+    template<class objecttype> class TypeIterator {
       public:
-		PtlTypeIterator(const ptl::Objects::PtlTypeIterator<objecttype>& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
-		PtlTypeIterator(const ptl::Objects& oo) : _containerRef(&oo) {first();}
+		TypeIterator(const pxl::ObjectOwner::TypeIterator<objecttype>& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
+		TypeIterator(const pxl::ObjectOwner& oo) : _containerRef(&oo) {first();}
 		
 		inline void first()  {_iter = _containerRef->begin(); while (!tryItem()) _iter++;}
 		inline void next()   {_iter++; while (!tryItem()) _iter++;}
@@ -365,89 +369,102 @@ class Objects : public ptl::Vector<ptl::ObjectBase*> {
 		inline objecttype* item() {return dynamic_cast<objecttype*>(*_iter);} 
 		inline objecttype& object() {return *item();}
 	  private:
-		PtlTypeIterator() : _containerRef(0) {;}
+		TypeIterator() : _containerRef(0) {;}
 		
 		inline bool tryItem() {if (isDone()) return true; return (dynamic_cast<objecttype*>(*_iter) != 0);}
 		
 		StlConstIterator  _iter;
-		const ptl::Objects* _containerRef;
+		const pxl::ObjectOwner* _containerRef;
       };
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
    protected:
-     ptl::CopyHistory _copyHistory;
-     ptl::Index       _index;
+     pxl::CopyHistory _copyHistory;
+     pxl::Index       _index;
     
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;
 };
 //----------------------------------------------------------------------
-class Relations : public ptl::Map<ptl::Id, ptl::WkPtrBase*> {
+typedef ObjectOwner Objects;
+//----------------------------------------------------------------------
+template<class keytype> class WkPtrOwner : public pxl::Map<keytype, pxl::WkPtrBase*> {
 
   public:
-    Relations();
-    virtual ~Relations() {ptl::Relations::clearContainer();}
+    WkPtrOwner();
+    virtual ~WkPtrOwner() {pxl::WkPtrOwner<keytype>::clearContainer();}
     
-    void set(ptl::Id id, ptl::WkPtrBase* pptr);
+    typedef          pxl::Map<keytype, pxl::WkPtrBase*> PtlMap;
+    typedef typename pxl::Map<keytype, pxl::WkPtrBase*>::StlConstIterator StlConstIterator;
+    typedef typename pxl::Map<keytype, pxl::WkPtrBase*>::StlIterator StlIterator;
+    
+    inline void set(const keytype& key, pxl::WkPtrBase* wptr) {WkPtrOwner<keytype>::remove(key); PtlMap::set(key, wptr);}
+    void set(const keytype& key, pxl::ObjectBase& obj);
 
-    void remove(ptl::ObjectBase& object);
-    void remove(ptl::Id id);
+    inline void remove(const keytype& key) {delete find(key, 0); PtlMap::_container.erase(key);}
     
-    bool has(const ptl::ObjectBase& object) const;
-    bool has(ptl::Id id) const;
+    inline bool has(const keytype& key) const {return (0 != find(key, 0) );}
     
     virtual void clearContainer();
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    class PtlIterator {
+    class Iterator {
       public:
-		PtlIterator(const ptl::Relations::PtlIterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
-		PtlIterator(const ptl::Relations& map) : _containerRef(&map) {first();}
+		Iterator(const pxl::WkPtrOwner<keytype>::Iterator& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
+		Iterator(const pxl::WkPtrOwner<keytype>& map) : _containerRef(&map) {first();}
 		
 		inline void first()  {_iter = _containerRef->begin();}
 		inline void next()   {_iter++;}
 		inline bool isDone() {return (_iter == _containerRef->end());}
 		
-		inline ptl::Id  key()  {return _iter->first;} 
-		inline ptl::WkPtrBase* item() {return _iter->second;} 
-		inline ptl::WkPtrBase& relation() {return *item();} 
+		inline keytype  key()  {return _iter->first;} 
+		inline pxl::WkPtrBase* item()  {return _iter->second;} 
+		inline const pxl::WkPtrBase& wkPtr() {return *item();} 
+		//inline pxl::WkPtrBase& relation() {return wkPtr();} 
+		inline pxl::ObjectBase& object()  {if (!wkPtr().valid()) std::cerr << "pxl::WkPtrMap::object(): FATAL: The object you intend to access does not exist!" << std::endl; 
+										   return *wkPtr().pointer();} 
 
 	  private:
-		PtlIterator() : _containerRef(0) {;}
+		Iterator() : _containerRef(0) {;}
 		
 		StlConstIterator _iter;
-		const ptl::Relations* _containerRef;
+		const pxl::WkPtrOwner<keytype>* _containerRef;
     };
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    template<class objecttype> class PtlTypeIterator {
+    template<class wkptrtype> class TypeIterator {
       public:
-		PtlTypeIterator(ptl::Relations::PtlTypeIterator<objecttype>& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
-		PtlTypeIterator(ptl::Relations& oo) : _containerRef(&oo) {first();}
+		TypeIterator(const pxl::WkPtrOwner<keytype>::TypeIterator<wkptrtype>& original) : _iter(original._iter), _containerRef(original._containerRef) {;}
+		TypeIterator(const pxl::WkPtrOwner<keytype>& oo) : _containerRef(&oo) {first();}
 		
 		inline void first()  {_iter = _containerRef->begin(); while (!tryItem()) _iter++;}
 		inline void next()   {_iter++; while (!tryItem()) _iter++;}
 		inline bool isDone() {return (_iter == _containerRef->end());}
 		
-		inline ptl::Id key() {return _iter->first;} 
-		inline objecttype* item() {return dynamic_cast<objecttype*>(_iter->second);} 
-		inline objecttype& relation() {return *item();} 
+		inline keytype key() {return _iter->first;} 
+		inline wkptrtype* item()  {return dynamic_cast<wkptrtype*>(_iter->second);} 
+		inline const wkptrtype& wkPtr() {return *item();} 
+		//inline wkptrtype& relation() {return wkPtr();} 
+		inline pxl::ObjectBase& object()  {if (!wkPtr().valid()) std::cerr << "pxl::WkPtrMap::object(): FATAL: The object you intend to access does not exist!" << std::endl; 
+										   return *wkPtr().pointer();} 
 
 	  private:
-		PtlTypeIterator() : _containerRef(0) {;}
+		TypeIterator() : _containerRef(0) {;}
 		
-		inline bool tryItem() {if (isDone()) return true; return (dynamic_cast<objecttype*>(_iter->second) != 0);}
+		inline bool tryItem() {if (isDone()) return true; return (dynamic_cast<wkptrtype*>(_iter->second) != 0);}
 		
 		StlConstIterator _iter;
-		const ptl::Relations* _containerRef;
+		const pxl::WkPtrOwner<keytype>* _containerRef;
       };
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   private:    
-    Relations(const ptl::Relations& original);
+    WkPtrOwner(const pxl::WkPtrOwner<keytype>& original);
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;
 };
+//----------------------------------------------------------------------
+typedef WkPtrOwner<Id> Relations;
 //----------------------------------------------------------------------
 //
 //
@@ -458,7 +475,7 @@ template<class datatype> class Ptr {
 
    public:
      Ptr() : _cppPtr(0) {;}
-     Ptr(const ptl::Ptr<datatype>& original) : _cppPtr(original._cppPtr) {;}
+     Ptr(const pxl::Ptr<datatype>& original) : _cppPtr(original._cppPtr) {;}
      Ptr(datatype* original) : _cppPtr(original) {;}
      ~Ptr() {;}
 
@@ -467,7 +484,7 @@ template<class datatype> class Ptr {
 
      inline datatype& object() const   {return *access();}
 
-     inline void operator=(const ptl::Ptr<datatype>& pptr)           {_cppPtr = pptr._cppPtr;}
+     inline void operator=(const pxl::Ptr<datatype>& pptr)           {_cppPtr = pptr._cppPtr;}
      inline void operator=(datatype& data)                               {_cppPtr = &data;}
      inline void operator=(datatype* dataptr)                            {_cppPtr = dataptr;}
      
@@ -476,14 +493,14 @@ template<class datatype> class Ptr {
   protected:
      // safe access to object
      inline datatype* access() const {if (_cppPtr) return _cppPtr; 
-										std::cerr << "ptl::Ptr::access(): FATAL: The object you intend to access does not exist!" << std::endl; 
+										std::cerr << "pxl::Ptr::access(): FATAL: The object you intend to access does not exist!" << std::endl; 
 										return 0;}
 
       datatype* _cppPtr;
 };
 // dereference operators
-template<class datatype> datatype& operator *(ptl::Ptr<datatype>& ptr) {return ptr.object();}
-template<class datatype> const datatype& operator *(const ptl::Ptr<datatype>& ptr) {return ptr.object();}
+template<class datatype> datatype& operator *(pxl::Ptr<datatype>& ptr) {return ptr.object();}
+template<class datatype> const datatype& operator *(const pxl::Ptr<datatype>& ptr) {return ptr.object();}
 //----------------------------------------------------------------------
 // ptl weak pointer classes
 //----------------------------------------------------------------------
@@ -492,41 +509,41 @@ class WkPtrBase {
      virtual ~WkPtrBase() {connect(0);}
      
      // for deep copies:
-     virtual ptl::WkPtrBase* clone() const {return new ptl::WkPtrBase(*this);}
+     virtual pxl::WkPtrBase* clone() const {return new pxl::WkPtrBase(*this);}
      
-     inline ptl::ObjectBase* pointer() const  {return _objectRef;}
+     inline pxl::ObjectBase* pointer() const  {return _objectRef;}
      inline bool valid() const                {return _objectRef != 0;}
 
-     inline ptl::ObjectBase* operator ->() const {return _objectRef;}
+     inline pxl::ObjectBase* operator ->() const {return _objectRef;}
 
   protected:  
      WkPtrBase() : _notifyChainIn(0), _notifyChainOut(0), _objectRef(0) {;}
      
      void notifyDeleted();
      
-     void connect(ptl::ObjectBase* pointer);
+     void connect(pxl::ObjectBase* pointer);
 
-     ptl::WkPtrBase*  _notifyChainIn; 
-     ptl::WkPtrBase*  _notifyChainOut;
+     pxl::WkPtrBase*  _notifyChainIn; 
+     pxl::WkPtrBase*  _notifyChainOut;
 
-     ptl::ObjectBase* _objectRef;
+     pxl::ObjectBase* _objectRef;
 
   friend class ObjectBase;
 };
 //----------------------------------------------------------------------
-template<class datatype, class objecttype> class WkPtrSpec : public ptl::WkPtrBase {
+template<class datatype, class objecttype> class WkPtrSpec : public pxl::WkPtrBase {
 
    public:
-     WkPtrSpec() : ptl::WkPtrBase() {;}
-     WkPtrSpec(objecttype* ptr) : ptl::WkPtrBase() {connect(ptr);}
-     WkPtrSpec(objecttype& object) : ptl::WkPtrBase() {connect(&object);}
-     WkPtrSpec(const ptl::WkPtrSpec<datatype, objecttype>& original) : ptl::WkPtrBase() {connect((objecttype*) original._objectRef);}
+     WkPtrSpec() : pxl::WkPtrBase() {;}
+     WkPtrSpec(objecttype* ptr) : pxl::WkPtrBase() {connect(ptr);}
+     WkPtrSpec(objecttype& object) : pxl::WkPtrBase() {connect(&object);}
+     WkPtrSpec(const pxl::WkPtrSpec<datatype, objecttype>& original) : pxl::WkPtrBase() {connect((objecttype*) original._objectRef);}
      virtual ~WkPtrSpec() {connect(0);}
 
      // for deep copies:
-     virtual ptl::WkPtrBase* clone() const {return new ptl::WkPtrSpec<datatype, objecttype>(*this);}
+     virtual pxl::WkPtrBase* clone() const {return new pxl::WkPtrSpec<datatype, objecttype>(*this);}
      
-     inline void operator=(const ptl::WkPtrSpec<datatype, objecttype>& pptr) {connect(pptr._objectRef);}
+     inline void operator=(const pxl::WkPtrSpec<datatype, objecttype>& pptr) {connect(pptr._objectRef);}
      inline void operator=(objecttype& object)                               {connect(&object);}
      inline void operator=(objecttype* objectptr)                            {connect(objectptr);}
      
@@ -537,62 +554,59 @@ template<class datatype, class objecttype> class WkPtrSpec : public ptl::WkPtrBa
      inline       datatype& set()       {return access()->set();}
      
      inline const datatype& operator()()                  const {return get();}
-     inline const datatype& operator()(const ptl::Get&)   const {return get();}
-     inline       datatype& operator()(const ptl::Set&)         {return set();}
+     inline const datatype& operator()(const pxl::Get&)   const {return get();}
+     inline       datatype& operator()(const pxl::Set&)         {return set();}
      
      inline objecttype* operator ->() const {return access();}
 
   protected:
      // safe access to object
      inline objecttype* access() const {if (_objectRef) return (objecttype*)_objectRef; 
-										std::cerr << "ptl::WkPtrSpec::access(): FATAL: The object you intend to access does not exist!" << std::endl; 
+										std::cerr << "pxl::WkPtrSpec::access(): FATAL: The object you intend to access does not exist!" << std::endl; 
 										return 0;}
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
 // dereference operators
-template<class datatype, class objecttype> objecttype& operator *(ptl::WkPtrSpec<datatype, objecttype>& wkPtr) {return wkPtr.object();}
-template<class datatype, class objecttype> const objecttype& operator *(const ptl::WkPtrSpec<datatype, objecttype>& wkPtr) {return wkPtr.object();}
+template<class datatype, class objecttype> objecttype& operator *(pxl::WkPtrSpec<datatype, objecttype>& wkPtr) {return wkPtr.object();}
+template<class datatype, class objecttype> const objecttype& operator *(const pxl::WkPtrSpec<datatype, objecttype>& wkPtr) {return wkPtr.object();}
 //----------------------------------------------------------------------
-// Derive the classes ptr & ptrbase
-typedef ptl::WkPtrBase WkPtrBase;
-//----------------------------------------------------------------------
-template<class datatype> class WkPtr : public ptl::WkPtrSpec<datatype, ptl::Object<datatype> > {
+template<class datatype> class WkPtr : public pxl::WkPtrSpec<datatype, pxl::Object<datatype> > {
 
    public:
-     WkPtr() : ptl::WkPtrSpec<datatype, ptl::Object<datatype> >() {;}
-     WkPtr(ptl::Object<datatype>* ptr) : ptl::WkPtrSpec<datatype, ptl::Object<datatype> >(ptr) {;}
-     WkPtr(ptl::Object<datatype>& object) : ptl::WkPtrSpec<datatype, ptl::Object<datatype> >(object) {;}
-     WkPtr(const ptl::WkPtrSpec<datatype, ptl::Object<datatype> >& original) : ptl::WkPtrSpec<datatype, ptl::Object<datatype> >(original) {;}
+     WkPtr() : pxl::WkPtrSpec<datatype, pxl::Object<datatype> >() {;}
+     WkPtr(pxl::Object<datatype>* ptr) : pxl::WkPtrSpec<datatype, pxl::Object<datatype> >(ptr) {;}
+     WkPtr(pxl::Object<datatype>& object) : pxl::WkPtrSpec<datatype, pxl::Object<datatype> >(object) {;}
+     WkPtr(const pxl::WkPtrSpec<datatype, pxl::Object<datatype> >& original) : pxl::WkPtrSpec<datatype, pxl::Object<datatype> >(original) {;}
 };     
 // dereference operators
-template<class datatype>       ptl::Object<datatype>& operator *(      ptl::WkPtr<datatype>& wkPtr) {return wkPtr.object();}
-template<class datatype> const ptl::Object<datatype>& operator *(const ptl::WkPtr<datatype>& wkPtr) {return wkPtr.object();}
+template<class datatype>       pxl::Object<datatype>& operator *(      pxl::WkPtr<datatype>& wkPtr) {return wkPtr.object();}
+template<class datatype> const pxl::Object<datatype>& operator *(const pxl::WkPtr<datatype>& wkPtr) {return wkPtr.object();}
 //
-template<class datatype> class CowWkPtr : public ptl::WkPtrSpec<datatype, ptl::CowObject<datatype> > {
+template<class datatype> class CowWkPtr : public pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> > {
 
    public:
-     CowWkPtr() : ptl::WkPtrSpec<datatype, ptl::CowObject<datatype> >() {;}
-     CowWkPtr(ptl::CowObject<datatype>* ptr) : ptl::WkPtrSpec<datatype, ptl::CowObject<datatype> >(ptr) {;}
-     CowWkPtr(ptl::CowObject<datatype>& object) : ptl::WkPtrSpec<datatype, ptl::CowObject<datatype> >(object) {;}
-     CowWkPtr(const ptl::WkPtrSpec<datatype, ptl::CowObject<datatype> >& original) : ptl::WkPtrSpec<datatype, ptl::CowObject<datatype> >(original) {;}
+     CowWkPtr() : pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >() {;}
+     CowWkPtr(pxl::CowObject<datatype>* ptr) : pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >(ptr) {;}
+     CowWkPtr(pxl::CowObject<datatype>& object) : pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >(object) {;}
+     CowWkPtr(const pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >& original) : pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >(original) {;}
 };
 // dereference operators
-template<class datatype>       ptl::CowObject<datatype>& operator *(      ptl::CowWkPtr<datatype>& wkPtr) {return wkPtr.object();}
-template<class datatype> const ptl::CowObject<datatype>& operator *(const ptl::CowWkPtr<datatype>& wkPtr) {return wkPtr.object();}
+template<class datatype>       pxl::CowObject<datatype>& operator *(      pxl::CowWkPtr<datatype>& wkPtr) {return wkPtr.object();}
+template<class datatype> const pxl::CowObject<datatype>& operator *(const pxl::CowWkPtr<datatype>& wkPtr) {return wkPtr.object();}
 //
-template<class datatype> class SpyWkPtr : public ptl::WkPtrSpec<datatype, ptl::SpyObject<datatype> > {
+template<class datatype> class SpyWkPtr : public pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> > {
 
    public:
-     SpyWkPtr() : ptl::WkPtrSpec<datatype, ptl::SpyObject<datatype> >() {;}
-     SpyWkPtr(ptl::SpyObject<datatype>* ptr) : ptl::WkPtrSpec<datatype, ptl::SpyObject<datatype> >(ptr) {;}
-     SpyWkPtr(ptl::SpyObject<datatype>& object) : ptl::WkPtrSpec<datatype, ptl::SpyObject<datatype> >(object) {;}
-     SpyWkPtr(const ptl::WkPtrSpec<datatype, ptl::SpyObject<datatype> >& original) : ptl::WkPtrSpec<datatype, ptl::SpyObject<datatype> >(original) {;}
+     SpyWkPtr() : pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >() {;}
+     SpyWkPtr(pxl::SpyObject<datatype>* ptr) : pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >(ptr) {;}
+     SpyWkPtr(pxl::SpyObject<datatype>& object) : pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >(object) {;}
+     SpyWkPtr(const pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >& original) : pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >(original) {;}
 };
 // dereference operators
-template<class datatype>       ptl::SpyObject<datatype>& operator *(      ptl::SpyWkPtr<datatype>& wkPtr) {return wkPtr.object();}
-template<class datatype> const ptl::SpyObject<datatype>& operator *(const ptl::SpyWkPtr<datatype>& wkPtr) {return wkPtr.object();}
+template<class datatype>       pxl::SpyObject<datatype>& operator *(      pxl::SpyWkPtr<datatype>& wkPtr) {return wkPtr.object();}
+template<class datatype> const pxl::SpyObject<datatype>& operator *(const pxl::SpyWkPtr<datatype>& wkPtr) {return wkPtr.object();}
 //
 //
 //----------------------------------------------------------------------
@@ -632,8 +646,8 @@ class Layout {
 	double _c;
 	double _d;
 	
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer; 
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer; 
 
 };
 //
@@ -645,94 +659,95 @@ class ObjectBase {
   public:
      virtual ~ObjectBase() {if (_refWkPtrSpec) _refWkPtrSpec->notifyDeleted(); delete _ptrLayout;}
 
-     inline ptl::Id id() const {const void* p = this; return int(p);}
+     inline pxl::Id id() const {const void* p = this; return int(p);}
 
-     inline ptl::Objects* holder() const {return _refObjects;}
+     inline pxl::ObjectOwner* owner() const {return _refObjectOwner;}
 
-     virtual ptl::ObjectBase* clone() const {return new ptl::ObjectBase(*this);}
+     virtual pxl::ObjectBase* clone() const {return new pxl::ObjectBase(*this);}
      
-     inline ptl::Relations& getMotherRelations()  {return _motherRelations;}
-     inline ptl::Relations& getDaughterRelations() {return _daughterRelations;}
+     inline pxl::Relations& getMotherRelations()  {return _motherRelations;}
+     inline pxl::Relations& getDaughterRelations() {return _daughterRelations;}
     
-     void linkMother(ptl::ObjectBase& target);
-     void linkDaughter(ptl::ObjectBase& target);
+     void linkMother(pxl::ObjectBase& target);
+     void linkDaughter(pxl::ObjectBase& target);
      
-     inline void linkMother(ptl::WkPtrBase& target)   {if (target._objectRef) linkMother(*(target._objectRef));}
-     inline void linkDaughter(ptl::WkPtrBase& target) {if (target._objectRef) linkDaughter(*(target._objectRef));}
+     inline void linkMother(pxl::WkPtrBase& target)   {if (target._objectRef) linkMother(*(target._objectRef));}
+     inline void linkDaughter(pxl::WkPtrBase& target) {if (target._objectRef) linkDaughter(*(target._objectRef));}
      
-     void unlinkMother(ptl::ObjectBase& target);
-     void unlinkDaughter(ptl::ObjectBase& target);
+     void unlinkMother(pxl::ObjectBase& target);
+     void unlinkDaughter(pxl::ObjectBase& target);
      
-     inline void unlinkMother(ptl::WkPtrBase& target)   {if (target._objectRef) unlinkMother(*(target._objectRef));}
-     inline void unlinkDaughter(ptl::WkPtrBase& target) {if (target._objectRef) unlinkDaughter(*(target._objectRef));}
+     inline void unlinkMother(pxl::WkPtrBase& target)   {if (target._objectRef) unlinkMother(*(target._objectRef));}
+     inline void unlinkDaughter(pxl::WkPtrBase& target) {if (target._objectRef) unlinkDaughter(*(target._objectRef));}
      
      void unlinkMothers();
      void unlinkDaughters();
      
-     inline ptl::Layout& layout() {if (!_ptrLayout) {_ptrLayout = new ptl::Layout;} return *_ptrLayout;}
+     inline pxl::Layout& layout() {if (!_ptrLayout) {_ptrLayout = new pxl::Layout;} return *_ptrLayout;}
 
      std::ostream& printDecayTree(int level = 0, std::ostream& os = std::cout, int pan = 1) const;
      virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
 
   protected:  
-     ObjectBase() : _refWkPtrSpec(0), _refObjects(0), _motherRelations(), _daughterRelations(), _ptrLayout(0) {;}
-     ObjectBase(const ObjectBase& original) : _refWkPtrSpec(0), _refObjects(0), _motherRelations(), _daughterRelations() {if (original._ptrLayout) {_ptrLayout = new ptl::Layout(*original._ptrLayout);} else {_ptrLayout = 0;}}
+     ObjectBase() : _refWkPtrSpec(0), _refObjectOwner(0), _motherRelations(), _daughterRelations(), _ptrLayout(0) {;}
+     ObjectBase(const ObjectBase& original) : _refWkPtrSpec(0), _refObjectOwner(0), _motherRelations(), _daughterRelations() {if (original._ptrLayout) {_ptrLayout = new pxl::Layout(*original._ptrLayout);} else {_ptrLayout = 0;}}
      
-     virtual ptl::WkPtrBase* createSelfWkPtr() {pcl::exception("ptl::ObjectBase::createSelfPointer()","ATTENTION! Inherting class must reimplement this virtual method."); return 0;}
-     virtual void storeYourSelf(iotl::oStreamer& output) const {pcl::exception("ptl::ObjectBase::storeYourSelf()","ATTENTION! Inherting class must reimplement this virtual method.");}
+     virtual pxl::WkPtrBase* createSelfWkPtr()                 {pxl::exception("pxl::ObjectBase::createSelfWkPtr()","ATTENTION! Inherting class must reimplement this virtual method."); return 0;}
+     virtual void storeYourSelf(pxl::oStreamer& output) const {pxl::exception("pxl::ObjectBase::storeYourSelf()","ATTENTION! Inherting class must reimplement this virtual method.");}
      
      std::ostream& printPan1st(std::ostream& os, int pan) const;
      std::ostream& printPan(std::ostream& os, int pan) const;
 
-     ptl::WkPtrBase* _refWkPtrSpec;
-     ptl::Objects*  _refObjects;
+     pxl::WkPtrBase* _refWkPtrSpec;
+     pxl::Objects*  _refObjectOwner;
      
-     ptl::Relations _motherRelations;
-     ptl::Relations _daughterRelations;
+     pxl::Relations _motherRelations;
+     pxl::Relations _daughterRelations;
      
-     ptl::Layout* _ptrLayout;
+     pxl::Layout* _ptrLayout;
 
   friend class WkPtrBase;
-  friend class Objects;
+  template<class keytype> friend class WkPtrOwner;
+  friend class ObjectOwner;
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer; 
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer; 
 };
 //----------------------------------------------------------------------
-template<class datatype> class Object : public ptl::ObjectBase {
+template<class datatype> class Object : public pxl::ObjectBase {
 
    public:
-     Object() : ptl::ObjectBase(), _data() {;}
-     Object(const datatype& original) : ptl::ObjectBase(), _data(original) {;}
-     Object(const ptl::Object<datatype>& original) : ptl::ObjectBase(original), _data(original._data) {;}
+     Object() : pxl::ObjectBase(), _data() {;}
+     Object(const datatype& original) : pxl::ObjectBase(), _data(original) {;}
+     Object(const pxl::Object<datatype>& original) : pxl::ObjectBase(original), _data(original._data) {;}
      virtual ~Object() {;}
      
      // for deep copies:
-     virtual ptl::ObjectBase* clone() const {return new ptl::Object<datatype>(*this);}
+     virtual pxl::ObjectBase* clone() const {return new pxl::Object<datatype>(*this);}
      
      inline const datatype& get() const {return _data;}
      inline       datatype& set()       {return _data;}
      
      inline const datatype& operator()()                      const {return get();}
-     inline const datatype& operator()(const ptl::Get&)       const {return get();}
-     inline       datatype& operator()(const ptl::Set&)             {return set();}
+     inline const datatype& operator()(const pxl::Get&)       const {return get();}
+     inline       datatype& operator()(const pxl::Set&)             {return set();}
      
-     inline ptl::Object<datatype>& operator=(const datatype& original) {_data = original; return *this;}
-     inline ptl::Object<datatype>& operator=(const ptl::Object<datatype>& original) {_data = original._data; return *this;}
+     inline pxl::Object<datatype>& operator=(const datatype& original) {_data = original; return *this;}
+     inline pxl::Object<datatype>& operator=(const pxl::Object<datatype>& original) {_data = original._data; return *this;}
 
-     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by ptl::Object<...>: "; return ptl::ObjectBase::print(level, os, pan);}
+     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by pxl::Object<...>: "; return pxl::ObjectBase::print(level, os, pan);}
      
   protected:
-     virtual ptl::WkPtrBase* createSelfWkPtr() {return new ptl::WkPtr<datatype>(*this);}
-     virtual void storeYourSelf(iotl::oStreamer& output) const;
+     virtual pxl::WkPtrBase* createSelfWkPtr() {return new pxl::WkPtr<datatype>(*this);}
+     virtual void storeYourSelf(pxl::oStreamer& output) const;
 
      datatype _data;
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
 //----------------------------------------------------------------------
-template<class datatype> class CowObject : public ptl::ObjectBase {
+template<class datatype> class CowObject : public pxl::ObjectBase {
 
    private:
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -740,7 +755,7 @@ template<class datatype> class CowObject : public ptl::ObjectBase {
 	public:
 	   DataSocket() : _references(1) {;}
 	   DataSocket(const datatype& original) : _references(1), _data(original) {;}
-	   DataSocket(const ptl::CowObject<datatype>::DataSocket& original) : _references(1), _data(original._data) {;}
+	   DataSocket(const pxl::CowObject<datatype>::DataSocket& original) : _references(1), _data(original._data) {;}
 	   virtual ~DataSocket() {;}
 
 	   // for deep copies:
@@ -753,19 +768,19 @@ template<class datatype> class CowObject : public ptl::ObjectBase {
 	   unsigned int _references;
 	   datatype     _data;
 
-	friend class iotl::iStreamer;
-	friend class iotl::oStreamer;      
+	friend class pxl::iStreamer;
+	friend class pxl::oStreamer;      
       };   
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
    public:
-     CowObject() : ptl::ObjectBase() {_dataSocket = new DataSocket;}
-     CowObject(const datatype& original) : ptl::ObjectBase() {_dataSocket = new DataSocket(original);}
-     CowObject(const ptl::CowObject<datatype>& original) : ptl::ObjectBase(original) {_dataSocket = original._dataSocket; _dataSocket->_references++;}
+     CowObject() : pxl::ObjectBase() {_dataSocket = new DataSocket;}
+     CowObject(const datatype& original) : pxl::ObjectBase() {_dataSocket = new DataSocket(original);}
+     CowObject(const pxl::CowObject<datatype>& original) : pxl::ObjectBase(original) {_dataSocket = original._dataSocket; _dataSocket->_references++;}
      virtual ~CowObject() {dropDataSocket();}
 
      // for deep copies:
-     virtual ptl::ObjectBase* clone() const {return new ptl::CowObject<datatype>(*this);}
+     virtual pxl::ObjectBase* clone() const {return new pxl::CowObject<datatype>(*this);}
      
      inline const datatype& get() const {return _dataSocket->getData();}
      inline       datatype& set() {if (_dataSocket->_references == 1) {return _dataSocket->getData();}
@@ -773,108 +788,108 @@ template<class datatype> class CowObject : public ptl::ObjectBase {
      
      // until further decision:
      inline const datatype& operator()()                      const {return get();}
-     inline const datatype& operator()(const ptl::Get&)       const {return get();}
-     inline       datatype& operator()(const ptl::Set&)             {return set();}
+     inline const datatype& operator()(const pxl::Get&)       const {return get();}
+     inline       datatype& operator()(const pxl::Set&)             {return set();}
 
-     inline ptl::CowObject<datatype>& operator=(const datatype& original)                 {dropDataSocket(); _dataSocket = new DataSocket(original); return *this;}
-     inline ptl::CowObject<datatype>& operator=(const ptl::CowObject<datatype>& original) {dropDataSocket(); _dataSocket = original._dataSocket; _dataSocket->_references++; return *this;}
+     inline pxl::CowObject<datatype>& operator=(const datatype& original)                 {dropDataSocket(); _dataSocket = new DataSocket(original); return *this;}
+     inline pxl::CowObject<datatype>& operator=(const pxl::CowObject<datatype>& original) {dropDataSocket(); _dataSocket = original._dataSocket; _dataSocket->_references++; return *this;}
 
-     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by ptl::CowObject<...>: "; return ptl::ObjectBase::print(level, os, pan);}
+     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by pxl::CowObject<...>: "; return pxl::ObjectBase::print(level, os, pan);}
 
   protected:
-     CowObject(DataSocket& original) : ptl::ObjectBase() {_dataSocket = &original; _dataSocket->_references++;}
+     CowObject(DataSocket& original) : pxl::ObjectBase() {_dataSocket = &original; _dataSocket->_references++;}
 
      inline void dropDataSocket() {_dataSocket->_references--; if (_dataSocket->_references > 0) return; delete _dataSocket;}
 
-     virtual ptl::WkPtrBase* createSelfWkPtr() {return new ptl::CowWkPtr<datatype>(*this);}
-     virtual void storeYourSelf(iotl::oStreamer& output) const;
+     virtual pxl::WkPtrBase* createSelfWkPtr() {return new pxl::CowWkPtr<datatype>(*this);}
+     virtual void storeYourSelf(pxl::oStreamer& output) const;
 
      DataSocket* _dataSocket;
   
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
 //----------------------------------------------------------------------
-template<class datatype> class SpyObject : public ptl::Object<ptl::Ptr<datatype> > {
+template<class datatype> class SpyObject : public pxl::Object<pxl::Ptr<datatype> > {
 
    public:
-     SpyObject()                                         : ptl::Object<ptl::Ptr<datatype> >() {;}
-     SpyObject(datatype* original)                       : ptl::Object<ptl::Ptr<datatype> >(ptl::Ptr<datatype>(original)) {;}
-     SpyObject(const ptl::Ptr<datatype>& original)       : ptl::Object<ptl::Ptr<datatype> >(original) {;}
-     SpyObject(const ptl::SpyObject<datatype>& original) : ptl::Object<ptl::Ptr<datatype> >(original.get()) {;}
+     SpyObject()                                         : pxl::Object<pxl::Ptr<datatype> >() {;}
+     SpyObject(datatype* original)                       : pxl::Object<pxl::Ptr<datatype> >(pxl::Ptr<datatype>(original)) {;}
+     SpyObject(const pxl::Ptr<datatype>& original)       : pxl::Object<pxl::Ptr<datatype> >(original) {;}
+     SpyObject(const pxl::SpyObject<datatype>& original) : pxl::Object<pxl::Ptr<datatype> >(original.get()) {;}
      virtual ~SpyObject() {;}
      
      // for deep copies:
-     virtual ptl::ObjectBase* clone() const {return new ptl::SpyObject<datatype>(*this);}
+     virtual pxl::ObjectBase* clone() const {return new pxl::SpyObject<datatype>(*this);}
      
-     inline ptl::SpyObject<datatype>& operator=(datatype* original)                       {ptl::Object<ptl::Ptr<datatype> >::operator=(ptl::Ptr<datatype>(original)); return (*this);}
-     inline ptl::SpyObject<datatype>& operator=(const ptl::Ptr<datatype>& original)       {ptl::Object<ptl::Ptr<datatype> >::operator=(original); return (*this);}
-     inline ptl::SpyObject<datatype>& operator=(const ptl::SpyObject<datatype>& original) {ptl::Object<ptl::Ptr<datatype> >::operator=(original.get()); return (*this);}
+     inline pxl::SpyObject<datatype>& operator=(datatype* original)                       {pxl::Object<pxl::Ptr<datatype> >::operator=(pxl::Ptr<datatype>(original)); return (*this);}
+     inline pxl::SpyObject<datatype>& operator=(const pxl::Ptr<datatype>& original)       {pxl::Object<pxl::Ptr<datatype> >::operator=(original); return (*this);}
+     inline pxl::SpyObject<datatype>& operator=(const pxl::SpyObject<datatype>& original) {pxl::Object<pxl::Ptr<datatype> >::operator=(original.get()); return (*this);}
 
-     virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by ptl::SpyObject<...>: "; return ptl::ObjectBase::print(level, os, pan);}
+     virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by pxl::SpyObject<...>: "; return pxl::ObjectBase::print(level, os, pan);}
      
   protected:
-     virtual ptl::WkPtrBase* createSelfWkPtr() {return new ptl::SpyWkPtr<datatype>(*this);}
-     virtual void storeYourSelf(iotl::oStreamer& output) const;
+     virtual pxl::WkPtrBase* createSelfWkPtr() {return new pxl::SpyWkPtr<datatype>(*this);}
+     virtual void storeYourSelf(pxl::oStreamer& output) const;
      
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
 //----------------------------------------------------------------------
-//template<class datatype> class SpyObject : public ptl::ObjectBase {
+//template<class datatype> class SpyObject : public pxl::ObjectBase {
 //
 //   public:
-//     SpyObject() : ptl::ObjectBase(), _dataRef(0) {;}
-//     SpyObject(datatype* original) : ptl::ObjectBase(), _dataRef(original) {;}
-//     SpyObject(datatype& original) : ptl::ObjectBase(), _dataRef(&original) {;}
-//     SpyObject(const ptl::SpyObject<datatype>& original) : ptl::ObjectBase(original), _dataRef(original._dataRef) {;}
+//     SpyObject() : pxl::ObjectBase(), _dataRef(0) {;}
+//     SpyObject(datatype* original) : pxl::ObjectBase(), _dataRef(original) {;}
+//     SpyObject(datatype& original) : pxl::ObjectBase(), _dataRef(&original) {;}
+//     SpyObject(const pxl::SpyObject<datatype>& original) : pxl::ObjectBase(original), _dataRef(original._dataRef) {;}
 //     virtual ~SpyObject() {;}
 //     
 //     // for deep copies:
-//     virtual ptl::ObjectBase* clone() const {return new ptl::SpyObject<datatype>(*this);}
+//     virtual pxl::ObjectBase* clone() const {return new pxl::SpyObject<datatype>(*this);}
 //     
 //     inline const datatype& get() const {return *access();}
 //     inline       datatype& set()       {return *access();}
 //     
 //     inline const datatype& operator()()                      const {return get();}
-//     inline const datatype& operator()(const ptl::Get&)       const {return get();}
-//     inline       datatype& operator()(const ptl::Set&)             {return set();}
+//     inline const datatype& operator()(const pxl::Get&)       const {return get();}
+//     inline       datatype& operator()(const pxl::Set&)             {return set();}
 //     
 //     inline datatype* pointer() const  {return _dataRef;}
 //     inline bool      valid() const    {return _dataRef != 0;}
 //     
-//     inline ptl::SpyObject<datatype>& operator=(datatype* original) {_dataRef = original; return *this;}
-//     inline ptl::SpyObject<datatype>& operator=(datatype& original) {_dataRef = &original; return *this;}
-//     inline ptl::SpyObject<datatype>& operator=(const ptl::SpyObject<datatype>& original) {_dataRef = original._dataRef; return *this;}
+//     inline pxl::SpyObject<datatype>& operator=(datatype* original) {_dataRef = original; return *this;}
+//     inline pxl::SpyObject<datatype>& operator=(datatype& original) {_dataRef = &original; return *this;}
+//     inline pxl::SpyObject<datatype>& operator=(const pxl::SpyObject<datatype>& original) {_dataRef = original._dataRef; return *this;}
 //
-//     virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by ptl::AccObject<...>: "; return ptl::ObjectBase::print(level, os, pan);}
+//     virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const {os << "called by pxl::AccObject<...>: "; return pxl::ObjectBase::print(level, os, pan);}
 //     
 //  protected:
-//     virtual ptl::WkPtrBase* createSelfWkPtr() {return new ptl::SpyWkPtr<datatype>(*this);}
-//     virtual void storeYourSelf(iotl::oStreamer& output) const;
+//     virtual pxl::WkPtrBase* createSelfWkPtr() {return new pxl::SpyWkPtr<datatype>(*this);}
+//     virtual void storeYourSelf(pxl::oStreamer& output) const;
 //     
 //     // safe access to object
 //     inline datatype* access() const {if (_dataRef) return _dataRef; 
-//                                      std::cerr << "ptl::SpyObject<>::access(): FATAL: The pointer you are about to access does not exist!" << std::endl; 
+//                                      std::cerr << "pxl::SpyObject<>::access(): FATAL: The pointer you are about to access does not exist!" << std::endl; 
 //                                      return 0;}
 //     datatype* _dataRef;
 //  
-//  friend class iotl::iStreamer;
-//  friend class iotl::oStreamer;      
+//  friend class pxl::iStreamer;
+//  friend class pxl::oStreamer;      
 //};
 //----------------------------------------------------------------------
-template<class objecttype> inline objecttype* Objects::findCopyOf(const ptl::ObjectBase& original) const {return dynamic_cast<objecttype*>(_copyHistory.find(original.id(), 0));}  // goes via CopyHistory & casts
+template<class objecttype> inline objecttype* Objects::findCopyOf(const pxl::ObjectBase& original) const {return dynamic_cast<objecttype*>(_copyHistory.find(original.id(), 0));}  // goes via CopyHistory & casts
 //
 //
 //----------------------------------------------------------------------
-} // namespace ptl
+} // namespace pxl
 //----------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------
 // ptl operators
 //----------------------------------------------------------------------
-std::ostream& operator << (std::ostream& cxxx, const ptl::ObjectBase& obj);
+std::ostream& operator << (std::ostream& cxxx, const pxl::ObjectBase& obj);
 //----------------------------------------------------------------------
 //
 //
@@ -907,16 +922,16 @@ std::ostream& operator << (std::ostream& cxxx, const ptl::ObjectBase& obj);
 #define iotl__default__compressionMode '6'
 //#define iotl__default__compressionMode ' '
 //----------------------------------------------------------------------
-#define iotl__declareDataTypeExplicit(type, id, interfacename, data, storecode, restorecode) namespace iotl { template<> const char* getIotlTypeId<type>(const type*) {return id;} template<> void oStreamer::storeData<type>(const type& data){storecode;} template<> ptl::Id iStreamer::restoreData<type>(type& data){restorecode; return 0;} TypeAgent<ptl::Object<type> > _typeInterface_ptl__Object_ ## interfacename ("\1OO"); TypeAgent<ptl::CowObject<type> > _typeInterface_ptl__CowObject_ ## interfacename ("\1CO"); }
+#define iotl__declareDataTypeExplicit(type, id, interfacename, data, storecode, restorecode) namespace pxl { template<> const char* getIotlTypeId<type>(const type*) {return id;} template<> void oStreamer::storeData<type>(const type& data){storecode;} template<> pxl::Id iStreamer::restoreData<type>(type& data){restorecode; return 0;} TypeAgent<pxl::Object<type> > _typeInterface_ptl__Object_ ## interfacename ("\1OO"); TypeAgent<pxl::CowObject<type> > _typeInterface_ptl__CowObject_ ## interfacename ("\1CO"); }
 #define iotl__declareDataType(type, data, storecode, restorecode) iotl__declareDataTypeExplicit(type, # type, type, data, storecode, restorecode)
 //
-#define iotl__declareSpyTypeExplicit(type, id, interfacename, ptr, storecode, restorecode) namespace iotl { template<> const char* getIotlTypeId<ptl::Ptr<type> >(const ptl::Ptr<type>*) {return id;} template<> void oStreamer::storeData<ptl::Ptr<type> >(const ptl::Ptr<type>& ptr){storecode;} template<> ptl::Id iStreamer::restoreData<ptl::Ptr<type> >(ptl::Ptr<type>& ptr){restorecode; return 0;} TypeAgent<ptl::SpyObject<type> > _typeInterface_ptl__SpyObject_ ## interfacename ("\1SO"); }
+#define iotl__declareSpyTypeExplicit(type, id, interfacename, ptr, storecode, restorecode) namespace pxl { template<> const char* getIotlTypeId<pxl::Ptr<type> >(const pxl::Ptr<type>*) {return id;} template<> void oStreamer::storeData<pxl::Ptr<type> >(const pxl::Ptr<type>& ptr){storecode;} template<> pxl::Id iStreamer::restoreData<pxl::Ptr<type> >(pxl::Ptr<type>& ptr){restorecode; return 0;} TypeAgent<pxl::SpyObject<type> > _typeInterface_ptl__SpyObject_ ## interfacename ("\1SO"); }
 #define iotl__declareSpyType(type, ptr, storecode, restorecode) iotl__declareSpyTypeExplicit(type, # type, type, ptr, storecode, restorecode)
 //
-#define iotl__declareObjectTypeExplicit(type, id, interfacename) namespace iotl { TypeAgent<type> _typeInterface_ ## interfacename (id); }
+#define iotl__declareObjectTypeExplicit(type, id, interfacename) namespace pxl { TypeAgent<type> _typeInterface_ ## interfacename (id); }
 #define iotl__declareObjectType(type) iotl__declareObjectTypeExplicit(type, # type, type)
 //----------------------------------------------------------------------
-namespace iotl {
+namespace pxl {
 //----------------------------------------------------------------------
 class Orphan {public: Orphan() {;} ~Orphan() {;}}; 
 //----------------------------------------------------------------------
@@ -928,9 +943,9 @@ class TypeAgentBase
 {
   public:
     virtual ~TypeAgentBase() {;}
-    virtual void        storeObject(iotl::oStreamer& output, const ptl::ObjectBase& objectbase) {;}
-    virtual ptl::Id restoreObject(iotl::iStreamer& input, ptl::ObjectBase& obj) {return 0;}
-    virtual ptl::Id restoreObject(iotl::iStreamer& input, ptl::ObjectBase** ppobj) {return 0;}
+    virtual void        storeObject(pxl::oStreamer& output, const pxl::ObjectBase& objectbase) {;}
+    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj) {return 0;}
+    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj) {return 0;}
 		
     inline const std::string& getObjectTypeId() {return _objectTypeId;}		
     inline const std::string& getDataTypeId() {return _dataTypeId;} 
@@ -957,9 +972,9 @@ template<class objecttype> class TypeAgent : public TypeAgentBase {
     TypeAgent(const std::string& objectTypeId); 
     virtual ~TypeAgent() {;}
     
-    virtual void storeObject(iotl::oStreamer& output, const ptl::ObjectBase& obj);
-    virtual ptl::Id restoreObject(iotl::iStreamer& input, ptl::ObjectBase& obj);
-    virtual ptl::Id restoreObject(iotl::iStreamer& input, ptl::ObjectBase** ppobj);
+    virtual void storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj);
+    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj);
+    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj);
 };
 //
 inline bool operator < (const TypeIdKey& a, const TypeIdKey& b) {
@@ -971,19 +986,19 @@ class TypeManager {
   public:
     static TypeManager& instance();  
   
-    void  registerAgent(iotl::TypeAgentBase* interface);
+    void  registerAgent(pxl::TypeAgentBase* interface);
 
-    void          storeObject(iotl::oStreamer& output, const ptl::ObjectBase& obj, const std::string& cppTypeId) const;
-    ptl::Id restoreObject(iotl::iStreamer& input,  ptl::ObjectBase& obj,  const std::string& cppTypeId) const;
-    ptl::Id restoreObject(iotl::iStreamer& input,  ptl::ObjectBase** ppobj,  const std::string& objectTypeId, const std::string& dataTypeId) const;
+    void          storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj, const std::string& cppTypeId) const;
+    pxl::Id restoreObject(pxl::iStreamer& input,  pxl::ObjectBase& obj,  const std::string& cppTypeId) const;
+    pxl::Id restoreObject(pxl::iStreamer& input,  pxl::ObjectBase** ppobj,  const std::string& objectTypeId, const std::string& dataTypeId) const;
 
   protected:
     TypeManager() {;} // locked for singletons
     ~TypeManager() {;} // locked for singletons
     
-    //ptl::Map<std::string, TypeAgentBase*> _agentsByIotlTypeId;
-    ptl::Map<TypeIdKey, TypeAgentBase*>   _agentsByIotlTypeId;
-    ptl::Map<std::string, TypeAgentBase*> _agentsByCppTypeId;
+    //pxl::Map<std::string, TypeAgentBase*> _agentsByIotlTypeId;
+    pxl::Map<TypeIdKey, TypeAgentBase*>   _agentsByIotlTypeId;
+    pxl::Map<std::string, TypeAgentBase*> _agentsByCppTypeId;
 
   private:
     TypeManager(const TypeManager&); // locked for singletons
@@ -997,27 +1012,28 @@ class TypeManager {
 //----------------------------------------------------------------------
 // oStreamer
 //----------------------------------------------------------------------
-class oStreamer : public pcl::BasicIoStreamer {
+class oStreamer : public pxl::BasicIoStreamer {
 
   public:
-    oStreamer() : pcl::BasicIoStreamer(), _buffer() {;}
+    oStreamer() : pxl::BasicIoStreamer(), _buffer() {;}
     ~oStreamer() {;}
   
-    void getEvent(std::ostream& cxxx, char compressionMode = iotl__default__compressionMode);
+    void getEvent(std::ostream& cxxx, const std::string& info, char compressionMode = iotl__default__compressionMode);
 
-    template<class objecttype> inline void storeObject(const objecttype& obj) {iotl::TypeManager::instance().storeObject(*this, obj, typeid(obj).name());} 
+    template<class objecttype> inline void storeObject(const objecttype& obj) {pxl::TypeManager::instance().storeObject(*this, obj, typeid(obj).name());}
+    
+    inline void storeAbstractObject(const pxl::ObjectBase& obj) {obj.storeYourSelf(*this);} 
 
-    template<class datatype>                void storeData(const datatype& data); //{pcl::exception("iotl::oStreamer::storeData<>()",std::string("No output storage scheme implemented for: ") + typeid(data).name());}
-    template<class itemtype>                void storeData(const ptl::Vector<itemtype>& vector);
-    template<class keytype, class itemtype> void storeData(const ptl::Map<keytype, itemtype>& map);
+    template<class datatype>                void storeData(const datatype& data); //{pxl::exception("pxl::oStreamer::storeData<>()",std::string("No output storage scheme implemented for: ") + typeid(data).name());}
+    template<class itemtype>                void storeData(const pxl::Vector<itemtype>& vector);
+    template<class keytype, class itemtype> void storeData(const pxl::Map<keytype, itemtype>& map);
 
-    inline void storeTypeId(const char* typeId)                     {pcl::BasicIoStreamer::storeBasicTypeCStr(_buffer, typeId);}
-    inline void storeTypeId(std::ostream& cxxx, const char* typeId) {pcl::BasicIoStreamer::storeBasicTypeCStr(cxxx, typeId);}
+    inline void storeTypeId(const char* typeId)                     {pxl::BasicIoStreamer::storeBasicTypeCStr(_buffer, typeId);}
+    inline void storeTypeId(std::ostream& cxxx, const char* typeId) {pxl::BasicIoStreamer::storeBasicTypeCStr(cxxx, typeId);}
     
   protected:    
-    inline void storeAbstractObject(const ptl::ObjectBase& obj) {obj.storeYourSelf(*this);} 
-    inline void storeId(ptl::Id& id) {storeMemory((const char*)&id, 4);}
-    inline void storeMemory(const char* address, const int& bytes) {pcl::BasicIoStreamer::dumpMemory(_buffer, address, bytes);}
+    inline void storeId(pxl::Id& id) {storeMemory((const char*)&id, 4);}
+    inline void storeMemory(const char* address, const int& bytes) {pxl::BasicIoStreamer::dumpMemory(_buffer, address, bytes);}
     
     std::stringstream _buffer;
   private:
@@ -1032,69 +1048,72 @@ class oFile {
 
       virtual bool open(const std::string& filename, const bool& append = false) {return false;}
       virtual void close() {;}
-      virtual void writeEvent(char compressionMode = iotl__default__compressionMode) {;}
+      virtual void writeEvent(const std::string& info = "", char compressionMode = iotl__default__compressionMode) {;}
   protected:
       oFile() {;}
   private:      
-      oFile(const iotl::oFile&) {;}
+      oFile(const pxl::oFile&) {;}
 };  
 //
 //
 //
 //----------------------------------------------------------------------
-template<class ostreamertype> class oDiskFileVx : public iotl::oFile, public ostreamertype {
+template<class ostreamertype> class oDiskFileVx : public pxl::oFile, public ostreamertype {
 
   public:
-      oDiskFileVx() : iotl::oFile(), ostreamertype() {;}
+      oDiskFileVx() : pxl::oFile(), ostreamertype() {;}
       virtual ~oDiskFileVx() {close();}
       virtual bool open(const std::string& filename, const bool& append = false) {
 					      close();
 					      if (append) {_file.open( filename.c_str(), std::fstream::app | std::fstream::out | std::fstream::binary );}
 					      else        {_file.open( filename.c_str(), std::fstream::trunc | std::fstream::out | std::fstream::binary );}
-					      return _file.good();
+					      if (_file.good()) {return true;}
+					      else {std::cerr << "pxl::oDiskFileVx::open(): error while opening file " << filename << std::endl; return false;}
 					      }
       virtual void close() {if(!_file.is_open()) return; _file.rdbuf()->pubsync(); _file.close();}
-      virtual void writeEvent(char compressionMode = iotl__default__compressionMode) {if(_file.is_open()) {ostreamertype::getEvent(_file, compressionMode);} else {pcl::exception("iotl::oDiskFileVx<>::writeEvent()","No file open.");}}
+      virtual void writeEvent(const std::string& info = "", char compressionMode = iotl__default__compressionMode) {if(_file.is_open()) {ostreamertype::getEvent(_file, info, compressionMode);} else {pxl::exception("pxl::oDiskFileVx<>::writeEvent()","No file open.");}}
       
   protected:
       std::fstream _file;
       
   private:      
-      oDiskFileVx(const iotl::oDiskFileVx<ostreamertype>&) {;}
+      oDiskFileVx(const pxl::oDiskFileVx<ostreamertype>&) {;}
   
 };  
 //----------------------------------------------------------------------
-typedef iotl::oDiskFileVx<iotl::oStreamer> oDiskFile;
+typedef pxl::oDiskFileVx<pxl::oStreamer> oDiskFile;
 //
 //
 //----------------------------------------------------------------------
 // iStreamer
 //----------------------------------------------------------------------
-class iStreamer : public pcl::BasicIoStreamer {
+class iStreamer : public pxl::BasicIoStreamer {
 
   public:
-    iStreamer() : pcl::BasicIoStreamer(), _buffer() {;}
+    iStreamer() : pxl::BasicIoStreamer(), _buffer() {;}
     virtual ~iStreamer() {;}
   
-    inline bool putEvent(std::istream& cxxx) {return putEvent(cxxx, false);}
-    inline bool next(std::istream& cxxx)     {return putEvent(cxxx, true);}
+    inline bool putEventIf(std::istream& cxxx, const std::string& infoCondition) {return putEvent(cxxx,  -1, infoCondition);}
+    inline bool putEvent(std::istream& cxxx) {return putEvent(cxxx, +1, "");}
+    inline bool next(std::istream& cxxx)     {return putEvent(cxxx,  0, "");}
     bool previous(std::istream& cxxx);
-    bool endOfEvent() {return _buffer.peek() == EOF;}
+    inline bool endOfEvent() {return _buffer.peek() == EOF;}
 
-    template<class objecttype> ptl::Id restoreObject(objecttype& obj) {return iotl::TypeManager::instance().restoreObject(*this, obj, typeid(obj).name());}
+    template<class objecttype> pxl::Id restoreObject(objecttype& obj) {return pxl::TypeManager::instance().restoreObject(*this, obj, typeid(obj).name());}
+    inline pxl::ObjectBase& restoreAbstractObject() {pxl::ObjectBase* pobj; restoreAbstractObject(&pobj); return *pobj;}
 
-    template<class datatype>                ptl::Id restoreData(datatype& data); //{pcl::exception("iotl::iStreamer::restoreData<>()",std::string("No input storage scheme implemented for: ") + typeid(data).name()); return 0;}
-    template<class itemtype>                ptl::Id restoreData(ptl::Vector<itemtype>& vector);
-    template<class keytype, class itemtype> ptl::Id restoreData(ptl::Map<keytype, itemtype>& map);
+    template<class datatype>                pxl::Id restoreData(datatype& data); //{pxl::exception("pxl::iStreamer::restoreData<>()",std::string("No input storage scheme implemented for: ") + typeid(data).name()); return 0;}
+    template<class itemtype>                pxl::Id restoreData(pxl::Vector<itemtype>& vector);
+    template<class keytype, class itemtype> pxl::Id restoreData(pxl::Map<keytype, itemtype>& map);
     
-    inline void restoreTypeId(const char* expectedTypeId)                      {std::string read; pcl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, read); if (read != expectedTypeId) {pcl::exception("iotl::iStreamer::restoreTypeId()",std::string("Unexpected object type: ")+read);}}
-    inline void restoreTypeId(std::istream& cxxx, const char* expectedTypeId)  {std::string read; pcl::BasicIoStreamer::restoreBasicTypeCStr(cxxx, read);    if (read != expectedTypeId) {pcl::exception("iotl::iStreamer::restoreTypeId()",std::string("Unexpected object type: ")+read);}}
+    inline void restoreTypeId(const char* expectedTypeId)                      {std::string read; pxl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, read); if (read != expectedTypeId) {pxl::exception("pxl::iStreamer::restoreTypeId()",std::string("Unexpected object type: ")+read);}}
+    inline void restoreTypeId(std::istream& cxxx, const char* expectedTypeId)  {std::string read; pxl::BasicIoStreamer::restoreBasicTypeCStr(cxxx, read);    if (read != expectedTypeId) {pxl::exception("pxl::iStreamer::restoreTypeId()",std::string("Unexpected object type: ")+read);}}
     
   protected:
-    bool putEvent(std::istream& cxxx, bool ignore);
-    ptl::Id restoreAbstractObject(ptl::ObjectBase** ppobj);
-    inline void restoreId(ptl::MutableId& persistentId)        {restoreMemory((char*)&persistentId, 4); persistentId *= -1;}
-    inline void restoreMemory(char* address, const int& bytes) {pcl::BasicIoStreamer::redumpMemory(_buffer, address, bytes);}
+    bool putEvent(std::istream& cxxx, int mode, const std::string& infoCondition);
+    pxl::Id restoreAbstractObject(pxl::ObjectBase** ppobj);
+    inline void restoreId(pxl::MutableId& persistentId)        {restoreMemory((char*)&persistentId, 4); persistentId *= -1;}
+    inline void restoreMemory(char* address, const int& bytes) {pxl::BasicIoStreamer::redumpMemory(_buffer, address, bytes);}
     
     std::stringstream _buffer;
   private:
@@ -1114,30 +1133,33 @@ class iFile {
       virtual bool open(const std::string& filename) {return false;}
       virtual void close()     {;}
       virtual bool readEvent() {return false;}
-              int  skipEvent() {return skipEvents(1);}
+      virtual bool readEventIf(const std::string& info) {return false;}
+      inline  int  skipEvent() {return skipEvents(1);}
       virtual int  skipEvents(int n) {return 0;}
       virtual bool endOfFile() {return true;}
   protected:
       iFile() {;}
   private:      
-      iFile(const iotl::iFile&) {;}
+      iFile(const pxl::iFile&) {;}
 };  
 //
 //
 //
 //----------------------------------------------------------------------
-template<class istreamertype> class iDiskFileVx : public iotl::iFile, public istreamertype {
+template<class istreamertype> class iDiskFileVx : public pxl::iFile, public istreamertype {
 
   public:
-      iDiskFileVx() : iotl::iFile(), istreamertype() {;}
+      iDiskFileVx() : pxl::iFile(), istreamertype() {;}
       virtual ~iDiskFileVx() {close();}
       virtual bool open(const std::string& filename) {
 					      close();
 					      _file.open( filename.c_str(), std::fstream::in | std::fstream::binary );
-					      return _file.is_open();
+					      if (_file.is_open()) {return true;}
+					      else {std::cerr << "pxl::oDiskFileVx::open(): error while opening file " << filename << std::endl; return false;}
 					      }
       virtual void close()     {if(!_file.is_open()) return; _file.close();}
-      virtual bool readEvent() {if(_file.is_open()) {return istreamertype::putEvent(_file);} else {pcl::exception("iotl::iDiskFileVx<>::readEvent()","No file open."); return false;}}
+      virtual bool readEvent()                          {if(_file.is_open()) {return istreamertype::putEvent(_file);} else {pxl::exception("pxl::iDiskFileVx<>::readEvent()","No file open."); return false;}}
+      virtual bool readEventIf(const std::string& info) {if(_file.is_open()) {return istreamertype::putEventIf(_file, info);} else {pxl::exception("pxl::iDiskFileVx<>::readEventIf()","No file open."); return false;}}
       virtual int  skipEvents(int n) {int s = 0;
       	                       while (n < 0) {if (!istreamertype::previous(_file)) break; n++; s--;}
       	                       while (n > 0) {if (!istreamertype::next(_file)) break; n--; s++;}
@@ -1149,16 +1171,16 @@ template<class istreamertype> class iDiskFileVx : public iotl::iFile, public ist
       std::fstream _file;
       
   private:      
-      iDiskFileVx(const iotl::iDiskFileVx<istreamertype>&) {;}
+      iDiskFileVx(const pxl::iDiskFileVx<istreamertype>&) {;}
   
 };  
 //----------------------------------------------------------------------
-typedef iotl::iDiskFileVx<iotl::iStreamer> iDiskFile;
+typedef pxl::iDiskFileVx<pxl::iStreamer> iDiskFile;
 //----------------------------------------------------------------------
 //
 //
 //----------------------------------------------------------------------
-} // namespace iotl
+} // namespace pxl
 //----------------------------------------------------------------------
 
 #ifndef MERGED_PXL
@@ -1173,18 +1195,18 @@ typedef iotl::iDiskFileVx<iotl::iStreamer> iDiskFile;
 //----------------------------------------------------------------------
 // oStreamer:
 //----------------------------------------------------------------------
-template<class itemtype> void iotl::oStreamer::storeData(const ptl::Vector<itemtype>& vector) {
+template<class itemtype> void pxl::oStreamer::storeData(const pxl::Vector<itemtype>& vector) {
 
-  typedef typename ptl::Vector<itemtype>::StlConstIterator PtlVectorConstIterator;
+  typedef typename pxl::Vector<itemtype>::StlConstIterator PtlVectorConstIterator;
     
   storeData<int>(vector.getSize());
   for (PtlVectorConstIterator iter = vector.begin(); iter != vector.end(); iter++) {storeData<itemtype>(*iter);}
 
 }
 //----------------------------------------------------------------------
-template<class keytype, class itemtype> void iotl::oStreamer::storeData(const ptl::Map<keytype, itemtype>& map) {
+template<class keytype, class itemtype> void pxl::oStreamer::storeData(const pxl::Map<keytype, itemtype>& map) {
 
-  typedef typename ptl::Map<keytype, itemtype>::StlConstIterator PtlMapConstIterator;
+  typedef typename pxl::Map<keytype, itemtype>::StlConstIterator PtlMapConstIterator;
 
   storeData<int>(map.getSize());
   for (PtlMapConstIterator iter = map.begin(); iter != map.end(); iter++) {storeData<keytype>(iter->first);storeData<itemtype>(iter->second);}
@@ -1193,17 +1215,17 @@ template<class keytype, class itemtype> void iotl::oStreamer::storeData(const pt
 //----------------------------------------------------------------------
 // iStreamer
 //----------------------------------------------------------------------
-template<class itemtype> ptl::Id iotl::iStreamer::restoreData(ptl::Vector<itemtype>& vector) {
+template<class itemtype> pxl::Id pxl::iStreamer::restoreData(pxl::Vector<itemtype>& vector) {
 
   vector.clearContainer();
   
-  int size; iotl::iStreamer::restoreData<int>(size);
-  for (int i=0; i<size; i++) {itemtype item; iotl::iStreamer::restoreData<itemtype>(item); vector.set(item);}
+  int size; pxl::iStreamer::restoreData<int>(size);
+  for (int i=0; i<size; i++) {itemtype item; pxl::iStreamer::restoreData<itemtype>(item); vector.set(item);}
   return 0;
 
 }
 //----------------------------------------------------------------------
-template<class keytype, class itemtype> ptl::Id iotl::iStreamer::restoreData(ptl::Map<keytype, itemtype>& map) {
+template<class keytype, class itemtype> pxl::Id pxl::iStreamer::restoreData(pxl::Map<keytype, itemtype>& map) {
 
   map.clearContainer();
   
@@ -1218,18 +1240,18 @@ template<class keytype, class itemtype> ptl::Id iotl::iStreamer::restoreData(ptl
 //----------------------------------------------------------------------
 // TypeManager
 //----------------------------------------------------------------------
-template<class objecttype> iotl::TypeAgent<objecttype>::TypeAgent(const std::string& objectTypeId) {
+template<class objecttype> pxl::TypeAgent<objecttype>::TypeAgent(const std::string& objectTypeId) {
 	
   objecttype obj; 
 
   _objectTypeId = objectTypeId;
-  _dataTypeId   = iotl::getIotlTypeId(&obj.get()); 
+  _dataTypeId   = pxl::getIotlTypeId(&obj.get()); 
   _cppTypeId    = std::string(typeid(obj).name());
  
-  iotl::TypeManager::instance().registerAgent(this);
+  pxl::TypeManager::instance().registerAgent(this);
 }
 //----------------------------------------------------------------------
-template<class objecttype> void iotl::TypeAgent<objecttype>::storeObject(iotl::oStreamer& output, const ptl::ObjectBase& obj) {
+template<class objecttype> void pxl::TypeAgent<objecttype>::storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj) {
   const objecttype* ptr = dynamic_cast<const objecttype*>(&obj);
   output.storeTypeId(_objectTypeId.c_str()); 
   output.storeTypeId(_dataTypeId.c_str()); 
@@ -1237,7 +1259,7 @@ template<class objecttype> void iotl::TypeAgent<objecttype>::storeObject(iotl::o
   output.storeData(obj);
 }
 //----------------------------------------------------------------------
-template<class objecttype> ptl::Id iotl::TypeAgent<objecttype>::restoreObject(iotl::iStreamer& input, ptl::ObjectBase& obj) {
+template<class objecttype> pxl::Id pxl::TypeAgent<objecttype>::restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj) {
   objecttype* ptr = dynamic_cast<objecttype*>(&obj);
   input.restoreTypeId(_objectTypeId.c_str()); 
   input.restoreTypeId(_dataTypeId.c_str()); 
@@ -1245,11 +1267,11 @@ template<class objecttype> ptl::Id iotl::TypeAgent<objecttype>::restoreObject(io
   return input.restoreData(obj);
 }
 //----------------------------------------------------------------------
-template<class objecttype> ptl::Id iotl::TypeAgent<objecttype>::restoreObject(iotl::iStreamer& input, ptl::ObjectBase** ppobj) {
+template<class objecttype> pxl::Id pxl::TypeAgent<objecttype>::restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj) {
   objecttype* ptr = new objecttype;
   // please notice: object & data type ids have been read already! 
   input.restoreData(ptr->set()); 
-  (*ppobj) = dynamic_cast<ptl::ObjectBase*>(ptr);
+  (*ppobj) = dynamic_cast<pxl::ObjectBase*>(ptr);
   return input.restoreData(**ppobj);
 }
 //----------------------------------------------------------------------
@@ -1258,11 +1280,28 @@ template<class objecttype> ptl::Id iotl::TypeAgent<objecttype>::restoreObject(io
 //----------------------------------------------------------------------
 // ptl
 //----------------------------------------------------------------------
-template<class datatype> void ptl::Object<datatype>::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+template<class keytype> pxl::WkPtrOwner<keytype>::WkPtrOwner() : pxl::Map<keytype, pxl::WkPtrBase*>() {;}
+template<class keytype> pxl::WkPtrOwner<keytype>::WkPtrOwner(const pxl::WkPtrOwner<keytype>& original) : pxl::Map<keytype, pxl::WkPtrBase*>() {
+  for (StlConstIterator iter = original._container.begin(); iter != original._container.end(); iter++) {
+      set(iter->first, iter->second->clone());
+      }
+}
+template<class keytype> void pxl::WkPtrOwner<keytype>::clearContainer() {
+  for (StlConstIterator iter = PtlMap::_container.begin(); iter != PtlMap::_container.end(); iter++) {
+      delete iter->second;
+      }
+  PtlMap::_container.clear();
+}
+template<class keytype> void pxl::WkPtrOwner<keytype>::set(const keytype& key, pxl::ObjectBase& obj) {
+  WkPtrOwner<keytype>::remove(key); 
+  PtlMap::set(key, obj.createSelfWkPtr()); 
+}
 //----------------------------------------------------------------------
-template<class datatype> void ptl::CowObject<datatype>::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+template<class datatype> void pxl::Object<datatype>::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
-template<class datatype> void ptl::SpyObject<datatype>::storeYourSelf(iotl::oStreamer& output) const {output.storeObject(*this);}
+template<class datatype> void pxl::CowObject<datatype>::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
+//----------------------------------------------------------------------
+template<class datatype> void pxl::SpyObject<datatype>::storeYourSelf(pxl::oStreamer& output) const {output.storeObject(*this);}
 //----------------------------------------------------------------------
 #ifndef pol_hh
 #define pol_hh
@@ -1276,32 +1315,29 @@ template<class datatype> void ptl::SpyObject<datatype>::storeYourSelf(iotl::oStr
 //
 //
 //----------------------------------------------------------------------
-namespace pol {
+namespace pxl {
 //----------------------------------------------------------------------
-static const ptl::Get get;
-static const ptl::Set set;
-//----------------------------------------------------------------------
-typedef ptl::CopyHistory CopyHistory;
+//typedef pxl::CopyHistory CopyHistory;
 typedef CopyHistory& CopyHistoryRef;
 typedef const CopyHistory& CopyHistoryConstRef;
 //----------------------------------------------------------------------
-typedef ptl::Index Index;
+//typedef pxl::Index Index;
 typedef Index& IndexRef;
 typedef const Index& IndexConstRef;
 //----------------------------------------------------------------------
-typedef ptl::Objects Objects;
+//typedef pxl::Objects Objects;
 typedef Objects& ObjectsRef;
 typedef const Objects& ObjectsConstRef;
 //----------------------------------------------------------------------
-typedef ptl::Relations Relations;
+//typedef pxl::Relations Relations;
 typedef Relations& RelationsRef;
 typedef const Relations& RelationsConstRef;
 //----------------------------------------------------------------------
-typedef ptl::Map<std::string, double > UserRecords;
+typedef pxl::Map<std::string, double > UserRecords;
 typedef UserRecords& UserRecordsRef;
 typedef const UserRecords& UserRecordsConstRef;
 //----------------------------------------------------------------------
-typedef ptl::Map<std::string, void* > CppPointers;
+typedef pxl::Map<std::string, void* > CppPointers;
 typedef CppPointers& CppPointersRef;
 typedef const CppPointers& CppPointersConstRef;
 //----------------------------------------------------------------------
@@ -1343,16 +1379,46 @@ class Basic4VectorData {
     inline double         getPhi()   const {return (_x == 0.0 && _y == 0.0) ? 0.0 : atan2(_y,_x);}
     inline double         getTheta() const {return (_x == 0.0 && _y == 0.0 && _z == 0.0) ? 0.0 : atan2(getPerp(),_z);}
     inline double         getEta()   const {return -log(tan(getTheta()/2.));}
+    
+    inline double         deltaR(const Basic4VectorData& fv) const {
+							  double dDeta = deltaEta(fv);
+							  double dDphi = deltaPhi(fv);
+							  return sqrt(dDeta*dDeta + dDphi*dDphi);
+   					        }
+   					        
+    inline double         deltaRho(const Basic4VectorData& fv) const {
+							  double dDtheta = deltaTheta(fv);
+							  double dDphi = deltaPhi(fv);
+							  return sqrt(dDtheta*dDtheta + dDphi*dDphi);
+   					        }
 
-    inline const pol::Basic4VectorData& operator+=( const pol::Basic4VectorData& vec) {_x += vec._x; _y += vec._y; _z += vec._z; _t += vec._t; return (*this);}
-    inline const pol::Basic4VectorData& operator-=( const pol::Basic4VectorData& vec) {_x -= vec._x; _y -= vec._y; _z -= vec._z; _t -= vec._t; return (*this);}
+    inline double         deltaEta(const Basic4VectorData& fv) const {return getEta() - fv.getEta();}
+    
+    inline double         deltaPhi(const Basic4VectorData& fv) const {
+							  const double dPi = 3.1415926535897932384626433832795;
+							  double dDphi = getPhi() - fv.getPhi();
+							  while (dDphi > dPi) {dDphi -= 2*dPi;}
+							  while (dDphi < -dPi) {dDphi += 2*dPi;}
+							  return dDphi;
+							}
+							
+    inline double         deltaTheta(const Basic4VectorData& fv) const {
+							  const double dPi = 3.1415926535897932384626433832795;
+							  double dDtheta = getTheta() - fv.getTheta();
+							  while (dDtheta > dPi) {dDtheta -= 2*dPi;}
+							  while (dDtheta < -dPi) {dDtheta += 2*dPi;}
+							  return dDtheta;
+							}
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+    inline const pxl::Basic4VectorData& operator+=( const pxl::Basic4VectorData& vec) {_x += vec._x; _y += vec._y; _z += vec._z; _t += vec._t; return (*this);}
+    inline const pxl::Basic4VectorData& operator-=( const pxl::Basic4VectorData& vec) {_x -= vec._x; _y -= vec._y; _z -= vec._z; _t -= vec._t; return (*this);}
+
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
   };
 // non-member operators
-bool const operator==(const pol::Basic4VectorData& obj1, const pol::Basic4VectorData& obj2);
-bool const operator!=(const pol::Basic4VectorData& obj1, const pol::Basic4VectorData& obj2);
+bool const operator==(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2);
+bool const operator!=(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2);
 //----------------------------------------------------------------------
 class Basic3VectorData {
     private:
@@ -1372,15 +1438,15 @@ class Basic3VectorData {
     inline double         getY()     const {return _y;}
     inline double         getZ()     const {return _z;}
 
-    inline const pol::Basic3VectorData& operator+=( const pol::Basic3VectorData& vec) {_x += vec._x; _y += vec._y; _z += vec._z; return (*this);}
-    inline const pol::Basic3VectorData& operator-=( const pol::Basic3VectorData& vec) {_x -= vec._x; _y -= vec._y; _z -= vec._z; return (*this);}
+    inline const pxl::Basic3VectorData& operator+=( const pxl::Basic3VectorData& vec) {_x += vec._x; _y += vec._y; _z += vec._z; return (*this);}
+    inline const pxl::Basic3VectorData& operator-=( const pxl::Basic3VectorData& vec) {_x -= vec._x; _y -= vec._y; _z -= vec._z; return (*this);}
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
   };
 // non-member operators
-bool const operator==(const pol::Basic3VectorData& obj1, const pol::Basic3VectorData& obj2);
-bool const operator!=(const pol::Basic3VectorData& obj1, const pol::Basic3VectorData& obj2);
+bool const operator==(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2);
+bool const operator!=(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2);
 //----------------------------------------------------------------------
 class BasicObjectData {
   public: 
@@ -1398,8 +1464,8 @@ class BasicObjectData {
     inline void setStatus(int v)       {_status = v ;}
     inline void setWorkflag(int v)     {_workflag = v ;}
     
-    inline const pol::UserRecords& getUserRecords() const {return _userRecords;}
-    inline const pol::CppPointers& getCppPointers() const {return _cppPointers;}
+    inline const pxl::UserRecords& getUserRecords() const {return _userRecords;}
+    inline const pxl::CppPointers& getCppPointers() const {return _cppPointers;}
 
     inline void setUserRecord(const std::string& key, double item) {_userRecords.set(key, item);}
     inline void setCppPointer(const std::string& key, void* cptr)  {_cppPointers.set(key, cptr);}
@@ -1418,21 +1484,21 @@ class BasicObjectData {
     int _status;
     int _workflag;
     
-    pol::UserRecords _userRecords;
-    pol::CppPointers _cppPointers;
+    pxl::UserRecords _userRecords;
+    pxl::CppPointers _cppPointers;
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
-typedef ptl::CowObject<pol::BasicObjectData> BasicObject;
-typedef ptl::WkPtrSpec<pol::BasicObjectData, pol::BasicObject> BasicObjectWkPtr;
+typedef pxl::CowObject<pxl::BasicObjectData> BasicObject;
+typedef pxl::WkPtrSpec<pxl::BasicObjectData, pxl::BasicObject> BasicObjectWkPtr;
 typedef BasicObject& BasicObjectRef;
 typedef const BasicObject& BasicObjectConstRef;
 //----------------------------------------------------------------------
-class BasicObjectManagerData : public pol::BasicObjectData {
+class BasicObjectManagerData : public pxl::BasicObjectData {
   public: 
     BasicObjectManagerData() : BasicObjectData(), _objects() {;}
-    BasicObjectManagerData(const pol::BasicObjectManagerData& original) : BasicObjectData(original), _objects(original._objects) {;}
+    BasicObjectManagerData(const pxl::BasicObjectManagerData& original) : BasicObjectData(original), _objects(original._objects) {;}
     
     template<class datatype>                    datatype& create()                       {return _objects.create<datatype>();}
     template<class datatype, class ctrdatatype> datatype& create(const ctrdatatype& ori) {return _objects.create<datatype,ctrdatatype>(ori);}
@@ -1440,40 +1506,40 @@ class BasicObjectManagerData : public pol::BasicObjectData {
     template<class datatype>                    datatype& createIndexed(const std::string& idx)                         {datatype& obj = _objects.create<datatype>(); setIndex(idx, obj); return obj;}
     template<class datatype, class ctrdatatype> datatype& createIndexed(const ctrdatatype& ori, const std::string& idx) {datatype& obj = _objects.create<datatype,ctrdatatype>(ori); setIndex(idx, obj); return obj;}
     
-    inline void setObject(ptl::ObjectBase& obj, const std::string idx) {_objects.set(obj); setIndex(idx, obj);}
-    inline bool setIndex(const std::string& idx, ptl::ObjectBase& obj) {return _objects.setIndex(idx, obj);}
+    inline void setObject(pxl::ObjectBase& obj, const std::string idx) {_objects.set(obj); setIndex(idx, obj);}
+    inline bool setIndex(const std::string& idx, pxl::ObjectBase& obj) {return _objects.setIndex(idx, obj);}
     
-    inline const pol::Objects&                    getObjects() const {return _objects;}
-    inline void                                   removeObject(ptl::ObjectBase& obj) {_objects.remove(obj);}
+    inline const pxl::Objects&                    getObjects() const {return _objects;}
+    inline void                                   removeObject(pxl::ObjectBase& obj) {_objects.remove(obj);}
     inline void                                   clearObjects() {_objects.clearContainer();}
     template<class objecttype> inline objecttype* findObject(const std::string idx)           const {return _objects.findObject<objecttype>(idx);}
-    template<class objecttype> inline objecttype* findCopyOf(const ptl::ObjectBase& original) const {return _objects.findCopyOf<objecttype>(original);}
+    template<class objecttype> inline objecttype* findCopyOf(const pxl::ObjectBase& original) const {return _objects.findCopyOf<objecttype>(original);}
 
-    inline const pol::CopyHistory& getCopyHistory() const {return _objects.getCopyHistory();}
+    inline const pxl::CopyHistory& getCopyHistory() const {return _objects.getCopyHistory();}
     inline void                    clearCopyHistory() {_objects.clearCopyHistory();}
     
-    inline const pol::Index& getIndex() const {return _objects.getIndex();}
+    inline const pxl::Index& getIndex() const {return _objects.getIndex();}
     inline void              removeIndex(const std::string& idx) {_objects.removeIndex(idx);}
     inline void              clearIndex() {_objects.clearIndex();}
 
   protected:
-    pol::Objects     _objects;
+    pxl::Objects     _objects;
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
-typedef ptl::Object<pol::BasicObjectManagerData> BasicObjectManager; // (NOTICE: BasicObjectManagers can not be managed by Copy On Write!)
-typedef ptl::WkPtrSpec<pol::BasicObjectManagerData, pol::BasicObjectManager> BasicObjectManagerWkPtr;
+typedef pxl::Object<pxl::BasicObjectManagerData> BasicObjectManager; // (NOTICE: BasicObjectManagers can not be managed by Copy On Write!)
+typedef pxl::WkPtrSpec<pxl::BasicObjectManagerData, pxl::BasicObjectManager> BasicObjectManagerWkPtr;
 typedef BasicObjectManager& BasicObjectManagerRef;
 typedef const BasicObjectManager& BasicObjectManagerConstRef;
 //----------------------------------------------------------------------
-class ParticleData : public pol::BasicObjectData {
+class ParticleData : public pxl::BasicObjectData {
   public: 
     ParticleData() : BasicObjectData(), _vector(), _charge(0), _particleId(0) {;}
     
-    inline const pol::Basic4VectorData& vector()                const {return _vector;}
-    inline const pol::Basic4VectorData& vector(const ptl::Get&) const {return _vector;}
-    inline       pol::Basic4VectorData& vector(const ptl::Set&)       {return _vector;}
+    inline const pxl::Basic4VectorData& vector()                const {return _vector;}
+    inline const pxl::Basic4VectorData& vector(const pxl::Get&) const {return _vector;}
+    inline       pxl::Basic4VectorData& vector(const pxl::Set&)       {return _vector;}
 
     inline double getCharge() const {return _charge;}
     inline void setCharge(double v)  {_charge = v;}
@@ -1481,146 +1547,148 @@ class ParticleData : public pol::BasicObjectData {
     inline int getParticleId() const {return _particleId;}
     inline void setParticleId(int v)  {_particleId = v;}
 
-    inline const pol::ParticleData& operator+=( const pol::ParticleData& vec) {this->vector(pol::set)+= vec.vector(); _charge += vec._charge; return (*this);}
-    inline const pol::ParticleData& operator-=( const pol::ParticleData& vec) {this->vector(pol::set)-= vec.vector(); _charge += vec._charge; return (*this);}
+    inline const pxl::ParticleData& operator+=( const pxl::ParticleData& vec) {this->vector(pxl::set)+= vec.vector(); _charge += vec._charge; return (*this);}
+    inline const pxl::ParticleData& operator-=( const pxl::ParticleData& vec) {this->vector(pxl::set)-= vec.vector(); _charge += vec._charge; return (*this);}
 
   protected:
-    pol::Basic4VectorData _vector;
+    pxl::Basic4VectorData _vector;
     double _charge;
     int _particleId;
     
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };    
 // non-member operators
-bool const operator==(const pol::ParticleData& obj1, const pol::ParticleData& obj2);
-bool const operator!=(const pol::ParticleData& obj1, const pol::ParticleData& obj2);
+bool const operator==(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2);
+bool const operator!=(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2);
 // typedefs
-/// data=>pol::ParticleData
-typedef ptl::CowObject<pol::ParticleData> Particle;
-typedef ptl::WkPtrSpec<pol::ParticleData, pol::Particle> ParticleWkPtr;
+/// data=>pxl::ParticleData
+typedef pxl::CowObject<pxl::ParticleData> Particle;
+typedef pxl::WkPtrSpec<pxl::ParticleData, pxl::Particle> ParticleWkPtr;
 typedef Particle& ParticleRef;
 typedef const Particle& ParticleConstRef;
 //----------------------------------------------------------------------
-class VertexData : public pol::BasicObjectData {
+class VertexData : public pxl::BasicObjectData {
   public: 
-    inline const pol::Basic3VectorData& vector()                const {return _vector;}
-    inline const pol::Basic3VectorData& vector(const ptl::Get&) const {return _vector;}
-    inline       pol::Basic3VectorData& vector(const ptl::Set&)       {return _vector;}
+    inline const pxl::Basic3VectorData& vector()                const {return _vector;}
+    inline const pxl::Basic3VectorData& vector(const pxl::Get&) const {return _vector;}
+    inline       pxl::Basic3VectorData& vector(const pxl::Set&)       {return _vector;}
     
-    inline const pol::VertexData& operator+=( const pol::VertexData& vec) {this->vector(pol::set) += vec.vector(); return (*this);}
-    inline const pol::VertexData& operator-=( const pol::VertexData& vec) {this->vector(pol::set) -= vec.vector(); return (*this);}
+    inline const pxl::VertexData& operator+=( const pxl::VertexData& vec) {this->vector(pxl::set) += vec.vector(); return (*this);}
+    inline const pxl::VertexData& operator-=( const pxl::VertexData& vec) {this->vector(pxl::set) -= vec.vector(); return (*this);}
 
   protected:
-    pol::Basic3VectorData _vector;
+    pxl::Basic3VectorData _vector;
       
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;
 };
 // non-member operators
-bool const operator==(const pol::VertexData& obj1, const pol::VertexData& obj2);
-bool const operator!=(const pol::VertexData& obj1, const pol::VertexData& obj2);
+bool const operator==(const pxl::VertexData& obj1, const pxl::VertexData& obj2);
+bool const operator!=(const pxl::VertexData& obj1, const pxl::VertexData& obj2);
 // typedefs
-/// data=>pol::VertexData
-typedef ptl::CowObject<pol::VertexData> Vertex;
-typedef ptl::WkPtrSpec<pol::VertexData, pol::Vertex> VertexWkPtr;
+/// data=>pxl::VertexData
+typedef pxl::CowObject<pxl::VertexData> Vertex;
+typedef pxl::WkPtrSpec<pxl::VertexData, pxl::Vertex> VertexWkPtr;
 typedef Vertex& VertexRef;
 typedef const Vertex& VertexConstRef;
 //----------------------------------------------------------------------
-typedef pol::BasicObjectData CollisionData;
+typedef pxl::BasicObjectData CollisionData;
 // typedefs
-/// data=>pol::CollisionData
-typedef ptl::CowObject<pol::CollisionData> Collision;
-typedef ptl::WkPtrSpec<pol::CollisionData, pol::Collision> CollisionWkPtr;
+/// data=>pxl::CollisionData
+typedef pxl::CowObject<pxl::CollisionData> Collision;
+typedef pxl::WkPtrSpec<pxl::CollisionData, pxl::Collision> CollisionWkPtr;
 typedef Collision& CollisionRef;
 typedef const Collision& CollisionConstRef;
 //----------------------------------------------------------------------
-class EventViewData : public pol::BasicObjectManagerData {
+class EventViewData : public pxl::BasicObjectManagerData {
   public: 
     EventViewData() : BasicObjectManagerData() {;}
-    EventViewData(const pol::EventViewData& original) : BasicObjectManagerData(original) {;}
+    EventViewData(const pxl::EventViewData& original) : BasicObjectManagerData(original) {;}
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
-/// data=>pol::EventViewData
-typedef ptl::Object<pol::EventViewData> EventView; // (NOTICE: EventViews can not be managed by Copy On Write!)
-typedef ptl::WkPtrSpec<pol::EventViewData, pol::EventView> EventViewWkPtr;
+/// data=>pxl::EventViewData
+typedef pxl::Object<pxl::EventViewData> EventView; // (NOTICE: EventViews can not be managed by Copy On Write!)
+typedef pxl::WkPtrSpec<pxl::EventViewData, pxl::EventView> EventViewWkPtr;
 typedef EventView& EventViewRef;
 typedef const EventView& EventViewConstRef;
 //----------------------------------------------------------------------
-class AnalysisProcessData : public pol::BasicObjectManagerData {
+class AnalysisProcessData : public pxl::BasicObjectManagerData {
   public: 
     AnalysisProcessData() : BasicObjectManagerData() {;}
-    AnalysisProcessData(const pol::AnalysisProcessData& original) : BasicObjectManagerData(original) {;}
+    AnalysisProcessData(const pxl::AnalysisProcessData& original) : BasicObjectManagerData(original) {;}
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
-/// data=>pol::AnalysisProcessData
-class AnalysisProcess : public ptl::Object<pol::AnalysisProcessData> { // (NOTICE: AnalysisProcesses can not be managed by Copy On Write!)
+/// data=>pxl::AnalysisProcessData
+class AnalysisProcess : public pxl::Object<pxl::AnalysisProcessData> { // (NOTICE: AnalysisProcesses can not be managed by Copy On Write!)
   public: 
-    AnalysisProcess() : ptl::Object<pol::AnalysisProcessData>() {;}
-    AnalysisProcess(const pol::AnalysisProcess& original) : ptl::Object<pol::AnalysisProcessData>(original) {;}
+    AnalysisProcess() : pxl::Object<pxl::AnalysisProcessData>() {;}
+    AnalysisProcess(const pxl::AnalysisProcess& original) : pxl::Object<pxl::AnalysisProcessData>(original) {;}
     virtual ~AnalysisProcess() {;}
     
     virtual void buildTemplate(int mode = 0) {;}
 
-    virtual void beginJob(const pol::Objects*input = 0) {;}
-    virtual void beginRun(const pol::Objects*input = 0) {;}
-    virtual void analyseEvent(const pol::Objects*input = 0) {;}
-    virtual void finishEvent(const pol::Objects*input = 0)  {set().clearObjects();}
-    virtual void endRun(const pol::Objects*input = 0) {;}
-    virtual void endJob(const pol::Objects*input = 0) {;}
+    virtual void beginJob(const pxl::Objects*input = 0) {;}
+    virtual void beginRun(const pxl::Objects*input = 0) {;}
+    virtual void analyseEvent(const pxl::Objects*input = 0) {;}
+    virtual void finishEvent(const pxl::Objects*input = 0)  {set().clearObjects();}
+    virtual void endRun(const pxl::Objects*input = 0) {;}
+    virtual void endJob(const pxl::Objects*input = 0) {;}
 
-    template<class objecttype> const objecttype& castInput(const pol::Objects*input) {if (!dynamic_cast<const objecttype*>(input)) std::cerr << "pol::AnalysisProcess::castInput(): FATAL: The pointer you intend to cast does not exist!" << std::endl; return *dynamic_cast<const objecttype*>(input);}
+    template<class objecttype> const objecttype& castInput(const pxl::Objects*input) {if (!dynamic_cast<const objecttype*>(input)) std::cerr << "pxl::AnalysisProcess::castInput(): FATAL: The pointer you intend to cast does not exist!" << std::endl; return *dynamic_cast<const objecttype*>(input);}
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::AnalysisProcessData, pol::AnalysisProcess> AnalysisProcessWkPtr;
+typedef pxl::WkPtrSpec<pxl::AnalysisProcessData, pxl::AnalysisProcess> AnalysisProcessWkPtr;
 typedef AnalysisProcess& AnalysisProcessRef;
 typedef const AnalysisProcess& AnalysisProcessConstRef;
 //----------------------------------------------------------------------
-class AnalysisForkData : public pol::BasicObjectManagerData {
+class AnalysisForkData : public pxl::BasicObjectManagerData {
   public: 
     AnalysisForkData() : BasicObjectManagerData() {;}
-    AnalysisForkData(const pol::AnalysisForkData& original) : BasicObjectManagerData(original) {;}
+    AnalysisForkData(const pxl::AnalysisForkData& original) : BasicObjectManagerData(original) {;}
 
-  friend class iotl::iStreamer;
-  friend class iotl::oStreamer;      
+  friend class pxl::iStreamer;
+  friend class pxl::oStreamer;      
 };
-/// data=>pol::AnalysisForkData
-class AnalysisFork : public ptl::Object<pol::AnalysisForkData> {  // (NOTICE: AnalysisForks can not be managed by Copy On Write!)
+/// data=>pxl::AnalysisForkData
+class AnalysisFork : public pxl::Object<pxl::AnalysisForkData> {  // (NOTICE: AnalysisForks can not be managed by Copy On Write!)
   public: 
-    AnalysisFork() : ptl::Object<pol::AnalysisForkData>() {;}
-    AnalysisFork(const pol::AnalysisFork& original) : ptl::Object<pol::AnalysisForkData>(original) {;}
+    AnalysisFork() : pxl::Object<pxl::AnalysisForkData>() {;}
+    AnalysisFork(const pxl::AnalysisFork& original) : pxl::Object<pxl::AnalysisForkData>(original) {;}
     virtual ~AnalysisFork() {;}
     
     virtual void buildTemplate(int mode = 0);
     
-    virtual void beginJob(const pol::Objects*input = 0);
-    virtual void beginRun(const pol::Objects*input = 0);
-    virtual void analyseEvent(const pol::Objects*input = 0);
-    virtual void finishEvent(const pol::Objects*input = 0);
-    virtual void endRun(const pol::Objects*input = 0);
-    virtual void endJob(const pol::Objects*input = 0);
+    virtual void beginJob(const pxl::Objects*input = 0);
+    virtual void beginRun(const pxl::Objects*input = 0);
+    virtual void analyseEvent(const pxl::Objects*input = 0);
+    virtual void finishEvent(const pxl::Objects*input = 0);
+    virtual void endRun(const pxl::Objects*input = 0);
+    virtual void endJob(const pxl::Objects*input = 0);
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
     
 };
-typedef ptl::WkPtrSpec<pol::AnalysisForkData, pol::AnalysisFork> AnalysisForkWkPtr;
+typedef pxl::WkPtrSpec<pxl::AnalysisForkData, pxl::AnalysisFork> AnalysisForkWkPtr;
 typedef AnalysisFork& AnalysisForkRef;
 typedef const AnalysisFork& AnalysisForkConstRef;
 //----------------------------------------------------------------------
-} // namespace pol
+} // namespace pxl
 //----------------------------------------------------------------------
 #endif
+#endif
+
 #ifndef epax_hh
 #define epax_hh
 
@@ -1630,38 +1698,36 @@ typedef const AnalysisFork& AnalysisForkConstRef;
 //
 //
 //----------------------------------------------------------------------
-namespace ePax {
+static const pxl::Get ePaxGet;
+static const pxl::Set ePaxSet;
 //----------------------------------------------------------------------
-static const ptl::Get get;
-static const ptl::Set set;
-//----------------------------------------------------------------------
-typedef pol::Objects ePaxObjects;
+typedef pxl::Objects ePaxObjects;
 typedef ePaxObjects& ePaxObjectsRef;
 typedef const ePaxObjects& ePaxObjectsConstRef;
 //----------------------------------------------------------------------
-typedef pol::Relations ePaxRelations;
+typedef pxl::Relations ePaxRelations;
 typedef ePaxRelations& ePaxRelationsRef;
 typedef const ePaxRelations& ePaxRelationsConstRef;
 //----------------------------------------------------------------------
-typedef pol::CopyHistory ePaxCopyHistory;
+typedef pxl::CopyHistory ePaxCopyHistory;
 typedef ePaxCopyHistory& ePaxCopyHistoryRef;
 typedef const ePaxCopyHistory& ePaxCopyHistoryConstRef;
 //----------------------------------------------------------------------
-typedef pol::Index ePaxIndex;
+typedef pxl::Index ePaxIndex;
 typedef ePaxIndex& ePaxIndexRef;
 typedef const ePaxIndex& ePaxIndexConstRef;
 //----------------------------------------------------------------------
-typedef pol::UserRecords ePaxUserRecords;
+typedef pxl::UserRecords ePaxUserRecords;
 typedef ePaxUserRecords& ePaxUserRecordsRef;
 typedef const ePaxUserRecords& ePaxUserRecordsConstRef;
 //----------------------------------------------------------------------
-typedef pol::CppPointers ePaxCppPointers;
+typedef pxl::CppPointers ePaxCppPointers;
 typedef ePaxCppPointers& ePaxCppPointersRef;
 typedef const ePaxCppPointers& ePaxCppPointersConstRef;
 //----------------------------------------------------------------------
-// PAXify pol::AnalysisFork
-/// object=>pol::AnalysisFork data=>pol::AnalysisForkData
-class ePaxAnalysisFork : public pol::AnalysisFork {
+// PAXify pxl::AnalysisFork
+/// object=>pxl::AnalysisFork data=>pxl::AnalysisForkData
+class ePaxAnalysisFork : public pxl::AnalysisFork {
 
   public: 
     // Gero-style service methods go here...
@@ -1674,107 +1740,107 @@ class ePaxAnalysisFork : public pol::AnalysisFork {
 //     ...
 
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::AnalysisForkData, ePaxAnalysisFork> ePaxAnalysisForkWkPtr;
+typedef pxl::WkPtrSpec<pxl::AnalysisForkData, ePaxAnalysisFork> ePaxAnalysisForkWkPtr;
 typedef ePaxAnalysisFork& ePaxAnalysisForkRef;
 typedef const ePaxAnalysisFork& ePaxAnalysisForkConstRef;
 //----------------------------------------------------------------------
-// PAXify pol::AnalysisProcess
-/// object=>pol::AnalysisProcess data=>pol::AnalysisProcessData
-class ePaxAnalysisProcess : public pol::AnalysisProcess {
+// PAXify pxl::AnalysisProcess
+/// object=>pxl::AnalysisProcess data=>pxl::AnalysisProcessData
+class ePaxAnalysisProcess : public pxl::AnalysisProcess {
 
   public: 
     // Gero-style service methods go here...
     // ...
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::AnalysisProcessData, ePaxAnalysisProcess> ePaxAnalysisProcessWkPtr;
+typedef pxl::WkPtrSpec<pxl::AnalysisProcessData, ePaxAnalysisProcess> ePaxAnalysisProcessWkPtr;
 typedef ePaxAnalysisProcess& ePaxAnalysisProcessRef;
 typedef const ePaxAnalysisProcess& ePaxAnalysisProcessConstRef;
 //----------------------------------------------------------------------
-// PAXify pol::EventView
-/// object=>pol::EventView data=>pol::EventViewData
-class ePaxEventView : public pol::EventView {
+// PAXify pxl::EventView
+/// object=>pxl::EventView data=>pxl::EventViewData
+class ePaxEventView : public pxl::EventView {
 
   public: 
     // Gero-style service methods go here...
     // ...
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::EventViewData, ePaxEventView> ePaxEventViewWkPtr;
+typedef pxl::WkPtrSpec<pxl::EventViewData, ePaxEventView> ePaxEventViewWkPtr;
 typedef ePaxEventView& ePaxEventViewRef;
 typedef const ePaxEventView& ePaxEventViewConstRef;
 //----------------------------------------------------------------------
-// PAXify pol::Particle
-/// object=>pol::Particle data=>pol::ParticleData
-class ePaxParticle : public pol::Particle {
+// PAXify pxl::Particle
+/// object=>pxl::Particle data=>pxl::ParticleData
+class ePaxParticle : public pxl::Particle {
 
   public: 
     // Gero-style service methods go here...
     // ...
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::ParticleData, ePaxParticle> ePaxParticleWkPtr;
+typedef pxl::WkPtrSpec<pxl::ParticleData, ePaxParticle> ePaxParticleWkPtr;
 typedef ePaxParticle& ePaxParticleRef;
 typedef const ePaxParticle& ePaxParticleConstRef;
 //----------------------------------------------------------------------
-// PAXify pol::Vertex
-/// object=>pol::Vertex data=>pol::VertexData
-class ePaxVertex : public pol::Vertex {
+// PAXify pxl::Vertex
+/// object=>pxl::Vertex data=>pxl::VertexData
+class ePaxVertex : public pxl::Vertex {
 
   public: 
     // Gero-style service methods go here...
     // ...
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::VertexData, ePaxVertex> ePaxVertexWkPtr;
+typedef pxl::WkPtrSpec<pxl::VertexData, ePaxVertex> ePaxVertexWkPtr;
 typedef ePaxVertex& ePaxVertexRef;
 typedef const ePaxVertex& ePaxVertexConstRef;
 //----------------------------------------------------------------------
-// PAXify pol::Collision
-/// object=>pol::Collision data=>pol::CollisionData
-class ePaxCollision : public pol::Collision {
+// PAXify pxl::Collision
+/// object=>pxl::Collision data=>pxl::CollisionData
+class ePaxCollision : public pxl::Collision {
 
   public: 
     // Gero-style service methods go here...
     // ...
 
-    virtual ptl::ObjectBase* clone() const;
+    virtual pxl::ObjectBase* clone() const;
     virtual std::ostream&  print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
   protected:    
-    virtual ptl::WkPtrBase* createSelfWkPtr();
-    virtual void storeYourSelf(iotl::oStreamer& output) const;
+    virtual pxl::WkPtrBase* createSelfWkPtr();
+    virtual void storeYourSelf(pxl::oStreamer& output) const;
 };
-typedef ptl::WkPtrSpec<pol::CollisionData, ePaxCollision> ePaxCollisionWkPtr;
+typedef pxl::WkPtrSpec<pxl::CollisionData, ePaxCollision> ePaxCollisionWkPtr;
 typedef ePaxCollision& ePaxCollisionRef;
 typedef const ePaxCollision& ePaxCollisionConstRef;
 //----------------------------------------------------------------------
-} // namespace ePax
-//----------------------------------------------------------------------
 
 #endif
+#endif
+
