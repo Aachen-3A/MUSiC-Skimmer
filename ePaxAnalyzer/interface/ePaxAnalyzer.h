@@ -45,15 +45,15 @@ private:
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
-   virtual void analyzeGenInfo(const edm::Event&, ePax::ePaxEventViewRef);
-   virtual void analyzeGenJets(const edm::Event&, ePax::ePaxEventViewRef);
-   virtual void analyzeGenMET(const edm::Event&, ePax::ePaxEventViewRef);
+   virtual void analyzeGenInfo(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeGenJets(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeGenMET(const edm::Event&, ePaxEventViewRef);
 
-   virtual void analyzeRecMuons(const edm::Event&, ePax::ePaxEventViewRef);
-   virtual void analyzeRecElectrons(const edm::Event&, ePax::ePaxEventViewRef);
-   virtual void analyzeRecJets(const edm::Event&, ePax::ePaxEventViewRef);
-   virtual void analyzeRecMET(const edm::Event&, ePax::ePaxEventViewRef);
-   virtual void analyzeRecGammas(const edm::Event&, ePax::ePaxEventViewRef);
+   virtual void analyzeRecMuons(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeRecElectrons(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeRecJets(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeRecMET(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeRecGammas(const edm::Event&, ePaxEventViewRef);
 
    bool MuonMC_cuts(HepMC::GenEvent::particle_const_iterator MCmuon) const;
    bool EleMC_cuts(HepMC::GenEvent::particle_const_iterator MCele) const;
@@ -81,7 +81,7 @@ private:
     
   
    // to be used for ePax output 
-   iotl::oDiskFile fePaxFile;
+   pxl::oDiskFile fePaxFile;
 
 };
 #endif

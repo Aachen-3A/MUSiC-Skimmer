@@ -21,7 +21,7 @@
 
 // system include files
 #include <memory>
-// include Message Logger for Debug fePaxFile
+// include Message Logger for Debug
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -47,7 +47,9 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
    fJetRecoLabel = iConfig.getUntrackedParameter<string>("JetRecoLabel");
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
-
+   
+   fNumEvt=0;
+   
    fePaxFile.open("ePaxAnalyzer.pxlio");
 }
 
@@ -70,12 +72,15 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    fNumEvt++;    // set this as setUserRecord ?
 
    // create two ePaxEventViews for Generator/Reconstructed Objects
-   ePax::ePaxEventView GenEvtView;
-   ePax::ePaxEventView RecEvtView;
+   ePaxEventView GenEvtView;
+   ePaxEventView RecEvtView;
 
    // probably suits better in a method where the Rec/Gen Particles are connected to the Vertices
-   ePax::ePaxVertexRef GenVtx = GenEvtView.set().createIndexed<ePax::ePaxVertex>("primary gen vertex");
-   ePax::ePaxVertexRef RecVtx = RecEvtView.set().createIndexed<ePax::ePaxVertex>("primary rec vertex");
+
+   // Do we need that vertex here? Maybe in the "real" analyzer 
+
+//   ePaxVertexRef GenVtx = GenEvtView.set().createIndexed<ePaxVertex>("primary gen vertex");
+//   ePaxVertexRef RecVtx = RecEvtView.set().createIndexed<ePaxVertex>("primary rec vertex");
 
    // Generator stuff
    analyzeGenInfo(iEvent, GenEvtView);
@@ -87,18 +92,32 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    analyzeRecJets(iEvent, RecEvtView);
    analyzeRecMET(iEvent, RecEvtView);
    analyzeRecGammas(iEvent, RecEvtView);
-
-   GenVtx.printDecayTree();
-   RecVtx.printDecayTree();    
+   
+//   cout << "GenVtx Decay Tree" << endl;
+//   GenVtx.printDecayTree();
+//   cout << "RecVtx Decay Tree" << endl;
+//   RecVtx.printDecayTree();    
    
    fePaxFile.storeObject(GenEvtView);
    fePaxFile.storeObject(RecEvtView);
+   cout << "            " <<  "   e   " << "  mu   " << " Gamma " << " KtJet " << "  MET  " << endl;
+   cout << "Found (MC): " << setw(4) << GenEvtView.get().findUserRecord("NumMuonMC", 0.) 
+        << setw(7) << GenEvtView.get().findUserRecord("NumEleMC", 0.)
+        << setw(7) << GenEvtView.get().findUserRecord("NumGammaMC", 0.) 
+        << setw(7) << GenEvtView.get().findUserRecord("NumGenKtJets", 0.)
+        << setw(7) << GenEvtView.get().findUserRecord("NumMETMC", 0.) << endl;
+   cout << "     (Rec): " << setw(4) << GenEvtView.get().findUserRecord("NumMuonRec", 0.)    
+        << setw(7) << RecEvtView.get().findUserRecord("NumEleRec", 0.) 
+        << setw(7) << RecEvtView.get().findUserRecord("NumGammaRec", 0.)
+        << setw(7) << RecEvtView.get().findUserRecord("NumRecKtJets", 0.)
+        << setw(7) << RecEvtView.get().findUserRecord("NumMETRec", 0.) << endl;
+   
    fePaxFile.writeEvent();
 
 }
 // ------------ reading the Generator Stuff ------------
 
-void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    edm::Handle<edm::HepMCProduct> HepMC_Handle ;
    iEvent.getByLabel( fHepMCLabel, HepMC_Handle );
@@ -114,13 +133,13 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePax::ePaxEventViewR
       // fill Gen Muons passing some basic cuts
       if ( abs((*p)->pdg_id()) == 13) {
          if ( MuonMC_cuts(p) ) { 
-            ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+            ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
             part.set().setName("GenMuon");
             part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
-            part.set().vector(ePax::set).setPx((*p)->momentum().x());
-            part.set().vector(ePax::set).setPy((*p)->momentum().y());
-            part.set().vector(ePax::set).setPz((*p)->momentum().z());
-            part.set().vector(ePax::set).setMass((*p)->Mass());
+            part.set().vector(ePaxSet).setPx((*p)->momentum().x());
+            part.set().vector(ePaxSet).setPy((*p)->momentum().y());
+            part.set().vector(ePaxSet).setPz((*p)->momentum().z());
+            part.set().vector(ePaxSet).setMass((*p)->Mass());
 	    part.set().setUserRecord("Vtx_X", (*p)->creationVertex().x());
 	    part.set().setUserRecord("Vtx_Y", (*p)->creationVertex().y());
 	    part.set().setUserRecord("Vtx_Z", (*p)->creationVertex().z());
@@ -130,13 +149,13 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePax::ePaxEventViewR
       // fill Gen Electrons passing some basic cuts
       if ( abs((*p)->pdg_id()) == 11) {
          if ( EleMC_cuts(p) ) { 
-            ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+            ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
             part.set().setName("GenEle");
             part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
-            part.set().vector(ePax::set).setPx((*p)->momentum().x());
-            part.set().vector(ePax::set).setPy((*p)->momentum().y());
-            part.set().vector(ePax::set).setPz((*p)->momentum().z());
-            part.set().vector(ePax::set).setMass((*p)->Mass());
+            part.set().vector(ePaxSet).setPx((*p)->momentum().x());
+            part.set().vector(ePaxSet).setPy((*p)->momentum().y());
+            part.set().vector(ePaxSet).setPz((*p)->momentum().z());
+            part.set().vector(ePaxSet).setMass((*p)->Mass());
 	    part.set().setUserRecord("Vtx_X", (*p)->creationVertex().x());
 	    part.set().setUserRecord("Vtx_Y", (*p)->creationVertex().y());
 	    part.set().setUserRecord("Vtx_Z", (*p)->creationVertex().z());
@@ -146,13 +165,13 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePax::ePaxEventViewR
       // fill Gen Gammas passing some basic cuts
       if ( abs((*p)->pdg_id()) == 22) {
          if ( GammaMC_cuts(p) ) { 
-            ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+            ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
             part.set().setName("GenGamma");
             part.set().setCharge(0);
-            part.set().vector(ePax::set).setPx((*p)->momentum().x());
-            part.set().vector(ePax::set).setPy((*p)->momentum().y());
-            part.set().vector(ePax::set).setPz((*p)->momentum().z());
-            part.set().vector(ePax::set).setMass((*p)->Mass());
+            part.set().vector(ePaxSet).setPx((*p)->momentum().x());
+            part.set().vector(ePaxSet).setPy((*p)->momentum().y());
+            part.set().vector(ePaxSet).setPz((*p)->momentum().z());
+            part.set().vector(ePaxSet).setMass((*p)->Mass());
 	    numGammaMC++;
          }
       }
@@ -164,7 +183,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, ePax::ePaxEventViewR
 
 // ------------ reading the Generator Jets ------------
 
-void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    //Get the GenJet collections
    edm::Handle<reco::GenJetCollection> Kt_GenJets;
@@ -182,12 +201,12 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, ePax::ePaxEventViewR
    for( reco::GenJetCollection::const_iterator genJet = Kt_GenJets->begin(); 
          genJet != Kt_GenJets->end(); ++genJet ) {
       if (JetMC_cuts(genJet)) { 
-         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
          part.set().setName("GenKtJets");
-         part.set().vector(ePax::set).setPx(genJet->px());
-         part.set().vector(ePax::set).setPy(genJet->py());
-         part.set().vector(ePax::set).setPz(genJet->pz());
-         part.set().vector(ePax::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
+         part.set().vector(ePaxSet).setPx(genJet->px());
+         part.set().vector(ePaxSet).setPy(genJet->py());
+         part.set().vector(ePaxSet).setPz(genJet->pz());
+         part.set().vector(ePaxSet).setE((genJet->hadEnergy() + genJet->emEnergy()));
 	 numKtJetsMC++;
       }
    }   
@@ -196,7 +215,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, ePax::ePaxEventViewR
 
 // ------------ reading the Generator MET ------------
 
-void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    edm::Handle<reco::GenMETCollection> GenMet;
    iEvent.getByLabel(fMETMCLabel, GenMet);
@@ -207,12 +226,12 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, ePax::ePaxEventViewRe
 
    //there is always MET in event, just decide if cuts passed
    if (METMC_cuts(genmet)) { 
-      ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+      ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
       part.set().setName("GenMET");
-      part.set().vector(ePax::set).setPx(genmet.px());
-      part.set().vector(ePax::set).setPy(genmet.py());
-      part.set().vector(ePax::set).setPz(0.);
-      part.set().vector(ePax::set).setMass(0.);
+      part.set().vector(ePaxSet).setPx(genmet.px());
+      part.set().vector(ePaxSet).setPy(genmet.py());
+      part.set().vector(ePaxSet).setPz(0.);
+      part.set().vector(ePaxSet).setMass(0.);
       part.set().setUserRecord("sumEt", genmet.sumEt());
       part.set().setUserRecord("mEtSig", genmet.mEtSig());
       numMETMC++; 
@@ -223,7 +242,7 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, ePax::ePaxEventViewRe
 
 // ------------ reading Reconstructed Muons ------------
 
-void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    edm::Handle<reco::MuonCollection> muons;
    iEvent.getByLabel(fMuonRecoLabel, muons);
@@ -237,13 +256,13 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, ePax::ePaxEventView
               << "    pt : " << muon->pt() << endl
 	      << "    eta: " << muon->eta() << endl
 	      << "    q  : " << muon->charge() << endl;
-         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
          part.set().setName("RecMuon");
          part.set().setCharge(muon->charge());
-         part.set().vector(ePax::set).setPx(muon->px());
-         part.set().vector(ePax::set).setPy(muon->py());
-         part.set().vector(ePax::set).setPz(muon->pz());
-         part.set().vector(ePax::set).setE(muon->energy());
+         part.set().vector(ePaxSet).setPx(muon->px());
+         part.set().vector(ePaxSet).setPy(muon->py());
+         part.set().vector(ePaxSet).setPz(muon->pz());
+         part.set().vector(ePaxSet).setE(muon->energy());
          part.set().setUserRecord("Vtx_X", muon->vx());
          part.set().setUserRecord("Vtx_Y", muon->vy());
          part.set().setUserRecord("Vtx_Z", muon->vz()); 
@@ -257,7 +276,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, ePax::ePaxEventView
 
 // ------------ reading Reconstructed Electrons ------------
 
-void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    edm::Handle<reco::ElectronCollection> electrons;
    iEvent.getByLabel(fElectronRecoLabel, electrons);
@@ -267,13 +286,13 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, ePax::ePaxEvent
    for ( reco::ElectronCollection::const_iterator ele = electrons->begin(); 
             ele != electrons->end(); ++ele ) {
       if (Ele_cuts(ele)) { 
-         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
          part.set().setName("RecElectron");
          part.set().setCharge(ele->charge());
-         part.set().vector(ePax::set).setPx(ele->px());
-         part.set().vector(ePax::set).setPy(ele->py());
-         part.set().vector(ePax::set).setPz(ele->pz());
-         part.set().vector(ePax::set).setE(ele->energy());         
+         part.set().vector(ePaxSet).setPx(ele->px());
+         part.set().vector(ePaxSet).setPy(ele->py());
+         part.set().vector(ePaxSet).setPz(ele->pz());
+         part.set().vector(ePaxSet).setE(ele->energy());         
          part.set().setUserRecord("Vtx_X", ele->vx());
          part.set().setUserRecord("Vtx_Y", ele->vy());
          part.set().setUserRecord("Vtx_Z", ele->vz());          
@@ -288,7 +307,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, ePax::ePaxEvent
 // Which kind of Jets?
 //
 
-void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    edm::Handle<reco::CaloJetCollection> jets;
    iEvent.getByLabel(fJetRecoLabel, jets);
@@ -298,12 +317,12 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, ePax::ePaxEventViewR
    for(reco::CaloJetCollection::const_iterator jet = jets->begin(); 
            jet != jets->end(); ++jet ) {
       if (Jet_cuts(jet)) { 
-         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
          part.set().setName("RecJet");
-         part.set().vector(ePax::set).setPx(jet->px());
-         part.set().vector(ePax::set).setPy(jet->py());
-         part.set().vector(ePax::set).setPz(jet->pz());
-         part.set().vector(ePax::set).setE(jet->energy());         
+         part.set().vector(ePaxSet).setPx(jet->px());
+         part.set().vector(ePaxSet).setPy(jet->py());
+         part.set().vector(ePaxSet).setPz(jet->pz());
+         part.set().vector(ePaxSet).setE(jet->energy());         
 	 numJetRec++;
       }
    }
@@ -312,7 +331,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, ePax::ePaxEventViewR
 
 // ------------ reading Reconstructed MET ------------
 
-void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    //MET produces segmentation violation?!!!
    edm::Handle<reco::CaloMETCollection> CaloMet;
@@ -324,12 +343,12 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, ePax::ePaxEventViewRe
    //there is always MET in event, just decide if cuts passed
    //WHAT IS SIZE OF MET-COLLECTION???
    if (MET_cuts(calomet)) { 
-      ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+      ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
       part.set().setName("RecMET");
-      part.set().vector(ePax::set).setPx(calomet.px());
-      part.set().vector(ePax::set).setPy(calomet.py());
-      part.set().vector(ePax::set).setPz(0.);
-      part.set().vector(ePax::set).setMass(0.);
+      part.set().vector(ePaxSet).setPx(calomet.px());
+      part.set().vector(ePaxSet).setPy(calomet.py());
+      part.set().vector(ePaxSet).setPz(0.);
+      part.set().vector(ePaxSet).setMass(0.);
       part.set().setUserRecord("sumEt", calomet.sumEt());
       part.set().setUserRecord("mEtSig", calomet.mEtSig());
       numMETRec++; 
@@ -339,7 +358,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, ePax::ePaxEventViewRe
 
 // ------------ reading Reconstructed Gammas ------------
 
-void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, ePax::ePaxEventViewRef EvtView) {
+void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, ePaxEventViewRef EvtView) {
 
    edm::Handle<reco::PhotonCollection> Photons;
    iEvent.getByLabel(fGammaRecoLabel, Photons);
@@ -349,13 +368,13 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, ePax::ePaxEventVie
    for (reco::PhotonCollection::const_iterator photon = Photons->begin(); 
 	photon != Photons->end(); ++photon) {  
       if ( Gamma_cuts(photon) ) { 
-         ePax::ePaxParticleRef part = EvtView.set().create<ePax::ePaxParticle>();
+         ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
          part.set().setName("RecGamma");
          part.set().setCharge(0);
-         part.set().vector(ePax::set).setPx(photon->px());
-         part.set().vector(ePax::set).setPy(photon->py());
-         part.set().vector(ePax::set).setPz(photon->pz());
-         part.set().vector(ePax::set).setE(photon->energy());
+         part.set().vector(ePaxSet).setPx(photon->px());
+         part.set().vector(ePaxSet).setPy(photon->py());
+         part.set().vector(ePaxSet).setPz(photon->pz());
+         part.set().vector(ePaxSet).setE(photon->energy());
 	 numGammaRec++;
       }	 
    }
@@ -401,7 +420,7 @@ bool ePaxAnalyzer::GammaMC_cuts(HepMC::GenEvent::particle_const_iterator MCgamma
 
 bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
   // 
-  return (MCjet->pt() > 10) ? 1 : 0;
+  return (MCjet->pt() > 30) ? 1 : 0;
 }
 
 // ------------ method to define MC-MET-cuts
@@ -427,7 +446,7 @@ bool ePaxAnalyzer::Ele_cuts(reco::ElectronCollection::const_iterator ele) const 
 // ------------ method to define JET-cuts
 bool ePaxAnalyzer::Jet_cuts(reco::CaloJetCollection::const_iterator jet) const {
    //
-   return (jet->pt() > 10) ? 1 : 0;
+   return (jet->pt() > 30) ? 1 : 0;
 }
 
 // ------------ method to define GAMMA-cuts
@@ -461,10 +480,10 @@ DEFINE_FWK_MODULE(ePaxAnalyzer)
       pa.linkMother(vx);
       pa.set().setName("muon");
       pa.set().setCharge(muon->charge());
-      pa.set().vector(ePax::set).setPx(muon->px());
-      pa.set().vector(ePax::set).setPy(muon->py());
-      pa.set().vector(ePax::set).setPz(muon->pz());
-      pa.set().vector(ePax::set).setE(muon->energy());
+      pa.set().vector(ePaxSet).setPx(muon->px());
+      pa.set().vector(ePaxSet).setPy(muon->py());
+      pa.set().vector(ePaxSet).setPz(muon->pz());
+      pa.set().vector(ePaxSet).setE(muon->energy());
       pa.set().setUserRecord("isolation", 0.9);
       
       //pa.get().findUserRecord("isolation"); // kracht"s wenns ihn nicht gibt
