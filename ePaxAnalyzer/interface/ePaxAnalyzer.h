@@ -69,17 +69,26 @@ private:
    // ----------member data ---------------------------
 
    int fNumEvt;// used to count the number of events
+   int fDebug; 
+   std::string fFileName; 
    // The labels used in cfg-file 
    std::string fHepMCLabel;
-   std::string fJetMCLabel;
+   std::string fKtJetMCLabel;
+   std::string fItCone5JetMCLabel;
+   std::string fMidCone5JetMCLabel;
+   std::string fMidCone7JetMCLabel;   
    std::string fMETMCLabel;
    std::string fMuonRecoLabel;
+   std::string fSAMuonRecoLabel;
    std::string fElectronRecoLabel;
+   std::string fPixelMatchElectronRecoLabel;
    std::string fGammaRecoLabel;
-   std::string fJetRecoLabel;
+   std::string fKtJetRecoLabel;
+   std::string fItCone5JetRecoLabel;
+   std::string fMidCone5JetRecoLabel;
+   std::string fMidCone7JetRecoLabel;
    std::string fMETRecoLabel;
     
-  
    // to be used for ePax output 
    pxl::oDiskFile fePaxFile;
 
