@@ -304,16 +304,30 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, ePaxEventViewRef EvtV
  
    int numMETMC = 0; //means no MET in event
 
+   ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
+   part.set().setName("GenMET");
+   part.set().vector(ePaxSet).setPx(genmet.px());
+   part.set().vector(ePaxSet).setPy(genmet.py());
+   part.set().vector(ePaxSet).setPz(0.);
+   part.set().vector(ePaxSet).setMass(0.);
+   part.set().setUserRecord("sumEt", genmet.sumEt());
+   part.set().setUserRecord("mEtSig", genmet.mEtSig());
+
+   if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part.get().vector().getPt() << endl;
+   // Perform Muon Corrections!
+   // loop over muons and subtract them
+   if (EvtView.get().findUserRecord("NumMuonMC") > 0) { 
+      for (pxl::Objects::TypeIterator<pxl::Particle> iter(EvtView().getObjects()); !iter.isDone(); iter.next()) { 
+         if (iter.object().get().getName() == "GenMuon")  {
+            if (fDebug > 1) cout << "Correcting with " << iter.object().get().getName() << " px = " << iter.object().get().vector().getPx() 
+                                 << " Py = " << iter.object().get().vector().getPy() << endl;
+            part.set() -= iter.object().get();
+         }
+      }
+   } 
+   if (fDebug) cout << "GenMET after muon corr: Px = " << part.get().vector().getPx() << "   Py = " << part.get().vector().getPy() << "   Pt = " << part.get().vector().getPt() << endl;     
    //there is always MET in event, just decide if cuts passed
-   if (METMC_cuts(genmet)) { 
-      ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
-      part.set().setName("GenMET");
-      part.set().vector(ePaxSet).setPx(genmet.px());
-      part.set().vector(ePaxSet).setPy(genmet.py());
-      part.set().vector(ePaxSet).setPz(0.);
-      part.set().vector(ePaxSet).setMass(0.);
-      part.set().setUserRecord("sumEt", genmet.sumEt());
-      part.set().setUserRecord("mEtSig", genmet.mEtSig());
+   if (part.get().vector().getPt() > 20) {
       numMETMC++; 
    }
    EvtView.set().setUserRecord("NumMETMC", numMETMC);
@@ -527,19 +541,44 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, ePaxEventViewRef EvtV
    const CaloMET calomet = calometcol->front();  // MET exists only once!
  
    int numMETRec = 0;
-   //there is always MET in event, just decide if cuts passed
-   //WHAT IS SIZE OF MET-COLLECTION???
-   if (MET_cuts(calomet)) { 
-      ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
-      part.set().setName("RecMET");
-      part.set().vector(ePaxSet).setPx(calomet.px());
-      part.set().vector(ePaxSet).setPy(calomet.py());
-      part.set().vector(ePaxSet).setPz(0.);
-      part.set().vector(ePaxSet).setMass(0.);
-      part.set().setUserRecord("sumEt", calomet.sumEt());
-      part.set().setUserRecord("mEtSig", calomet.mEtSig());
-      numMETRec++; 
+   ePaxParticleRef part = EvtView.set().create<ePaxParticle>();
+   part.set().setName("RecMET");
+   part.set().vector(ePaxSet).setPx(calomet.px());
+   part.set().vector(ePaxSet).setPy(calomet.py());
+   part.set().vector(ePaxSet).setPz(0.);
+   part.set().vector(ePaxSet).setMass(0.);
+   part.set().setUserRecord("sumEt", calomet.sumEt());
+   part.set().setUserRecord("mEtSig", calomet.mEtSig());
+   
+   if (fDebug > 1) cout << "RecMET before muon corr: Px = " << calomet.px() << "   Py = " << calomet.py() << "   Pt = " << part.get().vector().getPt() << endl;   
+   cout << " MET (uncorr): ( " << part.get().vector().getPx() << ", " << part.get().vector().getPy() << ", "
+                       << part.get().vector().getPz() <<  " )    E: " << part.get().vector().getE() << "   Et = "
+                       << part.get().vector().getEt() << " Theta: " << part.get().vector().getTheta()
+                       << " Mass: " << part.get().vector().getMass() << endl;
+   // Perform Muon Corrections!   
+   // loop over muons and subtract them   
+   if (EvtView.get().findUserRecord("NumMuonRec") > 0) {      
+   for (pxl::Objects::TypeIterator<pxl::Particle> iter(EvtView().getObjects()); !iter.isDone(); iter.next()) {
+      if (iter.object().get().getName() == "RecMuon")  {
+         if (fDebug > 1) cout << "Correcting with " << iter.object().get().getName() << " px = " << iter.object().get().vector().getPx() 
+                              << " Py = " << iter.object().get().vector().getPy() << endl; 
+            part.set() -= iter.object().get(); 
+         }  
+      }   
+   } 
+   part.set().vector(ePaxSet).setPz(0.);  
+   part.set().vector(ePaxSet).setMass(0.);
+   cout << " MET (corr): ( " << part.get().vector().getPx() << ", " << part.get().vector().getPy() << ", "
+                       << part.get().vector().getPz() <<  " )    E: " << part.get().vector().getE() << "   Et = "
+                       << part.get().vector().getEt() << " Theta: " << part.get().vector().getTheta()
+                       << " Mass: " << part.get().vector().getMass() << endl;
+   if (fDebug) cout << "RecMET after muon corr: Px = " << part.get().vector().getPx() << "   Py = " << part.get().vector().getPy() 
+                    << "   Pt = " << part.get().vector().getPt() << endl;   
+   
+   if (part.get().vector().getPt() > 20) {
+      numMETRec++;
    }
+
    EvtView.set().setUserRecord("NumMETRec", numMETRec);
    if (numMETRec && fDebug > 1) cout << "Found RecMET" << endl;
 }
@@ -588,14 +627,14 @@ void ePaxAnalyzer::endJob() {
 
 bool ePaxAnalyzer::MuonMC_cuts(HepMC::GenEvent::particle_const_iterator MCmuon) const {
    //
-   return ((*MCmuon)->momentum().perp() > 20) ? 1 : 0;
+   return ((*MCmuon)->momentum().perp() > 10) ? 1 : 0;
 }
 
 // ------------ method to define MC-Electron-cuts
 
 bool ePaxAnalyzer::EleMC_cuts(HepMC::GenEvent::particle_const_iterator MCele) const {
   //
-  return ((*MCele)->momentum().perp() > 20) ? 1 : 0;
+  return ((*MCele)->momentum().perp() > 10) ? 1 : 0;
 }
 
 // ------------ method to define MC-Gamma-cuts
@@ -623,13 +662,13 @@ bool ePaxAnalyzer::METMC_cuts(const reco::GenMET MCmet) const {
 
 bool ePaxAnalyzer::Muon_cuts(reco::MuonCollection::const_iterator muon) const {
    //
-   return (muon->pt() > 20) ? 1 : 0;
+   return (muon->pt() > 10) ? 1 : 0;
 }
 
 // ------------ method to define ELECTRON-cuts
 bool ePaxAnalyzer::Ele_cuts(reco::ElectronCollection::const_iterator ele) const {
    //
-   return (ele->pt() > 20) ? 1 : 0;
+   return (ele->pt() > 10) ? 1 : 0;
 }
 
 // ------------ method to define JET-cuts
