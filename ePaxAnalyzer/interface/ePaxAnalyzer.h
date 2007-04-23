@@ -25,6 +25,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TMatrixT.h"
 
 // ePax stuff
 // Has to be included as the last header otherwise there will be a warning concerning the 
@@ -45,15 +46,15 @@ private:
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
-   virtual void analyzeGenInfo(const edm::Event&, ePaxEventViewRef);
-   virtual void analyzeGenJets(const edm::Event&, ePaxEventViewRef);
-   virtual void analyzeGenMET(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeGenInfo(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeGenJets(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeGenMET(const edm::Event&, pxl::EventViewRef);
 
-   virtual void analyzeRecMuons(const edm::Event&, ePaxEventViewRef);
-   virtual void analyzeRecElectrons(const edm::Event&, ePaxEventViewRef);
-   virtual void analyzeRecJets(const edm::Event&, ePaxEventViewRef);
-   virtual void analyzeRecMET(const edm::Event&, ePaxEventViewRef);
-   virtual void analyzeRecGammas(const edm::Event&, ePaxEventViewRef);
+   virtual void analyzeRecMuons(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecJets(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecGammas(const edm::Event&, pxl::EventViewRef);
 
    bool MuonMC_cuts(HepMC::GenEvent::particle_const_iterator MCmuon) const;
    bool EleMC_cuts(HepMC::GenEvent::particle_const_iterator MCele) const;
@@ -65,7 +66,14 @@ private:
    bool Gamma_cuts(reco::PhotonCollection::const_iterator photon) const;
    bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
    bool MET_cuts(const reco::MET met) const;
+   std::string getEventClass(pxl::EventViewRef EvtView);
   
+   void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
+   void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
+   int SmallestColumnElement(TMatrixT<double>* matrix, int col);
+   int SmallestRowElement(TMatrixT<double>* matrix, int col);
+
+
    // ----------member data ---------------------------
 
    int fNumEvt;// used to count the number of events
