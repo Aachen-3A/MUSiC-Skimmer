@@ -1,27 +1,152 @@
-#include <iostream>
-#include <sys/times.h>
-#include <unistd.h>
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+#include <cstddef>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "ePaxPxl/ePax/interface/ePax.h"
 
 namespace pxl {
 
-double getCpuTime()
+std::vector<pxl::VariantBase::TypeInfo> VariantBase::types;
+
+/// This constant array serves the PXL variant data type. 
+static const char *typeNames[] = { // Note: must match pxl::VariantBase::Type
+    "null", "bool", "char", "uchar", "short", "ushort", "int", "uint",
+    "long", "ulong", "float", "double", "string", "ptr"
+};
+
+const pxl::VariantBase::TypeInfo& VariantBase::fallbackGetTypeInfo(Type t)
 {
-    // static method returning system CPU time.
-    struct tms cpt;
-    times(&cpt);
-    return (double)(cpt.tms_utime + cpt.tms_stime) / 100.0;
+    if (PXL_UNLIKELY(types.begin() == types.end())) {
+        for(unsigned int i = 0; i < sizeof typeNames / sizeof *typeNames; i++)
+            types.push_back(typeNames[i]);
+    }
+
+    if ((std::size_t)t >= types.size()) {
+        std::ostringstream ss;
+        ss << "Variant type " << (std::size_t)t << " undefined.";
+        pxl::exception("pxl::VariantBase::fallbackGetTypeInfo", ss.str());
+    }
+
+    return types[t];
 }
 
-void exception(const std::string& routine, const std::string& message)
+void VariantBase::wrongType(Type tShould, Type tIs) const
 {
+    const TypeInfo& is     = getTypeInfo(tIs);
+    const TypeInfo& should = getTypeInfo(tShould);
+
+    pxl::exception("pxl::VariantBase::wrongType",
+                   std::string("Trying to access pxl::Variant of type \"")
+                   + is.name + "\" as \"" + should.name + "\".");
+}
+
+} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+#include <iostream>
+#ifdef WIN32
+#else
+	#include <sys/time.h>
+#endif
+
+
+namespace pxl {
+
+double getCpuTime()
+{
+#ifdef WIN32
+	return timeGetTime() / 1000.;
+#else
+	struct timeval  tv;
+	gettimeofday( &tv, NULL );
+	return ( (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0 );
+#endif
+}
+
+void exception(const char* routine, const char* message)
+{
+    //FIXME: use logging facility instead of cerr
     std::cerr << routine << ": " << message << std::endl;
     std::cerr << "pxl::exception(): throwing pxl::Exception." << std::endl;
     throw pxl::Exception(routine, message);
 }
 
+//void exception(const std::string& routine, const std::string& message)
+//{
+//    std::cerr << routine << ": " << message << std::endl;
+//    std::cerr << "pxl::exception(): throwing pxl::Exception." << std::endl;
+//    throw pxl::Exception(routine, message);
+//}
+
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 namespace pxl {
@@ -50,6 +175,29 @@ template class CowObject<double>;
 template class CowObject<float>;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -57,6 +205,29 @@ namespace pxl {
 template class CowWkPtr<int>;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -64,6 +235,29 @@ const pxl::Get get;
 const pxl::Set set;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -71,6 +265,80 @@ namespace pxl {
 template class Map<int, int>;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+
+
+namespace pxl {
+
+#define PRINT_NATIVE(type) \
+template<> \
+std::ostream& Object<type>::print(int level, std::ostream& os, int pan) const \
+{ \
+    return printPan1st(os, pan) << "pxl::Object<" #type "> with id: " \
+                                << id() << " is " << get() << std::endl; \
+}
+
+PRINT_NATIVE(int)
+PRINT_NATIVE(unsigned int)
+PRINT_NATIVE(bool)
+PRINT_NATIVE(double)
+PRINT_NATIVE(float)
+
+#undef PRINT_NATIVE
+
+// EXPLICIT INSTANCIATION
+template class Object<int>;
+template class Object<unsigned int>;
+template class Object<bool>;
+template class Object<double>;
+template class Object<float>;
+
+} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 namespace pxl {
@@ -184,40 +452,35 @@ std::ostream& ObjectBase::printPan(std::ostream& os, int pan) const
     return os;
 }
 
+} // namespace pxl
+
 std::ostream& operator<<(std::ostream& cxxx, const pxl::ObjectBase& obj)
 {
     return obj.print(0, cxxx, 0);
 }
-
-} // namespace pxl
-
-
-namespace pxl {
-
-#define PRINT_NATIVE(type) \
-template<> \
-std::ostream& Object<type>::print(int level, std::ostream& os, int pan) const \
-{ \
-    return printPan1st(os, pan) << "pxl::Object<" #type "> with id: " \
-                                << id() << " is " << get() << std::endl; \
-}
-
-PRINT_NATIVE(int)
-PRINT_NATIVE(unsigned int)
-PRINT_NATIVE(bool)
-PRINT_NATIVE(double)
-PRINT_NATIVE(float)
-
-#undef PRINT_NATIVE
-
-// EXPLICIT INSTANCIATION
-template class Object<int>;
-template class Object<unsigned int>;
-template class Object<bool>;
-template class Object<double>;
-template class Object<float>;
-
-} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 namespace pxl {
@@ -347,6 +610,29 @@ bool ObjectOwner::has(const pxl::ObjectBase& item) const
 template class ObjectOwner::TypeIterator<pxl::Object<int> >;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -354,6 +640,29 @@ namespace pxl {
 template class Ptr<int>;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -361,6 +670,29 @@ namespace pxl {
 template class pxl::Relations::TypeIterator<pxl::WkPtr<int> >;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 namespace pxl {
@@ -369,6 +701,29 @@ namespace pxl {
 template class SpyObject<int>;   
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -376,6 +731,59 @@ namespace pxl {
 template class Vector<int>;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+
+namespace pxl {
+
+// EXPLICIT INSTANCIATION
+template class WkPtr<int>;
+
+} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -420,13 +828,29 @@ void WkPtrBase::connect(pxl::ObjectBase* pointer)
 }
 
 } // namespace pxl
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class WkPtr<int>;
-
-} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -434,6 +858,164 @@ namespace pxl {
 template class WkPtrSpec<int, pxl::Object<int> >;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+
+
+namespace pxl {
+
+// EXPLICIT INSTANCIATION
+template class TypeAgent<pxl::Object<int> >;
+template class TypeAgent<pxl::CowObject<int> >;
+
+} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+
+
+
+
+namespace pxl {
+
+// The singleton instance
+TypeManager* TypeManager::_instance = 0;
+
+TypeManager& TypeManager::instance()
+{
+    if (!_instance)
+        _instance = new TypeManager;
+
+    return *_instance;    
+}
+
+void pxl::TypeManager::registerAgent(pxl::TypeAgentBase* agent) {
+// for debugging purposes:
+//    std::cout << "pxl::TypeManager::registerAgent(): type registered: [" 
+//              << agent->getObjectTypeId() << "," << agent->getDataTypeId() 
+//              << "]" << std::endl;
+//              //<< "] = '" << agent->getCppTypeId() << "'" << std::endl;
+
+    // add entries to maps:
+    _agentsByIotlTypeId.set(pxl::TypeIdKey(agent->getObjectTypeId(), agent->getDataTypeId()), agent);
+    _agentsByCppTypeId.set(agent->getCppTypeId(), agent);
+}
+
+pxl::Id TypeManager::restoreObject(iStreamer& input, pxl::ObjectBase** ppobj, const std::string& objectTypeId, const std::string& dataTypeId) const
+{
+    TypeAgentBase* agent = _agentsByIotlTypeId.find(pxl::TypeIdKey(objectTypeId, dataTypeId), 0);
+    if (!agent) {
+        std::string message; 
+        message += "undeclared IOTL type: [";
+        message += objectTypeId;
+        message += ", "; 
+        message += dataTypeId; 
+        message += "]"; 
+        pxl::exception("pxl::TypeManager::restoreObject()", message);
+
+        return 0;
+    }
+
+    return agent->restoreObject(input, ppobj);
+}
+
+pxl::Id TypeManager::restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj, const std::string& cppTypeId) const
+{
+    TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
+    if (!agent) {
+        std::string message; 
+        message += "undeclared C++ type: '";
+        message += cppTypeId;
+        message += "'";
+        pxl::exception("pxl::TypeManager::restoreObject()", message); 
+
+        return 0;
+    }
+
+    return agent->restoreObject(input, obj);
+}
+
+void TypeManager::storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj, const std::string& cppTypeId) const
+{
+    TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
+    if (!agent) {
+        std::string message; 
+        message += "undeclared C++ type: '";
+        message += cppTypeId;
+        message += "'";
+        pxl::exception("pxl::TypeManager::storeObject()", message);
+ 
+        return;
+    }
+
+    agent->storeObject(output, obj);
+}
+
+} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -441,7 +1023,29 @@ namespace pxl {
 template class pxl::iDiskFileVx<pxl::iStreamer>;
 
 } // namespace pxl
-#include <string>
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 #include <cstring>
 
 #include <zlib.h>
@@ -453,7 +1057,10 @@ template class pxl::iDiskFileVx<pxl::iStreamer>;
 
 namespace pxl {
 
-// dummy class
+// help class
+/**
+This internal class serves the PXL I/O scheme. 
+*/ 
 class Orphan {};
 
 iStreamer::iStreamer() :
@@ -786,6 +1393,29 @@ pxl::Id iStreamer::restoreAbstractObject(pxl::ObjectBase** ppobj)
 }
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -793,6 +1423,29 @@ namespace pxl {
 template class pxl::oDiskFileVx<pxl::oStreamer>;
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -932,95 +1585,32 @@ void oStreamer::storeData<pxl::ObjectBase>(const pxl::ObjectBase& object)
 }
 
 } // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+#include <map>
 
 
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class TypeAgent<pxl::Object<int> >;
-template class TypeAgent<pxl::CowObject<int> >;
-
-} // namespace pxl
-
-
-
-
-namespace pxl {
-
-// The singleton instance
-TypeManager* TypeManager::_instance = 0;
-
-TypeManager& TypeManager::instance()
-{
-    if (!_instance)
-        _instance = new TypeManager;
-
-    return *_instance;    
-}
-
-void pxl::TypeManager::registerAgent(pxl::TypeAgentBase* agent) {
-// for debugging purposes:
-//    std::cout << "pxl::TypeManager::registerAgent(): type registered: [" 
-//              << agent->getObjectTypeId() << "," << agent->getDataTypeId() 
-//              << "]" << std::endl;
-//              //<< "] = '" << agent->getCppTypeId() << "'" << std::endl;
-
-    // add entries to maps:
-    _agentsByIotlTypeId.set(pxl::TypeIdKey(agent->getObjectTypeId(), agent->getDataTypeId()), agent);
-    _agentsByCppTypeId.set(agent->getCppTypeId(), agent);
-}
-
-pxl::Id TypeManager::restoreObject(iStreamer& input, pxl::ObjectBase** ppobj, const std::string& objectTypeId, const std::string& dataTypeId) const
-{
-    TypeAgentBase* agent = _agentsByIotlTypeId.find(pxl::TypeIdKey(objectTypeId, dataTypeId), 0);
-    if (!agent) {
-        std::string message; 
-        message += "undeclared IOTL type: [";
-        message += objectTypeId;
-        message += ", "; 
-        message += dataTypeId; 
-        message += "]"; 
-        pxl::exception("pxl::TypeManager::restoreObject()", message);
-
-        return 0;
-    }
-
-    return agent->restoreObject(input, ppobj);
-}
-
-pxl::Id TypeManager::restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj, const std::string& cppTypeId) const
-{
-    TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
-    if (!agent) {
-        std::string message; 
-        message += "undeclared C++ type: '";
-        message += cppTypeId;
-        message += "'";
-        pxl::exception("pxl::TypeManager::restoreObject()", message); 
-
-        return 0;
-    }
-
-    return agent->restoreObject(input, obj);
-}
-
-void TypeManager::storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj, const std::string& cppTypeId) const
-{
-    TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
-    if (!agent) {
-        std::string message; 
-        message += "undeclared C++ type: '";
-        message += cppTypeId;
-        message += "'";
-        pxl::exception("pxl::TypeManager::storeObject()", message);
- 
-        return;
-    }
-
-    agent->storeObject(output, obj);
-}
-
-} // namespace pxl
 
 
 iotl__declareDataTypeExplicit(char,        "\1c",      __char, data, { pxl::BasicIoStreamer::storeBasicTypeChar(_buffer, data); },   { pxl::BasicIoStreamer::restoreBasicTypeChar(_buffer, data); })
@@ -1029,6 +1619,101 @@ iotl__declareDataTypeExplicit(bool,        "\1b",      __bool, data, { pxl::Basi
 iotl__declareDataTypeExplicit(int,         "\1i",       __int, data, { pxl::BasicIoStreamer::storeBasicTypeInt(_buffer, data); },    { pxl::BasicIoStreamer::restoreBasicTypeInt(_buffer, data); })
 iotl__declareDataTypeExplicit(float,       "\1f",     __float, data, { pxl::BasicIoStreamer::storeBasicTypeFloat(_buffer, data); },  { pxl::BasicIoStreamer::restoreBasicTypeFloat(_buffer, data); })
 iotl__declareDataTypeExplicit(double,      "\1d",    __double, data, { pxl::BasicIoStreamer::storeBasicTypeDouble(_buffer, data); }, { pxl::BasicIoStreamer::restoreBasicTypeDouble(_buffer, data); })
+
+// pxl::Variant handling
+
+namespace pxl {
+
+typedef std::map<std::string, pxl::Variant::Type> VariantTypeMap;
+static VariantTypeMap variantTypeMap;
+
+static void initVariantTypeMap()
+{
+    variantTypeMap.insert(std::make_pair("\1c", pxl::Variant::TYPE_CHAR));
+    variantTypeMap.insert(std::make_pair("\1s", pxl::Variant::TYPE_STRING));
+    variantTypeMap.insert(std::make_pair("\1b", pxl::Variant::TYPE_BOOL));
+    variantTypeMap.insert(std::make_pair("\1i", pxl::Variant::TYPE_INT));
+    variantTypeMap.insert(std::make_pair("\1f", pxl::Variant::TYPE_FLOAT));
+    variantTypeMap.insert(std::make_pair("\1d", pxl::Variant::TYPE_DOUBLE));
+}
+
+} // namespace pxl
+
+#define IOTL_STORE_ANY_TYPE(type, id, name, method) \
+  case pxl::Variant::TYPE_ ## name: \
+    storeTypeId(id); \
+    pxl::BasicIoStreamer::storeBasicType ## method(_buffer, data.get<type>()); \
+    break;
+
+#define IOTL_RESTORE_ANY_TYPE(type, name, method) \
+  case pxl::Variant::TYPE_ ## name: { \
+    type tmp; \
+    pxl::BasicIoStreamer::restoreBasicType ## method(_buffer, tmp); \
+    data.init<type>(); \
+    data.set<type>(tmp); \
+  } break;
+
+iotl__declareDataTypeExplicit(pxl::Variant, "\1A", pxl__Variant, data, {
+    pxl::Variant::Type type = data.getType();
+    switch(type) {
+      IOTL_STORE_ANY_TYPE(char,        "\1c", CHAR,   Char) 
+      IOTL_STORE_ANY_TYPE(std::string, "\1s", STRING, String) 
+      IOTL_STORE_ANY_TYPE(bool,        "\1b", BOOL,   Bool) 
+      IOTL_STORE_ANY_TYPE(int,         "\1i", INT,    Int) 
+      IOTL_STORE_ANY_TYPE(float,       "\1f", FLOAT,  Float) 
+      IOTL_STORE_ANY_TYPE(double,      "\1d", DOUBLE, Double) 
+      default:
+        pxl::exception("pxl::oStreamer::storeData<pxl::Variant>",
+                       std::string("Unsupported type \"")
+                       + data.getTypeName() + "\".");
+    }
+}, {
+    if (PXL_UNLIKELY(variantTypeMap.begin() == variantTypeMap.end()))
+        initVariantTypeMap();
+    std::string typeId = restoreTypeId();
+    VariantTypeMap::const_iterator found = variantTypeMap.find(typeId);
+    if (PXL_UNLIKELY(found == variantTypeMap.end()))
+        pxl::exception("pxl::iStreamer::restoreData<pxl::Variant>",
+                       "Unsupported type encountered");
+    switch(found->second) {
+      IOTL_RESTORE_ANY_TYPE(char,        CHAR,   Char) 
+      IOTL_RESTORE_ANY_TYPE(std::string, STRING, String) 
+      IOTL_RESTORE_ANY_TYPE(bool,        BOOL,   Bool) 
+      IOTL_RESTORE_ANY_TYPE(int,         INT,    Int) 
+      IOTL_RESTORE_ANY_TYPE(float,       FLOAT,  Float) 
+      IOTL_RESTORE_ANY_TYPE(double,      DOUBLE, Double) 
+      default:
+        pxl::exception("pxl::iStreamer::restoreData<pxl::Variant>",
+                       std::string("Unsupported type \"")
+                       + data.getTypeName() + "\".");
+    }
+})
+
+#undef IOTL_STORE_ANY_TYPE
+#undef IOTL_RESTORE_ANY_TYPE
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -1151,6 +1836,29 @@ iotl__declareDataTypeExplicit(pxl::AnalysisForkData, "\3AfD", pol__AnalysisForkD
 }, {
     restoreData<pxl::BasicObjectManagerData>(data);
 })
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -1196,7 +1904,29 @@ iotl__declareDataTypeExplicit(pxl::AnalysisProcessData, "\3ApD", pol__AnalysisPr
 }, {
     restoreData<pxl::BasicObjectManagerData>(data);
 })
-
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 namespace pxl {
@@ -1226,7 +1956,29 @@ iotl__declareDataTypeExplicit(pxl::Basic3VectorData, "\3B3vD", pol__Basic3Vector
     restoreData<double>(data._y);
     restoreData<double>(data._z);
 })
-
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 namespace pxl {
@@ -1260,7 +2012,29 @@ iotl__declareDataTypeExplicit(pxl::Basic4VectorData, "\3B4vD", pol__Basic4Vector
     restoreData<double>(data._z);
     restoreData<double>(data._t);
 })
-
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 iotl__declareObjectTypeExplicit(pxl::BasicObject, "\3Bo", pol__BasicObject)
@@ -1282,7 +2056,29 @@ iotl__declareDataTypeExplicit(pxl::BasicObjectData, "\3BoD", pol__BasicObjectDat
     restoreData(data._userRecords);
     // restoreData<pxl::CppPointers>(_cppPointers); // we don't restore the c++ pointers!
 })
-
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 iotl__declareObjectTypeExplicit(pxl::BasicObjectManager, "\3Bom", pol__BasicObjectManager)
@@ -1294,6 +2090,29 @@ iotl__declareDataTypeExplicit(pxl::BasicObjectManagerData, "\3BomD", pol__BasicO
     restoreData<pxl::Objects>(data._objects);
     restoreData<pxl::BasicObjectData>(data);
 })
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -1309,7 +2128,29 @@ std::ostream& pxl::CowObject<pxl::CollisionData>::print(int level, std::ostream&
 }
 
 } // namespace pxl
-
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -1339,7 +2180,29 @@ iotl__declareDataTypeExplicit(pxl::EventViewData, "\3EvD", pol__EventViewData, d
 }, {
     restoreData<pxl::BasicObjectManagerData>(data);
 })
-
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -1384,7 +2247,76 @@ iotl__declareDataTypeExplicit(pxl::ParticleData, "\3PaD", pol__ParticleData, dat
     restoreData(data.vector(pxl::set));
     restoreData<pxl::BasicObjectData>(data);
 })
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
+#include <cmath>
 
+
+namespace pxl {
+
+ParticleFilter::ParticleFilter(const pxl::ObjectOwner& objects,
+                               const std::string& name,
+                               double ptMin, double etaMax) :
+    _name(name), _ptMin(ptMin), _etaMax(etaMax)
+{ apply(objects); }
+
+bool ParticleFilter::pass(const pxl::Particle& pa) const
+{
+    if ((_name != ""   &&           pa().getName() != _name)          ||
+        (_ptMin  > 0.0 &&           pa().vector().getPt()  < _ptMin)  ||
+        (_etaMax > 0.0 && std::fabs(pa().vector().getEta()) > _etaMax))
+        return false;
+    return true;
+}
+
+double ParticleFilter::sort(const pxl::Particle& pa) const
+{ return -pa().vector().getPt(); }
+
+} // namespace pxl
+//------------------------------------------------------------------------------
+//
+//    Physics eXtension Library (PXL)
+//    C++ Toolkit for Fourvector Analysis, Relation Management 
+//    and Hypothesis Evolution in High Energy Physics
+//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
+//    E-mail contact: project-PXL@cern.ch
+//    
+//    This library is free software; you can redistribute it and/or
+//    modify it under the terms of the GNU Lesser General Public
+//    License as published by the Free Software Foundation; either
+//    version 2.1 of the License, or (at your option) any later version.
+//
+//    This library is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//    Lesser General Public License for more details.
+//
+//    You should have received a copy of the GNU Lesser General Public
+//    License along with this library; if not, write to the Free Software
+//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
+//
+//------------------------------------------------------------------------------
 
 
 
@@ -1423,49 +2355,3 @@ iotl__declareDataTypeExplicit(pxl::VertexData, "\3VxD", pol__VertexData, data, {
     restoreData(data.vector(pxl::set));
     restoreData<pxl::BasicObjectData>(data);
 })
-//
-//
-//----------------------------------------------------------------------
-// ePax
-//----------------------------------------------------------------------
-const pxl::Get ePaxGet;
-const pxl::Set ePaxSet;
-//----------------------------------------------------------------------
-iotl__declareObjectTypeExplicit(ePaxParticle,  "\4ePa", ePaxParticle)
-iotl__declareObjectTypeExplicit(ePaxVertex,    "\4eVe", ePaxVertex)
-iotl__declareObjectTypeExplicit(ePaxCollision, "\4eCo", ePaxCollision)
-iotl__declareObjectTypeExplicit(ePaxEventView, "\4eEv", ePaxEventView)
-iotl__declareObjectTypeExplicit(ePaxAnalysisProcess, "\4eAp", ePaxAnalysisProcess)
-iotl__declareObjectTypeExplicit(ePaxAnalysisFork,    "\4eAf", ePaxAnalysisFork)
-//----------------------------------------------------------------------
-pxl::ObjectBase* ePaxParticle::clone() const { return new ePaxParticle(*this); }
-std::ostream& ePaxParticle::print(int level, std::ostream& os, int pan) const { return pxl::CowObject<pxl::ParticleData>::print(level, os, pan); }
-pxl::WkPtrBase* ePaxParticle::createSelfWkPtr() { return new ePaxParticleWkPtr(*this); }
-void ePaxParticle::storeYourSelf(pxl::oStreamer& output) const { output.storeObject(*this); }
-//----------------------------------------------------------------------
-pxl::ObjectBase* ePaxVertex::clone() const { return new ePaxVertex(*this); }
-std::ostream& ePaxVertex::print(int level, std::ostream& os, int pan) const { return pxl::CowObject<pxl::VertexData>::print(level, os, pan); }
-pxl::WkPtrBase* ePaxVertex::createSelfWkPtr() { return new ePaxVertexWkPtr(*this); }
-void ePaxVertex::storeYourSelf(pxl::oStreamer& output) const { output.storeObject(*this); }
-//----------------------------------------------------------------------
-pxl::ObjectBase* ePaxCollision::clone() const { return new ePaxCollision(*this); }
-std::ostream& ePaxCollision::print(int level, std::ostream& os, int pan) const { return pxl::CowObject<pxl::CollisionData>::print(level, os, pan); }
-pxl::WkPtrBase* ePaxCollision::createSelfWkPtr() { return new ePaxCollisionWkPtr(*this); }
-void ePaxCollision::storeYourSelf(pxl::oStreamer& output) const { output.storeObject(*this); }
-//----------------------------------------------------------------------
-pxl::ObjectBase* ePaxEventView::clone() const { return new ePaxEventView(*this); }
-std::ostream& ePaxEventView::print(int level, std::ostream& os, int pan) const { return pxl::Object<pxl::EventViewData>::print(level, os, pan); }
-pxl::WkPtrBase* ePaxEventView::createSelfWkPtr() { return new ePaxEventViewWkPtr(*this); }
-void ePaxEventView::storeYourSelf(pxl::oStreamer& output) const { output.storeObject(*this); }
-//----------------------------------------------------------------------
-pxl::ObjectBase* ePaxAnalysisProcess::clone() const { return new ePaxAnalysisProcess(*this); }
-std::ostream& ePaxAnalysisProcess::print(int level, std::ostream& os, int pan) const { return pxl::Object<pxl::AnalysisProcessData>::print(level, os, pan); }
-pxl::WkPtrBase* ePaxAnalysisProcess::createSelfWkPtr() { return new ePaxAnalysisProcessWkPtr(*this); }
-void ePaxAnalysisProcess::storeYourSelf(pxl::oStreamer& output) const { output.storeObject(*this); }
-//----------------------------------------------------------------------
-pxl::ObjectBase* ePaxAnalysisFork::clone() const { return new ePaxAnalysisFork(*this); }
-std::ostream& ePaxAnalysisFork::print(int level, std::ostream& os, int pan) const { return pxl::Object<pxl::AnalysisForkData>::print(level, os, pan); }
-pxl::WkPtrBase* ePaxAnalysisFork::createSelfWkPtr() { return new ePaxAnalysisForkWkPtr(*this); }
-void ePaxAnalysisFork::storeYourSelf(pxl::oStreamer& output) const { output.storeObject(*this); }
-//----------------------------------------------------------------------
-
