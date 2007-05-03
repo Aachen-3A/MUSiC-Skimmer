@@ -23,10 +23,14 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
+#include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectron.h"
+#include "DataFormats/EgammaCandidates/interface/SiStripElectronFwd.h"
+#include "DataFormats/EgammaCandidates/interface/SiStripElectron.h"
 // ROOT stuff
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TMatrixT.h"
 
 // ePax stuff
 // Has to be included as the last header otherwise there will be a warning concerning the 
@@ -66,7 +70,8 @@ private:
    bool METMC_cuts(const reco::GenMET MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
    bool Muon_cuts(reco::MuonCollection::const_iterator muon) const;
-   bool Ele_cuts(reco::ElectronCollection::const_iterator ele) const;
+   bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
+   bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;
    bool Gamma_cuts(reco::PhotonCollection::const_iterator photon) const;
    bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
    bool MET_cuts(const reco::MET met) const;

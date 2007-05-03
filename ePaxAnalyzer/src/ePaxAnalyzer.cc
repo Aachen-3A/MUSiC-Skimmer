@@ -250,9 +250,9 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPz(genJet->pz());
          part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
 	 //fill additional jet-related infos
-	 part.set().setUserRecord<double>("EmEnergy", genJet->emEnergy());
-	 part.set().setUserRecord<double>("HadEnergy", genJet->hadEnergy());
-	 part.set().setUserRecord<double>("InvEnergy", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
+	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
+	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
 	 numKtJetMC++;
       }
    }   
@@ -269,9 +269,9 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPz(genJet->pz());
          part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
 	 //fill additional jet-related infos
-	 part.set().setUserRecord<double>("EmEnergy", genJet->emEnergy());
-	 part.set().setUserRecord<double>("HadEnergy", genJet->hadEnergy());
-	 part.set().setUserRecord<double>("InvEnergy", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
+	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
+	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
          numItCone5JetMC++;
       }
    }
@@ -288,9 +288,9 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPz(genJet->pz());
          part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
 	 //fill additional jet-related infos
-	 part.set().setUserRecord<double>("EmEnergy", genJet->emEnergy());
-	 part.set().setUserRecord<double>("HadEnergy", genJet->hadEnergy());
-	 part.set().setUserRecord<double>("InvEnergy", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
+	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
+	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
          numMidCone7JetMC++;
       }
    }
@@ -307,9 +307,9 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPz(genJet->pz());
          part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
 	 //fill additional jet-related infos
-	 part.set().setUserRecord<double>("EmEnergy", genJet->emEnergy());
-	 part.set().setUserRecord<double>("HadEnergy", genJet->hadEnergy());
-	 part.set().setUserRecord<double>("InvEnergy", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
+	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
+	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
          numMidCone7JetMC++;
       }
    }
@@ -340,9 +340,9 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    part.set().setUserRecord<double>("sumEt", genmet.sumEt());
    part.set().setUserRecord<double>("mEtSig", genmet.mEtSig());
    //fill additional jet-related infos
-   part.set().setUserRecord<double>("EmEnergy", genmet.emEnergy());
-   part.set().setUserRecord<double>("HadEnergy", genmet.hadEnergy());
-   part.set().setUserRecord<double>("InvEnergy", genmet.invisibleEnergy());
+   part.set().setUserRecord<double>("EmE", genmet.emEnergy());
+   part.set().setUserRecord<double>("HadE", genmet.hadEnergy());
+   part.set().setUserRecord<double>("InvE", genmet.invisibleEnergy());
 
    if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part.get().vector().getPt() << endl;
    // Perform Muon Corrections!
@@ -462,19 +462,19 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 
 void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
 
-   edm::Handle<reco::ElectronCollection> electrons;
-//   edm::Handle<reco::ElectronCollection> pixelelectrons;
-   iEvent.getByLabel(fElectronRecoLabel, electrons);
-//   iEvent.getByLabel(fPixelMatchElectronRecoLabel, pixelelectrons);
+//   edm::Handle<SiStripElectronCollection> electrons;
+   edm::Handle<PixelMatchGsfElectronCollection> pixelelectrons;
+//   iEvent.getByLabel(fElectronRecoLabel, electrons);
+   iEvent.getByLabel(fPixelMatchElectronRecoLabel, pixelelectrons);
 
-   int numEleRec = 0;
-//   int numPixelEleRec = 0;   
+//   int numEleRec = 0;
+   int numPixelEleRec = 0;   
 
-   for ( reco::ElectronCollection::const_iterator ele = electrons->begin(); 
+/*   for ( SiStripElectronCollection::const_iterator ele = electrons->begin(); 
             ele != electrons->end(); ++ele ) {
       if (Ele_cuts(ele)) { 
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
-         part.set().setName("Ele");
+         part.set().setName("SiEle");
          part.set().setCharge(ele->charge());
          part.set().vector(pxl::set).setPx(ele->px());
          part.set().vector(pxl::set).setPy(ele->py());
@@ -497,12 +497,16 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
    EvtView.set().setUserRecord<int>("NumEle", numEleRec);
 
    if (fDebug > 1) cout << "RecEle:  " << numEleRec << endl;
-
-/*   for ( reco::ElectronCollection::const_iterator ele = pixelelectrons->begin();
+*/
+   for ( PixelMatchGsfElectronCollection::const_iterator ele = pixelelectrons->begin();
             ele != pixelelectrons->end(); ++ele ) {
       if (Ele_cuts(ele)) {
-         pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
-         part.set().setName("PixelElectron");
+         if (fDebug > 1) {
+	    cout << "Electron Energy scale corrected: " << ele->isEnergyScaleCorrected() 
+	         << "  Momentum corrected: " << ele->isMomentumCorrected() << endl;
+         }
+	 pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
+         part.set().setName("Ele");
          part.set().setCharge(ele->charge());
          part.set().vector(pxl::set).setPx(ele->px());
          part.set().vector(pxl::set).setPy(ele->py());
@@ -511,11 +515,23 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          part.set().setUserRecord<double>("Vtx_X", ele->vx());
          part.set().setUserRecord<double>("Vtx_Y", ele->vy());
          part.set().setUserRecord<double>("Vtx_Z", ele->vz());
+         part.set().setUserRecord<double>("SCE", ele->superCluster()->energy());
+         // the super cluster energy corrected by EnergyScaleFactor
+	 part.set().setUserRecord<float>("SCECorr", ele->caloEnergy());
+         // the errors on the supercluster energy and track momentum
+         part.set().setUserRecord<float>("SCEErr", ele->caloEnergyError());
+	 // the errors on the track momentum
+         part.set().setUserRecord<float>("PErr", ele->trackMomentumError());	 
+         part.set().setUserRecord<double>("TrackerP", ele->gsfTrack()->p());
+         part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2());
+         part.set().setUserRecord<double>("ValidHits", ele->gsfTrack()->numberOfValidHits());
+	 part.set().setUserRecord<int>("Class", ele->classification());
+	 // the hadronic over electromagnetic fraction
+         part.set().setUserRecord<float>("HadOverEm", ele->hadronicOverEm());
          numPixelEleRec++;
       }
    }
-   EvtView.set().setUserRecord<int>("NumPixelEle", numPixelEleRec);
-*/
+   EvtView.set().setUserRecord<int>("NumEle", numPixelEleRec);
 }
 
 // ------------ reading Reconstructed Jets ------------
@@ -549,8 +565,8 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
          part.set().vector(pxl::set).setE(jet->energy());         
-	 part.set().setUserRecord<double>("EmEnergy", jet->emEnergyFraction());
-	 part.set().setUserRecord<double>("HadEnergy", jet->energyFractionHadronic());
+	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<double>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
@@ -568,8 +584,8 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
          part.set().vector(pxl::set).setE(jet->energy());
-	 part.set().setUserRecord<double>("EmEnergy", jet->emEnergyFraction());
-	 part.set().setUserRecord<double>("HadEnergy", jet->energyFractionHadronic());
+	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<double>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
@@ -587,8 +603,8 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
          part.set().vector(pxl::set).setE(jet->energy());
-	 part.set().setUserRecord<double>("EmEnergy", jet->emEnergyFraction());
-	 part.set().setUserRecord<double>("HadEnergy", jet->energyFractionHadronic());
+	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<double>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
@@ -606,8 +622,8 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
          part.set().vector(pxl::set).setE(jet->energy());
-	 part.set().setUserRecord<double>("EmEnergy", jet->emEnergyFraction());
-	 part.set().setUserRecord<double>("HadEnergy", jet->energyFractionHadronic());
+	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+	 part.set().setUserRecord<double>("HadFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<double>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
@@ -700,172 +716,20 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
          part.set().vector(pxl::set).setPy(photon->py());
          part.set().vector(pxl::set).setPz(photon->pz());
          part.set().vector(pxl::set).setE(photon->energy());
+	 // ratio of E(3x3)/ESC
+	 part.set().setUserRecord<double>("r9", photon->r9());
+	 // ratio of Emax/E(3x3)
+	 part.set().setUserRecord<double>("r19", photon->r19());
+	 // 5x5 energy
+	 part.set().setUserRecord<double>("e5x5", photon->e5x5());
+	 /// Whether or not the SuperCluster has a matched pixel seed
+	 part.set().setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
 	 numGammaRec++;
       }	 
    }
    EvtView.set().setUserRecord<int>("NumGamma", numGammaRec);
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
 }
-
-// ------------ method for matching the Physics Objects Gen <--> Rec ------------
-// Maybe create a separate matching class?
-/*
-void ePaxAnalyzer::matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView) {
-   // Get List of Weak Pointers to muons, ele, gam, ... and pass it to matching algorithms
-   pxl::ParticleFilter GenMuonFilter(GenView().getObjects(), "Muon");
-   pxl::ParticleFilter RecMuonFilter(RecView().getObjects(), "Muon");
-   makeMatching(GenMuonFilter, RecMuonFilter); 
-   
-   pxl::ParticleFilter GenEleFilter(GenView().getObjects(), "Ele");
-   pxl::ParticleFilter RecEleFilter(RecView().getObjects(), "Ele");
-   makeMatching(GenEleFilter, RecEleFilter); 
-   
-   pxl::ParticleFilter GenGammaFilter(GenView().getObjects(), "Gamma");
-   pxl::ParticleFilter RecGammaFilter(RecView().getObjects(), "Gamma");
-   makeMatching(GenGammaFilter, RecGammaFilter); 
-   
-   pxl::ParticleFilter GenKtJetFilter(GenView().getObjects(), "KtJet");
-   pxl::ParticleFilter RecKtJetFilter(RecView().getObjects(), "KtJet");
-   makeMatching(GenKtJetFilter, RecKtJetFilter); 
-   
-   pxl::ParticleFilter GenItCone5JetFilter(GenView().getObjects(), "ItCone5Jet");
-   pxl::ParticleFilter RecItCone5JetFilter(RecView().getObjects(), "ItCone5Jet");
-   makeMatching(GenItCone5JetFilter, RecItCone5JetFilter); 
-   
-   pxl::ParticleFilter GenMidCone5JetFilter(GenView().getObjects(), "MidCone5Jet");
-   pxl::ParticleFilter RecMidCone5JetFilter(RecView().getObjects(), "MidCone5Jet");
-   makeMatching(GenMidCone5JetFilter, RecMidCone5JetFilter);
-   
-   pxl::ParticleFilter GenMidCone7JetFilter(GenView().getObjects(), "MidCone7Jet");
-   pxl::ParticleFilter RecMidCone7JetFilter(RecView().getObjects(), "MidCone7Jet");
-   makeMatching(GenMidCone7JetFilter, RecMidCone7JetFilter); 
-   
-}
-
-// ------------ implementation of the matching Gen <--> Rec ------------
-// FIXME: It sseems like not every Particle has a "Match" UserRecord! ---> FIXME!
-void ePaxAnalyzer::makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter) {
-   // Perform iteration over the Gen and Rec particles
-   if (GenFilter.getSize() == 0 || RecFilter.getSize() == 0) {
-      // Check if ParticleFilters contain particles!
-      for (pxl::ParticleFilterIterator gen_iter(GenFilter); !gen_iter.isDone(); gen_iter.next()) {
-         pxl::ParticleWkPtr pa = gen_iter.wkPtr();
-         pa.set().setUserRecord<int>("Match", -1);
-      }
-      for (pxl::ParticleFilterIterator rec_iter(RecFilter); !rec_iter.isDone(); rec_iter.next()) {
-         pxl::ParticleWkPtr pa = rec_iter.wkPtr();
-         pa.set().setUserRecord<int>("Match", -1);
-// this does not work - why?  (iter.wkPtr()).set().setUserRecord<int>("Match", -1);
-      }      
-   } else {
-      int col = 0;
-      int row = 0;
-      if (fDebug > 1) cout << "Found " << GenFilter.getSize() << " Gen Objects and " << RecFilter.getSize() << " Rec Objects" << endl;
-      TMatrixT<double> DistanzMatrix(GenFilter.getSize(),RecFilter.getSize());
-      for (pxl::ParticleFilterIterator gen_iter(GenFilter); !gen_iter.isDone(); gen_iter.next()) {
-         col = 0;
-         for (pxl::ParticleFilterIterator rec_iter(RecFilter); !rec_iter.isDone(); rec_iter.next()) {
-	    // Calculate the distance
-            pxl::ParticleWkPtr gen_pa = gen_iter.wkPtr();
-	    pxl::ParticleWkPtr rec_pa = rec_iter.wkPtr();
-	    if (fDebug > 0) { 
-	       cout << "Gen: (" << gen_pa.get().vector(pxl::get).getPx() << ","
-	            << gen_pa.get().vector(pxl::get).getPy() << ","
-		    << gen_pa.get().vector(pxl::get).getPz() << ","
-		    << gen_pa.get().vector(pxl::get).getE() << ")" << endl; 
-	       cout << "Rec: (" << rec_pa.get().vector(pxl::get).getPx() << ","
-	            << rec_pa.get().vector(pxl::get).getPy() << ","
-		    << rec_pa.get().vector(pxl::get).getPz() << ","
-		    << rec_pa.get().vector(pxl::get).getE() << ")" << endl;
-               cout << "Distance: " << gen_pa.get().vector(pxl::get).deltaR(rec_pa.get().vector(pxl::get)) << endl;
-	    }
-	    DistanzMatrix(row,col) = gen_pa.get().vector(pxl::get).deltaR(rec_pa.get().vector(pxl::get));
-	    col++;
-	 }
-	 row++;
-      }
-      if (fDebug > 0) DistanzMatrix.Print(); 
-      // go through every row and pushback index of Rec with smallest Distance
-      for (int irow = 0; irow < GenFilter.getSize(); irow++) {
-         // better implementation then always iterate over all particles?????
-	 int matched = SmallestRowElement(&DistanzMatrix, irow);
-	 int count = 0;
-	 bool found = false;
-         pxl::ParticleFilterIterator gen_iter(GenFilter);
-	 while (!gen_iter.isDone() && !found) {
-	    if (count == matched) {
-	       pxl::ParticleWkPtr pa = gen_iter.wkPtr();
-               pa.set().setUserRecord<int>("Match", matched);
-	       found = true;
-               if (fDebug > 0) cout << "GenObject " << irow << " is matched with " << matched << endl;     
-	    }
-	    count++;
-	    gen_iter.next();
-	 }  
-      }
-      for (int icol = 0; icol < RecFilter.getSize(); icol++) {
-         // better implementation then always iterate over all particles?????
-	 int matched = SmallestColumnElement(&DistanzMatrix, icol);
-	 int count = 0;
-	 bool found = false;
-         pxl::ParticleFilterIterator rec_iter(RecFilter); 
-	 while (!rec_iter.isDone() && !found) {
-	    if (count == matched) {
-	       pxl::ParticleWkPtr pa = rec_iter.wkPtr();
-               pa.set().setUserRecord<int>("Match", matched);
-	       found = true;
-	       if (fDebug > 0) cout << "RecObject " << icol << " is matched with " << matched << endl;
-	    }
-	    count++;
-	    rec_iter.next();
-	 }
-      }
-      // loop over all gen and rec and set Match for unmatched particles
-      for (pxl::ParticleFilterIterator rec_iter(RecFilter); !rec_iter.isDone(); rec_iter.next()) {
-         pxl::ParticleWkPtr pa = rec_iter.wkPtr();
-	 if (pa.get().findUserRecord<int>("Match", -1) == -1) pa.set().setUserRecord<int>("Match", -1);
-      }
-      for (pxl::ParticleFilterIterator gen_iter(GenFilter); !gen_iter.isDone(); gen_iter.next()) {
-         pxl::ParticleWkPtr pa = gen_iter.wkPtr();
-	 if (pa.get().findUserRecord<int>("Match", -1) == -1) pa.set().setUserRecord<int>("Match", -1);
-      }
-   }
-}
-
-// ---------------------- Helper Method ------------------------------
-
-int ePaxAnalyzer::SmallestRowElement(TMatrixT<double>* matrix, int row) {
-
-   // loop over row and return index of smallest element
-   double element = (*matrix)(row, 0);
-   int index = 0;
-   for (int i = 1; i < matrix->GetNcols(); i++) {
-      if ((*matrix)(row, i) < element) {
-         element = (*matrix)(row,i);
-	 index = i;
-      }
-   }
-   if (element > 0.2) index = -1;    
-   return index;
-}
-
-// ---------------------- Helper Method ------------------------------
-
-int ePaxAnalyzer::SmallestColumnElement(TMatrixT<double>* matrix, int col) {
-
-   // loop over row and return index of smallest element
-   double element = (*matrix)(0, col);
-   int index = 0;
-   for (int i = 1; i < matrix->GetNrows(); i++) {
-      if ((*matrix)(i, col) < element) {
-         element = (*matrix)(i,col);
-	 index = i;
-      }
-   }    
-   if (element > 0.2) index = -1;
-   return index;
-}
-*/
 
 // ------------ method returning the EventClassType  ------------
 
@@ -927,7 +791,7 @@ bool ePaxAnalyzer::GammaMC_cuts(HepMC::GenEvent::particle_const_iterator MCgamma
 bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
    // 
    if (MCjet->pt() < 30) return false;
-   if (fabs(MCjet->eta()) > 2.4) return false;
+   if (fabs(MCjet->eta()) > 5.) return false;
    return true;
 }
 
@@ -961,7 +825,16 @@ bool ePaxAnalyzer::Muon_cuts(reco::MuonCollection::const_iterator muon) const {
 
 // ------------ method to define ELECTRON-cuts
 
-bool ePaxAnalyzer::Ele_cuts(reco::ElectronCollection::const_iterator ele) const {
+bool ePaxAnalyzer::Ele_cuts(SiStripElectronCollection::const_iterator ele) const {
+   //
+   if (ele->pt() < 10) return false;
+   if (fabs(ele->eta()) > 5) return false;
+   return true;
+}
+
+// ------------ method to define ELECTRON-cuts
+
+bool ePaxAnalyzer::Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const {
    //
    if (ele->pt() < 10) return false;
    if (fabs(ele->eta()) > 5) return false;
@@ -995,4 +868,4 @@ bool ePaxAnalyzer::MET_cuts(const reco::MET met) const {
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ePaxAnalyzer)
+DEFINE_FWK_MODULE(ePaxAnalyzer);

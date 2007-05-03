@@ -1,50 +1,29 @@
-<use name=clhep>
-<use name=ePaxPxl/ePax>
-
-<use name=DataFormats/EgammaCandidates>
 <use name=DataFormats/EgammaCandidates>
 <use name=DataFormats/EgammaReco>
-<use name=DataFormats/HepMCCandidate>
 <use name=DataFormats/JetReco>
 <use name=DataFormats/METReco>
 <use name=DataFormats/MuonReco>
-<use name=DataFormats/TrajectoryState>
-<use name=DataFormats/TrackingRecHit>
 <use name=DataFormats/TrackReco>
 <use name=DataFormats/VertexReco>
-
-<use name=Foundation/PluginManager>
 <use name=FWCore/Framework>
 <use name=FWCore/MessageLogger>
 <use name=FWCore/ParameterSet>
-
-<use name=RecoEgamma/EgammaElectronAlgos>
 <use name=SimDataFormats/HepMCProduct>
-
-<flags SEAL_PLUGIN_NAME="ePaxDemoePaxAnalyzer">
+<use name=ePaxPxl/ePax>
+<use name=root>
+<flags SEALPLUGIN=1>
 <export>
-   <lib name=ePaxDemoePaxAnalyzer>
-   <use name=clhep>
-   <use name=ePaxPxl/ePax>
-
-   <use name=DataFormats/EgammaCandidates>
-   <use name=DataFormats/EgammaCandidates>
-   <use name=DataFormats/EgammaReco>
-   <use name=DataFormats/HepMCCandidate>
-   <use name=DataFormats/JetReco>
-   <use name=DataFormats/METReco>
-   <use name=DataFormats/MuonReco>
-   <use name=DataFormats/TrajectoryState>
-   <use name=DataFormats/TrackingRecHit>
-   <use name=DataFormats/TrackReco>
-   <use name=DataFormats/VertexReco>
-
-   <use name=Foundation/PluginManager>
-   <use name=FWCore/Framework>
-   <use name=FWCore/MessageLogger>
-   <use name=FWCore/ParameterSet>
-
-   <use name=RecoEgamma/EgammaElectronAlgos>
-   <use name=SimDataFormats/HepMCProduct>
-
+  <use name=DataFormats/EgammaCandidates>
+  <use name=DataFormats/EgammaReco>
+  <use name=DataFormats/JetReco>
+  <use name=DataFormats/METReco>
+  <use name=DataFormats/MuonReco>
+  <use name=DataFormats/TrackReco>
+  <use name=DataFormats/VertexReco>
+  <use name=FWCore/Framework>
+  <use name=SimDataFormats/HepMCProduct>
+  <use name=ePaxPxl/ePax>
+  <use name=root>
+  <lib name=ePaxDemoePaxAnalyzer>
 </export>
+
