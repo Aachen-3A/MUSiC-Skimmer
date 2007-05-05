@@ -66,7 +66,7 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
 	 bool found = false;
          pxl::ParticleFilterIterator gen_iter(GenFilter);
 	 while (!gen_iter.isDone() && !found) {
-	    if (count == matched) {
+	    if (count == irow) {
 	       pxl::ParticleWkPtr pa = gen_iter.wkPtr();
                pa.set().setUserRecord<int>("Match", matched);
 	       found = true;
@@ -83,7 +83,7 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
 	 bool found = false;
          pxl::ParticleFilterIterator rec_iter(RecFilter); 
 	 while (!rec_iter.isDone() && !found) {
-	    if (count == matched) {
+	    if (count == icol) {
 	       pxl::ParticleWkPtr pa = rec_iter.wkPtr();
                pa.set().setUserRecord<int>("Match", matched);
 	       found = true;
