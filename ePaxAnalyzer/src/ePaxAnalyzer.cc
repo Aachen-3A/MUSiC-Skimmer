@@ -418,6 +418,15 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
          part.set().setUserRecord<double>("Vtx_X", muon->vx());
          part.set().setUserRecord<double>("Vtx_Y", muon->vy());
          part.set().setUserRecord<double>("Vtx_Z", muon->vz()); 
+	 if (fDebug > 1) {
+            const HitPattern& Pattern = muon->combinedMuon()->hitPattern();
+	    cout << "Pattern gives: Valid/Lost: " << endl
+	         << "        Total: " << Pattern.numberOfValidHits() << " / " << Pattern.numberOfLostHits() << endl
+	         << "         Muon: " << Pattern.numberOfValidMuonHits() << " / " << Pattern.numberOfLostMuonHits() << endl
+	         << "      Tracker: " << Pattern.numberOfValidTrackerHits() << " / " << Pattern.numberOfLostTrackerHits() << endl
+	         << "        Pixel: " << Pattern.numberOfValidPixelHits() << " / " << Pattern.numberOfLostPixelHits() << endl;
+	    cout << "Muon gives: Valid/Lost: " << muon->combinedMuon()->numberOfValidHits() << " / " << muon->combinedMuon()->numberOfLostHits() << endl;
+         }
          part.set().setUserRecord<double>("NormChi2", muon->combinedMuon()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits", muon->combinedMuon()->numberOfValidHits());
          part.set().setUserRecord<int>("LostHits", muon->combinedMuon()->numberOfLostHits()); 
@@ -524,7 +533,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          part.set().setUserRecord<float>("PErr", ele->trackMomentumError());	 
          part.set().setUserRecord<double>("TrackerP", ele->gsfTrack()->p());
          part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2());
-         part.set().setUserRecord<double>("ValidHits", ele->gsfTrack()->numberOfValidHits());
+         part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits());
 	 part.set().setUserRecord<int>("Class", ele->classification());
 	 // the hadronic over electromagnetic fraction
          part.set().setUserRecord<float>("HadOverEm", ele->hadronicOverEm());
@@ -854,7 +863,7 @@ bool ePaxAnalyzer::Jet_cuts(reco::CaloJetCollection::const_iterator jet) const {
 
 bool ePaxAnalyzer::Gamma_cuts(reco::PhotonCollection::const_iterator photon) const {
    //
-   if (photon->energy() < 30) return false;
+   if (photon->pt() < 30) return false;
    if (fabs(photon->eta()) > 5.0) return false;
    return true;
 }
