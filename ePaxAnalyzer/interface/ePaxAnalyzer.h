@@ -88,8 +88,9 @@ private:
    int fNumEvt;// used to count the number of events
    int fDebug; 
    std::string fFileName; 
-   // The labels used in cfg-file 
    std::string fProcess;
+   bool fGenOnly;
+   // The labels used in cfg-file 
    std::string fHepMCLabel;
    std::string fKtJetMCLabel;
    std::string fItCone5JetMCLabel;

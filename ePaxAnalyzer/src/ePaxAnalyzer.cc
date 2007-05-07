@@ -43,6 +43,8 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fFileName = iConfig.getUntrackedParameter<string>("FileName");
    // Get Physics process
    fProcess = iConfig.getUntrackedParameter<string>("Process");
+   // Gen-Only or also Rec-information
+   fGenOnly = iConfig.getUntrackedParameter<bool>("GenOnly");
    // Debugging
    fDebug = iConfig.getUntrackedParameter<int>("debug");
    // The labels used in cfg-file 
@@ -100,15 +102,17 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // Generator stuff
    analyzeGenInfo(iEvent, GenEvtView);
    analyzeGenJets(iEvent, GenEvtView);
-   analyzeGenMET(iEvent, GenEvtView);
-   // Reconstructed stuff
-   analyzeRecVertices(iEvent, RecEvtView);
-   analyzeRecMuons(iEvent, RecEvtView);
-   analyzeRecElectrons(iEvent, RecEvtView);
-   analyzeRecJets(iEvent, RecEvtView);
-   analyzeRecMET(iEvent, RecEvtView);
-   analyzeRecGammas(iEvent, RecEvtView);
-   
+   if( fGenOnly == false ){ //only if info is in event
+     analyzeGenMET(iEvent, GenEvtView);
+     // Reconstructed stuff
+     analyzeRecVertices(iEvent, RecEvtView);
+     analyzeRecMuons(iEvent, RecEvtView);
+     analyzeRecElectrons(iEvent, RecEvtView);
+     analyzeRecJets(iEvent, RecEvtView);
+     analyzeRecMET(iEvent, RecEvtView);
+     analyzeRecGammas(iEvent, RecEvtView);
+   }
+
    Matcher->matchObjects(GenEvtView, RecEvtView);
    //matchObjects(GenEvtView, RecEvtView);
 
@@ -120,21 +124,21 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    fePaxFile.storeObject(RecEvtView);
    if (fDebug > 0) {
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma " << " KtJet " << "  MET  " << endl;
-      cout << "Found (MC): " << setw(4) << GenEvtView.get().findUserRecord<int>("NumEle") 
-           << setw(7) << GenEvtView.get().findUserRecord<int>("NumMuon")
-           << setw(7) << GenEvtView.get().findUserRecord<int>("NumGamma") 
-           << setw(4) << GenEvtView.get().findUserRecord<int>("NumKtJet") << "/" 
-           << GenEvtView.get().findUserRecord<int>("NumItCone5Jet") << "/" 
-           << GenEvtView.get().findUserRecord<int>("NumMidCone5Jet") << "/" 
-           << GenEvtView.get().findUserRecord<int>("NumMidCone7Jet")  
-           << setw(7) << GenEvtView.get().findUserRecord<int>("NumMET") << endl;
-      cout << "     (Rec): " << setw(4) << RecEvtView.get().findUserRecord<int>("NumEle")    
-           << setw(7) << RecEvtView.get().findUserRecord<int>("NumMuon") 
-           << setw(7) << RecEvtView.get().findUserRecord<int>("NumGamma")
-           << setw(4) << RecEvtView.get().findUserRecord<int>("NumKtJet") << "/"
-           << RecEvtView.get().findUserRecord<int>("NumItCone5Jet") << "/"
-           << RecEvtView.get().findUserRecord<int>("NumMidCone5Jet") << "/"
-           << RecEvtView.get().findUserRecord<int>("NumMidCone7Jet") 
+      cout << "Found (MC): " << setw(4) << GenEvtView.get().findUserRecord<int>("NumEle", 0) 
+           << setw(7) << GenEvtView.get().findUserRecord<int>("NumMuon", 0)
+           << setw(7) << GenEvtView.get().findUserRecord<int>("NumGamma", 0) 
+           << setw(4) << GenEvtView.get().findUserRecord<int>("NumKtJet", 0) << "/" 
+           << GenEvtView.get().findUserRecord<int>("NumItCone5Jet", 0) << "/" 
+           << GenEvtView.get().findUserRecord<int>("NumMidCone5Jet", 0) << "/" 
+           << GenEvtView.get().findUserRecord<int>("NumMidCone7Jet", 0)  
+           << setw(7) << GenEvtView.get().findUserRecord<int>("NumMET", 0) << endl;
+      cout << "     (Rec): " << setw(4) << RecEvtView.get().findUserRecord<int>("NumEle", 0)    
+           << setw(7) << RecEvtView.get().findUserRecord<int>("NumMuon", 0) 
+           << setw(7) << RecEvtView.get().findUserRecord<int>("NumGamma", 0)
+           << setw(4) << RecEvtView.get().findUserRecord<int>("NumKtJet", 0) << "/"
+           << RecEvtView.get().findUserRecord<int>("NumItCone5Jet", 0) << "/"
+           << RecEvtView.get().findUserRecord<int>("NumMidCone5Jet", 0) << "/"
+           << RecEvtView.get().findUserRecord<int>("NumMidCone7Jet", 0) 
            << setw(7) << RecEvtView.get().findUserRecord<int>("NumMET", 0) << endl;
    }
 
@@ -419,13 +423,13 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
          part.set().setUserRecord<double>("Vtx_Y", muon->vy());
          part.set().setUserRecord<double>("Vtx_Z", muon->vz()); 
 	 if (fDebug > 1) {
-            const HitPattern& Pattern = muon->combinedMuon()->hitPattern();
+	   /*  const HitPattern& Pattern = muon->combinedMuon()->hitPattern();
 	    cout << "Pattern gives: Valid/Lost: " << endl
 	         << "        Total: " << Pattern.numberOfValidHits() << " / " << Pattern.numberOfLostHits() << endl
 	         << "         Muon: " << Pattern.numberOfValidMuonHits() << " / " << Pattern.numberOfLostMuonHits() << endl
 	         << "      Tracker: " << Pattern.numberOfValidTrackerHits() << " / " << Pattern.numberOfLostTrackerHits() << endl
 	         << "        Pixel: " << Pattern.numberOfValidPixelHits() << " / " << Pattern.numberOfLostPixelHits() << endl;
-	    cout << "Muon gives: Valid/Lost: " << muon->combinedMuon()->numberOfValidHits() << " / " << muon->combinedMuon()->numberOfLostHits() << endl;
+		 cout << "Muon gives: Valid/Lost: " << muon->combinedMuon()->numberOfValidHits() << " / " << muon->combinedMuon()->numberOfLostHits() << endl;*/
          }
          part.set().setUserRecord<double>("NormChi2", muon->combinedMuon()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits", muon->combinedMuon()->numberOfValidHits());
@@ -745,11 +749,12 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 std::string ePaxAnalyzer::getEventClass(pxl::EventViewRef EvtView) {
 
    ostringstream EventType;
-   EventType << EvtView.get().findUserRecord<int>("NumEle") <<  "e"
-             << EvtView.get().findUserRecord<int>("NumMuon") << "mu"
-             << EvtView.get().findUserRecord<int>("NumGamma") << "gam"
-             << EvtView.get().findUserRecord<int>("NumKtJet") << "kt"
-             << EvtView.get().findUserRecord<int>("NumMET") << "met";
+   //set default values to 0 for Gen-only mode
+   EventType << EvtView.get().findUserRecord<int>("NumEle", 0) <<  "e"
+             << EvtView.get().findUserRecord<int>("NumMuon", 0) << "mu"
+             << EvtView.get().findUserRecord<int>("NumGamma", 0) << "gam"
+             << EvtView.get().findUserRecord<int>("NumKtJet", 0) << "kt"
+             << EvtView.get().findUserRecord<int>("NumMET", 0) << "met";
    EventType.flush();
    return EventType.str();
 }
