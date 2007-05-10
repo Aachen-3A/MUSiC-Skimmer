@@ -31,7 +31,10 @@
 
 // necessary objects:
 #include "FWCore/Framework/interface/ESHandle.h"
-
+// for electron shapes:
+#include "DataFormats/EgammaReco/interface/BasicClusterShapeAssociation.h"
+// for ECAL enumerator
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
 using namespace std;
 
 //
@@ -58,6 +61,8 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fSAMuonRecoLabel = iConfig.getUntrackedParameter<string>("SAMuonRecoLabel");
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
+   fBarrelClusterShapeAssocProducer = iConfig.getParameter<edm::InputTag>("barrelClusterShapeAssociation");
+   fEndcapClusterShapeAssocProducer = iConfig.getParameter<edm::InputTag>("endcapClusterShapeAssociation");   
    fPixelMatchElectronRecoLabel = iConfig.getUntrackedParameter<string>("PixelMatchElectronRecoLabel");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
    fKtJetRecoLabel = iConfig.getUntrackedParameter<string>("KtJetRecoLabel");
@@ -177,6 +182,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
          if ( MuonMC_cuts(p) ) { 
             pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
             part.set().setName("Muon");
+	    part.set().setWorkflag(pxl::Muon);
             part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
             part.set().vector(pxl::set).setPx((*p)->momentum().x());
             part.set().vector(pxl::set).setPy((*p)->momentum().y());
@@ -193,6 +199,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
          if ( EleMC_cuts(p) ) { 
             pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
             part.set().setName("Ele");
+	    part.set().setWorkflag(pxl::Electron);
             part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
             part.set().vector(pxl::set).setPx((*p)->momentum().x());
             part.set().vector(pxl::set).setPy((*p)->momentum().y());
@@ -209,6 +216,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
          if ( GammaMC_cuts(p) ) { 
             pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
             part.set().setName("Gamma");
+	    part.set().setWorkflag(pxl::Gamma);
             part.set().setCharge(0);
             part.set().vector(pxl::set).setPx((*p)->momentum().x());
             part.set().vector(pxl::set).setPy((*p)->momentum().y());
@@ -249,6 +257,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (JetMC_cuts(genJet)) { 
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("KtJet");
+	 part.set().setWorkflag(pxl::KtJet);
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
@@ -268,6 +277,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (JetMC_cuts(genJet)) {
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("ItCone5Jet");
+	 part.set().setWorkflag(pxl::ItCone5Jet);
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
@@ -287,6 +297,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (JetMC_cuts(genJet)) {
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("MidCone5Jet");
+	 part.set().setWorkflag(pxl::MidCone5Jet);
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
@@ -306,6 +317,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (JetMC_cuts(genJet)) {
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("MidCone7Jet");
+	 part.set().setWorkflag(pxl::MidCone7Jet);
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
@@ -337,6 +349,7 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
 
    pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
    part.set().setName("MET");
+   part.set().setWorkflag(pxl::MET);
    part.set().vector(pxl::set).setPx(genmet.px());
    part.set().vector(pxl::set).setPy(genmet.py());
    part.set().vector(pxl::set).setPz(0.);
@@ -414,6 +427,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
       if (Muon_cuts(muon)) { 
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("Muon");
+	 part.set().setWorkflag(pxl::Muon);
          part.set().setCharge(muon->charge());
          part.set().vector(pxl::set).setPx(muon->px());
          part.set().vector(pxl::set).setPy(muon->py());
@@ -422,15 +436,16 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
          part.set().setUserRecord<double>("Vtx_X", muon->vx());
          part.set().setUserRecord<double>("Vtx_Y", muon->vy());
          part.set().setUserRecord<double>("Vtx_Z", muon->vz()); 
-	 if (fDebug > 1) {
+/*	 if (fDebug > 1) {
 	   /*  const HitPattern& Pattern = muon->combinedMuon()->hitPattern();
 	    cout << "Pattern gives: Valid/Lost: " << endl
-	         << "        Total: " << Pattern.numberOfValidHits() << " / " << Pattern.numberOfLostHits() << endl
-	         << "         Muon: " << Pattern.numberOfValidMuonHits() << " / " << Pattern.numberOfLostMuonHits() << endl
-	         << "      Tracker: " << Pattern.numberOfValidTrackerHits() << " / " << Pattern.numberOfLostTrackerHits() << endl
-	         << "        Pixel: " << Pattern.numberOfValidPixelHits() << " / " << Pattern.numberOfLostPixelHits() << endl;
+	    	 << "	     Total: " << Pattern.numberOfValidHits() << " / " << Pattern.numberOfLostHits() << endl
+	    	 << "	      Muon: " << Pattern.numberOfValidMuonHits() << " / " << Pattern.numberOfLostMuonHits() << endl
+	    	 << "	   Tracker: " << Pattern.numberOfValidTrackerHits() << " / " << Pattern.numberOfLostTrackerHits() << endl
+	    	 << "	     Pixel: " << Pattern.numberOfValidPixelHits() << " / " << Pattern.numberOfLostPixelHits() << endl;
+	    
 		 cout << "Muon gives: Valid/Lost: " << muon->combinedMuon()->numberOfValidHits() << " / " << muon->combinedMuon()->numberOfLostHits() << endl;*/
-         }
+         } */
          part.set().setUserRecord<double>("NormChi2", muon->combinedMuon()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits", muon->combinedMuon()->numberOfValidHits());
          part.set().setUserRecord<int>("LostHits", muon->combinedMuon()->numberOfLostHits()); 
@@ -479,9 +494,15 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
    edm::Handle<PixelMatchGsfElectronCollection> pixelelectrons;
 //   iEvent.getByLabel(fElectronRecoLabel, electrons);
    iEvent.getByLabel(fPixelMatchElectronRecoLabel, pixelelectrons);
+   // Get association maps linking BasicClusters to ClusterShape
+   edm::Handle<reco::BasicClusterShapeAssociationCollection> barrelClShpHandle;
+   iEvent.getByLabel(fBarrelClusterShapeAssocProducer, barrelClShpHandle);
+   edm::Handle<reco::BasicClusterShapeAssociationCollection> endcapClShpHandle;
+   iEvent.getByLabel(fEndcapClusterShapeAssocProducer, endcapClShpHandle);
 
 //   int numEleRec = 0;
    int numPixelEleRec = 0;   
+   reco::BasicClusterShapeAssociationCollection::const_iterator seedShpItr;
 
 /*   for ( SiStripElectronCollection::const_iterator ele = electrons->begin(); 
             ele != electrons->end(); ++ele ) {
@@ -511,6 +532,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 
    if (fDebug > 1) cout << "RecEle:  " << numEleRec << endl;
 */
+
    for ( PixelMatchGsfElectronCollection::const_iterator ele = pixelelectrons->begin();
             ele != pixelelectrons->end(); ++ele ) {
       if (Ele_cuts(ele)) {
@@ -520,6 +542,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          }
 	 pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("Ele");
+	 part.set().setWorkflag(pxl::Electron);
          part.set().setCharge(ele->charge());
          part.set().vector(pxl::set).setPx(ele->px());
          part.set().vector(pxl::set).setPy(ele->py());
@@ -541,6 +564,28 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 part.set().setUserRecord<int>("Class", ele->classification());
 	 // the hadronic over electromagnetic fraction
          part.set().setUserRecord<float>("HadOverEm", ele->hadronicOverEm());
+	 // Get the supercluster (ref) of the Electron
+	 // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
+	 // a SuperClusterCollection is a std::vector<SuperCluster>
+	 // although we get a vector of SuperClusters an electron is only made out of ONE SC
+	 // therefore only the first element of the vector should be available!
+	 const SuperClusterRef SCRef = ele->superCluster();
+	 //const BasicClusterRef& SCSeed = SCRef.seed(); 
+         // Find the entry in the map corresponding to the seed BasicCluster of the SuperCluster
+         DetId id = SCRef->seed()->getHitsByDetId()[0];
+         if (id.subdetId() == EcalBarrel) {
+            seedShpItr = barrelClShpHandle->find(SCRef->seed());
+         } else {
+            seedShpItr = endcapClShpHandle->find(SCRef->seed());
+         }
+	 
+         const reco::ClusterShapeRef& seedShapeRef = seedShpItr->val;
+	 part.set().setUserRecord<double>("e3x3", seedShapeRef->e3x3());
+	 part.set().setUserRecord<double>("e5x5", seedShapeRef->e5x5());
+	 part.set().setUserRecord<double>("r9", seedShapeRef->e3x3()/SCRef->energy()); // ??? use SCRef->rawEnergy() or SCRef->Energy or ele->CaloEnergy
+         part.set().setUserRecord<double>("r19", seedShapeRef->eMax()/seedShapeRef->e3x3());
+	    
+	 
          numPixelEleRec++;
       }
    }
@@ -574,6 +619,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (Jet_cuts(jet)) { 
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("KtJet");
+	 part.set().setWorkflag(pxl::KtJet);
          part.set().vector(pxl::set).setPx(jet->px());
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
@@ -593,6 +639,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (Jet_cuts(jet)) {
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("ItCone5Jet");
+	 part.set().setWorkflag(pxl::ItCone5Jet);
          part.set().vector(pxl::set).setPx(jet->px());
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
@@ -612,6 +659,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (Jet_cuts(jet)) {
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("MidCone5Jet");
+	 part.set().setWorkflag(pxl::MidCone5Jet);
          part.set().vector(pxl::set).setPx(jet->px());
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
@@ -631,6 +679,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
       if (Jet_cuts(jet)) {
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("MidCone7Jet");
+	 part.set().setWorkflag(pxl::MidCone7Jet);
          part.set().vector(pxl::set).setPx(jet->px());
          part.set().vector(pxl::set).setPy(jet->py());
          part.set().vector(pxl::set).setPz(jet->pz());
@@ -662,6 +711,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    int numMETRec = 0;
    pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
    part.set().setName("MET");
+   part.set().setWorkflag(pxl::MET);
    part.set().vector(pxl::set).setPx(calomet.px());
    part.set().vector(pxl::set).setPy(calomet.py());
    part.set().vector(pxl::set).setPz(0.);
@@ -724,6 +774,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
       if ( Gamma_cuts(photon) ) { 
          pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
          part.set().setName("Gamma");
+	 part.set().setWorkflag(pxl::Gamma);
          part.set().setCharge(0);
          part.set().vector(pxl::set).setPx(photon->px());
          part.set().vector(pxl::set).setPy(photon->py());

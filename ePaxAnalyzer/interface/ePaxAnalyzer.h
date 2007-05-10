@@ -108,7 +108,9 @@ private:
    std::string fMidCone5JetRecoLabel;
    std::string fMidCone7JetRecoLabel;
    std::string fMETRecoLabel;
-   
+   edm::InputTag fBarrelClusterShapeAssocProducer;
+   edm::InputTag fEndcapClusterShapeAssocProducer;
+
    ParticleMatcher* Matcher;
     
    // to be used for ePax output 
