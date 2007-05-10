@@ -129,6 +129,8 @@
 
 namespace pxl {
 
+enum Particles { Electron = 1, Muon = 2, Gamma = 3, MET = 4, KtJet = 5, ItCone5Jet = 7, MidCone5Jet = 8, MidCone7Jet = 9 };
+
 /**
 This class is provided for PXL exception and error handling.
 */
