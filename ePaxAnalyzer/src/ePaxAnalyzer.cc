@@ -541,19 +541,25 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          part.set().setUserRecord<double>("Vtx_X", ele->vx());
          part.set().setUserRecord<double>("Vtx_Y", ele->vy());
          part.set().setUserRecord<double>("Vtx_Z", ele->vz());
-         part.set().setUserRecord<double>("SCE", ele->superCluster()->energy());
+	 part.set().setUserRecord<float>("EoP", ele->eSuperClusterOverP());
+         part.set().setUserRecord<float>("HoE", ele->hadronicOverEm());
+	 part.set().setUserRecord<float>("DEtaSCVtx", ele->deltaEtaSuperClusterTrackAtVtx());
+	 part.set().setUserRecord<float>("DPhiSCVtx", ele->deltaPhiSuperClusterTrackAtVtx());
+	 //part.set().setUserRecord<double>("SCE", ele->superCluster()->energy());
          // the super cluster energy corrected by EnergyScaleFactor
-	 part.set().setUserRecord<float>("SCECorr", ele->caloEnergy());
+	 part.set().setUserRecord<float>("SCE", ele->caloEnergy());
          // the errors on the supercluster energy and track momentum
          part.set().setUserRecord<float>("SCEErr", ele->caloEnergyError());
 	 // the errors on the track momentum
          part.set().setUserRecord<float>("PErr", ele->trackMomentumError());	 
          part.set().setUserRecord<double>("TrackerP", ele->gsfTrack()->p());
-         part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2());
-         part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits());
+	 //the seed cluster energy / track momentum at calo from outermost state
+	 part.set().setUserRecord<float>("ESCSeedPout", ele->eSeedClusterOverPout());
+         //part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2());
+         //part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits());
 	 part.set().setUserRecord<int>("Class", ele->classification());
 	 // the hadronic over electromagnetic fraction
-         part.set().setUserRecord<float>("HadOverEm", ele->hadronicOverEm());
+         
 	 // Get the supercluster (ref) of the Electron
 	 // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
 	 // a SuperClusterCollection is a std::vector<SuperCluster>
@@ -772,6 +778,9 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 part.set().setUserRecord<double>("e5x5", photon->e5x5());
 	 /// Whether or not the SuperCluster has a matched pixel seed
 	 part.set().setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
+	 
+	 // include HOverE
+	 // include E_3x3/E_5x5
 	 numGammaRec++;
       }	 
    }
