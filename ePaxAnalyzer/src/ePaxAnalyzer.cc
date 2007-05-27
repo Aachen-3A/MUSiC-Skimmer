@@ -35,6 +35,10 @@
 #include "DataFormats/EgammaReco/interface/BasicClusterShapeAssociation.h"
 // for ECAL enumerator
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+// for HCAL navigation used in HadOverEm calculation
+#include "Geometry/Records/interface/IdealGeometryRecord.h"
+#include "RecoCaloTools/Selectors/interface/CaloConeSelector.h"
+
 using namespace std;
 
 //
@@ -70,6 +74,9 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fMidCone5JetRecoLabel = iConfig.getUntrackedParameter<string>("MidCone5JetRecoLabel");
    fMidCone7JetRecoLabel = iConfig.getUntrackedParameter<string>("MidCone7JetRecoLabel");
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
+   fHBHELabel = iConfig.getUntrackedParameter<string>("fHBHELabel");
+   fHBHEInstanceName = iConfig.getUntrackedParameter<string>("fHBHEInstanceName");
+   
    
    fNumEvt=0;
    Matcher = new ParticleMatcher();
@@ -94,6 +101,8 @@ ePaxAnalyzer::~ePaxAnalyzer()
 void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
    // set event counter   
    fNumEvt++;    // set this as setUserRecord ?
+   // get the calorimeter geometry in order to navigate through it for HadOverEm calculation
+   iSetup.get<IdealGeometryRecord>().get(theCaloGeom);
 
    // create two ePaxEventViews for Generator/Reconstructed Objects
    pxl::EventView GenEvtView;
@@ -545,6 +554,9 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          part.set().setUserRecord<float>("HoE", ele->hadronicOverEm());
 	 part.set().setUserRecord<float>("DEtaSCVtx", ele->deltaEtaSuperClusterTrackAtVtx());
 	 part.set().setUserRecord<float>("DPhiSCVtx", ele->deltaPhiSuperClusterTrackAtVtx());
+	 //! the seed cluster eta - track eta at calo from outermost state
+	 part.set().setUserRecord<float>("DEtaSeedTrk", ele->deltaEtaSeedClusterTrackAtCalo());
+	 part.set().setUserRecord<float>("DPhiSeedTrk", ele->deltaPhiSeedClusterTrackAtCalo());
 	 //part.set().setUserRecord<double>("SCE", ele->superCluster()->energy());
          // the super cluster energy corrected by EnergyScaleFactor
 	 part.set().setUserRecord<float>("SCE", ele->caloEnergy());
@@ -556,9 +568,8 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 //the seed cluster energy / track momentum at calo from outermost state
 	 part.set().setUserRecord<float>("ESCSeedPout", ele->eSeedClusterOverPout());
          //part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2());
-         //part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits());
+         part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits());
 	 part.set().setUserRecord<int>("Class", ele->classification());
-	 // the hadronic over electromagnetic fraction
          
 	 // Get the supercluster (ref) of the Electron
 	 // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
@@ -578,9 +589,9 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          const reco::ClusterShapeRef& seedShapeRef = seedShpItr->val;
 	 part.set().setUserRecord<double>("e3x3", seedShapeRef->e3x3());
 	 part.set().setUserRecord<double>("e5x5", seedShapeRef->e5x5());
-	 part.set().setUserRecord<double>("r9", seedShapeRef->e3x3()/SCRef->energy()); // ??? use SCRef->rawEnergy() or SCRef->Energy or ele->CaloEnergy
-         part.set().setUserRecord<double>("r19", seedShapeRef->eMax()/seedShapeRef->e3x3());
-	    
+	 part.set().setUserRecord<double>("EtaEta", seedShapeRef->covEtaEta());
+	 part.set().setUserRecord<double>("EtaPhi", seedShapeRef->covEtaPhi());
+	 part.set().setUserRecord<double>("PhiPhi", seedShapeRef->covPhiPhi());
 	 
          numPixelEleRec++;
       }
@@ -754,11 +765,24 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
 // ------------ reading Reconstructed Gammas ------------
 
 void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
-
+   
+   // get Photon Collection
    edm::Handle<reco::PhotonCollection> Photons;
    iEvent.getByLabel(fGammaRecoLabel, Photons);
+   // get ECAL Cluster shapes
+   edm::Handle<reco::BasicClusterShapeAssociationCollection> barrelClShpHandle;
+   iEvent.getByLabel(fBarrelClusterShapeAssocProducer, barrelClShpHandle);
+   edm::Handle<reco::BasicClusterShapeAssociationCollection> endcapClShpHandle;
+   iEvent.getByLabel(fEndcapClusterShapeAssocProducer, endcapClShpHandle);
+   reco::BasicClusterShapeAssociationCollection::const_iterator seedShpItr;
+   // get Handle to HCAL RecHits for HadOverEm calculation:
+   edm::Handle<HBHERecHitCollection> hbhe;
+   //HBHERecHitMetaCollection *HBHE_RecHits = 0;
+   iEvent.getByLabel(fHBHELabel, fHBHEInstanceName, hbhe);  
+   HBHERecHitMetaCollection HBHE_RecHits(*hbhe); 
    
    int numGammaRec = 0;
+   double HoE = 0.;
 
    for (reco::PhotonCollection::const_iterator photon = Photons->begin(); 
 	photon != Photons->end(); ++photon) {  
@@ -779,8 +803,37 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 /// Whether or not the SuperCluster has a matched pixel seed
 	 part.set().setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
 	 
-	 // include HOverE
-	 // include E_3x3/E_5x5
+	 const SuperClusterRef SCRef = photon->superCluster();
+	 //const BasicClusterRef& SCSeed = SCRef.seed(); 
+         // Find the entry in the map corresponding to the seed BasicCluster of the SuperCluster
+         DetId id = SCRef->seed()->getHitsByDetId()[0];
+         if (id.subdetId() == EcalBarrel) {
+            seedShpItr = barrelClShpHandle->find(SCRef->seed());
+         } else {
+            seedShpItr = endcapClShpHandle->find(SCRef->seed());
+         }
+	 
+         const reco::ClusterShapeRef& seedShapeRef = seedShpItr->val;
+	 part.set().setUserRecord<double>("e3x3", seedShapeRef->e3x3());
+	 //part.set().setUserRecord<double>("e5x5", seedShapeRef->e5x5());
+	 //cout << "Comparing E5x5 from Photon: " << photon->e5x5() 
+	 //     << " and from ClusterShape: " << seedShapeRef->e5x5() << endl; // they are identical! 
+  	 part.set().setUserRecord<double>("EtaEta", seedShapeRef->covEtaEta());
+	 part.set().setUserRecord<double>("EtaPhi", seedShapeRef->covEtaPhi());
+	 part.set().setUserRecord<double>("PhiPhi", seedShapeRef->covPhiPhi());
+         
+	 // calculate HadoverEm - now its getting tough ...
+	 CaloConeSelector sel(0.1, theCaloGeom.product(), DetId::Hcal);
+         GlobalPoint pclu(SCRef->x(),SCRef->y(),SCRef->z());
+	 double hcalEnergy = 0.;
+         std::auto_ptr<CaloRecHitMetaCollectionV> chosen=sel.select(pclu,HBHE_RecHits);
+         for (CaloRecHitMetaCollectionV::const_iterator i=chosen->begin(); i!=chosen->end(); i++) {
+            //std::cout << HcalDetId(i->detid()) << " : " << (*i) << std::endl;
+            hcalEnergy += i->energy();
+         }
+         HoE = hcalEnergy/photon->energy();
+         //cout << "H/E : " << HoE << endl;
+         part.set().setUserRecord<float>("HoE", HoE);
 	 numGammaRec++;
       }	 
    }

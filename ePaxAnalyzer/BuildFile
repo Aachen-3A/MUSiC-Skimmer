@@ -1,5 +1,7 @@
+<use name=DataFormats/DetId>
 <use name=DataFormats/EgammaCandidates>
 <use name=DataFormats/EgammaReco>
+<use name=DataFormats/HcalRecHit>
 <use name=DataFormats/JetReco>
 <use name=DataFormats/METReco>
 <use name=DataFormats/MuonReco>
@@ -8,19 +10,29 @@
 <use name=FWCore/Framework>
 <use name=FWCore/MessageLogger>
 <use name=FWCore/ParameterSet>
+<use name=Geometry/CaloGeometry>
+<use name=Geometry/CaloEventSetup>
+<use name=RecoCaloTools/Selectors>
+<use name=RecoCaloTools/MetaCollections>
 <use name=SimDataFormats/HepMCProduct>
 <use name=ePaxPxl/ePax>
 <use name=root>
 <flags SEALPLUGIN=1>
 <export>
+  <use name=DataFormats/DetId>
   <use name=DataFormats/EgammaCandidates>
   <use name=DataFormats/EgammaReco>
+  <use name=DataFormats/HcalRecHit>
   <use name=DataFormats/JetReco>
   <use name=DataFormats/METReco>
   <use name=DataFormats/MuonReco>
   <use name=DataFormats/TrackReco>
   <use name=DataFormats/VertexReco>
   <use name=FWCore/Framework>
+  <use name=Geometry/CaloGeometry>
+  <use name=Geometry/CaloEventSetup>
+  <use name=RecoCaloTools/Selectors>
+  <use name=RecoCaloTools/MetaCollections>
   <use name=SimDataFormats/HepMCProduct>
   <use name=ePaxPxl/ePax>
   <use name=root>

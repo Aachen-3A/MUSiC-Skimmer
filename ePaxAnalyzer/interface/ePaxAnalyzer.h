@@ -8,6 +8,7 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/ESHandle.h"
 #include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -26,6 +27,10 @@
 #include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectron.h"
 #include "DataFormats/EgammaCandidates/interface/SiStripElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/SiStripElectron.h"
+#include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+ 
 // ROOT stuff
 
 #include "TFile.h"
@@ -110,7 +115,11 @@ private:
    std::string fMETRecoLabel;
    edm::InputTag fBarrelClusterShapeAssocProducer;
    edm::InputTag fEndcapClusterShapeAssocProducer;
-
+   std::string fHBHELabel;
+   std::string fHBHEInstanceName;
+   
+   edm::ESHandle<CaloGeometry>  theCaloGeom;
+   
    ParticleMatcher* Matcher;
     
    // to be used for ePax output 
