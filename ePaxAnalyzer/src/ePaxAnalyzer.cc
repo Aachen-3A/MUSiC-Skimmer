@@ -99,6 +99,7 @@ ePaxAnalyzer::~ePaxAnalyzer()
 // ------------ method called to for each event  ------------
 
 void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  //cout<<"Event Number: "<<fNumEvt<<endl;
    // set event counter   
    fNumEvt++;    // set this as setUserRecord ?
    // get the calorimeter geometry in order to navigate through it for HadOverEm calculation
@@ -592,7 +593,25 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 part.set().setUserRecord<double>("EtaEta", seedShapeRef->covEtaEta());
 	 part.set().setUserRecord<double>("EtaPhi", seedShapeRef->covEtaPhi());
 	 part.set().setUserRecord<double>("PhiPhi", seedShapeRef->covPhiPhi());
-	 
+
+	 //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection)
+	 part.set().setUserRecord<double>("seedphi", SCRef->seed()->phi());
+	 part.set().setUserRecord<double>("seedeta", SCRef->seed()->eta());
+	 part.set().setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
+	 /*cout<<"seedShapeRef->eMaxId().rawId(): "<<seedShapeRef->eMaxId().rawId()<<endl;
+	 cout<<"SCRef->seed()->phi(): "<<SCRef->seed()->phi()<<endl;
+	 cout<<"SCRef->seed()->eta(): "<<SCRef->seed()->eta()<<endl;
+	 cout<<"ele->charge(): "<<ele->charge()<<endl;
+	 cout<<"ele->pt(): "<<ele->pt()<<endl;
+	 cout<<"ele->phi(): "<<ele->phi()<<endl;
+	 cout<<"ele->eta(): "<<ele->eta()<<endl;
+	 cout<<"ele->energy(): "<<ele->energy()<<endl;
+	 cout<<"ele->caloEnergy(): "<<ele->caloEnergy()<<endl;
+	 cout<<"ele->superCluster()->energy(): "<<ele->superCluster()->energy()<<endl;
+	 cout<<"ele->superCluster()->rawEnergy(): "<<ele->superCluster()->rawEnergy()<<endl;
+	 cout<<"ele->eSuperClusterOverP(): "<<ele->eSuperClusterOverP()<<endl;
+	 cout<<"ele->gsfTrack()->p(): "<<ele->gsfTrack()->p()<<endl;*/
+	 	 
          numPixelEleRec++;
       }
    }
@@ -821,6 +840,11 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
   	 part.set().setUserRecord<double>("EtaEta", seedShapeRef->covEtaEta());
 	 part.set().setUserRecord<double>("EtaPhi", seedShapeRef->covEtaPhi());
 	 part.set().setUserRecord<double>("PhiPhi", seedShapeRef->covPhiPhi());
+
+	 //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection)
+	 part.set().setUserRecord<double>("seedphi", SCRef->seed()->phi());
+	 part.set().setUserRecord<double>("seedeta", SCRef->seed()->eta());
+	 part.set().setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
          
 	 // calculate HadoverEm - now its getting tough ...
 	 CaloConeSelector sel(0.1, theCaloGeom.product(), DetId::Hcal);
