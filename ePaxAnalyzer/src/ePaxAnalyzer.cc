@@ -366,6 +366,7 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part.get().vector().getPt() << endl;
    // Perform Muon Corrections!
    // loop over muons and subtract them
+   // FIXME: Really only correct for selected muons? Better take GenMET-collection without muons?
    if (EvtView.get().findUserRecord<int>("NumMuon") > 0) { 
       for (pxl::Objects::TypeIterator<pxl::Particle> iter(EvtView().getObjects()); !iter.isDone(); iter.next()) { 
          if (iter.object().get().getName() == "Muon")  {
@@ -375,10 +376,14 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
          }
       }
    } 
-   if (fDebug > 1) cout << "GenMET after muon corr: Px = " << part.get().vector().getPx() << "   Py = " << part.get().vector().getPy() << "   Pt = " << part.get().vector().getPt() << endl;     
-   //there is always MET in event, just decide if cuts passed
-   if (part.get().vector().getPt() > 20) {
-      numMETMC++; 
+   if (fDebug > 1) cout << "GenMET after muon corr: Px = " << part.get().vector().getPx() << "   Py = " << part.get().vector().getPy() << "   Pt = " << part.get().vector().getPt() << endl;  
+
+   //reset eta-info after muon corrections
+   part.set().vector(pxl::set).setPz(0.);  
+   part.set().vector(pxl::set).setMass(0.);   
+   //there is always MET in event, just decide if cuts passed (do this after muon corrections!)
+   if (METMC_cuts(part)) { 
+     numMETMC++; 
    }
    EvtView.set().setUserRecord<int>("NumMET", numMETMC);
    if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
@@ -608,8 +613,22 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 cout<<"ele->energy(): "<<ele->energy()<<endl;
 	 cout<<"ele->caloEnergy(): "<<ele->caloEnergy()<<endl;
 	 cout<<"ele->superCluster()->energy(): "<<ele->superCluster()->energy()<<endl;
-	 cout<<"ele->superCluster()->rawEnergy(): "<<ele->superCluster()->rawEnergy()<<endl;
-	 cout<<"ele->eSuperClusterOverP(): "<<ele->eSuperClusterOverP()<<endl;
+	 cout<<"ele->superCluster()->rawEnergy(): "<<ele->superCluster()->rawEnergy()<<endl;*/
+	 //if(ele->eSuperClusterOverP() - ele->caloEnergy()/ele->trackMomentumAtVtx().R() >0.01){
+	 
+	 /*cout<<""<<endl;
+	 cout<<"ele->eSuperClusterOverP()                                                 : "<<ele->eSuperClusterOverP()<<endl;
+	 cout<<"EOverP by hand (ele->caloEnergy()/ele->trackMomentumAtVtx().R())          : "<< ele->caloEnergy()/ele->trackMomentumAtVtx().R()<<endl;
+	 cout<<"ele->trackMomentumAtVtx().R(): "<<ele->trackMomentumAtVtx().R()<<endl;
+	 cout<<"ele->TrackPostionAtVtx(): "<<ele->TrackPositionAtVtx()<<endl;
+	 cout<<"ele->gsfTrack()->p(): "<<ele->gsfTrack()->p()<<endl;
+	 cout<<"ele->gsfTrack()->innerMomentum().R(): "<<ele->gsfTrack()->innerMomentum().R()<<endl;
+	 cout<<"ele->gsfTrack()->innerPosition(): "<<ele->gsfTrack()->innerPosition()<<endl;
+	 cout<<""<<endl;*/
+	 
+	 //}
+	 /*cout<<"ele->gsfTrack()->innerMomentum().R(): "<<ele->gsfTrack()->innerMomentum().R()<<endl;
+	 cout<<"ele->trackMomentumAtVtx().R(): "<<ele->trackMomentumAtVtx().R()<<endl;
 	 cout<<"ele->gsfTrack()->p(): "<<ele->gsfTrack()->p()<<endl;*/
 	 	 
          numPixelEleRec++;
@@ -754,6 +773,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    }
    // Perform Muon Corrections!   
    // loop over muons and subtract them   
+   // FIXME: Really only correct for selected muons? Is there official muon correction out yet?
    if (EvtView.get().findUserRecord<int>("NumMuon") > 0) {      
    for (pxl::Objects::TypeIterator<pxl::Particle> iter(EvtView().getObjects()); !iter.isDone(); iter.next()) {
       if (iter.object().get().getName() == "Muon")  {
@@ -763,6 +783,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
          }  
       }   
    } 
+   //reset eta-info after muon corrections
    part.set().vector(pxl::set).setPz(0.);  
    part.set().vector(pxl::set).setMass(0.);
    if (fDebug > 1) {
@@ -773,8 +794,9 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
       cout << "RecMET after muon corr: Px = " << part.get().vector().getPx() << "   Py = " << part.get().vector().getPy() 
            << "   Pt = " << part.get().vector().getPt() << endl;   
    } 
-   if (part.get().vector().getPt() > 20) {
-      numMETRec++;
+   //there is always MET in event, just decide if cuts passed (do this after muon corrections!)
+   if (MET_cuts(part)) { 
+     numMETRec++;
    }
 
    EvtView.set().setUserRecord<int>("NumMET", numMETRec);
@@ -932,9 +954,9 @@ bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) cons
 
 // ------------ method to define MC-MET-cuts
 
-bool ePaxAnalyzer::METMC_cuts(const reco::GenMET MCmet) const {
+bool ePaxAnalyzer::METMC_cuts(const pxl::ParticleRef MCmet) const {
    // 
-   if (MCmet.pt() < 30) return false;
+   if (MCmet.get().vector().getPt() < 30) return false;
    return true; 
 }
 
@@ -996,9 +1018,9 @@ bool ePaxAnalyzer::Gamma_cuts(reco::PhotonCollection::const_iterator photon) con
 
 // ------------ method to define MC-MET-cuts
 
-bool ePaxAnalyzer::MET_cuts(const reco::MET met) const {
+bool ePaxAnalyzer::MET_cuts(const pxl::ParticleRef met) const {
    // 
-   if (met.pt() < 30) return false;
+   if (met.get().vector().getPt() < 30) return false;
    return true;
 }
 

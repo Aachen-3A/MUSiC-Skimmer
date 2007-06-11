@@ -72,14 +72,14 @@ private:
    bool EleMC_cuts(HepMC::GenEvent::particle_const_iterator MCele) const;
    bool GammaMC_cuts(HepMC::GenEvent::particle_const_iterator MCgamma) const;
    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
-   bool METMC_cuts(const reco::GenMET MCmet) const;
+   bool METMC_cuts(const pxl::ParticleRef MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
    bool Muon_cuts(reco::MuonCollection::const_iterator muon) const;
    bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
    bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;
    bool Gamma_cuts(reco::PhotonCollection::const_iterator photon) const;
    bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
-   bool MET_cuts(const reco::MET met) const;
+   bool MET_cuts(const pxl::ParticleRef met) const;
    std::string getEventClass(pxl::EventViewRef EvtView);
   
    /*void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
