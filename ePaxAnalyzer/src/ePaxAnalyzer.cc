@@ -726,7 +726,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPz(jet->pz());
          part.set().vector(pxl::set).setE(jet->energy());
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
-	 part.set().setUserRecord<double>("HadFrac", jet->energyFractionHadronic());
+	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<double>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
