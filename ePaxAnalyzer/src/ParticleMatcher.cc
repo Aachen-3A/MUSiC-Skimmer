@@ -1,7 +1,6 @@
 #include "ePaxDemo/ePaxAnalyzer/interface/ParticleMatcher.hh"
 
 using namespace std;
-
 // ------------ matching Method ------------
 
 void ParticleMatcher::matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView) {
@@ -74,7 +73,22 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
 	    }
 	    count++;
 	    gen_iter.next();
-	 }  
+	 }
+         if (matched != -1) {
+            count = 0;
+            found = false;
+            pxl::ParticleFilterIterator rec_iter(RecFilter);
+            while (!rec_iter.isDone() && !found) {
+               if (count == matched) {
+                  pxl::ParticleWkPtr pa = rec_iter.wkPtr();
+                  pa.set().setUserRecord<bool>("hctaM", true);
+                  found = true;
+                  if (fDebug > 0) cout << "RecObject " << matched << " has matching Gen " << endl;      
+               }
+               count++;
+               rec_iter.next();
+            }
+         } 
       }
       for (int icol = 0; icol < RecFilter.getSize(); icol++) {
          // better implementation then always iterate over all particles?????
@@ -92,6 +106,21 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
 	    count++;
 	    rec_iter.next();
 	 }
+         if (matched != -1) {
+            count = 0;
+            found = false;
+            pxl::ParticleFilterIterator gen_iter(GenFilter);
+            while (!gen_iter.isDone() && !found) {
+               if (count == matched) {
+                  pxl::ParticleWkPtr pa = gen_iter.wkPtr();
+                  pa.set().setUserRecord<bool>("hctaM", true);
+                  found = true;
+                  if (fDebug > 0) cout << "GenObject " << matched << " has matching Rec " << endl;           
+               }
+               count++;
+               gen_iter.next();
+            }
+         }
       }
    }
 }
