@@ -81,7 +81,12 @@ private:
    bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
    bool MET_cuts(const pxl::ParticleRef met) const;
    std::string getEventClass(pxl::EventViewRef EvtView);
-  
+   // TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
+   double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
+   double DeltaPhi(double v1, double v2);
+   double GetDeltaR(double eta1, double eta2, double phi1, double phi2);
+ 
    /*void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
    void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
    int SmallestColumnElement(TMatrixT<double>* matrix, int col);

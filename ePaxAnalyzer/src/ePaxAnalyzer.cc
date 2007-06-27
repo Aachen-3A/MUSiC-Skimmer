@@ -39,6 +39,10 @@
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "RecoCaloTools/Selectors/interface/CaloConeSelector.h"
 
+//for isolation
+#include "DataFormats/CaloTowers/interface/CaloTower.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+
 using namespace std;
 
 //
@@ -175,6 +179,10 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    int numEleMC = 0;
    int numGammaMC = 0;
 
+   //save mother of stable particle
+   HepMC::GenParticle* p_mother; 
+   int mother = 0;
+
    const  HepMC::GenEvent* myGenEvent = HepMC_Handle->GetEvent();
    
    // Store primary Vertex:
@@ -201,6 +209,17 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_Y", (*p)->creationVertex().y());
 	    part.set().setUserRecord<double>("Vtx_Z", (*p)->creationVertex().z());
 	    numMuonMC++; 
+
+	    //save mother of stable muon
+	    p_mother =(*p)->mother(); 
+	    mother = p_mother->pdg_id();
+	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
+	    while( fabs(mother) == 13){
+	      p_mother = p_mother->mother();
+	      mother = p_mother->pdg_id();
+	    }
+	    part.set().setUserRecord<int>("mother_id", mother);
+	   	   
          }
       }
       // fill Gen Electrons passing some basic cuts
@@ -217,6 +236,17 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_Y", (*p)->creationVertex().y());
 	    part.set().setUserRecord<double>("Vtx_Z", (*p)->creationVertex().z());
 	    numEleMC++; 
+
+	    //save mother of stable electron
+	    p_mother =(*p)->mother(); 
+	    mother = p_mother->pdg_id();
+	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
+	    while( fabs(mother) == 13){
+	      p_mother = p_mother->mother();
+	      mother = p_mother->pdg_id();
+	    }
+	    part.set().setUserRecord<int>("mother_id", mother);
+
          }
       }
       // fill Gen Gammas passing some basic cuts
@@ -230,6 +260,17 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
             part.set().vector(pxl::set).setPz((*p)->momentum().z());
             part.set().vector(pxl::set).setMass((*p)->Mass());
 	    numGammaMC++;
+
+	    //save mother of stable gamma
+	    p_mother =(*p)->mother(); 
+	    mother = p_mother->pdg_id();
+	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
+	    while( fabs(mother) == 13){
+	      p_mother = p_mother->mother();
+	      mother = p_mother->pdg_id();
+	    }
+	    part.set().setUserRecord<int>("mother_id", mother);
+
          }
       }
    } //end of loop over generated-particles
@@ -457,8 +498,12 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
          part.set().setUserRecord<int>("LostHits", muon->combinedMuon()->numberOfLostHits()); 
 	 
 	 
-	 // get isolation ;0 
-         // part.set().setUserRecord("isolation", 0.9);
+	 // TEMPORARY: calculate isolation ourselves
+	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->outerEta(), muon->track()->outerPhi(), 0.2, 0.1);
+	 double TrkIso = IsoTrkSum(iEvent,  muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), 0.2, 0.1);
+	 part.set().setUserRecord<double>("CaloIso", CaloIso);
+	 part.set().setUserRecord<double>("TrkIso", TrkIso);
+
          numMuonRec++;
       }
    }
@@ -630,6 +675,14 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 /*cout<<"ele->gsfTrack()->innerMomentum().R(): "<<ele->gsfTrack()->innerMomentum().R()<<endl;
 	 cout<<"ele->trackMomentumAtVtx().R(): "<<ele->trackMomentumAtVtx().R()<<endl;
 	 cout<<"ele->gsfTrack()->p(): "<<ele->gsfTrack()->p()<<endl;*/
+
+	 // TEMPORARY: calculate isolation ourselves
+	 double CaloPt = ( ele->superCluster()->rawEnergy() + ele->superCluster()->rawEnergy()*ele->hadronicOverEm() ) / cosh(ele->trackMomentumAtCalo().eta());
+	 double CaloIso = IsoCalSum(iEvent, CaloPt, ele->trackMomentumAtCalo().eta(), ele->trackMomentumAtCalo().phi(), 0.2, 0.1);
+	 double TrkIso = IsoTrkSum(iEvent, ele->gsfTrack()->pt(), ele->gsfTrack()->eta(), ele->gsfTrack()->phi(), 0.2, 0.1);
+	 //double TrkIso = IsoTrkSum(iEvent, ele->trackMomentumAtVtx().Rho(), ele->trackMomentumAtVtx().Eta(), ele->trackMomentumAtVtx().Phi(), 0.2, 0.1);
+	 part.set().setUserRecord<double>("CaloIso", CaloIso);
+	 part.set().setUserRecord<double>("TrkIso", TrkIso);
 	 	 
          numPixelEleRec++;
       }
@@ -880,6 +933,14 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
          HoE = hcalEnergy/photon->energy();
          //cout << "H/E : " << HoE << endl;
          part.set().setUserRecord<float>("HoE", HoE);
+
+	 // TEMPORARY: calculate isolation ourselves
+	 double CaloPt = ( hcalEnergy + photon->superCluster()->rawEnergy() ) / cosh(photon->eta());
+	 double CaloIso = IsoCalSum(iEvent, CaloPt, photon->eta(), photon->phi(), 0.2, 0.1);
+	 double TrkIso = IsoTrkSum(iEvent, 0., photon->eta(), photon->phi(), 0.2, 0.1);
+	 part.set().setUserRecord<double>("CaloIso", CaloIso);
+	 part.set().setUserRecord<double>("TrkIso", TrkIso);
+
 	 numGammaRec++;
       }	 
    }
@@ -1023,6 +1084,95 @@ bool ePaxAnalyzer::MET_cuts(const pxl::ParticleRef met) const {
    if (met.get().vector().getPt() < 30) return false;
    return true;
 }
+
+
+
+//------------------------------------------------------------------------------
+
+double ePaxAnalyzer::IsoCalSum (const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed){
+// Computes the sum of Pt inside a cone of R=iso_DR
+// using 4-vectors stored in CaloTower objects
+
+  float sum = 0.;
+
+  edm::Handle<CaloTowerCollection> CaloTowerData ;
+  iEvent.getByLabel( "towerMaker", CaloTowerData );
+
+ for( CaloTowerCollection::const_iterator tower = CaloTowerData->begin(); 
+         tower != CaloTowerData->end(); ++tower ) {
+   if (tower->energy() > iso_Seed){
+      float eta = tower->eta();
+      float phi = tower->phi();
+      float DR = GetDeltaR(ParticleCalEta, eta, ParticleCalPhi, phi);
+      if (DR <= 0.) {DR = 0.001;}
+      if (DR < iso_DR){
+          float pt = tower->energy() / cosh(eta);
+          sum += pt;
+      }
+    }
+  }
+
+  sum -= ParticleCalPt;
+  
+  return sum;
+
+}
+
+
+// TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//------------------------------------------------------------------------------
+
+double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed){
+// Computes the sum of Pt inside a cone of R=iso_DR
+// using 4-vectors stored in Track objects
+
+  float sum = 0.;
+
+  edm::Handle<TrackCollection> TrackData ;
+  iEvent.getByLabel( "ctfWithMaterialTracks", TrackData );
+
+  for( reco::TrackCollection::const_iterator track = TrackData->begin(); 
+         track != TrackData->end(); ++track ) {
+    if (track->p() > iso_Seed){
+      float eta = track->eta();
+      float phi = track->phi();
+      float DR = GetDeltaR(ParticleTrkEta, eta, ParticleTrkPhi, phi);
+      if (DR <= 0.) {DR = 0.001;}
+      if (DR < iso_DR){
+          sum += track->pt();
+      }
+    }
+  }
+  
+  sum -= ParticleTrkPt;
+
+  return sum;
+
+}
+
+//------------------------------------------------------------------------------
+
+double ePaxAnalyzer::DeltaPhi(double v1, double v2)
+{ // Computes the correctly normalized phi difference
+  // v1, v2 = phi of object 1 and 2
+ 
+ double pi    = 3.141592654;
+ double twopi = 6.283185307;
+ 
+ double diff = fabs(v2 - v1);
+ double corr = twopi - diff;
+ if (diff < pi){ return diff;} else { return corr;} 
+ 
+}
+
+double ePaxAnalyzer::GetDeltaR(double eta1, double eta2, double phi1, double phi2)
+{ // Computes the DeltaR of two objects from their eta and phi values
+
+ return sqrt( (eta1-eta2)*(eta1-eta2) 
+            + DeltaPhi(phi1, phi2)*DeltaPhi(phi1, phi2) );
+}
+
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(ePaxAnalyzer);
