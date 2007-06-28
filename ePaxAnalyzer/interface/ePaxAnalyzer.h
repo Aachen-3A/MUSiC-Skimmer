@@ -68,9 +68,9 @@ private:
    virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecGammas(const edm::Event&, pxl::EventViewRef);
 
-   bool MuonMC_cuts(HepMC::GenEvent::particle_const_iterator MCmuon) const;
-   bool EleMC_cuts(HepMC::GenEvent::particle_const_iterator MCele) const;
-   bool GammaMC_cuts(HepMC::GenEvent::particle_const_iterator MCgamma) const;
+   bool MuonMC_cuts(const GenParticleCandidate* MCmuon) const;
+   bool EleMC_cuts(const GenParticleCandidate* MCele) const;
+   bool GammaMC_cuts(const GenParticleCandidate* MCgamma) const;
    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
    bool METMC_cuts(const pxl::ParticleRef MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
@@ -84,6 +84,7 @@ private:
    // TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
    double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
+   double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
    double DeltaPhi(double v1, double v2);
    double GetDeltaR(double eta1, double eta2, double phi1, double phi2);
  
@@ -102,6 +103,7 @@ private:
    bool fGenOnly;
    // The labels used in cfg-file 
    std::string fHepMCLabel;
+   std::string fgenParticleCandidatesLabel;
    std::string fKtJetMCLabel;
    std::string fItCone5JetMCLabel;
    std::string fMidCone5JetMCLabel;

@@ -39,6 +39,10 @@
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "RecoCaloTools/Selectors/interface/CaloConeSelector.h"
 
+//for GenPartciles
+#include "DataFormats/Candidate/interface/Candidate.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleCandidate.h"
+
 //for isolation
 #include "DataFormats/CaloTowers/interface/CaloTower.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -60,6 +64,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fDebug = iConfig.getUntrackedParameter<int>("debug");
    // The labels used in cfg-file 
    fHepMCLabel = iConfig.getUntrackedParameter<string>("HepMCLabel");
+   fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
    fKtJetMCLabel = iConfig.getUntrackedParameter<string>("KtJetMCLabel");
    fItCone5JetMCLabel = iConfig.getUntrackedParameter<string>("ItCone5JetMCLabel");
    fMidCone5JetMCLabel = iConfig.getUntrackedParameter<string>("MidCone5JetMCLabel");
@@ -172,17 +177,21 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
 
-   edm::Handle<edm::HepMCProduct> HepMC_Handle ;
-   iEvent.getByLabel( fHepMCLabel, HepMC_Handle );
+  //gen particles
+  edm::Handle<reco::CandidateCollection> genParticleHandel;
+  iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
 
    int numMuonMC = 0;
    int numEleMC = 0;
    int numGammaMC = 0;
 
    //save mother of stable particle
-   HepMC::GenParticle* p_mother; 
+   const Candidate* p_mother; 
    int mother = 0;
 
+   //FIXME: get primary vertex also from candidates
+   edm::Handle<edm::HepMCProduct> HepMC_Handle ;
+   iEvent.getByLabel( fHepMCLabel, HepMC_Handle );
    const  HepMC::GenEvent* myGenEvent = HepMC_Handle->GetEvent();
    
    // Store primary Vertex:
@@ -193,83 +202,102 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    GenVtx.set().vector(pxl::set).setZ((*(myGenEvent->vertices_begin()))->position().z());
 
    // loop over all particles
-   for ( HepMC::GenEvent::particle_const_iterator p = myGenEvent->particles_begin();
-         p != myGenEvent->particles_end(); ++p ) {
-      // fill Gen Muons passing some basic cuts
-      if ( abs((*p)->pdg_id()) == 13 && (*p)->status() == 1) {
+   for( reco::CandidateCollection::const_iterator pa = genParticleHandel->begin(); 
+	pa != genParticleHandel->end(); ++ pa ) {
+
+     //cast iterator into GenParticleCandidate
+     const GenParticleCandidate* p = (const GenParticleCandidate*) &(*pa);
+
+     // fill Gen Muons passing some basic cuts
+     if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
          if ( MuonMC_cuts(p) ) { 
             pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
             part.set().setName("Muon");
-            part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
-            part.set().vector(pxl::set).setPx((*p)->momentum().x());
-            part.set().vector(pxl::set).setPy((*p)->momentum().y());
-            part.set().vector(pxl::set).setPz((*p)->momentum().z());
-            part.set().vector(pxl::set).setMass((*p)->Mass());
-	    part.set().setUserRecord<double>("Vtx_X", (*p)->creationVertex().x());
-	    part.set().setUserRecord<double>("Vtx_Y", (*p)->creationVertex().y());
-	    part.set().setUserRecord<double>("Vtx_Z", (*p)->creationVertex().z());
-	    numMuonMC++; 
+            part.set().setCharge( p->charge() );
+            part.set().vector(pxl::set).setPx(p->px());
+            part.set().vector(pxl::set).setPy(p->py());
+            part.set().vector(pxl::set).setPz(p->pz());
+            part.set().vector(pxl::set).setMass(p->mass());
+	    part.set().setUserRecord<double>("Vtx_X", p->vx());
+	    part.set().setUserRecord<double>("Vtx_Y", p->vy());
+	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
+
+	    // TEMPORARY: calculate isolation ourselves
+	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.2, 0.1);
+	    part.set().setUserRecord<double>("GenIso", GenIso);
 
 	    //save mother of stable muon
-	    p_mother =(*p)->mother(); 
-	    mother = p_mother->pdg_id();
+	    p_mother =p->mother(); 
+	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
 	    while( fabs(mother) == 13){
 	      p_mother = p_mother->mother();
-	      mother = p_mother->pdg_id();
+	      mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
+
+	    numMuonMC++; 
 	   	   
          }
       }
       // fill Gen Electrons passing some basic cuts
-      if ( abs((*p)->pdg_id()) == 11 && (*p)->status() == 1) {
+      if ( abs(p->pdgId()) == 11 && p->status() == 1) {
          if ( EleMC_cuts(p) ) { 
             pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
             part.set().setName("Ele");
-            part.set().setCharge(((*p)->pdg_id() > 0) ? -1 : 1);
-            part.set().vector(pxl::set).setPx((*p)->momentum().x());
-            part.set().vector(pxl::set).setPy((*p)->momentum().y());
-            part.set().vector(pxl::set).setPz((*p)->momentum().z());
-            part.set().vector(pxl::set).setMass((*p)->Mass());
-	    part.set().setUserRecord<double>("Vtx_X", (*p)->creationVertex().x());
-	    part.set().setUserRecord<double>("Vtx_Y", (*p)->creationVertex().y());
-	    part.set().setUserRecord<double>("Vtx_Z", (*p)->creationVertex().z());
-	    numEleMC++; 
+            part.set().setCharge(p->charge());
+            part.set().vector(pxl::set).setPx(p->px());
+            part.set().vector(pxl::set).setPy(p->py());
+            part.set().vector(pxl::set).setPz(p->pz());
+            part.set().vector(pxl::set).setMass(p->mass());
+	    part.set().setUserRecord<double>("Vtx_X", p->vx());
+	    part.set().setUserRecord<double>("Vtx_Y", p->vy());
+	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
 
+	    // TEMPORARY: calculate isolation ourselves
+	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.2, 0.1);
+	    part.set().setUserRecord<double>("GenIso", GenIso);
+	    
 	    //save mother of stable electron
-	    p_mother =(*p)->mother(); 
-	    mother = p_mother->pdg_id();
+	    p_mother =p->mother(); 
+	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
 	    while( fabs(mother) == 13){
 	      p_mother = p_mother->mother();
-	      mother = p_mother->pdg_id();
+	      mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
+
+	    numEleMC++; 
 
          }
       }
       // fill Gen Gammas passing some basic cuts
-      if ( abs((*p)->pdg_id()) == 22 && (*p)->status() == 1) {
+      if ( abs(p->pdgId()) == 22 && p->status() == 1) {
          if ( GammaMC_cuts(p) ) { 
             pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
             part.set().setName("Gamma");
             part.set().setCharge(0);
-            part.set().vector(pxl::set).setPx((*p)->momentum().x());
-            part.set().vector(pxl::set).setPy((*p)->momentum().y());
-            part.set().vector(pxl::set).setPz((*p)->momentum().z());
-            part.set().vector(pxl::set).setMass((*p)->Mass());
-	    numGammaMC++;
+            part.set().vector(pxl::set).setPx(p->px());
+            part.set().vector(pxl::set).setPy(p->py());
+            part.set().vector(pxl::set).setPz(p->pz());
+            part.set().vector(pxl::set).setMass(p->mass());
 
+	    // TEMPORARY: calculate isolation ourselves
+	    double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.2, 0.1); //0. since gamma not charged!
+	    part.set().setUserRecord<double>("GenIso", GenIso);
+	    
 	    //save mother of stable gamma
-	    p_mother =(*p)->mother(); 
-	    mother = p_mother->pdg_id();
+	    p_mother =p->mother(); 
+	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
 	    while( fabs(mother) == 13){
 	      p_mother = p_mother->mother();
-	      mother = p_mother->pdg_id();
+	      mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
+
+	    numGammaMC++;
 
          }
       }
@@ -979,28 +1007,28 @@ void ePaxAnalyzer::endJob() {
 
 // ------------ method to define MC-MUON-cuts
 
-bool ePaxAnalyzer::MuonMC_cuts(HepMC::GenEvent::particle_const_iterator MCmuon) const {
+bool ePaxAnalyzer::MuonMC_cuts(const GenParticleCandidate* MCmuon) const {
    //
-   if ((*MCmuon)->momentum().perp() < 10) return false;
-   if (fabs((*MCmuon)->momentum().eta()) > 2.4) return false;
+   if (MCmuon->pt() < 10) return false;
+   if (fabs(MCmuon->eta()) > 2.4) return false;
    return true;
 }
 
 // ------------ method to define MC-Electron-cuts
 
-bool ePaxAnalyzer::EleMC_cuts(HepMC::GenEvent::particle_const_iterator MCele) const {
+bool ePaxAnalyzer::EleMC_cuts(const GenParticleCandidate* MCele) const {
    //
-   if ((*MCele)->momentum().perp() < 10) return false;
-   if (fabs((*MCele)->momentum().eta()) > 5.) return false;
+   if (MCele->pt() < 10) return false;
+   if (fabs(MCele->eta()) > 5.) return false;
    return true;
 }
 
 // ------------ method to define MC-Gamma-cuts
 
-bool ePaxAnalyzer::GammaMC_cuts(HepMC::GenEvent::particle_const_iterator MCgamma) const {
+bool ePaxAnalyzer::GammaMC_cuts(const GenParticleCandidate* MCgamma) const {
    //
-   if ((*MCgamma)->momentum().perp() < 30) return false;
-   if (fabs((*MCgamma)->momentum().eta()) > 5.0) return false;
+   if (MCgamma->pt() < 30) return false;
+   if (fabs(MCgamma->eta()) > 5.0) return false;
    return true;
 }
 
@@ -1086,7 +1114,7 @@ bool ePaxAnalyzer::MET_cuts(const pxl::ParticleRef met) const {
 }
 
 
-
+// TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //------------------------------------------------------------------------------
 
 double ePaxAnalyzer::IsoCalSum (const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed){
@@ -1118,8 +1146,6 @@ double ePaxAnalyzer::IsoCalSum (const edm::Event& iEvent, double ParticleCalPt, 
 
 }
 
-
-// TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //------------------------------------------------------------------------------
 
 double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed){
@@ -1145,6 +1171,46 @@ double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, 
   }
   
   sum -= ParticleTrkPt;
+
+  return sum;
+
+}
+
+//------------------------------------------------------------------------------
+
+double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed){
+// Computes the sum of Pt inside a cone of R=iso_DR
+// using 4-vectors stored in GenParticle objects
+
+  float sum = 0.;
+
+  //gen particles
+  edm::Handle<reco::CandidateCollection> genParticleHandel;
+  iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
+
+  // loop over all particles
+  for( reco::CandidateCollection::const_iterator pa = genParticleHandel->begin(); 
+       pa != genParticleHandel->end(); ++ pa ) {
+
+    //cast iterator into GenParticleCandidate
+    const GenParticleCandidate* p = (const GenParticleCandidate*) &(*pa);
+
+    // only consider stable partciles and charged particles in order to be more comparable with track-isolation
+    if ( p->status() == 1 && p->charge() != 0 ) {
+
+      if (p->energy() > iso_Seed){
+	float eta = p->eta();
+	float phi = p->phi();
+	float DR = GetDeltaR(ParticleGenEta, eta, ParticleGenPhi, phi);
+	if (DR <= 0.) {DR = 0.001;}
+	if (DR < iso_DR){
+          sum += p->pt();
+	}
+      }
+    }
+  }
+  
+  sum -= ParticleGenPt;
 
   return sum;
 
