@@ -230,9 +230,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    p_mother =p->mother(); 
 	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while( fabs(mother) == 13){
-	      p_mother = p_mother->mother();
-	      mother = p_mother->pdgId();
+	    while (abs(mother) == 13) {
+	       p_mother = p_mother->mother();
+	       mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
 
@@ -262,9 +262,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    p_mother =p->mother(); 
 	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while( fabs(mother) == 13){
-	      p_mother = p_mother->mother();
-	      mother = p_mother->pdgId();
+	    while (abs(mother) == 11) {
+	       p_mother = p_mother->mother();
+	       mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
 
@@ -291,9 +291,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    p_mother =p->mother(); 
 	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while( fabs(mother) == 13){
-	      p_mother = p_mother->mother();
-	      mother = p_mother->pdgId();
+	    while (abs(mother) == 22) {
+	       p_mother = p_mother->mother();
+	       mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
 
