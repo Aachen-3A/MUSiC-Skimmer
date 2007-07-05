@@ -230,9 +230,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    p_mother =p->mother(); 
 	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while (abs(mother) == 13) {
-	       p_mother = p_mother->mother();
-	       mother = p_mother->pdgId();
+	    while( abs(mother) == 13 ){
+	      p_mother = p_mother->mother();
+	      mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
 
@@ -262,9 +262,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    p_mother =p->mother(); 
 	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while (abs(mother) == 11) {
-	       p_mother = p_mother->mother();
-	       mother = p_mother->pdgId();
+	    while( abs(mother) == 11 ){
+	      p_mother = p_mother->mother();
+	      mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
 
@@ -291,9 +291,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    p_mother =p->mother(); 
 	    mother = p_mother->pdgId();
 	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while (abs(mother) == 22) {
-	       p_mother = p_mother->mother();
-	       mother = p_mother->pdgId();
+	    while( abs(mother) == 22 ){
+	      p_mother = p_mother->mother();
+	      mother = p_mother->pdgId();
 	    }
 	    part.set().setUserRecord<int>("mother_id", mother);
 
@@ -326,6 +326,10 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
    int numItCone5JetMC = 0;
    int numMidCone5JetMC = 0;
    int numMidCone7JetMC = 0;
+
+   vector <const GenParticleCandidate*> genJetConstit; //genJet-constituents
+   int numGenJetConstit_withcuts = 0;
+   double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
    
    //Loop over KtGenJets
    for( reco::GenJetCollection::const_iterator genJet = Kt_GenJets->begin(); 
@@ -336,12 +340,27 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
-         part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
+         part.set().vector(pxl::set).setE((genJet->energy()));
 	 //fill additional jet-related infos
 	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
 	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
 	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
 	 numKtJetMC++;
+	
+	 //save number of GenJet-constituents fullfilling sone cuts
+	 numGenJetConstit_withcuts = 0; //reset variable
+	 genJetConstit = genJet->getConstituents();
+	 for( std::vector<const GenParticleCandidate*>::iterator constit = genJetConstit.begin(); 
+	      constit != genJetConstit.end(); ++constit ) {
+	    
+	   //raise counter if cut passed
+	   if( (*constit)->pt()>constit_pT ) numGenJetConstit_withcuts++; 
+	
+	 }//end-of loop over all constituents
+	
+	 part.set().setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
+
       }
    }   
    EvtView.set().setUserRecord<int>("NumKtJet", numKtJetMC);
@@ -355,12 +374,26 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
-         part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
+         part.set().vector(pxl::set).setE((genJet->energy()));
 	 //fill additional jet-related infos
 	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
 	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
 	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
          numItCone5JetMC++;
+
+	 //save number of GenJet-constituents fullfilling sone cuts
+	 numGenJetConstit_withcuts = 0; //reset variable
+	 genJetConstit = genJet->getConstituents();
+	 for( std::vector<const GenParticleCandidate*>::iterator constit = genJetConstit.begin(); 
+	      constit != genJetConstit.end(); ++constit ) {
+	    
+	   //raise counter if cut passed
+	   if( (*constit)->pt()>constit_pT ) numGenJetConstit_withcuts++; 
+	
+	 }//end-of loop over all constituents
+	
+	 part.set().setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
       }
    }
    EvtView.set().setUserRecord<int>("NumItCone5Jet", numItCone5JetMC);
@@ -374,12 +407,27 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
-         part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
+         part.set().vector(pxl::set).setE((genJet->energy()));
 	 //fill additional jet-related infos
 	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
 	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
 	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
          numMidCone7JetMC++;
+
+	 //save number of GenJet-constituents fullfilling sone cuts
+	 numGenJetConstit_withcuts = 0; //reset variable
+	 genJetConstit = genJet->getConstituents();
+	 for( std::vector<const GenParticleCandidate*>::iterator constit = genJetConstit.begin(); 
+	      constit != genJetConstit.end(); ++constit ) {
+	    
+	   //raise counter if cut passed
+	   if( (*constit)->pt()>constit_pT ) numGenJetConstit_withcuts++;
+	
+	 }//end-of loop over all constituents
+	
+	 part.set().setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
+
       }
    }
    EvtView.set().setUserRecord<int>("NumMidCone5Jet", numMidCone5JetMC);
@@ -393,12 +441,26 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setPx(genJet->px());
          part.set().vector(pxl::set).setPy(genJet->py());
          part.set().vector(pxl::set).setPz(genJet->pz());
-         part.set().vector(pxl::set).setE((genJet->hadEnergy() + genJet->emEnergy()));
+         part.set().vector(pxl::set).setE((genJet->energy()));
 	 //fill additional jet-related infos
 	 part.set().setUserRecord<double>("EmE", genJet->emEnergy());
 	 part.set().setUserRecord<double>("HadE", genJet->hadEnergy());
 	 part.set().setUserRecord<double>("InvE", genJet->invisibleEnergy());
+	 part.set().setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
          numMidCone7JetMC++;
+
+	 //save number of GenJet-constituents fullfilling sone cuts
+	 numGenJetConstit_withcuts = 0; //reset variable
+	 genJetConstit = genJet->getConstituents();
+	 for( std::vector<const GenParticleCandidate*>::iterator constit = genJetConstit.begin(); 
+	      constit != genJetConstit.end(); ++constit ) {
+	    
+	   //raise counter if cut passed
+	   if( (*constit)->pt()>constit_pT ) numGenJetConstit_withcuts++; 
+	
+	 }//end-of loop over all constituents
+	
+	 part.set().setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
       }
    }
    EvtView.set().setUserRecord<int>("NumMidCone7Jet", numMidCone5JetMC);
@@ -751,7 +813,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setE(jet->energy());         
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-	 part.set().setUserRecord<double>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
 	 numKtJetRec++;
@@ -770,7 +832,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setE(jet->energy());
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-	 part.set().setUserRecord<double>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
          numItCone5JetRec++;
@@ -789,7 +851,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setE(jet->energy());
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-	 part.set().setUserRecord<double>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
          numMidCone5JetRec++;
@@ -808,7 +870,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
          part.set().vector(pxl::set).setE(jet->energy());
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-	 part.set().setUserRecord<double>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N90", jet->n90());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
          numMidCone7JetRec++;
