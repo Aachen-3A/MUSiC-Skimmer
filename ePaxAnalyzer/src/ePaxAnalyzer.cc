@@ -494,7 +494,9 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    part.set().setUserRecord<double>("HadE", genmet.hadEnergy());
    part.set().setUserRecord<double>("InvE", genmet.invisibleEnergy());
 
-   if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part.get().vector().getPt() << endl;
+   //no Muon-corrections needed in Spring07 samples since we use GenMET-collection without muons! -> stuff commented out
+
+   /*if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part.get().vector().getPt() << endl;
    // Perform Muon Corrections!
    // loop over muons and subtract them
    // FIXME: Really only correct for selected muons? Better take GenMET-collection without muons?
@@ -508,10 +510,10 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
       }
    } 
    if (fDebug > 1) cout << "GenMET after muon corr: Px = " << part.get().vector().getPx() << "   Py = " << part.get().vector().getPy() << "   Pt = " << part.get().vector().getPt() << endl;  
-
    //reset eta-info after muon corrections
    part.set().vector(pxl::set).setPz(0.);  
-   part.set().vector(pxl::set).setMass(0.);   
+   part.set().vector(pxl::set).setMass(0.);   */
+
    //there is always MET in event, just decide if cuts passed (do this after muon corrections!)
    if (METMC_cuts(part)) { 
      numMETMC++; 
