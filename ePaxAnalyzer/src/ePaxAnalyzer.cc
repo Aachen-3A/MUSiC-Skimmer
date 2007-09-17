@@ -494,7 +494,7 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    part.set().setUserRecord<double>("HadE", genmet.hadEnergy());
    part.set().setUserRecord<double>("InvE", genmet.invisibleEnergy());
 
-   //no Muon-corrections needed in Spring07 samples since we use GenMET-collection without muons! -> stuff commented out
+   //no Muon-corrections needed if using MET-collection "genMetNoNu" since here muon already included (mu NOT in exclude list)! -> stuff commented out
 
    /*if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part.get().vector().getPt() << endl;
    // Perform Muon Corrections!
