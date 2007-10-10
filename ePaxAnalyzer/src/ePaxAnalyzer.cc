@@ -43,6 +43,10 @@
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleCandidate.h"
 
+//for TrackingVertex
+#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
+#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
+
 //for isolation
 #include "DataFormats/CaloTowers/interface/CaloTower.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -63,7 +67,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    // Debugging
    fDebug = iConfig.getUntrackedParameter<int>("debug");
    // The labels used in cfg-file 
-   fHepMCLabel = iConfig.getUntrackedParameter<string>("HepMCLabel");
+   fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
    fKtJetMCLabel = iConfig.getUntrackedParameter<string>("KtJetMCLabel");
    fItCone5JetMCLabel = iConfig.getUntrackedParameter<string>("ItCone5JetMCLabel");
@@ -177,9 +181,29 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
 
-  //gen particles
-  edm::Handle<reco::CandidateCollection> genParticleHandel;
-  iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
+   //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
+   edm::Handle<TrackingVertexCollection> TruthVertexContainer;
+   iEvent.getByLabel(fTruthVertexLabel, TruthVertexContainer);
+   const TrackingVertexCollection* tVC = TruthVertexContainer.product();
+
+   // take only first vertex as this should correspond to generated primary vertex. Seems to be carbon-copy of HepMC-genVertex
+   // Question: What about pile-up/min-bias? Will there be additional primary vertices??? How do we find them (BX-id, event-id) and should we save them?
+   TrackingVertexCollection::const_iterator EventVertices = tVC->begin(); 
+
+   // Store primary Vertex:
+   pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
+   GenVtx.set().setName("PrimaryVertex");
+   GenVtx.set().vector(pxl::set).setX(EventVertices->position().x());
+   GenVtx.set().vector(pxl::set).setY(EventVertices->position().y());
+   GenVtx.set().vector(pxl::set).setZ(EventVertices->position().z());
+   // do we need this BX/event identification???
+   //GenVtx.set().setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
+   //GenVtx.set().setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
+   
+
+   //gen particles
+   edm::Handle<reco::CandidateCollection> genParticleHandel;
+   iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
 
    int numMuonMC = 0;
    int numEleMC = 0;
@@ -188,18 +212,6 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    //save mother of stable particle
    const Candidate* p_mother; 
    int mother = 0;
-
-   //FIXME: get primary vertex also from candidates
-   edm::Handle<edm::HepMCProduct> HepMC_Handle ;
-   iEvent.getByLabel( fHepMCLabel, HepMC_Handle );
-   const  HepMC::GenEvent* myGenEvent = HepMC_Handle->GetEvent();
-   
-   // Store primary Vertex:
-   pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
-   GenVtx.set().setName("PrimaryVertex");
-   GenVtx.set().vector(pxl::set).setX((*(myGenEvent->vertices_begin()))->position().x());
-   GenVtx.set().vector(pxl::set).setY((*(myGenEvent->vertices_begin()))->position().y());
-   GenVtx.set().vector(pxl::set).setZ((*(myGenEvent->vertices_begin()))->position().z());
 
    // loop over all particles
    for( reco::CandidateCollection::const_iterator pa = genParticleHandel->begin(); 

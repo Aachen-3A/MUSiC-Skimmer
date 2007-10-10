@@ -15,9 +15,10 @@
 <use name=RecoCaloTools/Selectors>
 <use name=RecoCaloTools/MetaCollections>
 <use name=SimDataFormats/HepMCProduct>
+<use name=SimDataFormats/TrackingAnalysis>
 <use name=ePaxPxl/ePax>
 <use name=root>
-<flags SEALPLUGIN=1>
+<flags EDM_PLUGIN=1>
 <export>
   <use name=DataFormats/DetId>
   <use name=DataFormats/EgammaCandidates>

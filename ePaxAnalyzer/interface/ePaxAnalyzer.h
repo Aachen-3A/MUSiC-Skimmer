@@ -102,7 +102,7 @@ private:
    std::string fProcess;
    bool fGenOnly;
    // The labels used in cfg-file 
-   std::string fHepMCLabel;
+   std::string fTruthVertexLabel;
    std::string fgenParticleCandidatesLabel;
    std::string fKtJetMCLabel;
    std::string fItCone5JetMCLabel;
