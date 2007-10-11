@@ -235,7 +235,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
 
 	    // TEMPORARY: calculate isolation ourselves
-	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.2, 0.1);
+	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 0.1);
 	    part.set().setUserRecord<double>("GenIso", GenIso);
 
 	    //save mother of stable muon
@@ -587,58 +587,55 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
          part.set().setUserRecord<double>("Vtx_X", muon->vx());
          part.set().setUserRecord<double>("Vtx_Y", muon->vy());
          part.set().setUserRecord<double>("Vtx_Z", muon->vz()); 
-/*	 if (fDebug > 1) {
-	    const HitPattern& Pattern = muon->combinedMuon()->hitPattern();
-	    cout << "Pattern gives: Valid/Lost: " << endl
-	    	 << "	     Total: " << Pattern.numberOfValidHits() << " / " << Pattern.numberOfLostHits() << endl
-	    	 << "	      Muon: " << Pattern.numberOfValidMuonHits() << " / " << Pattern.numberOfLostMuonHits() << endl
-	    	 << "	   Tracker: " << Pattern.numberOfValidTrackerHits() << " / " << Pattern.numberOfLostTrackerHits() << endl
-	    	 << "	     Pixel: " << Pattern.numberOfValidPixelHits() << " / " << Pattern.numberOfLostPixelHits() << endl;
-	    
-		 cout << "Muon gives: Valid/Lost: " << muon->combinedMuon()->numberOfValidHits() << " / " << muon->combinedMuon()->numberOfLostHits() << endl;
-         } */
+	 //save info on quality of track-fit
          part.set().setUserRecord<double>("NormChi2", muon->combinedMuon()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits", muon->combinedMuon()->numberOfValidHits());
          part.set().setUserRecord<int>("LostHits", muon->combinedMuon()->numberOfLostHits()); 
-	 
-	 
+	 part.set().setUserRecord<double>("NormChi2_SA", muon->standAloneMuon()->normalizedChi2());
+         part.set().setUserRecord<int>("ValidHits_SA", muon->standAloneMuon()->numberOfValidHits());
+         part.set().setUserRecord<int>("LostHits_SA", muon->standAloneMuon()->numberOfLostHits()); 
+	 part.set().setUserRecord<double>("NormChi2_TM", muon->track()->normalizedChi2());
+         part.set().setUserRecord<int>("ValidHits_TM", muon->track()->numberOfValidHits());
+         part.set().setUserRecord<int>("LostHits_TM", muon->track()->numberOfLostHits());
+	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
+	 part.set().setUserRecord<double>("DSZ", muon->combinedMuon()->dsz()); 
+	 //part.set().setUserRecord<double>("DZ", muon->combinedMuon()->dz()); //not needed since vz()==dz()
+		 
 	 // TEMPORARY: calculate isolation ourselves
-	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->outerEta(), muon->track()->outerPhi(), 0.2, 0.1);
-	 double TrkIso = IsoTrkSum(iEvent,  muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), 0.2, 0.1);
+	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->outerEta(), muon->track()->outerPhi(), 0.3, 0.1);
+	 double TrkIso = IsoTrkSum(iEvent,  muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), 0.3, 0.1);
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
 	 part.set().setUserRecord<double>("TrkIso", TrkIso);
 
+	 //save offical isolation information
+	 const MuonIsolation& muonIsoR03 = muon->getIsolationR03();
+	 part.set().setUserRecord<double>("IsoR03SumPt", muonIsoR03.sumPt);
+	 part.set().setUserRecord<double>("IsoR03EmEt", muonIsoR03.emEt);
+	 part.set().setUserRecord<double>("IsoR03HadEt", muonIsoR03.hadEt);
+	 part.set().setUserRecord<double>("IsoR03HoEt", muonIsoR03.hoEt);
+	 part.set().setUserRecord<double>("IsoR03NTracks", muonIsoR03.nTracks);
+	 part.set().setUserRecord<double>("IsoR03NJets", muonIsoR03.nJets);
+
+	 const MuonIsolation& muonIsoR05 = muon->getIsolationR05();
+	 part.set().setUserRecord<double>("IsoR05SumPt", muonIsoR05.sumPt);
+	 part.set().setUserRecord<double>("IsoR05EmEt", muonIsoR05.emEt);
+	 part.set().setUserRecord<double>("IsoR05HadEt", muonIsoR05.hadEt);
+	 part.set().setUserRecord<double>("IsoR05HoEt", muonIsoR05.hoEt);
+	 part.set().setUserRecord<double>("IsoR05NTracks", muonIsoR05.nTracks);
+	 part.set().setUserRecord<double>("IsoR05NJets", muonIsoR05.nJets);
+
+	 //save some stuff related to Muon-ID (Calo-info etc.)
+	 part.set().setUserRecord<double>("CaloCompatibility", muon->getCaloCompatibility());
+	 part.set().setUserRecord<double>("NumberOfChambers", muon->numberOfChambers());
+	 part.set().setUserRecord<double>("NumberOfMatches", muon->numberOfMatches());
+	
          numMuonRec++;
       }
    }
    EvtView.set().setUserRecord<int>("NumMuon", numMuonRec);
   
    if (fDebug > 1) cout << "Rec Muons: " << numMuonRec << endl; 
-  
-/*   for(reco::MuonCollection::const_iterator  muon = SAmuons->begin();
-         muon != SAmuons->end(); ++muon ) {
-      if (Muon_cuts(muon)) {
-         cout << " Found a Rec Muon: \n"
-              << "    pt : " << muon->pt() << endl
-              << "    eta: " << muon->eta() << endl
-              << "    q  : " << muon->charge() << endl;
-         pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
-         part.set().setName("SAMuon");
-         part.set().setCharge(muon->charge());
-         part.set().vector(pxl::set).setPx(muon->px());
-         part.set().vector(pxl::set).setPy(muon->py());
-         part.set().vector(pxl::set).setPz(muon->pz());
-         part.set().vector(pxl::set).setE(muon->energy());
-         part.set().setUserRecord<double>("Vtx_X", muon->vx());
-         part.set().setUserRecord<double>("Vtx_Y", muon->vy());
-         part.set().setUserRecord<double>("Vtx_Z", muon->vz());
-         // get isolation ;0 
-         // part.set().setUserRecord<double>("isolation", 0.9);
-         numSAMuonRec++;
-      }
-   }
-   EvtView.set().setUserRecord<int>("NumSAMuon", numSAMuonRec);
-*/
+
 }
 
 // ------------ reading Reconstructed Electrons ------------
