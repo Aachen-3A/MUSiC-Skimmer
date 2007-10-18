@@ -114,6 +114,11 @@ private:
    std::string fSAMuonRecoLabel;
    std::string fElectronRecoLabel;
    std::string fPixelMatchElectronRecoLabel;
+   std::string fElectronIDAssocProducer;
+   std::string fElectronHcalIsolationProducer;
+   std::string fElectronEcalIsolationProducer;
+   std::string fElectronTrackIsolationProducer;
+   std::string fElectronTrackNumProducer;
    std::string fGammaRecoLabel;
    std::string fKtJetRecoLabel;
    std::string fItCone5JetRecoLabel;

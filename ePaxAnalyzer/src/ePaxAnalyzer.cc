@@ -47,9 +47,18 @@
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
 
-//for isolation
+//for muon-isolation
 #include "DataFormats/CaloTowers/interface/CaloTower.h"
 #include "DataFormats/TrackReco/interface/Track.h"
+
+//for Electron ID
+#include "AnalysisDataFormats/Egamma/interface/ElectronID.h"
+#include "AnalysisDataFormats/Egamma/interface/ElectronIDAssociation.h"
+
+//for electron-isolation
+#include "DataFormats/Candidate/src/classes.h"
+#include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoNumCollection.h"
+#include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoCollection.h"
 
 using namespace std;
 
@@ -81,6 +90,11 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fBarrelClusterShapeAssocProducer = iConfig.getParameter<edm::InputTag>("barrelClusterShapeAssociation");
    fEndcapClusterShapeAssocProducer = iConfig.getParameter<edm::InputTag>("endcapClusterShapeAssociation");   
    fPixelMatchElectronRecoLabel = iConfig.getUntrackedParameter<string>("PixelMatchElectronRecoLabel");
+   fElectronIDAssocProducer = iConfig.getParameter<std::string>("ElectronIDAssocProducer");
+   fElectronHcalIsolationProducer = iConfig.getParameter<std::string>("ElectronHcalIsolationProducer");
+   fElectronEcalIsolationProducer = iConfig.getParameter<std::string>("ElectronEcalIsolationProducer");
+   fElectronTrackIsolationProducer = iConfig.getParameter<std::string>("ElectronTrackIsolationProducer");
+   fElectronTrackNumProducer = iConfig.getParameter<std::string>("ElectronTrackNumProducer");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
    fKtJetRecoLabel = iConfig.getUntrackedParameter<string>("KtJetRecoLabel");
    fItCone5JetRecoLabel = iConfig.getUntrackedParameter<string>("ItCone5JetRecoLabel");
@@ -235,7 +249,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
 
 	    // TEMPORARY: calculate isolation ourselves
-	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 0.1);
+	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
 	    part.set().setUserRecord<double>("GenIso", GenIso);
 
 	    //save mother of stable muon
@@ -267,7 +281,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
 
 	    // TEMPORARY: calculate isolation ourselves
-	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.2, 0.1);
+	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
 	    part.set().setUserRecord<double>("GenIso", GenIso);
 	    
 	    //save mother of stable electron
@@ -296,7 +310,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
             part.set().vector(pxl::set).setMass(p->mass());
 
 	    // TEMPORARY: calculate isolation ourselves
-	    double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.2, 0.1); //0. since gamma not charged!
+	    double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5); //0. since gamma not charged!
 	    part.set().setUserRecord<double>("GenIso", GenIso);
 	    
 	    //save mother of stable gamma
@@ -602,8 +616,8 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 	 //part.set().setUserRecord<double>("DZ", muon->combinedMuon()->dz()); //not needed since vz()==dz()
 		 
 	 // TEMPORARY: calculate isolation ourselves
-	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->outerEta(), muon->track()->outerPhi(), 0.3, 0.1);
-	 double TrkIso = IsoTrkSum(iEvent,  muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), 0.3, 0.1);
+	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->outerEta(), muon->track()->outerPhi(), 0.3, 1.5);
+	 double TrkIso = IsoTrkSum(iEvent,  muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), 0.3, 1.5);
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
 	 part.set().setUserRecord<double>("TrkIso", TrkIso);
 
@@ -628,6 +642,8 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 	 part.set().setUserRecord<double>("CaloCompatibility", muon->getCaloCompatibility());
 	 part.set().setUserRecord<double>("NumberOfChambers", muon->numberOfChambers());
 	 part.set().setUserRecord<double>("NumberOfMatches", muon->numberOfMatches());
+	 part.set().setUserRecord<double>("MuonDepositEM", muon->getCalEnergy().em);
+	 part.set().setUserRecord<double>("MuonDepositHCAL", muon->getCalEnergy().had);
 	
          numMuonRec++;
       }
@@ -653,37 +669,9 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
    iEvent.getByLabel(fEndcapClusterShapeAssocProducer, endcapClShpHandle);
 
 //   int numEleRec = 0;
-   int numPixelEleRec = 0;   
+   int numPixelEleRec = 0;  
+   int numPixelEleAll = 0; //need counter for EleID 
    reco::BasicClusterShapeAssociationCollection::const_iterator seedShpItr;
-
-/*   for ( SiStripElectronCollection::const_iterator ele = electrons->begin(); 
-            ele != electrons->end(); ++ele ) {
-      if (Ele_cuts(ele)) { 
-         pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
-         part.set().setName("SiEle");
-         part.set().setCharge(ele->charge());
-         part.set().vector(pxl::set).setPx(ele->px());
-         part.set().vector(pxl::set).setPy(ele->py());
-         part.set().vector(pxl::set).setPz(ele->pz());
-         part.set().vector(pxl::set).setE(ele->energy());         
-         part.set().setUserRecord<double>("Vtx_X", ele->vx());
-         part.set().setUserRecord<double>("Vtx_Y", ele->vy());
-         part.set().setUserRecord<double>("Vtx_Z", ele->vz());
-	 
-	 part.set().setUserRecord<double>("SClusterE", ele->superCluster()->energy());
-	
-	 //DOES NOT WORK IN CMSSW_1_2_0, try with later version //fEleRec_TrackerP->push_back(ele->track()->p());
-	 //DOES NOT WORK IN CMSSW_1_2_0, try with later version //fEleRec_TrackerNormChi2->push_back(ele->track()->normalizedChi2());
-	 //DOES NOT WORK IN CMSSW_1_2_0, try with later version //fEleRec_TrackerNhitsValid->push_back(ele->track()->numberOfValidHits());
-	 //hopefully soon more info on deposited HCAL-energy and shower shapes, as well as isolation (->PixelMatch(Gsf)Electron) !!!
-           
-	 numEleRec++;
-      }
-   }
-   EvtView.set().setUserRecord<int>("NumEle", numEleRec);
-
-   if (fDebug > 1) cout << "RecEle:  " << numEleRec << endl;
-*/
 
    for ( PixelMatchGsfElectronCollection::const_iterator ele = pixelelectrons->begin();
             ele != pixelelectrons->end(); ++ele ) {
@@ -722,6 +710,10 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
          //part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits());
 	 part.set().setUserRecord<int>("Class", ele->classification());
+
+	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
+	 part.set().setUserRecord<double>("DSZ", ele->gsfTrack()->dsz()); 
+	 //part.set().setUserRecord<double>("DZ", ele->gsfTrack()->dz()); //not needed since vz()==dz()
          
 	 // Get the supercluster (ref) of the Electron
 	 // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
@@ -777,17 +769,68 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 cout<<"ele->trackMomentumAtVtx().R(): "<<ele->trackMomentumAtVtx().R()<<endl;
 	 cout<<"ele->gsfTrack()->p(): "<<ele->gsfTrack()->p()<<endl;*/
 
+	 // Read in electron ID association map and save ID decision
+	 edm::Handle<reco::ElectronIDAssociationCollection> electronIDAssocHandle;
+	 iEvent.getByLabel(fElectronIDAssocProducer, electronIDAssocHandle);
+	 //need Ref of eletron for association-map, use counter of ALL electrons for that
+	 edm::Ref<reco::PixelMatchGsfElectronCollection> electronRef(pixelelectrons, numPixelEleAll);
+	 // Find entry in electron ID map corresponding electron
+	 reco::ElectronIDAssociationCollection::const_iterator electronIDAssocItr;
+	 electronIDAssocItr = electronIDAssocHandle->find(electronRef);
+	 const reco::ElectronIDRef& eleid = electronIDAssocItr->val;
+	 bool cutBasedID = eleid->cutBasedDecision();
+	 part.set().setUserRecord<bool>("CutBasedID", cutBasedID);
+
 	 // TEMPORARY: calculate isolation ourselves
 	 double CaloPt = ( ele->superCluster()->rawEnergy() + ele->superCluster()->rawEnergy()*ele->hadronicOverEm() ) / cosh(ele->trackMomentumAtCalo().eta());
-	 double CaloIso = IsoCalSum(iEvent, CaloPt, ele->trackMomentumAtCalo().eta(), ele->trackMomentumAtCalo().phi(), 0.2, 0.1);
-	 double TrkIso = IsoTrkSum(iEvent, ele->gsfTrack()->pt(), ele->gsfTrack()->eta(), ele->gsfTrack()->phi(), 0.2, 0.1);
+	 double CaloIso = IsoCalSum(iEvent, CaloPt, ele->trackMomentumAtCalo().eta(), ele->trackMomentumAtCalo().phi(), 0.3, 1.5);
+	 double TrkIso = IsoTrkSum(iEvent, ele->gsfTrack()->pt(), ele->gsfTrack()->eta(), ele->gsfTrack()->phi(), 0.3, 1.5);
 	 //double TrkIso = IsoTrkSum(iEvent, ele->trackMomentumAtVtx().Rho(), ele->trackMomentumAtVtx().Eta(), ele->trackMomentumAtVtx().Phi(), 0.2, 0.1);
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
 	 part.set().setUserRecord<double>("TrkIso", TrkIso);
+
+	 //save official isolation information
+
+	 // Get the association vector for HCAL isolation
+	 edm::Handle<reco::CandViewDoubleAssociations> hcalIsolationHandle;
+	 iEvent.getByLabel(fElectronHcalIsolationProducer, hcalIsolationHandle);
+
+	 //direct access (by object). Since we do not really use candidates have to manually convert a reco-Ref into CandidateBaseRef
+	 edm::Ref<reco::PixelMatchGsfElectronCollection> electronIsoRef(pixelelectrons, numPixelEleAll);
+	 reco::CandidateBaseRef candRef(electronIsoRef);
+	 double isoVal = (*hcalIsolationHandle)[ candRef ];
+	 part.set().setUserRecord<double>("HCALIso", isoVal);
+
+	 // Get the association vector for ECAL isolation
+	 edm::Handle<reco::CandViewDoubleAssociations> ecalIsolationHandle;
+	 iEvent.getByLabel(fElectronEcalIsolationProducer, ecalIsolationHandle);
+
+	 //direct access (by object). We have candidate already from HCAL-isolation
+	 isoVal = (*ecalIsolationHandle)[ candRef ];
+	 part.set().setUserRecord<double>("ECALIso", isoVal);
+
+	 // Get the association vector for track isolation
+	 edm::Handle<reco::PMGsfElectronIsoCollection> trackIsolationHandle;
+	 iEvent.getByLabel(fElectronTrackIsolationProducer, trackIsolationHandle);
+
+	 //direct access (by object). We have candidate already from HCAL-isolation
+	 isoVal = (*trackIsolationHandle)[ electronIsoRef ];
+	 part.set().setUserRecord<double>("TrackIso", isoVal);
+
+	 // Get the association vector for track number
+	 edm::Handle<reco::PMGsfElectronIsoNumCollection> trackNumHandle;
+	 iEvent.getByLabel(fElectronTrackNumProducer, trackNumHandle);
+
+	 //direct access (by object). We have candidate already from HCAL-isolation
+	 int numVal = (*trackNumHandle)[ electronIsoRef ];
+	 part.set().setUserRecord<int>("TrackNum", numVal);
+
 	 	 
          numPixelEleRec++;
       }
    }
+   numPixelEleAll++;
+
    EvtView.set().setUserRecord<int>("NumEle", numPixelEleRec);
 }
 
@@ -1199,16 +1242,16 @@ double ePaxAnalyzer::IsoCalSum (const edm::Event& iEvent, double ParticleCalPt, 
   edm::Handle<CaloTowerCollection> CaloTowerData ;
   iEvent.getByLabel( "towerMaker", CaloTowerData );
 
- for( CaloTowerCollection::const_iterator tower = CaloTowerData->begin(); 
-         tower != CaloTowerData->end(); ++tower ) {
-   if (tower->energy() > iso_Seed){
-      float eta = tower->eta();
+  for( CaloTowerCollection::const_iterator tower = CaloTowerData->begin(); 
+       tower != CaloTowerData->end(); ++tower ) {
+    float eta = tower->eta();
+    if ( (tower->energy() / cosh(eta)) > iso_Seed){
       float phi = tower->phi();
       float DR = GetDeltaR(ParticleCalEta, eta, ParticleCalPhi, phi);
       if (DR <= 0.) {DR = 0.001;}
       if (DR < iso_DR){
-          float pt = tower->energy() / cosh(eta);
-          sum += pt;
+	float pt = tower->energy() / cosh(eta);
+	sum += pt;
       }
     }
   }
@@ -1232,7 +1275,7 @@ double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, 
 
   for( reco::TrackCollection::const_iterator track = TrackData->begin(); 
          track != TrackData->end(); ++track ) {
-    if (track->p() > iso_Seed){
+    if (track->pt() > iso_Seed){
       float eta = track->eta();
       float phi = track->phi();
       float DR = GetDeltaR(ParticleTrkEta, eta, ParticleTrkPhi, phi);
@@ -1271,7 +1314,7 @@ double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
     // only consider stable partciles and charged particles in order to be more comparable with track-isolation
     if ( p->status() == 1 && p->charge() != 0 ) {
 
-      if (p->energy() > iso_Seed){
+      if (p->pt() > iso_Seed){
 	float eta = p->eta();
 	float phi = p->phi();
 	float DR = GetDeltaR(ParticleGenEta, eta, ParticleGenPhi, phi);
