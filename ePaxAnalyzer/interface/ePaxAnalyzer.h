@@ -125,6 +125,7 @@ private:
    std::string fMidCone5JetRecoLabel;
    std::string fMidCone7JetRecoLabel;
    std::string fMETRecoLabel;
+   std::string fMETCorrRecoLabel;
    edm::InputTag fBarrelClusterShapeAssocProducer;
    edm::InputTag fEndcapClusterShapeAssocProducer;
    std::string fHBHELabel;

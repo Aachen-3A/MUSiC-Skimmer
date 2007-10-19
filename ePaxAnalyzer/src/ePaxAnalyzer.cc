@@ -101,6 +101,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fMidCone5JetRecoLabel = iConfig.getUntrackedParameter<string>("MidCone5JetRecoLabel");
    fMidCone7JetRecoLabel = iConfig.getUntrackedParameter<string>("MidCone7JetRecoLabel");
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
+   fMETCorrRecoLabel = iConfig.getUntrackedParameter<string>("METCorrRecoLabel");
    fHBHELabel = iConfig.getUntrackedParameter<string>("fHBHELabel");
    fHBHEInstanceName = iConfig.getUntrackedParameter<string>("fHBHEInstanceName");
    
@@ -605,6 +606,9 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
          part.set().setUserRecord<double>("NormChi2", muon->combinedMuon()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits", muon->combinedMuon()->numberOfValidHits());
          part.set().setUserRecord<int>("LostHits", muon->combinedMuon()->numberOfLostHits()); 
+	 //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
+	 part.set().setUserRecord<double>("dPtRelTrack", muon->combinedMuon()->error(0)/(muon->combinedMuon()->qoverp()) );
+	 part.set().setUserRecord<double>("dPtRelTrack_off", muon->combinedMuon()->ptError()/muon->combinedMuon()->pt() );
 	 part.set().setUserRecord<double>("NormChi2_SA", muon->standAloneMuon()->normalizedChi2());
          part.set().setUserRecord<int>("ValidHits_SA", muon->standAloneMuon()->numberOfValidHits());
          part.set().setUserRecord<int>("LostHits_SA", muon->standAloneMuon()->numberOfLostHits()); 
@@ -856,6 +860,13 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
    int numMidCone5JetRec = 0;
    int numMidCone7JetRec = 0;
 
+   //get primary vertex (hopefully correct one) for physics eta
+   double VertexZ = 0.;
+   pxl::Objects::TypeIterator<pxl::Vertex> iter(EvtView().getObjects()); 
+   pxl::VertexWkPtr vtx = iter.object();
+   if(vtx.valid()) VertexZ = vtx.get().vector().getZ();
+  
+
    for(reco::CaloJetCollection::const_iterator jet = Ktjets->begin(); 
            jet != Ktjets->end(); ++jet ) {
       if (Jet_cuts(jet)) { 
@@ -868,8 +879,11 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<int>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N60", jet->n60());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+	 part.set().setUserRecord<double>("TowersArea", jet->towersArea());
+	 part.set().setUserRecord<double>("PhysicsEta", jet->physicsEtaDetailed(VertexZ));
 	 numKtJetRec++;
       }
    }
@@ -887,8 +901,11 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<int>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N60", jet->n60());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+	 part.set().setUserRecord<double>("TowersArea", jet->towersArea());
+	 part.set().setUserRecord<double>("PhysicsEta", jet->physicsEtaDetailed(VertexZ));
          numItCone5JetRec++;
       }
    }
@@ -906,8 +923,11 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<int>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N60", jet->n60());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+	 part.set().setUserRecord<double>("TowersArea", jet->towersArea());
+	 part.set().setUserRecord<double>("PhysicsEta", jet->physicsEtaDetailed(VertexZ));
          numMidCone5JetRec++;
       }
    }
@@ -925,8 +945,11 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<int>("N90", jet->n90());
+	 part.set().setUserRecord<int>("N60", jet->n60());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+	 part.set().setUserRecord<double>("TowersArea", jet->towersArea());
+	 part.set().setUserRecord<double>("PhysicsEta", jet->physicsEtaDetailed(VertexZ));
          numMidCone7JetRec++;
       }
    }
@@ -998,6 +1021,67 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
 
    EvtView.set().setUserRecord<int>("NumMET", numMETRec);
    if (numMETRec && fDebug > 1) cout << "Found RecMET" << endl;
+
+   //****************************************************************************************************************************
+   //*************** store corrected MET ****************************************************************************************
+   //****************************************************************************************************************************
+   edm::Handle<reco::CaloMETCollection> CaloMetCorr;
+   iEvent.getByLabel(fMETCorrRecoLabel, CaloMetCorr);
+   const CaloMETCollection *calometcorrcol = CaloMetCorr.product();
+   const CaloMET calometcorr = calometcorrcol->front();  // MET exists only once!
+ 
+   int numMETCorrRec = 0;
+   pxl::ParticleRef partcorr = EvtView.set().create<pxl::Particle>();
+   partcorr.set().setName("METCorr");
+   partcorr.set().vector(pxl::set).setPx(calometcorr.px());
+   partcorr.set().vector(pxl::set).setPy(calometcorr.py());
+   partcorr.set().vector(pxl::set).setPz(0.);
+   partcorr.set().vector(pxl::set).setMass(0.);
+   partcorr.set().setUserRecord<double>("sumEt", calometcorr.sumEt());
+   partcorr.set().setUserRecord<double>("mEtSig", calometcorr.mEtSig());
+   partcorr.set().setUserRecord<double>("EmEt", calometcorr.emEtFraction());          //not muon corrected
+   partcorr.set().setUserRecord<double>("HadEt", calometcorr.etFractionHadronic());   //not muon corrected
+   partcorr.set().setUserRecord<double>("MaxEtEm", calometcorr.maxEtInEmTowers());   //not muon corrected
+   partcorr.set().setUserRecord<double>("MaxEtHad", calometcorr.maxEtInHadTowers()); //not muon corrected
+   
+   
+   if (fDebug > 1) {
+      cout << "RecMETCorr before muon corr: Px = " << calometcorr.px() << "   Py = " << calometcorr.py() << "   Pt = " << partcorr.get().vector().getPt() << endl;   
+      cout << " MET (uncorr): ( " << partcorr.get().vector().getPx() << ", " << partcorr.get().vector().getPy() << ", "
+           << partcorr.get().vector().getPz() <<  " )    E: " << partcorr.get().vector().getE() << "   Et = "
+           << partcorr.get().vector().getEt() << " Theta: " << partcorr.get().vector().getTheta()
+           << " Mass: " << partcorr.get().vector().getMass() << endl;
+   }
+   // Perform Muon Corrections!   
+   // loop over muons and subtract them   
+   // FIXME: Really only correct for selected muons? Is there official muon correction out yet?
+   if (EvtView.get().findUserRecord<int>("NumMuon") > 0) {      
+   for (pxl::Objects::TypeIterator<pxl::Particle> iter(EvtView().getObjects()); !iter.isDone(); iter.next()) {
+      if (iter.object().get().getName() == "Muon")  {
+         if (fDebug > 1) cout << "Correcting with " << iter.object().get().getName() << " px = " << iter.object().get().vector().getPx() 
+                              << " Py = " << iter.object().get().vector().getPy() << endl; 
+            partcorr.set() -= iter.object().get(); 
+         }  
+      }   
+   } 
+   //reset eta-info after muon corrections
+   partcorr.set().vector(pxl::set).setPz(0.);  
+   partcorr.set().vector(pxl::set).setMass(0.);
+   if (fDebug > 1) {
+      cout << " MET (corr corr): ( " << partcorr.get().vector().getPx() << ", " << partcorr.get().vector().getPy() << ", "
+           << partcorr.get().vector().getPz() <<  " )    E: " << partcorr.get().vector().getE() << "   Et = "
+           << part.get().vector().getEt() << " Theta: " << part.get().vector().getTheta()
+           << " Mass: " << partcorr.get().vector().getMass() << endl;
+      cout << "RecMET after muon corr: Px = " << partcorr.get().vector().getPx() << "   Py = " << partcorr.get().vector().getPy() 
+           << "   Pt = " << partcorr.get().vector().getPt() << endl;   
+   } 
+   //there is always MET in event, just decide if cuts passed (do this after muon corrections!)
+   if (MET_cuts(partcorr)) { 
+     numMETCorrRec++;
+   }
+
+   EvtView.set().setUserRecord<int>("NumMETCorr", numMETCorrRec);
+   if (numMETCorrRec && fDebug > 1) cout << "Found RecMETCorr" << endl;
 }
 
 // ------------ reading Reconstructed Gammas ------------
