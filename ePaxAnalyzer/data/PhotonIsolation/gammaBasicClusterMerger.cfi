@@ -1,0 +1,3 @@
+module gammaBasicClusterMerger = BasicClusterMerger {
+VInputTag src = {islandBasicClusters:islandBarrelBasicClusters,islandBasicClusters:islandEndcapBasicClusters }
+}

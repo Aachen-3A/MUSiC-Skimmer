@@ -60,6 +60,9 @@
 #include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoNumCollection.h"
 #include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoCollection.h"
 
+//math stuff from Physics tools
+#include "DataFormats/Math/interface/deltaR.h"
+
 using namespace std;
 
 //
@@ -96,6 +99,10 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    fElectronTrackIsolationProducer = iConfig.getParameter<std::string>("ElectronTrackIsolationProducer");
    fElectronTrackNumProducer = iConfig.getParameter<std::string>("ElectronTrackNumProducer");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
+   fGammaHcalIsolationProducer = iConfig.getParameter<std::string>("GammaHcalIsolationProducer");
+   fGammaEcalIsolationProducer = iConfig.getParameter<std::string>("GammaEcalIsolationProducer");
+   fGammaTrackIsolationProducer = iConfig.getParameter<std::string>("GammaTrackIsolationProducer");
+   fGammaTrackNumProducer = iConfig.getParameter<std::string>("GammaTrackNumProducer");
    fKtJetRecoLabel = iConfig.getUntrackedParameter<string>("KtJetRecoLabel");
    fItCone5JetRecoLabel = iConfig.getUntrackedParameter<string>("ItCone5JetRecoLabel");
    fMidCone5JetRecoLabel = iConfig.getUntrackedParameter<string>("MidCone5JetRecoLabel");
@@ -832,9 +839,9 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventViewR
 	 	 
          numPixelEleRec++;
       }
+      numPixelEleAll++;
    }
-   numPixelEleAll++;
-
+  
    EvtView.set().setUserRecord<int>("NumEle", numPixelEleRec);
 }
 
@@ -950,7 +957,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 	 part.set().setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
 	 part.set().setUserRecord<double>("TowersArea", jet->towersArea());
 	 part.set().setUserRecord<double>("PhysicsEta", jet->physicsEtaDetailed(VertexZ));
-         numMidCone7JetRec++;
+	 numMidCone7JetRec++;
       }
    }
    EvtView.set().setUserRecord<int>("NumMidCone7Jet", numMidCone7JetRec);
@@ -1104,6 +1111,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
    HBHERecHitMetaCollection HBHE_RecHits(*hbhe); 
    
    int numGammaRec = 0;
+   int numGammaAll = 0; //need counter for EleID 
    double HoE = 0.;
 
    for (reco::PhotonCollection::const_iterator photon = Photons->begin(); 
@@ -1162,6 +1170,19 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
          //cout << "H/E : " << HoE << endl;
          part.set().setUserRecord<float>("HoE", HoE);
 
+	 //*************** store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged *********
+	 //get primary vertex (hopefully correct one) for physics eta
+	 pxl::Objects::TypeIterator<pxl::Vertex> iter(EvtView().getObjects()); 
+	 pxl::VertexWkPtr pxlvtx = iter.object();
+	 math::XYZPoint vtx(0., 0., 0.);
+	 if(pxlvtx.valid()) vtx = math::XYZPoint(pxlvtx.get().vector().getX(), pxlvtx.get().vector().getY(), pxlvtx.get().vector().getZ());
+	 /////  Set event vertex
+	 reco::Photon localPho(*photon);
+	 localPho.setVertex(vtx);
+	 part.set().setUserRecord<double>("pxPhys", localPho.p4().px());
+	 part.set().setUserRecord<double>("pyPhys", localPho.p4().py());
+	 part.set().setUserRecord<double>("pzPhys", localPho.p4().pz());
+
 	 // TEMPORARY: calculate isolation ourselves
 	 double CaloPt = ( hcalEnergy + photon->superCluster()->rawEnergy() ) / cosh(photon->eta());
 	 double CaloIso = IsoCalSum(iEvent, CaloPt, photon->eta(), photon->phi(), 0.2, 0.1);
@@ -1169,11 +1190,54 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
 	 part.set().setUserRecord<double>("TrkIso", TrkIso);
 
-	 numGammaRec++;
+   
+
+	 //save official isolation information
+
+	 // Get the association vector for HCAL isolation
+	 edm::Handle<reco::CandViewDoubleAssociations> hcalIsolationHandle;
+	 iEvent.getByLabel(fGammaHcalIsolationProducer, hcalIsolationHandle);
+
+	 //direct access (by object). Since we do not really use candidates have to manually convert a reco-Ref into CandidateBaseRef
+	 edm::Ref<reco::PhotonCollection> gammaIsoRef(Photons, numGammaAll);
+	 reco::CandidateBaseRef candRef(gammaIsoRef);
+	 double isoVal = (*hcalIsolationHandle)[ candRef ];
+	 part.set().setUserRecord<double>("HCALIso", isoVal);
+
+	 // Get the association vector for ECAL isolation
+	 edm::Handle<reco::CandViewDoubleAssociations> ecalIsolationHandle;
+	 iEvent.getByLabel(fGammaEcalIsolationProducer, ecalIsolationHandle);
+
+	 //direct access (by object). We have candidate already from HCAL-isolation
+	 isoVal = (*ecalIsolationHandle)[ candRef ];
+	 part.set().setUserRecord<double>("ECALIso", isoVal);
+
+	 // Get the association vector for track isolation
+	 edm::Handle<reco::CandViewDoubleAssociations> trackIsolationHandle;
+	 iEvent.getByLabel(fGammaTrackIsolationProducer, trackIsolationHandle);
+
+	 //direct access (by object). We have candidate already from HCAL-isolation
+	 isoVal = (*trackIsolationHandle)[ candRef ];
+	 part.set().setUserRecord<double>("TrackIso", isoVal);
+
+	 // Get the association vector for track number
+	 edm::Handle<reco::CandViewIntAssociations> trackNumHandle;
+	 iEvent.getByLabel(fGammaTrackNumProducer, trackNumHandle);
+
+	 //direct access (by object). We have candidate already from HCAL-isolation
+	 int numVal = (*trackNumHandle)[ candRef ];
+	 part.set().setUserRecord<int>("TrackNum", numVal);
+
+	 	 
+         numGammaRec++;
       }	 
+      numGammaAll++;
    }
+
    EvtView.set().setUserRecord<int>("NumGamma", numGammaRec);
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
+
+  
 }
 
 // ------------ method returning the EventClassType  ------------
@@ -1321,20 +1385,20 @@ double ePaxAnalyzer::IsoCalSum (const edm::Event& iEvent, double ParticleCalPt, 
 // Computes the sum of Pt inside a cone of R=iso_DR
 // using 4-vectors stored in CaloTower objects
 
-  float sum = 0.;
+  double sum = 0.;
 
   edm::Handle<CaloTowerCollection> CaloTowerData ;
   iEvent.getByLabel( "towerMaker", CaloTowerData );
 
   for( CaloTowerCollection::const_iterator tower = CaloTowerData->begin(); 
        tower != CaloTowerData->end(); ++tower ) {
-    float eta = tower->eta();
+    double eta = tower->eta();
     if ( (tower->energy() / cosh(eta)) > iso_Seed){
-      float phi = tower->phi();
-      float DR = GetDeltaR(ParticleCalEta, eta, ParticleCalPhi, phi);
+      double phi = tower->phi();
+      double DR = deltaR(ParticleCalEta, ParticleCalPhi, eta, phi);
       if (DR <= 0.) {DR = 0.001;}
       if (DR < iso_DR){
-	float pt = tower->energy() / cosh(eta);
+	double pt = tower->energy() / cosh(eta);
 	sum += pt;
       }
     }
@@ -1352,7 +1416,7 @@ double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, 
 // Computes the sum of Pt inside a cone of R=iso_DR
 // using 4-vectors stored in Track objects
 
-  float sum = 0.;
+  double sum = 0.;
 
   edm::Handle<TrackCollection> TrackData ;
   iEvent.getByLabel( "ctfWithMaterialTracks", TrackData );
@@ -1360,9 +1424,9 @@ double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, 
   for( reco::TrackCollection::const_iterator track = TrackData->begin(); 
          track != TrackData->end(); ++track ) {
     if (track->pt() > iso_Seed){
-      float eta = track->eta();
-      float phi = track->phi();
-      float DR = GetDeltaR(ParticleTrkEta, eta, ParticleTrkPhi, phi);
+      double eta = track->eta();
+      double phi = track->phi();
+      double DR = deltaR(ParticleTrkEta, ParticleTrkPhi, eta, phi);
       if (DR <= 0.) {DR = 0.001;}
       if (DR < iso_DR){
           sum += track->pt();
@@ -1382,7 +1446,7 @@ double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
 // Computes the sum of Pt inside a cone of R=iso_DR
 // using 4-vectors stored in GenParticle objects
 
-  float sum = 0.;
+  double sum = 0.;
 
   //gen particles
   edm::Handle<reco::CandidateCollection> genParticleHandel;
@@ -1399,9 +1463,9 @@ double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
     if ( p->status() == 1 && p->charge() != 0 ) {
 
       if (p->pt() > iso_Seed){
-	float eta = p->eta();
-	float phi = p->phi();
-	float DR = GetDeltaR(ParticleGenEta, eta, ParticleGenPhi, phi);
+	double eta = p->eta();
+	double phi = p->phi();
+	double DR = deltaR(ParticleGenEta, ParticleGenPhi, eta, phi);
 	if (DR <= 0.) {DR = 0.001;}
 	if (DR < iso_DR){
           sum += p->pt();
@@ -1415,29 +1479,6 @@ double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
   return sum;
 
 }
-
-//------------------------------------------------------------------------------
-
-double ePaxAnalyzer::DeltaPhi(double v1, double v2)
-{ // Computes the correctly normalized phi difference
-  // v1, v2 = phi of object 1 and 2
- 
- double pi    = 3.141592654;
- double twopi = 6.283185307;
- 
- double diff = fabs(v2 - v1);
- double corr = twopi - diff;
- if (diff < pi){ return diff;} else { return corr;} 
- 
-}
-
-double ePaxAnalyzer::GetDeltaR(double eta1, double eta2, double phi1, double phi2)
-{ // Computes the DeltaR of two objects from their eta and phi values
-
- return sqrt( (eta1-eta2)*(eta1-eta2) 
-            + DeltaPhi(phi1, phi2)*DeltaPhi(phi1, phi2) );
-}
-
 
 
 //define this as a plug-in

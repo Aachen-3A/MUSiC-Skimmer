@@ -1,0 +1,9 @@
+module gammaPhotonTkRelIsolation = EgammaPhotonTkIsolationProducer {
+    InputTag photonProducer =  correctedPhotons
+    InputTag trackProducer = ctfWithMaterialTracks
+    double ptMin = 1.5
+    double intRadius = 0.
+    double extRadius = 1.
+    bool absolut = false
+}
+

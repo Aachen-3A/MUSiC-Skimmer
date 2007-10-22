@@ -24,7 +24,7 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
-#include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectron.h"
+#include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/SiStripElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/SiStripElectron.h"
 #include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
@@ -85,9 +85,7 @@ private:
    double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
    double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
    double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
-   double DeltaPhi(double v1, double v2);
-   double GetDeltaR(double eta1, double eta2, double phi1, double phi2);
- 
+   
    /*void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
    void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
    int SmallestColumnElement(TMatrixT<double>* matrix, int col);
@@ -120,6 +118,10 @@ private:
    std::string fElectronTrackIsolationProducer;
    std::string fElectronTrackNumProducer;
    std::string fGammaRecoLabel;
+   std::string fGammaHcalIsolationProducer;
+   std::string fGammaEcalIsolationProducer;
+   std::string fGammaTrackIsolationProducer;
+   std::string fGammaTrackNumProducer;
    std::string fKtJetRecoLabel;
    std::string fItCone5JetRecoLabel;
    std::string fMidCone5JetRecoLabel;

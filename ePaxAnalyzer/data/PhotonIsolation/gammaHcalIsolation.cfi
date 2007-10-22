@@ -1,0 +1,9 @@
+module gammaHcalIsolation = EgammaHcalIsolationProducer {
+    InputTag emObjectProducer =  correctedPhotons
+    InputTag hcalRecHitProducer = hbhereco
+    double etMin = 1.5
+    double intRadius = 0.
+    double extRadius = 1.
+    bool absolut = true 
+}
+
