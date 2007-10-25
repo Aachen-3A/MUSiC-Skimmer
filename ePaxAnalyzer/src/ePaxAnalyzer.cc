@@ -55,10 +55,20 @@
 #include "AnalysisDataFormats/Egamma/interface/ElectronID.h"
 #include "AnalysisDataFormats/Egamma/interface/ElectronIDAssociation.h"
 
+//Photon pi0 rejection
+#include "DataFormats/EgammaCandidates/interface/PhotonPi0DiscriminatorAssociation.h"
+#include "DataFormats/EgammaCandidates/interface/ConvertedPhoton.h"
+
 //for electron-isolation
 #include "DataFormats/Candidate/src/classes.h"
 #include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoNumCollection.h"
 #include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoCollection.h"
+
+//for Trigger Bits
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Framework/interface/TriggerNames.h"
+#include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
+#include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
 
 //math stuff from Physics tools
 #include "DataFormats/Math/interface/deltaR.h"
@@ -154,6 +164,8 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    analyzeGenJets(iEvent, GenEvtView);
    if( fGenOnly == false ){ //only if info is in event
      analyzeGenMET(iEvent, GenEvtView);
+     //Trigger bits
+     analyzeTrigger(iEvent, RecEvtView);
      // Reconstructed stuff
      analyzeRecVertices(iEvent, RecEvtView);
      analyzeRecMuons(iEvent, RecEvtView);
@@ -555,6 +567,98 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    EvtView.set().setUserRecord<int>("NumMET", numMETMC);
    if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
 }
+
+
+
+// ------------ reading HLT and L1 Trigger Bits ------------
+
+void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
+  
+  //HLT trigger bits
+  edm::Handle<edm::TriggerResults> hltresults;
+  string errMsg("");
+  try {iEvent.getByType(hltresults);} catch (...) { errMsg=errMsg + "  -- No HLTRESULTS";}
+  // trigger names
+  edm::TriggerNames triggerNames_;
+
+  //HLT: set to false as default
+  EvtView.set().setUserRecord<bool>("HLT1Electron", false);
+  EvtView.set().setUserRecord<bool>("HLT1ElectronRelaxed", false);
+  EvtView.set().setUserRecord<bool>("HLT2Electron", false);
+  EvtView.set().setUserRecord<bool>("HLT2ElectronRelaxed", false);
+  EvtView.set().setUserRecord<bool>("HLT1EMHighEt", false);
+  EvtView.set().setUserRecord<bool>("HLT1EMVeryHighEt", false);
+  EvtView.set().setUserRecord<bool>("HLT1MuonIso", false);
+  EvtView.set().setUserRecord<bool>("HLT1MuonNonIso", false);
+  EvtView.set().setUserRecord<bool>("CandHLT2MuonIso", false);
+  EvtView.set().setUserRecord<bool>("HLT2MuonNonIso", false);
+  EvtView.set().setUserRecord<bool>("HLTNMuonNonIso", false);
+  EvtView.set().setUserRecord<bool>("HLTXElectronMuon", false);
+  EvtView.set().setUserRecord<bool>("HLTXElectronMuonRelaxed", false);
+  //L1: set to false as default (have all prescale = 1)
+  EvtView.set().setUserRecord<bool>("L1_SingleMu7", false);
+  EvtView.set().setUserRecord<bool>("L1_DoubleMu3", false);
+  EvtView.set().setUserRecord<bool>("L1_SingleIsoEG12", false);
+  EvtView.set().setUserRecord<bool>("L1_SingleEG15", false);
+  EvtView.set().setUserRecord<bool>("L1_DoubleIsoEG8", false);
+  EvtView.set().setUserRecord<bool>("L1_DoubleEG10", false);
+
+  if (&hltresults) {
+    int ntrigs=hltresults->size();
+    if (ntrigs==0){std::cout << "%HLTInfo -- No trigger name given in TriggerResults of the input " << std::endl;}
+    
+    triggerNames_.init(*hltresults);
+   
+    // ...Fill the corresponding accepts in branch-variables
+    for (int itrig = 0; itrig != ntrigs; ++itrig){
+      
+      string trigName=triggerNames_.triggerName(itrig);
+      bool accept = hltresults->accept(itrig);
+      
+      if (fDebug > 1) { std::cout << "%HLTInfo --  Number of HLT Triggers: " << ntrigs << std::endl;
+      std::cout << "%HLTInfo --  HLTTrigger(" << itrig << "): " << trigName << " = " << accept << std::endl; }
+
+      if((trigName == "HLT1Electron") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1Electron", accept);
+      if((trigName == "HLT1ElectronRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1ElectronRelaxed", accept);
+      if((trigName == "HLT2Electron") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT2Electron", accept);
+      if((trigName == "HLT2ElectronRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT2ElectronRelaxed", accept);
+      if((trigName == "HLT1EMHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1EMHighEt", accept);
+      if((trigName == "HLT1EMVeryHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1EMVeryHighEt", accept);
+      if((trigName == "HLT1MuonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1MuonIso", accept);
+      if((trigName == "HLT1MuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1MuonNonIso", accept);
+      if((trigName == "CandHLT2MuonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("CandHLT2MuonIso", accept);
+      if((trigName == "HLT2MuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT2MuonNonIso", accept);
+      if((trigName == "HLTNMuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTNMuonNonIso", accept);
+      if((trigName == "HLTXElectronMuon") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectronMuon", accept);
+      if((trigName == "HLTXElectronMuonRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectronMuonRelaxed", accept);
+       
+    }
+  }
+
+  //L1 trigger bits
+  // Check if the double tau trigger fired.
+  edm::Handle<l1extra::L1ParticleMapCollection> l1mapColl ;
+  iEvent.getByLabel( "l1extraParticleMap", l1mapColl ) ;
+
+  for(l1extra::L1ParticleMapCollection::const_iterator  l1bit = l1mapColl->begin(); l1bit != l1mapColl->end(); ++l1bit ) {
+    //const L1ParticleMap& doubleTauMap = ( *mapColl )[ L1ParticleMap::L1_SingleMu7 ] ;
+    //bool singleTauFired = doubleTauMap.triggerDecision() ;
+    const string& trigName = l1bit->triggerName();
+    bool accept = l1bit->triggerDecision();
+
+    if (fDebug > 1) std::cout << "%L1Info --  L1Trigger: " << trigName << " = " << accept << std::endl;
+
+    if((trigName == "L1_SingleMu7") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_SingleMu7", accept);
+    if((trigName == "L1_DoubleMu3") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_DoubleMu3", accept);
+    if((trigName == "L1_SingleIsoEG12") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_SingleIsoEG12", accept);
+    if((trigName == "L1_SingleEG15") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_SingleEG15", accept);
+    if((trigName == "L1_DoubleIsoEG8") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_DoubleIsoEG8", accept);
+    if((trigName == "L1_DoubleEG10") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_DoubleEG10", accept);
+  }
+
+}
+
+
 
 // ------------ reading Reconstructed Primary Vertices ------------
 
@@ -1152,7 +1256,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 part.set().setUserRecord<double>("EtaPhi", seedShapeRef->covEtaPhi());
 	 part.set().setUserRecord<double>("PhiPhi", seedShapeRef->covPhiPhi());
 
-	 //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection)
+	 //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection) adn to reject converted photons
 	 part.set().setUserRecord<double>("seedphi", SCRef->seed()->phi());
 	 part.set().setUserRecord<double>("seedeta", SCRef->seed()->eta());
 	 part.set().setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
@@ -1228,6 +1332,44 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 int numVal = (*trackNumHandle)[ candRef ];
 	 part.set().setUserRecord<int>("TrackNum", numVal);
 
+
+	 // store neural-network output for gamma/pi0 rejection. 
+	 // WARNING: should only be used with isolated unconverted photons --> compare with SC from converted photons !!!
+	 edm::Handle<reco::PhotonPi0DiscriminatorAssociationMap>  map;
+	 iEvent.getByLabel("piZeroDiscriminators","PhotonPi0DiscriminatorAssociationMap",  map);
+	 reco::PhotonPi0DiscriminatorAssociationMap::const_iterator mapIter;
+
+	 // get the Converted Photon info
+	 edm::Handle<ConvertedPhotonCollection> convertedPhotonHandle; 
+	 iEvent.getByLabel("convertedPhotons", "", convertedPhotonHandle);
+	 const reco::ConvertedPhotonCollection ConvPhotons = *(convertedPhotonHandle.product());
+	 bool isPhotConv = false;
+	 int Ntrk_conv = 0;
+	 for( reco::ConvertedPhotonCollection::const_iterator iCPho = ConvPhotons.begin(); iCPho != ConvPhotons.end(); iCPho++) { 
+	   SuperClusterRef it_superConv = (*iCPho).superCluster();// get the SC related to the  Converted Photon candidate
+	   if(SCRef == it_superConv) { //check if photon candidate is identical to converted photon
+	     isPhotConv = (*iCPho).isConverted(); 
+	     Ntrk_conv = (*iCPho).tracks().size();
+	     break;
+	   }    
+	 } // End of Photon Conversion Loop  
+	 part.set().setUserRecord<bool>("IsConverted", isPhotConv);  
+	 part.set().setUserRecord<bool>("ConvertedNtrk", Ntrk_conv);  
+	 if (fDebug > 1) {cout<<"isPhotConv: "<<isPhotConv<<endl;
+	 cout<<"Ntrk_conv: "<<Ntrk_conv<<endl;}
+
+
+	 mapIter = map->find(edm::Ref<reco::PhotonCollection>(Photons, numGammaAll));
+	 double nn = mapIter->val; //discrimination variable has distribution peaking close to 0 for unconverted neutral pions and close to 1 for unconverted photons
+	 if (fDebug > 1) cout<<"Pi0 dicriminant: "<<nn<<endl;
+	 if(fabs(photon->eta()) <= 1.442) { //barrel with preshower-det
+	   part.set().setUserRecord<double>("Pi0DisBarrel", nn);
+	 } else if( (fabs(photon->eta()) >= 1.556 && fabs(photon->eta()) < 1.65) || fabs(photon->eta()) > 2.5) { //endcap without preshower-det  
+	   part.set().setUserRecord<double>("Pi0DisEndcapNoPre", nn);
+	 } else if(fabs(photon->eta()) >= 1.65 && fabs(photon->eta()) <= 2.5 ) { //endcap with preshower-det  
+	   part.set().setUserRecord<double>("Pi0DisEndcap", nn);
+	 } 
+
 	 	 
          numGammaRec++;
       }	 
@@ -1236,7 +1378,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 
    EvtView.set().setUserRecord<int>("NumGamma", numGammaRec);
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
-
   
 }
 

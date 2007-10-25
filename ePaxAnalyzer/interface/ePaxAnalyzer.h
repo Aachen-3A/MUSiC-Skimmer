@@ -61,6 +61,7 @@ private:
    virtual void analyzeGenJets(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeGenMET(const edm::Event&, pxl::EventViewRef);
    
+   virtual void analyzeTrigger(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventViewRef);
