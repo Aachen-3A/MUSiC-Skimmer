@@ -1,0 +1,9 @@
+module gammaTowerIsolation = EgammaTowerIsolationProducer {
+    InputTag emObjectProducer = correctedPhotons
+    InputTag towerProducer = towerMaker
+    double etMin = 1.5
+    double intRadius = 0.
+    double extRadius = 1.
+    bool absolut = true 
+}
+
