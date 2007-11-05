@@ -3,7 +3,8 @@ module gammaPhotonTkIsolation = EgammaPhotonTkIsolationProducer {
     InputTag trackProducer = ctfWithMaterialTracks
     double ptMin = 1.5
     double intRadius = 0.
-    double extRadius = 1.
+    double extRadius = 0.3
+    double maxVtxDist = 1.
     bool absolut = true 
 }
 
