@@ -973,10 +973,11 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
-   pxl::Objects::TypeIterator<pxl::Vertex> iter(EvtView().getObjects()); 
-   pxl::VertexWkPtr vtx = iter.object();
-   if(vtx.valid()) VertexZ = vtx.get().vector().getZ();
-  
+   if (EvtView().findUserRecord<int>("NumVertices") > 0) {
+      pxl::Objects::TypeIterator<pxl::Vertex> iter(EvtView().getObjects()); 
+      pxl::VertexWkPtr vtx = iter.object();
+      if(vtx.valid()) VertexZ = vtx.get().vector().getZ();
+   } 
 
    for(reco::CaloJetCollection::const_iterator jet = Ktjets->begin(); 
            jet != Ktjets->end(); ++jet ) {
@@ -1276,10 +1277,12 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 
 	 //*************** store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged *********
 	 //get primary vertex (hopefully correct one) for physics eta
-	 pxl::Objects::TypeIterator<pxl::Vertex> iter(EvtView().getObjects()); 
-	 pxl::VertexWkPtr pxlvtx = iter.object();
-	 math::XYZPoint vtx(0., 0., 0.);
-	 if(pxlvtx.valid()) vtx = math::XYZPoint(pxlvtx.get().vector().getX(), pxlvtx.get().vector().getY(), pxlvtx.get().vector().getZ());
+         math::XYZPoint vtx(0., 0., 0.);
+         if (EvtView().findUserRecord<int>("NumVertices") > 0) {
+	    pxl::Objects::TypeIterator<pxl::Vertex> iter(EvtView().getObjects()); 
+	    pxl::VertexWkPtr pxlvtx = iter.object();
+	    if(pxlvtx.valid()) vtx = math::XYZPoint(pxlvtx.get().vector().getX(), pxlvtx.get().vector().getY(), pxlvtx.get().vector().getZ());
+         }
 	 /////  Set event vertex
 	 reco::Photon localPho(*photon);
 	 localPho.setVertex(vtx);
