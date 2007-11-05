@@ -1363,8 +1363,9 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 
 
 	 mapIter = map->find(edm::Ref<reco::PhotonCollection>(Photons, numGammaAll));
+	 double nn = 1; //default: photon is not from Pi0
 	 if(mapIter!=map->end()){//check if photon exists in map at all
-	   double nn = mapIter->val; //discrimination variable has distribution peaking close to 0 for unconverted neutral pions and close to 1 for unconverted photons
+	   nn = mapIter->val; //discrimination variable has distribution peaking close to 0 for unconverted neutral pions and close to 1 for unconverted photons
 	   if (fDebug > 1) cout<<"Pi0 dicriminant: "<<nn<<endl;
 	   if(fabs(photon->eta()) <= 1.442) { //barrel with preshower-det
 	     part.set().setUserRecord<double>("Pi0DisBarrel", nn);
