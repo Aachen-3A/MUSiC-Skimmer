@@ -234,7 +234,6 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    //GenVtx.set().setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
    //GenVtx.set().setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
    
-
    //gen particles
    edm::Handle<reco::CandidateCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
@@ -253,7 +252,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 
      //cast iterator into GenParticleCandidate
      const GenParticleCandidate* p = (const GenParticleCandidate*) &(*pa);
-
+ 
      // fill Gen Muons passing some basic cuts
      if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
          if ( MuonMC_cuts(p) ) { 
@@ -274,16 +273,18 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 
 	    //save mother of stable muon
 	    p_mother =p->mother(); 
-	    mother = p_mother->pdgId();
-	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while( abs(mother) == 13 ){
-	      p_mother = p_mother->mother();
-	      mother = p_mother->pdgId();
-	    }
-	    part.set().setUserRecord<int>("mother_id", mother);
-
+	    if (p_mother != 0) {
+	       mother = p_mother->pdgId();
+	       //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
+	       while( abs(mother) == 13 ){
+	         p_mother = p_mother->mother();
+	         mother = p_mother->pdgId();
+	       }	       
+	       part.set().setUserRecord<int>("mother_id", mother);
+            } else {
+	       part.set().setUserRecord<int>("mother_id", -1);
+	    }          
 	    numMuonMC++; 
-	   	   
          }
       }
       // fill Gen Electrons passing some basic cuts
@@ -299,23 +300,23 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_X", p->vx());
 	    part.set().setUserRecord<double>("Vtx_Y", p->vy());
 	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
-
 	    // TEMPORARY: calculate isolation ourselves
 	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
 	    part.set().setUserRecord<double>("GenIso", GenIso);
-	    
 	    //save mother of stable electron
 	    p_mother =p->mother(); 
-	    mother = p_mother->pdgId();
-	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while( abs(mother) == 11 ){
-	      p_mother = p_mother->mother();
-	      mother = p_mother->pdgId();
-	    }
-	    part.set().setUserRecord<int>("mother_id", mother);
-
+	    if (p_mother != 0) {
+	       mother = p_mother->pdgId();
+	       //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
+	       while( abs(mother) == 11 ){
+	         p_mother = p_mother->mother();
+	         mother = p_mother->pdgId();
+	       }	       
+	       part.set().setUserRecord<int>("mother_id", mother);
+            } else {
+	       part.set().setUserRecord<int>("mother_id", -1);
+	    }          
 	    numEleMC++; 
-
          }
       }
       // fill Gen Gammas passing some basic cuts
@@ -335,16 +336,18 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    
 	    //save mother of stable gamma
 	    p_mother =p->mother(); 
-	    mother = p_mother->pdgId();
-	    //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	    while( abs(mother) == 22 ){
-	      p_mother = p_mother->mother();
-	      mother = p_mother->pdgId();
-	    }
-	    part.set().setUserRecord<int>("mother_id", mother);
-
+	    if (p_mother != 0) {
+	       mother = p_mother->pdgId();
+	       //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
+	       while( abs(mother) == 22 ){
+	         p_mother = p_mother->mother();
+	         mother = p_mother->pdgId();
+	       }	       
+	       part.set().setUserRecord<int>("mother_id", mother);
+            } else {
+	       part.set().setUserRecord<int>("mother_id", -1);
+	    }          
 	    numGammaMC++;
-
          }
       }
    } //end of loop over generated-particles
