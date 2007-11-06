@@ -742,16 +742,16 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 	 part.set().setUserRecord<double>("IsoR03EmEt", muonIsoR03.emEt);
 	 part.set().setUserRecord<double>("IsoR03HadEt", muonIsoR03.hadEt);
 	 part.set().setUserRecord<double>("IsoR03HoEt", muonIsoR03.hoEt);
-	 part.set().setUserRecord<double>("IsoR03NTracks", muonIsoR03.nTracks);
-	 part.set().setUserRecord<double>("IsoR03NJets", muonIsoR03.nJets);
+	 part.set().setUserRecord<int>("IsoR03NTracks", muonIsoR03.nTracks);
+	 part.set().setUserRecord<int>("IsoR03NJets", muonIsoR03.nJets);
 
 	 const MuonIsolation& muonIsoR05 = muon->getIsolationR05();
 	 part.set().setUserRecord<double>("IsoR05SumPt", muonIsoR05.sumPt);
 	 part.set().setUserRecord<double>("IsoR05EmEt", muonIsoR05.emEt);
 	 part.set().setUserRecord<double>("IsoR05HadEt", muonIsoR05.hadEt);
 	 part.set().setUserRecord<double>("IsoR05HoEt", muonIsoR05.hoEt);
-	 part.set().setUserRecord<double>("IsoR05NTracks", muonIsoR05.nTracks);
-	 part.set().setUserRecord<double>("IsoR05NJets", muonIsoR05.nJets);
+	 part.set().setUserRecord<int>("IsoR05NTracks", muonIsoR05.nTracks);
+	 part.set().setUserRecord<int>("IsoR05NJets", muonIsoR05.nJets);
 
 	 //save some stuff related to Muon-ID (Calo-info etc.)
 	 part.set().setUserRecord<double>("CaloCompatibility", muon->getCaloCompatibility());
@@ -1363,7 +1363,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 
 
 	 mapIter = map->find(edm::Ref<reco::PhotonCollection>(Photons, numGammaAll));
-	 double nn = 1; //default: photon is not from Pi0
+	 double nn = 1; //default: photon candidate is not a Pi0
 	 if(mapIter!=map->end()){//check if photon exists in map at all
 	   nn = mapIter->val; //discrimination variable has distribution peaking close to 0 for unconverted neutral pions and close to 1 for unconverted photons
 	   if (fDebug > 1) cout<<"Pi0 dicriminant: "<<nn<<endl;
