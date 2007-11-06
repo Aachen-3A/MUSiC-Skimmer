@@ -755,10 +755,11 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 
 	 //save some stuff related to Muon-ID (Calo-info etc.)
 	 part.set().setUserRecord<double>("CaloCompatibility", muon->getCaloCompatibility());
-	 part.set().setUserRecord<double>("NumberOfChambers", muon->numberOfChambers());
-	 part.set().setUserRecord<double>("NumberOfMatches", muon->numberOfMatches());
+	 part.set().setUserRecord<int>("NumberOfChambers", muon->numberOfChambers());
+	 part.set().setUserRecord<int>("NumberOfMatches", muon->numberOfMatches());
 	 part.set().setUserRecord<double>("MuonDepositEM", muon->getCalEnergy().em);
 	 part.set().setUserRecord<double>("MuonDepositHCAL", muon->getCalEnergy().had);
+	
 	
          numMuonRec++;
       }
