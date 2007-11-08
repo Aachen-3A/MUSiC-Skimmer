@@ -578,9 +578,11 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
 void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
   
   //HLT trigger bits
-  edm::Handle<edm::TriggerResults> hltresults;
   string errMsg("");
-  try {iEvent.getByType(hltresults);} catch (...) { errMsg=errMsg + "  -- No HLTRESULTS";}
+  edm::Handle<edm::TriggerResults> hltresults;
+  //HLT producer is called several times within production steps, thus need Input tag with label and process name here
+  edm::InputTag hlt = edm::InputTag("TriggerResults","","HLT");
+  try {iEvent.getByLabel(hlt, hltresults);} catch (...) { errMsg=errMsg + "  -- No HLTRESULTS";}
   // trigger names
   edm::TriggerNames triggerNames_;
 
