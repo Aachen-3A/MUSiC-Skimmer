@@ -1161,38 +1161,9 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    partcorr.set().setUserRecord<double>("HadEt", calometcorr.etFractionHadronic());   //not muon corrected
    partcorr.set().setUserRecord<double>("MaxEtEm", calometcorr.maxEtInEmTowers());   //not muon corrected
    partcorr.set().setUserRecord<double>("MaxEtHad", calometcorr.maxEtInHadTowers()); //not muon corrected
-   
-   
-   if (fDebug > 1) {
-      cout << "RecMETCorr before muon corr: Px = " << calometcorr.px() << "   Py = " << calometcorr.py() << "   Pt = " << partcorr.get().vector().getPt() << endl;   
-      cout << " MET (uncorr): ( " << partcorr.get().vector().getPx() << ", " << partcorr.get().vector().getPy() << ", "
-           << partcorr.get().vector().getPz() <<  " )    E: " << partcorr.get().vector().getE() << "   Et = "
-           << partcorr.get().vector().getEt() << " Theta: " << partcorr.get().vector().getTheta()
-           << " Mass: " << partcorr.get().vector().getMass() << endl;
-   }
-   // Perform Muon Corrections!   
-   // loop over muons and subtract them   
-   // FIXME: Really only correct for selected muons? Is there official muon correction out yet?
-   if (EvtView.get().findUserRecord<int>("NumMuon") > 0) {      
-   for (pxl::Objects::TypeIterator<pxl::Particle> iter(EvtView().getObjects()); !iter.isDone(); iter.next()) {
-      if (iter.object().get().getName() == "Muon")  {
-         if (fDebug > 1) cout << "Correcting with " << iter.object().get().getName() << " px = " << iter.object().get().vector().getPx() 
-                              << " Py = " << iter.object().get().vector().getPy() << endl; 
-            partcorr.set() -= iter.object().get(); 
-         }  
-      }   
-   } 
-   //reset eta-info after muon corrections
-   partcorr.set().vector(pxl::set).setPz(0.);  
-   partcorr.set().vector(pxl::set).setMass(0.);
-   if (fDebug > 1) {
-      cout << " MET (corr corr): ( " << partcorr.get().vector().getPx() << ", " << partcorr.get().vector().getPy() << ", "
-           << partcorr.get().vector().getPz() <<  " )    E: " << partcorr.get().vector().getE() << "   Et = "
-           << part.get().vector().getEt() << " Theta: " << part.get().vector().getTheta()
-           << " Mass: " << partcorr.get().vector().getMass() << endl;
-      cout << "RecMET after muon corr: Px = " << partcorr.get().vector().getPx() << "   Py = " << partcorr.get().vector().getPy() 
-           << "   Pt = " << partcorr.get().vector().getPt() << endl;   
-   } 
+
+   //DO NOT CORRECT FOR MUONS MANUALLY, USE OFFICIAL MUONMET-CORRECTION!!!   
+
    //there is always MET in event, just decide if cuts passed (do this after muon corrections!)
    if (MET_cuts(partcorr)) { 
      numMETCorrRec++;
