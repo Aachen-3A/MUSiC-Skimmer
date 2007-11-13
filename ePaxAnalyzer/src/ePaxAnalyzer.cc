@@ -1272,8 +1272,8 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 
 	 // TEMPORARY: calculate isolation ourselves
 	 double CaloPt = ( hcalEnergy + photon->superCluster()->rawEnergy() ) / cosh(photon->eta());
-	 double CaloIso = IsoCalSum(iEvent, CaloPt, photon->eta(), photon->phi(), 0.2, 0.1);
-	 double TrkIso = IsoTrkSum(iEvent, 0., photon->eta(), photon->phi(), 0.2, 0.1);
+	 double CaloIso = IsoCalSum(iEvent, CaloPt, photon->eta(), photon->phi(), 0.3, 1.5);
+	 double TrkIso = IsoTrkSum(iEvent, 0., photon->eta(), photon->phi(), 0.3, 1.5);
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
 	 part.set().setUserRecord<double>("TrkIso", TrkIso);
 
@@ -1337,7 +1337,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	   }    
 	 } // End of Photon Conversion Loop  
 	 part.set().setUserRecord<bool>("IsConverted", isPhotConv);  
-	 part.set().setUserRecord<bool>("ConvertedNtrk", Ntrk_conv);  
+	 part.set().setUserRecord<int>("ConvertedNtrk", Ntrk_conv);  
 	 if (fDebug > 1) {cout<<"isPhotConv: "<<isPhotConv<<endl;
 	 cout<<"Ntrk_conv: "<<Ntrk_conv<<endl;}
 
