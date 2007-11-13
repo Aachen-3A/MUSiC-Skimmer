@@ -230,6 +230,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    GenVtx.set().vector(pxl::set).setX(EventVertices->position().x());
    GenVtx.set().vector(pxl::set).setY(EventVertices->position().y());
    GenVtx.set().vector(pxl::set).setZ(EventVertices->position().z());
+   // we only have a single PV at Generator Level. Due to EventView Consistency .i.e. GenEvtView should look identical to RecEvtView
+   // this variable is explicetly set
+   EvtView.set().setUserRecord<int>("NumVertices", 1);               
    // do we need this BX/event identification???
    //GenVtx.set().setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
    //GenVtx.set().setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
