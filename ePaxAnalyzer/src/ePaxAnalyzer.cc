@@ -1266,9 +1266,8 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 /////  Set event vertex
 	 reco::Photon localPho(*photon);
 	 localPho.setVertex(vtx);
-	 part.set().setUserRecord<double>("pxPhys", localPho.p4().px());
-	 part.set().setUserRecord<double>("pyPhys", localPho.p4().py());
-	 part.set().setUserRecord<double>("pzPhys", localPho.p4().pz());
+	 part.set().setUserRecord<double>("PhysicsEta", localPho.p4().eta());
+	 part.set().setUserRecord<double>("PhysicsPhi", localPho.p4().phi());
 
 	 // TEMPORARY: calculate isolation ourselves
 	 double CaloPt = ( hcalEnergy + photon->superCluster()->rawEnergy() ) / cosh(photon->eta());
