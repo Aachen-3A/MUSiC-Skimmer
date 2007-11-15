@@ -7,7 +7,8 @@ void ParticleMatcher::matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef 
    // FIXME: Make code more generic! Generate a list of all Particle types
    std::vector<std::string> typeList;
    typeList.push_back("Muon"); typeList.push_back("Ele"); typeList.push_back("Gamma"); typeList.push_back("KtJet"); 
-   typeList.push_back("ItCone5Jet"); typeList.push_back("MidCone5Jet"); typeList.push_back("MidCone7Jet"); typeList.push_back("MET");
+   typeList.push_back("ItCone5Jet"); typeList.push_back("MidCone5Jet"); typeList.push_back("MidCone7Jet"); 
+   typeList.push_back("MET"); typeList.push_back("METCorr");
    // getTypeList(&typeList, GenView, RecView);
    for (std::vector<std::string>::const_iterator partType = typeList.begin(); partType != typeList.end(); partType++) {
       pxl::ParticleFilter GenFilter(GenView().getObjects(), (*partType));
