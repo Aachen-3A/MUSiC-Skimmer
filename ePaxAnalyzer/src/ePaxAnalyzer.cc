@@ -572,6 +572,12 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventViewRef Evt
    }
    EvtView.set().setUserRecord<int>("NumMET", numMETMC);
    if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
+
+   //save also dummy METCorr for GenMET in order to be consistent with Rec-MET --> we need symmetry in naming between gen and rec
+   //pxl::Particle partcorr(part);
+   pxl::ParticleRef partcorr = EvtView.set().create<pxl::Particle>(part.get());
+   partcorr.set().setName("METCorr");
+   EvtView.set().setUserRecord<int>("NumMETCorr", numMETMC);
 }
 
 
