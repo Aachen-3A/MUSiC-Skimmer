@@ -5,7 +5,7 @@
 Class which perform the matching between generator level particle with
 reconstructed particles. The matching is based on a delta R algo. Each gen
 particle points to the best matching rec particle and vice versa. If the best
-matching particle has a distance large than deltaR > 0.2 the particle is
+matching particle has a distance large than deltaR > 0.2 ( > 0.5 for MET) the particle is
 declared to has no match. For unmatched particles Match UserRecord is set to -1.
 */
 
@@ -29,5 +29,9 @@ class ParticleMatcher {
       int SmallestRowElement(TMatrixT<double>* matrix, int row);   
       int SmallestColumnElement(TMatrixT<double>* matrix, int col);
       int fDebug; 
+      //variable to define dR which decides matching
+      double DeltaRMatching;
+      double DeltaRMET;
+      double DeltaRParticles;
 };
 #endif

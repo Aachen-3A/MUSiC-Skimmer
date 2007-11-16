@@ -7,8 +7,13 @@ void ParticleMatcher::matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef 
    // FIXME: Make code more generic! Generate a list of all Particle types
    std::vector<std::string> typeList;
    typeList.push_back("Muon"); typeList.push_back("Ele"); typeList.push_back("Gamma"); typeList.push_back("KtJet"); 
-   typeList.push_back("ItCone5Jet"); typeList.push_back("MidCone5Jet"); typeList.push_back("MidCone7Jet"); 
+   typeList.push_back("ItCone5Jet"); typeList.push_back("MidCone5Jet"); typeList.push_back("MidCone7Jet");
    typeList.push_back("MET"); typeList.push_back("METCorr");
+
+   //define dR for matching of different physics objects
+   DeltaRMET = 0.5;
+   DeltaRParticles = 0.2;
+
    // getTypeList(&typeList, GenView, RecView);
    for (std::vector<std::string>::const_iterator partType = typeList.begin(); partType != typeList.end(); partType++) {
       pxl::ParticleFilter GenFilter(GenView().getObjects(), (*partType));
@@ -33,6 +38,7 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
    if (GenFilter.getSize() > 0 && RecFilter.getSize() > 0) {
       int col = 0;
       int row = 0;
+      std::string particle;
       if (fDebug > 1) cout << "Found " << GenFilter.getSize() << " Gen Objects and " << RecFilter.getSize() << " Rec Objects" << endl;
       TMatrixT<double> DistanzMatrix(GenFilter.getSize(),RecFilter.getSize());
       for (pxl::ParticleFilterIterator gen_iter(GenFilter); !gen_iter.isDone(); gen_iter.next()) {
@@ -60,8 +66,21 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
       if (fDebug > 0) DistanzMatrix.Print(); 
       // go through every row and pushback index of Rec with smallest Distance
       for (int irow = 0; irow < GenFilter.getSize(); irow++) {
+	 //define value in dR which defines matching
+	 DeltaRMatching = DeltaRParticles;
+	 pxl::ParticleFilterIterator tmp_gen_iter(GenFilter);
+	 pxl::ParticleWkPtr tmp_gen_pa = tmp_gen_iter.wkPtr();
+	 particle = tmp_gen_pa.get().getName();
+	 if(particle == "MET" || particle == "METCorr") DeltaRMatching = DeltaRMET;
          // better implementation then always iterate over all particles?????
 	 int matched = SmallestRowElement(&DistanzMatrix, irow);
+
+	 //TEMPORARY FIX to always match met
+	 /*pxl::ParticleFilterIterator tmp_gen_iter(GenFilter);
+	 pxl::ParticleWkPtr tmp_gen_pa = tmp_gen_iter.wkPtr();
+	 std::string particle = tmp_gen_pa.get().getName();
+	 if(particle == "MET" || particle == "METCorr") matched = 0;*/
+
 	 int count = 0;
 	 bool found = false;
          pxl::ParticleFilterIterator gen_iter(GenFilter);
@@ -92,9 +111,22 @@ void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::Particle
          } 
       }
       for (int icol = 0; icol < RecFilter.getSize(); icol++) {
+         //define value in dR which defines matching
+	 DeltaRMatching = DeltaRParticles;
+	 pxl::ParticleFilterIterator tmp_gen_iter(RecFilter);
+	 pxl::ParticleWkPtr tmp_gen_pa = tmp_gen_iter.wkPtr();
+	 particle = tmp_gen_pa.get().getName();
+	 if(particle == "MET" || particle == "METCorr") DeltaRMatching = DeltaRMET;
          // better implementation then always iterate over all particles?????
 	 int matched = SmallestColumnElement(&DistanzMatrix, icol);
-	 int count = 0;
+	 
+	 //TEMPORARY FIX to always match met
+	 /*pxl::ParticleFilterIterator tmp_rec_iter(RecFilter);
+	 pxl::ParticleWkPtr tmp_rec_pa = tmp_rec_iter.wkPtr();
+	 std::string particle = tmp_rec_pa.get().getName();
+	 if(particle == "MET" || particle == "METCorr") matched = 0;*/
+
+         int count = 0;
 	 bool found = false;
          pxl::ParticleFilterIterator rec_iter(RecFilter); 
 	 while (!rec_iter.isDone() && !found) {
@@ -139,7 +171,7 @@ int ParticleMatcher::SmallestRowElement(TMatrixT<double>* matrix, int row) {
 	 index = i;
       }
    }
-   if (element > 0.2) index = -1;    
+   if (element > DeltaRMatching) index = -1;    
    return index;
 }
 
@@ -156,6 +188,6 @@ int ParticleMatcher::SmallestColumnElement(TMatrixT<double>* matrix, int col) {
 	 index = i;
       }
    }    
-   if (element > 0.2) index = -1;
+   if (element > DeltaRMatching) index = -1;
    return index;
 }
