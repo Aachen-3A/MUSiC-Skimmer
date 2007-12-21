@@ -3,6 +3,6 @@ module gammaHOE = EgammaHcalIsolationProducer {
     InputTag hcalRecHitProducer = hbhereco
     double etMin = 1.5
     double intRadius = 0.
-    double extRadius = 1.
+    double extRadius = 0.3
     bool absolut = false
 }

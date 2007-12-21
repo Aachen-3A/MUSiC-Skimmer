@@ -609,6 +609,11 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
   EvtView.set().setUserRecord<bool>("HLTNMuonNonIso", false);
   EvtView.set().setUserRecord<bool>("HLTXElectronMuon", false);
   EvtView.set().setUserRecord<bool>("HLTXElectronMuonRelaxed", false);
+  EvtView.set().setUserRecord<bool>("HLTXElectron1Jet", false);
+  EvtView.set().setUserRecord<bool>("HLTXElectron2Jet", false);
+  EvtView.set().setUserRecord<bool>("HLTXElectron3Jet", false);
+  EvtView.set().setUserRecord<bool>("HLTXElectron4Jet", false);
+  EvtView.set().setUserRecord<bool>("HLTXMuonJets", false);
   //L1: set to false as default (have all prescale = 1)
   EvtView.set().setUserRecord<bool>("L1_SingleMu7", false);
   EvtView.set().setUserRecord<bool>("L1_DoubleMu3", false);
@@ -645,7 +650,12 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
       if((trigName == "HLTNMuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTNMuonNonIso", accept);
       if((trigName == "HLTXElectronMuon") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectronMuon", accept);
       if((trigName == "HLTXElectronMuonRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectronMuonRelaxed", accept);
-       
+      if((trigName == "HLTXElectron1Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron1Jet", accept);
+      if((trigName == "HLTXElectron2Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron2Jet", accept);
+      if((trigName == "HLTXElectron3Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron3Jet", accept);
+      if((trigName == "HLTXElectron4Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron4Jet", accept);
+      if((trigName == "HLTXMuonJets") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXMuonJets", accept);
+      
     }
   }
 
