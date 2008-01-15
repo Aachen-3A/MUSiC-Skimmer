@@ -70,6 +70,12 @@
 #include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
 #include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
 
+//For L1 and Hlt objects
+#include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/HLTReco/interface/HLTFilterObject.h"
+#include "DataFormats/Candidate/interface/CandMatchMap.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
+
 //math stuff from Physics tools
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -628,33 +634,68 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
     
     triggerNames_.init(*hltresults);
    
-    // ...Fill the corresponding accepts in branch-variables
+    // ...Fill the corresponding accepts in branch-variables, save also selected HLT-objects (need match with gen/reco-objects for trigger-efficiencies)
     for (int itrig = 0; itrig != ntrigs; ++itrig){
       
       string trigName=triggerNames_.triggerName(itrig);
       bool accept = hltresults->accept(itrig);
+      string hltobject;
       
-      if (fDebug > 1) { std::cout << "%HLTInfo --  Number of HLT Triggers: " << ntrigs << std::endl;
-      std::cout << "%HLTInfo --  HLTTrigger(" << itrig << "): " << trigName << " = " << accept << std::endl; }
+      if (fDebug > 1) { 
+	std::cout << "%HLTInfo --  Number of HLT Triggers: " << ntrigs << std::endl;
+	std::cout << "%HLTInfo --  HLTTrigger(" << itrig << "): " << trigName << " = " << accept << std::endl; 
+      }
 
-      if((trigName == "HLT1Electron") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1Electron", accept);
-      if((trigName == "HLT1ElectronRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1ElectronRelaxed", accept);
-      if((trigName == "HLT2Electron") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT2Electron", accept);
-      if((trigName == "HLT2ElectronRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT2ElectronRelaxed", accept);
-      if((trigName == "HLT1EMHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1EMHighEt", accept);
-      if((trigName == "HLT1EMVeryHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1EMVeryHighEt", accept);
-      if((trigName == "HLT1MuonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1MuonIso", accept);
-      if((trigName == "HLT1MuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT1MuonNonIso", accept);
-      if((trigName == "CandHLT2MuonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("CandHLT2MuonIso", accept);
-      if((trigName == "HLT2MuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLT2MuonNonIso", accept);
-      if((trigName == "HLTNMuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTNMuonNonIso", accept);
-      if((trigName == "HLTXElectronMuon") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectronMuon", accept);
-      if((trigName == "HLTXElectronMuonRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectronMuonRelaxed", accept);
-      if((trigName == "HLTXElectron1Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron1Jet", accept);
-      if((trigName == "HLTXElectron2Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron2Jet", accept);
-      if((trigName == "HLTXElectron3Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron3Jet", accept);
-      if((trigName == "HLTXElectron4Jet") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXElectron4Jet", accept);
-      if((trigName == "HLTXMuonJets") && (accept == true)) EvtView.set().setUserRecord<bool>("HLTXMuonJets", accept);
+      if((trigName == "HLT1Electron") && (accept == true)){ 
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "hltSingleElectronEoverpFilter";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT1ElectronRelaxed") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "hltSingleElectronEoverpFilter";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT2Electron") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "hltDoubleElectronTrackIsolFilter";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT2ElectronRelaxed") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "hltRelaxedDoubleElectronTrackIsolFilter";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT1MuonIso") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "SingleMuIsoL3IsoFiltered";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT1MuonNonIso") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "SingleMuNoIsoL3PreFiltered";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "CandHLT2MuonIso") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "DiMuonIsoL3IsoFiltered";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT2MuonNonIso") && (accept == true)){
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "DiMuonNoIsoL3PreFiltered";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLTNMuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLT1EMHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLT1EMVeryHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXElectronMuon") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXElectronMuonRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXElectron1Jet") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXElectron2Jet") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXElectron3Jet") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXElectron4Jet") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
+      if((trigName == "HLTXMuonJets") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
       
     }
   }
@@ -680,6 +721,33 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
     if((trigName == "L1_DoubleEG10") && (accept == true)) EvtView.set().setUserRecord<bool>("L1_DoubleEG10", accept);
   }
 
+}
+
+// ------------ Function to get the HLT Objects through the HLTFilterObjectWithRefs and save as pxl-partciles ------------------
+  
+void ePaxAnalyzer::saveHLTobjects(const edm::Event& iEvent, pxl::EventViewRef EvtView, string& hltobject){
+  edm::Handle<HLTFilterObjectWithRefs> theHltFilterObjectHandle;
+  // if( iEvent.getByLabel(hltobject, theHltFilterObjectHandle) ){ //bool works only >17x, hav to use ugly try...catch for the moment
+  try {
+    iEvent.getByLabel(hltobject, theHltFilterObjectHandle);
+    for (unsigned int i=0; i<theHltFilterObjectHandle->size(); i++) {
+      edm::RefToBase<reco::Candidate> candref = theHltFilterObjectHandle->getParticleRef(i);
+      //save HLT-object info as pxl particle, use label string as name for particle
+      pxl::ParticleRef part = EvtView.set().create<pxl::Particle>();
+      part.set().setName(hltobject);
+      part.set().setCharge(candref->charge());
+      part.set().vector(pxl::set).setPx(candref->px());
+      part.set().vector(pxl::set).setPy(candref->py());
+      part.set().vector(pxl::set).setPz(candref->pz());
+      part.set().vector(pxl::set).setE(candref->energy());
+      /*cout <<"HLT Collection with label "<< hltobject << endl;
+      cout << "theHltFilterObjectVector[" << i << "].pt()  = " << candref->pt()  << endl;
+      cout << "theHltFilterObjectVector[" << i << "].eta() = " << candref->eta() << endl;
+      cout << "theHltFilterObjectVector[" << i << "].phi() = " << candref->phi() << endl;*/
+    }
+    } catch (...) {
+      //cout <<"No HLT Collection with label "<< hltobject << endl;
+    }
 }
 
 
