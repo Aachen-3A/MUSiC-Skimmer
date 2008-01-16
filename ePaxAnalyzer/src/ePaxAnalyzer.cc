@@ -648,22 +648,22 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
 
       if((trigName == "HLT1Electron") && (accept == true)){ 
 	EvtView.set().setUserRecord<bool>(trigName, accept);
-	hltobject = "hltSingleElectronEoverpFilter";
+	hltobject = "hltL1IsoSingleElectronTrackIsolFilter";
 	saveHLTobjects(iEvent, EvtView, hltobject);
       }
       if((trigName == "HLT1ElectronRelaxed") && (accept == true)){
 	EvtView.set().setUserRecord<bool>(trigName, accept);
-	hltobject = "hltSingleElectronEoverpFilter";
+	hltobject = "hltL1NonIsoSingleElectronTrackIsolFilter";
 	saveHLTobjects(iEvent, EvtView, hltobject);
       }
       if((trigName == "HLT2Electron") && (accept == true)){
 	EvtView.set().setUserRecord<bool>(trigName, accept);
-	hltobject = "hltDoubleElectronTrackIsolFilter";
+	hltobject = "hltL1IsoDoubleElectronTrackIsolFilter";
 	saveHLTobjects(iEvent, EvtView, hltobject);
       }
       if((trigName == "HLT2ElectronRelaxed") && (accept == true)){
 	EvtView.set().setUserRecord<bool>(trigName, accept);
-	hltobject = "hltRelaxedDoubleElectronTrackIsolFilter";
+	hltobject = "hltL1NonIsoDoubleElectronTrackIsolFilter";
 	saveHLTobjects(iEvent, EvtView, hltobject);
       }
       if((trigName == "HLT1MuonIso") && (accept == true)){
