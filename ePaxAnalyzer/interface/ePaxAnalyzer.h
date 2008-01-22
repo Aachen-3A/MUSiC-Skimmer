@@ -105,9 +105,7 @@ private:
    std::string fTruthVertexLabel;
    std::string fgenParticleCandidatesLabel;
    std::string fKtJetMCLabel;
-   std::string fItCone5JetMCLabel;
-   std::string fMidCone5JetMCLabel;
-   std::string fMidCone7JetMCLabel;   
+   std::string fItCone5JetMCLabel; 
    std::string fMETMCLabel;
    std::string fVertexRecoLabel;
    std::string fMuonRecoLabel;
@@ -126,8 +124,7 @@ private:
    std::string fGammaTrackNumProducer;
    std::string fKtJetRecoLabel;
    std::string fItCone5JetRecoLabel;
-   std::string fMidCone5JetRecoLabel;
-   std::string fMidCone7JetRecoLabel;
+   std::string fL2L3JESic5JetRecoLabel;
    std::string fMETRecoLabel;
    std::string fMETCorrRecoLabel;
    edm::InputTag fBarrelClusterShapeAssocProducer;
