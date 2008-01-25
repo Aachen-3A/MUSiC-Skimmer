@@ -5,6 +5,7 @@
 //
 
 // CMSSW includes
+#include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -87,7 +88,8 @@ private:
    double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
    double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
    double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
-   
+
+   void catchParticlesWithStatus3Daughters(std::vector<const reco::Candidate*>& cand, const reco::Candidate* p);   
    /*void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
    void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
    int SmallestColumnElement(TMatrixT<double>* matrix, int col);
@@ -102,6 +104,7 @@ private:
    std::string fProcess;
    bool fGenOnly;
    // The labels used in cfg-file 
+   bool fIsCSASoup;
    std::string fTruthVertexLabel;
    std::string fgenParticleCandidatesLabel;
    std::string fKtJetMCLabel;

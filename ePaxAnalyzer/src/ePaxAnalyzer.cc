@@ -22,8 +22,11 @@
 // system include files
 #include <memory>
 #include <sstream>
+#include <iostream>
 // include Message Logger for Debug
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "TLorentzVector.h"
+#include "TVector3.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -95,6 +98,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) {
    // Debugging
    fDebug = iConfig.getUntrackedParameter<int>("debug");
    // The labels used in cfg-file 
+   fIsCSASoup = iConfig.getUntrackedParameter<bool>("IsCSASoup");
    fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
    fKtJetMCLabel = iConfig.getUntrackedParameter<string>("KtJetMCLabel");
@@ -158,9 +162,76 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    pxl::EventView RecEvtView;
    GenEvtView.set().setUserRecord<string>("Type", "Gen");
    RecEvtView.set().setUserRecord<string>("Type", "Rec");
-   // set physics process   
-   GenEvtView.set().setUserRecord<string>("Process", fProcess);
-   RecEvtView.set().setUserRecord<string>("Process", fProcess);
+   // FIXME: Is this the only thing to be changed to run over the soup?!? 
+   // The process is not defined by the cfg file but by the ID given by the csaweightproducer?
+   // set physics process 
+   if (!fIsCSASoup) {  
+      GenEvtView.set().setUserRecord<string>("Process", fProcess);
+      RecEvtView.set().setUserRecord<string>("Process", fProcess);
+   }
+
+   double processID = 0.;
+   double pthat = 0;
+
+   // if running on RECO use HepMC    
+   try {
+      edm::Handle<edm::HepMCProduct> MC;
+      iEvent.getByLabel( "source", MC );
+      const HepMC::GenEvent * genEvt = MC->GetEvent();
+    
+      processID = genEvt->signal_process_id();
+      pthat = genEvt->event_scale(); 
+
+      //genEvt->print();
+
+   } catch (...) {   } 
+   
+   // else use stuff inside AOD
+   try {
+      edm::Handle< int > genProcessID;
+      iEvent.getByLabel( "genEventProcID", genProcessID );
+      processID = *genProcessID;
+ 
+      edm::Handle< double > genEventScale;
+      iEvent.getByLabel( "genEventScale", genEventScale );
+      pthat = *genEventScale;
+    } catch (...) { } 
+    
+   // NOT STORED!
+   //HepMC::PdfInfo* pdfstuff = genEvt->pdf_info();
+   //if (pdfstuff != 0) cout << "Momentum of first incoming parton:  (id/flavour = " << pdfstuff->id1() << ")  " <<  pdfstuff->x1() << endl
+   //     << "Momentum of second incoming parton: (id/flavour = " << pdfstuff->id2() << ")  " <<  pdfstuff->x2() << endl
+   //     << "Scale = " << pdfstuff->scalePDF() << endl;
+   //else cout << "PDFstuff not set!" << endl;
+   
+   // store the ID in both event views? 
+   GenEvtView.set().setUserRecord<double>("pthat", pthat);
+   RecEvtView.set().setUserRecord<double>("pthat", pthat); 
+
+   // get Event Weight in case of a soup else eventweight is == 1
+   double weight = 1.;
+   if (fIsCSASoup) {
+      //cout << "This is a CSA07 Soup" << endl;
+      edm::Handle< double> weightHandle;
+      iEvent.getByLabel ("csaweightproducer","weight", weightHandle);
+      weight = *weightHandle;
+      // Store Process ID 
+      edm::Handle< int > genProcessID;
+      // Alpen Fix
+      if (processID == 4) { // 4 in Pythia means external process
+         iEvent.getByLabel ("csaweightproducer","AlpgenProcessID", genProcessID);
+         processID = *genProcessID;
+      }
+   }
+
+   cout << "Weight = " << weight << endl;
+   cout << "Process ID: " << processID << " and Event Scale (pthat): " << pthat << endl;
+
+   GenEvtView.set().setUserRecord<double>("Weight", weight);
+   RecEvtView.set().setUserRecord<double>("Weight", weight);
+   
+   GenEvtView.set().setUserRecord<double>("ProcID", processID);
+   RecEvtView.set().setUserRecord<double>("ProcID", processID);
 
    // Generator stuff
    analyzeGenInfo(iEvent, GenEvtView);
@@ -179,7 +250,6 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
 
    Matcher->matchObjects(GenEvtView, RecEvtView);
-   //matchObjects(GenEvtView, RecEvtView);
 
    // set event class strings
    GenEvtView.set().setUserRecord<string>("EventClass", getEventClass(GenEvtView));
@@ -211,6 +281,19 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    fePaxFile.writeEvent(RecEvtView.get().findUserRecord<string>("EventClass"));
 }
 
+// ------------ tracing status 3 particles ------------
+
+void ePaxAnalyzer::catchParticlesWithStatus3Daughters(std::vector<const reco::Candidate*>& cand, const reco::Candidate* p) {
+
+   //bool hasStatus3DaughtersOnly = true;
+   for (unsigned int i = 0; i < p->numberOfDaughters(); i++) {
+      const Candidate* daughter = p->daughter(i); 
+      if (daughter->status() == 3) catchParticlesWithStatus3Daughters(cand, daughter);
+      else return;
+   }
+   cand.push_back(p);
+}
+
 // ------------ reading the Generator Stuff ------------
 
 void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
@@ -226,7 +309,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 
    // Store primary Vertex:
    pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
-   GenVtx.set().setName("PrimaryVertex");
+   GenVtx.set().setName("PV");
    GenVtx.set().vector(pxl::set).setX(EventVertices->position().x());
    GenVtx.set().vector(pxl::set).setY(EventVertices->position().y());
    GenVtx.set().vector(pxl::set).setZ(EventVertices->position().z());
@@ -248,13 +331,54 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    //save mother of stable particle
    const Candidate* p_mother; 
    int mother = 0;
-
+//   int numOfProton = 0;
+//   vector<const Candidate*> cand_prot1;
+//   vector<const Candidate*> cand_prot2;
+	
    // loop over all particles
    for( reco::CandidateCollection::const_iterator pa = genParticleHandel->begin(); 
 	pa != genParticleHandel->end(); ++ pa ) {
 
      //cast iterator into GenParticleCandidate
      const GenParticleCandidate* p = (const GenParticleCandidate*) &(*pa);
+     // find protons initiating the hard process:
+/*     if ((p->pdgId() == 2212) && (fabs(p->pz()) > 6.999e3)) {
+        numOfProton++;
+        //cout << "Found Proton: P (" << p->px() << ", " << p->py() << ", " << p->pz() << ") status: " << p->status() << " #daugthers: " << p->numberOfDaughters() << endl;
+	// Get daughters:
+	unsigned int numberOfPartons = 0;
+	bool checkStatus = false;
+	if ( p->numberOfDaughters() > 1) checkStatus = true;
+	for (unsigned int i = 0; i < p->numberOfDaughters(); i++) {
+	   const Candidate* daughter = p->daughter(i); 
+	   // check if daughter is a quark or a gluon
+	   if (abs(daughter->pdgId()) < 7 ||  daughter->pdgId() == 21 ) {
+	      // This is needed for Pythia: only in Pythia the proton might have several quark/gluon daughters,
+	      // THe code runs with MC@NLO and Pythia now. What is with e.g. Alpgen?
+	      // FIXME / CHECKME !!!
+	      if (checkStatus && daughter->status() != 3) continue;    
+	      numberOfPartons++;
+	      if (numOfProton < 3) {
+	         // Set X1 (momentum fraction) and Flavour1 
+		 EvtView.set().setUserRecord<double>("X"+numOfProton, daughter->pz());
+		 if (daughter->pdgId() == 21) EvtView.set().setUserRecord<int>("F"+numOfProton, 0);
+		 else EvtView.set().setUserRecord<int>("F"+numOfProton, daughter->pdgId());
+	      } else cout <<  " aAHHHHHHHHHHH Found more then 2 Protons with energy large 6.999 TeV)" << endl;
+	      //cout << "Found Proton Daughter: " << daughter->pdgId() << " with P (" << daughter->px() << ", " << daughter->py() << ", " << daughter->pz() << ") status: " << daughter->status() << " #daugthers: " << daughter->numberOfDaughters() << endl;
+           } //else {
+	   //   cout << "daughter is neither a gluon nor a quark: ID: " << daughter->pdgId() << endl;
+	   //}  
+	}
+        if (numberOfPartons != 1) cout << "Found in total " << numberOfPartons << " Partons with Status code 3 which arise from Protons" << endl; 
+	assert(numberOfPartons == 1); 
+	
+        // Now try to find out the hard process:
+	// Idea: find all Particles which have status code 3 and all their daughters have status code 3
+	// start from both protons and try to find the overlap latter on
+	if (numOfProton == 1) catchParticlesWithStatus3Daughters(cand_prot1, p);
+	if (numOfProton == 2) catchParticlesWithStatus3Daughters(cand_prot2, p);
+
+     } */
  
      // fill Gen Muons passing some basic cuts
      if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
@@ -354,6 +478,63 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
          }
       }
    } //end of loop over generated-particles
+/*   
+   // Analyze the Status 3 Particles wiht Status 3 Only daughter
+   cout << endl << "   Proton 1: Stat 3 Particles with Stat 3 daughters: " << endl;
+   for (vector<const Candidate*>::const_iterator iter = cand_prot1.begin(); iter != cand_prot1.end(); iter++) {
+      cout << "   Particle " << (*iter)->pdgId() << "  (" << (*iter)->px() << ", " << (*iter)->py() << ", " << (*iter)->pz() << ") status: " << (*iter)->status() << " #daugthers: " << (*iter)->numberOfDaughters() << endl;
+   }
+   cout << endl << "   Proton 2: Stat 3 Particles with Stat 3 daughters: " << endl;
+   for (vector<const Candidate*>::const_iterator iter = cand_prot2.begin(); iter != cand_prot2.end(); iter++) {
+      cout << "   Particle " << (*iter)->pdgId() << "  (" << (*iter)->px() << ", " << (*iter)->py() << ", " << (*iter)->pz() << ") status: " << (*iter)->status() << " #daugthers: " << (*iter)->numberOfDaughters() << endl;
+   }
+
+   bool found = false;
+   const Candidate* cand1;
+   const Candidate* cand2;
+   for (vector<const Candidate*>::const_iterator iter1 = cand_prot1.begin(); iter1 != cand_prot1.end(); iter1++) {
+      // check if first daughter is identical with one of the daughters of the other vector
+      const Candidate* daughter1 = (*iter1)->daughter(0);
+      for (vector<const Candidate*>::const_iterator iter2 = cand_prot2.begin(); iter2 != cand_prot2.end(); iter2++) {
+         // iterate over all daughters and check if equal to daughter1
+         for (unsigned int i = 0; i < (*iter2)->numberOfDaughters(); i ++) {
+	    if (daughter1 == (*iter2)->daughter(i)) {
+	       found = true;
+	       cand2 = (*iter2);
+	       break;
+	    }
+	 }
+	 if (found) break;
+      }
+      if (found) {
+       	 cand1 = (*iter1);
+	 break;
+      }
+   }
+   if (found) {
+      cout << endl << "Cand1: " << cand1->pdgId() << "  (" << cand1->px() << ", " << cand1->py() << ", " << cand1->pz() << ") status: " << cand1->status() << " #daugthers: " << cand1->numberOfDaughters() << endl;
+      cout << "Cand2: " << cand2->pdgId() << "  (" << cand2->px() << ", " << cand2->py() << ", " << cand2->pz() << ") status: " << cand2->status() << " #daugthers: " << cand2->numberOfDaughters() << endl;
+      if (cand1->numberOfDaughters() == 1) {
+         // Q scale is mass of daughter
+	 cout <<  "   Q = " << cand1->daughter(0)->mass() << endl;
+      } else if (cand1->numberOfDaughters() == 2) {
+         const Candidate* daug1 = cand1->daughter(0);
+         const Candidate* daug2 = cand2->daughter(1);
+         TLorentzVector v3(daug1->px(), daug1->py(), daug1->pz(), daug1->energy());
+         TLorentzVector v4(daug2->px(), daug2->py(), daug2->pz(), daug2->energy());
+         TVector3 boost = -(v3 + v4).BoostVector();
+         v3.Boost(boost);
+         double Q_square = v3.Pt()*v3.Pt() + (v3.M2() + v4.M2())/2;
+         cout << "    Q^2 = " << Q_square << "   using pthat = " << v3.Pt() << endl;
+      } else {
+         cout << "AAAAAAAAHHHHHH you should never end up here!" << endl;
+      } 
+
+   } else {
+      cout << "No matching" << endl;
+   }
+   cout << endl; */
+   
    if (fDebug > 1)  cout << "MC Found:  " << numMuonMC <<  " mu  " << numEleMC << " e  " << numGammaMC << " gamma" << endl;
    EvtView.set().setUserRecord<int>("NumMuon", numMuonMC);
    EvtView.set().setUserRecord<int>("NumEle", numEleMC);
@@ -693,7 +874,7 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventViewRe
       //only fill primary vertex if cuts passed
       if (Vertex_cuts(vertex)) { 
          pxl::VertexRef vtx = EvtView.set().create<pxl::Vertex>();
-         vtx.set().setName("PrimaryVertex");
+         vtx.set().setName("PV");
          vtx.set().vector(pxl::set).setX(vertex->x());
          vtx.set().vector(pxl::set).setY(vertex->y());
          vtx.set().vector(pxl::set).setZ(vertex->z());

@@ -21,6 +21,7 @@
 <use name=DataFormats/L1Trigger>
 <use name=ePaxPxl/ePax>
 <use name=root>
+<use name=hepmc>
 <flags EDM_PLUGIN=1>
 <export>
   <use name=DataFormats/DetId>
@@ -44,6 +45,7 @@
   <use name=DataFormats/L1Trigger>
   <use name=ePaxPxl/ePax>
   <use name=root>
+  <use name=hepmc>
   <lib name=ePaxDemoePaxAnalyzer>
 </export>
 
