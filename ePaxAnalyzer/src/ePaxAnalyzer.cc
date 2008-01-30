@@ -162,6 +162,14 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    pxl::EventView RecEvtView;
    GenEvtView.set().setUserRecord<string>("Type", "Gen");
    RecEvtView.set().setUserRecord<string>("Type", "Rec");
+   
+   // Store Run and Event ID
+   GenEvtView.set().setUserRecord<unsigned int>("Run", iEvent.id().run());
+   GenEvtView.set().setUserRecord<unsigned int>("ID", iEvent.id().event());
+   RecEvtView.set().setUserRecord<unsigned int>("Run", iEvent.id().run());
+   RecEvtView.set().setUserRecord<unsigned int>("ID", iEvent.id().event());
+   //cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << endl;
+
    // FIXME: Is this the only thing to be changed to run over the soup?!? 
    // The process is not defined by the cfg file but by the ID given by the csaweightproducer?
    // set physics process 
@@ -224,8 +232,8 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
    }
 
-   cout << "Weight = " << weight << endl;
-   cout << "Process ID: " << processID << " and Event Scale (pthat): " << pthat << endl;
+   //cout << "Weight = " << weight << endl;
+   //cout << "Process ID: " << processID << " and Event Scale (pthat): " << pthat << endl;
 
    GenEvtView.set().setUserRecord<double>("Weight", weight);
    RecEvtView.set().setUserRecord<double>("Weight", weight);
