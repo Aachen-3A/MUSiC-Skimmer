@@ -25,14 +25,16 @@ void ParticleMatcher::matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef 
 // ------------ implementation of the matching Gen <--> Rec ------------
 
 void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter) {
-   // First set all Matches to -1:
+   // First set all Matches to -1 and reset bools:
    for (pxl::ParticleFilterIterator gen_iter(GenFilter); !gen_iter.isDone(); gen_iter.next()) {
       pxl::ParticleWkPtr pa = gen_iter.wkPtr();
       pa.set().setUserRecord<int>("Match", -1);
+      pa.set().setUserRecord<bool>("hctaM", false);
    }
    for (pxl::ParticleFilterIterator rec_iter(RecFilter); !rec_iter.isDone(); rec_iter.next()) {
       pxl::ParticleWkPtr pa = rec_iter.wkPtr();
       pa.set().setUserRecord<int>("Match", -1);
+      pa.set().setUserRecord<bool>("hctaM", false);
    }
    // we need at least one Gen and one Rec to perform matching!      
    if (GenFilter.getSize() > 0 && RecFilter.getSize() > 0) {
