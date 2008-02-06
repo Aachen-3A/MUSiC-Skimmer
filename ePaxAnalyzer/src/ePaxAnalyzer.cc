@@ -164,10 +164,10 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    RecEvtView.set().setUserRecord<string>("Type", "Rec");
    
    // Store Run and Event ID
-   GenEvtView.set().setUserRecord<unsigned int>("Run", iEvent.id().run());
-   GenEvtView.set().setUserRecord<unsigned int>("ID", iEvent.id().event());
-   RecEvtView.set().setUserRecord<unsigned int>("Run", iEvent.id().run());
-   RecEvtView.set().setUserRecord<unsigned int>("ID", iEvent.id().event());
+   GenEvtView.set().setUserRecord<int>("Run", iEvent.id().run());
+   GenEvtView.set().setUserRecord<int>("ID", iEvent.id().event());
+   RecEvtView.set().setUserRecord<int>("Run", iEvent.id().run());
+   RecEvtView.set().setUserRecord<int>("ID", iEvent.id().event());
    //cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << endl;
 
    // FIXME: Is this the only thing to be changed to run over the soup?!? 
@@ -306,32 +306,46 @@ void ePaxAnalyzer::catchParticlesWithStatus3Daughters(std::vector<const reco::Ca
 
 void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
 
-   //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
-   edm::Handle<TrackingVertexCollection> TruthVertexContainer;
-   iEvent.getByLabel(fTruthVertexLabel, TruthVertexContainer);
-   const TrackingVertexCollection* tVC = TruthVertexContainer.product();
-
-   // take only first vertex as this should correspond to generated primary vertex. Seems to be carbon-copy of HepMC-genVertex
-   // Question: What about pile-up/min-bias? Will there be additional primary vertices??? How do we find them (BX-id, event-id) and should we save them?
-   TrackingVertexCollection::const_iterator EventVertices = tVC->begin(); 
-
-   // Store primary Vertex:
-   pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
-   GenVtx.set().setName("PV");
-   GenVtx.set().vector(pxl::set).setX(EventVertices->position().x());
-   GenVtx.set().vector(pxl::set).setY(EventVertices->position().y());
-   GenVtx.set().vector(pxl::set).setZ(EventVertices->position().z());
-   // we only have a single PV at Generator Level. Due to EventView Consistency .i.e. GenEvtView should look identical to RecEvtView
-   // this variable is explicetly set
-   EvtView.set().setUserRecord<int>("NumVertices", 1);               
-   // do we need this BX/event identification???
-   //GenVtx.set().setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
-   //GenVtx.set().setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
-   
    //gen particles
    edm::Handle<reco::CandidateCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
 
+   //TrackingVertexCollection ONLY available in RECO, so need ugly catch workaround...
+   try{
+     //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
+     edm::Handle<TrackingVertexCollection> TruthVertexContainer;
+     iEvent.getByLabel(fTruthVertexLabel, TruthVertexContainer);
+     const TrackingVertexCollection* tVC = TruthVertexContainer.product();
+     
+     // take only first vertex as this should correspond to generated primary vertex. Seems to be carbon-copy of HepMC-genVertex
+     // Question: What about pile-up/min-bias? Will there be additional primary vertices??? How do we find them (BX-id, event-id) and should we save them?
+     TrackingVertexCollection::const_iterator EventVertices = tVC->begin(); 
+     
+     // Store primary Vertex:
+     pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
+     GenVtx.set().setName("PV");
+     GenVtx.set().vector(pxl::set).setX(EventVertices->position().x());
+     GenVtx.set().vector(pxl::set).setY(EventVertices->position().y());
+     GenVtx.set().vector(pxl::set).setZ(EventVertices->position().z());
+     // we only have a single PV at Generator Level. Due to EventView Consistency .i.e. GenEvtView should look identical to RecEvtView
+     // this variable is explicetly set
+     EvtView.set().setUserRecord<int>("NumVertices", 1);               
+     // do we need this BX/event identification???
+     //GenVtx.set().setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
+     //GenVtx.set().setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
+
+   }catch(...){ //for AOD use daughter of first GenParticle, this should be equal to generated primary vertex...
+
+     const GenParticleCandidate* p = (const GenParticleCandidate*) &(*genParticleHandel->begin()); //this is the incoming proton
+     pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
+     GenVtx.set().setName("PV");
+     GenVtx.set().vector(pxl::set).setX(p->daughter(0)->vx()); //need daughter since first particle (proton) has position zero
+     GenVtx.set().vector(pxl::set).setY(p->daughter(0)->vy());
+     GenVtx.set().vector(pxl::set).setZ(p->daughter(0)->vz());
+     EvtView.set().setUserRecord<int>("NumVertices", 1);         
+   }
+
+  
    int numMuonMC = 0;
    int numEleMC = 0;
    int numGammaMC = 0;
@@ -342,7 +356,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 //   int numOfProton = 0;
 //   vector<const Candidate*> cand_prot1;
 //   vector<const Candidate*> cand_prot2;
-	
+   
    // loop over all particles
    for( reco::CandidateCollection::const_iterator pa = genParticleHandel->begin(); 
 	pa != genParticleHandel->end(); ++ pa ) {
@@ -387,7 +401,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	if (numOfProton == 2) catchParticlesWithStatus3Daughters(cand_prot2, p);
 
      } */
- 
+  
      // fill Gen Muons passing some basic cuts
      if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
          if ( MuonMC_cuts(p) ) { 
@@ -401,7 +415,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
 	    part.set().setUserRecord<double>("Vtx_X", p->vx());
 	    part.set().setUserRecord<double>("Vtx_Y", p->vy());
 	    part.set().setUserRecord<double>("Vtx_Z", p->vz());
-
+	   
 	    // TEMPORARY: calculate isolation ourselves
 	    double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
 	    part.set().setUserRecord<double>("GenIso", GenIso);
@@ -938,13 +952,13 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
 	 part.set().setUserRecord<double>("DSZ", muon->combinedMuon()->dsz()); 
 	 //part.set().setUserRecord<double>("DZ", muon->combinedMuon()->dz()); //not needed since vz()==dz()
-		 
+       
 	 // TEMPORARY: calculate isolation ourselves
-	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->outerEta(), muon->track()->outerPhi(), 0.3, 1.5);
+	 double CaloIso = IsoCalSum(iEvent, 0., muon->track()->eta(), muon->track()->phi(), 0.3, 1.5);
 	 double TrkIso = IsoTrkSum(iEvent,  muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), 0.3, 1.5);
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
 	 part.set().setUserRecord<double>("TrkIso", TrkIso);
-
+ 
 	 //save offical isolation information
 	 const MuonIsolation& muonIsoR03 = muon->getIsolationR03();
 	 part.set().setUserRecord<double>("IsoR03SumPt", muonIsoR03.sumPt);
@@ -953,7 +967,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 	 part.set().setUserRecord<double>("IsoR03HoEt", muonIsoR03.hoEt);
 	 part.set().setUserRecord<int>("IsoR03NTracks", muonIsoR03.nTracks);
 	 part.set().setUserRecord<int>("IsoR03NJets", muonIsoR03.nJets);
-
+ 
 	 const MuonIsolation& muonIsoR05 = muon->getIsolationR05();
 	 part.set().setUserRecord<double>("IsoR05SumPt", muonIsoR05.sumPt);
 	 part.set().setUserRecord<double>("IsoR05EmEt", muonIsoR05.emEt);
@@ -968,7 +982,6 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventViewRef E
 	 part.set().setUserRecord<int>("NumberOfMatches", muon->numberOfMatches());
 	 part.set().setUserRecord<double>("MuonDepositEM", muon->getCalEnergy().em);
 	 part.set().setUserRecord<double>("MuonDepositHCAL", muon->getCalEnergy().had);
-	
 	
          numMuonRec++;
       }
@@ -1366,10 +1379,10 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
    iEvent.getByLabel(fEndcapClusterShapeAssocProducer, endcapClShpHandle);
    reco::BasicClusterShapeAssociationCollection::const_iterator seedShpItr;
    // get Handle to HCAL RecHits for HadOverEm calculation:
-   edm::Handle<HBHERecHitCollection> hbhe;
+   /*edm::Handle<HBHERecHitCollection> hbhe;
    //HBHERecHitMetaCollection *HBHE_RecHits = 0;
    iEvent.getByLabel(fHBHELabel, fHBHEInstanceName, hbhe);  
-   HBHERecHitMetaCollection HBHE_RecHits(*hbhe); 
+   HBHERecHitMetaCollection HBHE_RecHits(*hbhe); */
    
    int numGammaRec = 0;
    int numGammaAll = 0; //need counter for EleID 
@@ -1419,14 +1432,22 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 part.set().setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
          
 	 // calculate HadoverEm - now its getting tough ...
-	 CaloConeSelector sel(0.1, theCaloGeom.product(), DetId::Hcal);
-         GlobalPoint pclu(SCRef->x(),SCRef->y(),SCRef->z());
+	 //CaloConeSelector sel(0.1, theCaloGeom.product(), DetId::Hcal);
+         //GlobalPoint pclu(SCRef->x(),SCRef->y(),SCRef->z());
 	 double hcalEnergy = 0.;
-         std::auto_ptr<CaloRecHitMetaCollectionV> chosen=sel.select(pclu,HBHE_RecHits);
+         /*std::auto_ptr<CaloRecHitMetaCollectionV> chosen=sel.select(pclu,HBHE_RecHits);
          for (CaloRecHitMetaCollectionV::const_iterator i=chosen->begin(); i!=chosen->end(); i++) {
             //std::cout << HcalDetId(i->detid()) << " : " << (*i) << std::endl;
             hcalEnergy += i->energy();
-         }
+	    }*/
+	 edm::Handle<CaloTowerCollection> caloTowers;
+	 iEvent.getByLabel("towerMaker",caloTowers);
+
+	 for(CaloTowerCollection::const_iterator tower = caloTowers->begin(); tower!= caloTowers->end(); ++tower){
+	   double dR = deltaR(tower->eta(), tower->phi(), photon->eta(), photon->phi());
+	   if(dR < 0.1) hcalEnergy +=tower->hadEnergy(); //FIXME: hardcoded cut
+	 }
+
          HoE = hcalEnergy/photon->energy();
          //cout << "H/E : " << HoE << endl;
          part.set().setUserRecord<float>("HoE", HoE);
@@ -1493,9 +1514,9 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 
 	 // store neural-network output for gamma/pi0 rejection. 
 	 // WARNING: should only be used with isolated unconverted photons --> compare with SC from converted photons !!!
-	 edm::Handle<reco::PhotonPi0DiscriminatorAssociationMap>  map;
+	 /*edm::Handle<reco::PhotonPi0DiscriminatorAssociationMap>  map;
 	 iEvent.getByLabel("piZeroDiscriminators","PhotonPi0DiscriminatorAssociationMap",  map);
-	 reco::PhotonPi0DiscriminatorAssociationMap::const_iterator mapIter;
+	 reco::PhotonPi0DiscriminatorAssociationMap::const_iterator mapIter;*/
 
 	 // get the Converted Photon info
 	 edm::Handle<ConvertedPhotonCollection> convertedPhotonHandle; 
@@ -1517,10 +1538,10 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 cout<<"Ntrk_conv: "<<Ntrk_conv<<endl;}
 
 
-	 mapIter = map->find(edm::Ref<reco::PhotonCollection>(Photons, numGammaAll));
+	 //mapIter = map->find(edm::Ref<reco::PhotonCollection>(Photons, numGammaAll));
 	 double nn = 1; //default: photon candidate is not a Pi0
-	 if(mapIter!=map->end()){//check if photon exists in map at all
-	   nn = mapIter->val; //discrimination variable has distribution peaking close to 0 for unconverted neutral pions and close to 1 for unconverted photons
+	 //if(mapIter!=map->end()){//check if photon exists in map at all
+	 // nn = mapIter->val; //discrimination variable has distribution peaking close to 0 for unconverted neutral pions and close to 1 for unconverted photons
 	   if (fDebug > 1) cout<<"Pi0 dicriminant: "<<nn<<endl;
 	   if(fabs(photon->eta()) <= 1.442) { //barrel with preshower-det
 	     part.set().setUserRecord<double>("Pi0DisBarrel", nn);
@@ -1529,7 +1550,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	   } else if(fabs(photon->eta()) >= 1.65 && fabs(photon->eta()) <= 2.5 ) { //endcap with preshower-det  
 	     part.set().setUserRecord<double>("Pi0DisEndcap", nn);
 	   } 
-	 }
+	   //}
 
 	 	 
          numGammaRec++;
