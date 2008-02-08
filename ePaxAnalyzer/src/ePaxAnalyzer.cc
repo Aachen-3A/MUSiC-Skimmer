@@ -309,7 +309,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
    //gen particles
    edm::Handle<reco::CandidateCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
-
+   
    //TrackingVertexCollection ONLY available in RECO, so need ugly catch workaround...
    try{
      //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
@@ -334,15 +334,21 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
      //GenVtx.set().setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
      //GenVtx.set().setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
 
-   }catch(...){ //for AOD use daughter of first GenParticle, this should be equal to generated primary vertex...
+   }catch(...){ //for AOD use daughter of first GenParticle, this should be equal to generated primary vertex...  
 
      const GenParticleCandidate* p = (const GenParticleCandidate*) &(*genParticleHandel->begin()); //this is the incoming proton
      pxl::VertexRef GenVtx = EvtView.set().create<pxl::Vertex>();
      GenVtx.set().setName("PV");
-     GenVtx.set().vector(pxl::set).setX(p->daughter(0)->vx()); //need daughter since first particle (proton) has position zero
-     GenVtx.set().vector(pxl::set).setY(p->daughter(0)->vy());
-     GenVtx.set().vector(pxl::set).setZ(p->daughter(0)->vz());
-     EvtView.set().setUserRecord<int>("NumVertices", 1);         
+     if(p->daughter(0)){ //check validity, otherwise sometimes segmentation violation - WHY ???
+       GenVtx.set().vector(pxl::set).setX(p->daughter(0)->vx()); //need daughter since first particle (proton) has position zero
+       GenVtx.set().vector(pxl::set).setY(p->daughter(0)->vy());
+       GenVtx.set().vector(pxl::set).setZ(p->daughter(0)->vz());
+     }else{ //set dummy values to catch segmentation violation
+       GenVtx.set().vector(pxl::set).setX(0.); //need daughter since first particle (proton) has position zero
+       GenVtx.set().vector(pxl::set).setY(0.);
+       GenVtx.set().vector(pxl::set).setZ(0.);
+     }
+     EvtView.set().setUserRecord<int>("NumVertices", 1);       
    }
 
   
@@ -500,6 +506,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventViewRef Ev
          }
       }
    } //end of loop over generated-particles
+
 /*   
    // Analyze the Status 3 Particles wiht Status 3 Only daughter
    cout << endl << "   Proton 1: Stat 3 Particles with Stat 3 daughters: " << endl;
