@@ -794,6 +794,16 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
 	hltobject = "hltL1NonIsoSingleElectronTrackIsolFilter";
 	saveHLTobjects(iEvent, EvtView, hltobject);
       }
+      if((trigName == "HLT1EMHighEt") && (accept == true)){ 
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "hltL1NonIsoSingleEMHighEtTrackIsolFilter";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
+      if((trigName == "HLT1EMVeryHighEt") && (accept == true)){ 
+	EvtView.set().setUserRecord<bool>(trigName, accept);
+	hltobject = "hltL1NonIsoSinglePhotonEMVeryHighEtEtFilter";
+	saveHLTobjects(iEvent, EvtView, hltobject);
+      }
       if((trigName == "HLT2Electron") && (accept == true)){
 	EvtView.set().setUserRecord<bool>(trigName, accept);
 	hltobject = "hltL1IsoDoubleElectronTrackIsolFilter";
@@ -825,8 +835,6 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
 	saveHLTobjects(iEvent, EvtView, hltobject);
       }
       if((trigName == "HLTNMuonNonIso") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
-      if((trigName == "HLT1EMHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
-      if((trigName == "HLT1EMVeryHighEt") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
       if((trigName == "HLTXElectronMuon") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
       if((trigName == "HLTXElectronMuonRelaxed") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
       if((trigName == "HLTXElectron1Jet") && (accept == true)) EvtView.set().setUserRecord<bool>(trigName, accept);
