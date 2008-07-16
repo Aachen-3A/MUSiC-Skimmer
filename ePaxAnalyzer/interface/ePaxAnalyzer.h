@@ -43,7 +43,15 @@
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
 // but ePax can deal with both of them
 #include "ePaxPxl/ePax/interface/ePax.h"
-#include "ePaxDemo/ePaxAnalyzer/interface/ParticleMatcher.hh"
+//#include "ePaxDemo/ePaxAnalyzer/interface/ParticleMatcher.hh"
+
+//PAT related stuff
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
+
 
 class ePaxAnalyzer : public edm::EDAnalyzer {
 public:
@@ -58,38 +66,39 @@ private:
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
-   virtual void analyzeGenInfo(const edm::Event&, pxl::EventViewRef);
-   virtual void analyzeGenJets(const edm::Event&, pxl::EventViewRef);
-   virtual void analyzeGenMET(const edm::Event&, pxl::EventViewRef);
+   //virtual void analyzeGenInfo(const edm::Event&, pxl::EventViewRef);
+   //virtual void analyzeGenJets(const edm::Event&, pxl::EventViewRef);
+   //virtual void analyzeGenMET(const edm::Event&, pxl::EventViewRef);
    
-   virtual void analyzeTrigger(const edm::Event&, pxl::EventViewRef);
-   virtual void saveHLTobjects(const edm::Event&, pxl::EventViewRef, string&);
+   virtual void analyzeTrigger(const edm::Event&, pxl::EventViewRef); //not complete!
+   //virtual void saveHLTobjects(const edm::Event&, pxl::EventViewRef, string&);
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventViewRef);
-   virtual void analyzeRecJets(const edm::Event&, pxl::EventViewRef);
-   virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
+   //virtual void analyzeRecJets(const edm::Event&, pxl::EventViewRef);
+   //virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecGammas(const edm::Event&, pxl::EventViewRef);
 
-   bool MuonMC_cuts(const GenParticleCandidate* MCmuon) const;
-   bool EleMC_cuts(const GenParticleCandidate* MCele) const;
-   bool GammaMC_cuts(const GenParticleCandidate* MCgamma) const;
-   bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
-   bool METMC_cuts(const pxl::ParticleRef MCmet) const;
+   //bool MuonMC_cuts(const GenParticleCandidate* MCmuon) const;
+   //bool EleMC_cuts(const GenParticleCandidate* MCele) const;
+   //bool GammaMC_cuts(const GenParticleCandidate* MCgamma) const;
+   //bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
+   //bool METMC_cuts(const pxl::ParticleRef MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
-   bool Muon_cuts(reco::MuonCollection::const_iterator muon) const;
-   bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
-   bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;
-   bool Gamma_cuts(reco::PhotonCollection::const_iterator photon) const;
-   bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
-   bool MET_cuts(const pxl::ParticleRef met) const;
+   bool Muon_cuts(std::vector<pat::Muon>::const_iterator muon) const;
+   bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
+   //bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
+   //bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;
+   bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
+   //bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
+   //bool MET_cuts(const pxl::ParticleRef met) const;
    std::string getEventClass(pxl::EventViewRef EvtView);
    // TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
    double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
-   double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
+   //double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
 
-   void catchParticlesWithStatus3Daughters(std::vector<const reco::Candidate*>& cand, const reco::Candidate* p);   
+   //void catchParticlesWithStatus3Daughters(std::vector<const reco::Candidate*>& cand, const reco::Candidate* p);   
    /*void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
    void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
    int SmallestColumnElement(TMatrixT<double>* matrix, int col);
@@ -135,9 +144,9 @@ private:
    std::string fHBHELabel;
    std::string fHBHEInstanceName;
    
-   edm::ESHandle<CaloGeometry>  theCaloGeom;
+   //edm::ESHandle<CaloGeometry>  theCaloGeom;
    
-   ParticleMatcher* Matcher;
+   //ParticleMatcher* Matcher;
 
   
    // to be used for ePax output 
