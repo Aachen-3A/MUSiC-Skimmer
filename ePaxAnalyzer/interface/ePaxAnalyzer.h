@@ -66,32 +66,32 @@ private:
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
-   //virtual void analyzeGenInfo(const edm::Event&, pxl::EventViewRef);
-   //virtual void analyzeGenJets(const edm::Event&, pxl::EventViewRef);
-   //virtual void analyzeGenMET(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeGenInfo(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeGenJets(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeGenMET(const edm::Event&, pxl::EventViewRef);
    
    virtual void analyzeTrigger(const edm::Event&, pxl::EventViewRef); //not complete!
    //virtual void saveHLTobjects(const edm::Event&, pxl::EventViewRef, string&);
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventViewRef);
-   //virtual void analyzeRecJets(const edm::Event&, pxl::EventViewRef);
-   //virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecJets(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecGammas(const edm::Event&, pxl::EventViewRef);
 
-   //bool MuonMC_cuts(const GenParticleCandidate* MCmuon) const;
+   bool MuonMC_cuts(const GenParticle* MCmuon) const;
    //bool EleMC_cuts(const GenParticleCandidate* MCele) const;
    //bool GammaMC_cuts(const GenParticleCandidate* MCgamma) const;
-   //bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
-   //bool METMC_cuts(const pxl::ParticleRef MCmet) const;
+   bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
+   bool METMC_cuts(const pxl::ParticleRef MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
    bool Muon_cuts(std::vector<pat::Muon>::const_iterator muon) const;
    bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
    //bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
    //bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;
    bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
-   //bool Jet_cuts(reco::CaloJetCollection::const_iterator jet) const;
-   //bool MET_cuts(const pxl::ParticleRef met) const;
+   bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
+   bool MET_cuts(const pxl::ParticleRef met) const;
    std::string getEventClass(pxl::EventViewRef EvtView);
    // TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
