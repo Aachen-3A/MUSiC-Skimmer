@@ -25,7 +25,8 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
-#include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectronFwd.h"
+//auskommentiert nach Wechsel zu 2_1_0
+//#include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectronFwd.h" 
 #include "DataFormats/EgammaCandidates/interface/SiStripElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/SiStripElectron.h"
 #include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
@@ -52,6 +53,9 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 
+//for ClusterShape variables
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+
 
 class ePaxAnalyzer : public edm::EDAnalyzer {
 public:
@@ -74,14 +78,14 @@ private:
    //virtual void saveHLTobjects(const edm::Event&, pxl::EventViewRef, string&);
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventViewRef);
-   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventViewRef, EcalClusterLazyTools&);
    virtual void analyzeRecJets(const edm::Event&, pxl::EventViewRef);
    virtual void analyzeRecMET(const edm::Event&, pxl::EventViewRef);
-   virtual void analyzeRecGammas(const edm::Event&, pxl::EventViewRef);
+   virtual void analyzeRecGammas(const edm::Event&, pxl::EventViewRef, EcalClusterLazyTools&);
 
    bool MuonMC_cuts(const GenParticle* MCmuon) const;
-   //bool EleMC_cuts(const GenParticleCandidate* MCele) const;
-   //bool GammaMC_cuts(const GenParticleCandidate* MCgamma) const;
+   bool EleMC_cuts(const GenParticle* MCele) const;
+   bool GammaMC_cuts(const GenParticle* MCgamma) const;
    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
    bool METMC_cuts(const pxl::ParticleRef MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
@@ -94,9 +98,9 @@ private:
    bool MET_cuts(const pxl::ParticleRef met) const;
    std::string getEventClass(pxl::EventViewRef EvtView);
    // TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
-   double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
-   //double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
+   //double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
+   //double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
+   double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
 
    //void catchParticlesWithStatus3Daughters(std::vector<const reco::Candidate*>& cand, const reco::Candidate* p);   
    /*void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView);
@@ -143,6 +147,11 @@ private:
    edm::InputTag fEndcapClusterShapeAssocProducer;
    std::string fHBHELabel;
    std::string fHBHEInstanceName;
+   edm::InputTag fbarrelClusterCollection; 
+   edm::InputTag fendcapClusterCollection;
+   edm::InputTag freducedBarrelRecHitCollection;
+   edm::InputTag freducedEndcapRecHitCollection;   
+
    
    //edm::ESHandle<CaloGeometry>  theCaloGeom;
    

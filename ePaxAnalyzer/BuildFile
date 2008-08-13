@@ -20,6 +20,7 @@
 <use name=SimDataFormats/TrackingAnalysis>
 <use name=DataFormats/L1Trigger>
 <use name=DataFormats/PatCandidates>
+<use name=RecoEcal/EgammaCoreTools>
 <use name=ePaxPxl/ePax>
 <use name=root>
 <use name=hepmc>
@@ -46,6 +47,7 @@
   <use name=DataFormats/L1Trigger>
   <use name=ePaxPxl/ePax>
   <use name=DataFormats/PatCandidates>
+  <use name=RecoEcal/EgammaCoreTools>
   <use name=root>
   <use name=hepmc>
   <lib name=ePaxDemoePaxAnalyzer>
