@@ -52,7 +52,7 @@
 #include "RecoCaloTools/Selectors/interface/CaloConeSelector.h"
 //ok
 
-//for GenPartciles
+//for GenParticles
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
@@ -260,7 +260,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      analyzeGenMET(iEvent, GenEvtView);
 
      //Trigger bits
-     //analyzeTrigger(iEvent, RecEvtView);
+     analyzeTrigger(iEvent, RecEvtView);
    
    // Reconstructed stuff
      analyzeRecVertices(iEvent, RecEvtView);
@@ -634,7 +634,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventViewRef Evt
 // ------------ reading HLT and L1 Trigger Bits ------------
 
 void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef EvtView) {
-  
+  /*
   //HLT trigger bits
   string errMsg("");
   edm::Handle<edm::TriggerResults> hltresults;
@@ -643,6 +643,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventViewRef Ev
   try {iEvent.getByLabel(hlt, hltresults);} catch (...) { errMsg=errMsg + "  -- No HLTRESULTS";}
   // trigger names
   edm::TriggerNames triggerNames_;
+ */
 
   //HLT: set to false as default
   EvtView.set().setUserRecord<bool>("HLT1Electron", false);
@@ -904,8 +905,8 @@ BasicClusterRefVector::iterator basicCluster_iterator;
 	 part.set().setUserRecord<float>("DEtaSCVtx", ele->deltaEtaSuperClusterTrackAtVtx()); //used for CutBasedElectronID
 	 part.set().setUserRecord<float>("DPhiSCVtx", ele->deltaPhiSuperClusterTrackAtVtx()); //used for CutBasedElectronID
 	 //! the seed cluster eta - track eta at calo from outermost state
-	 part.set().setUserRecord<float>("DEtaSeedTrk", ele->deltaEtaSeedClusterTrackAtCalo()); //ok
-	 part.set().setUserRecord<float>("DPhiSeedTrk", ele->deltaPhiSeedClusterTrackAtCalo()); //ok
+	 part.set().setUserRecord<double>("DEtaSeedTrk", ele->deltaEtaSeedClusterTrackAtCalo()); //ok
+	 part.set().setUserRecord<double>("DPhiSeedTrk", ele->deltaPhiSeedClusterTrackAtCalo()); //ok
 	 //part.set().setUserRecord<double>("SCE", ele->superCluster()->energy());
          // the super cluster energy corrected by EnergyScaleFactor
 	 part.set().setUserRecord<float>("SCE", ele->caloEnergy()); //ok
@@ -915,7 +916,7 @@ BasicClusterRefVector::iterator basicCluster_iterator;
          part.set().setUserRecord<float>("PErr", ele->trackMomentumError());	 
          part.set().setUserRecord<double>("TrackerP", ele->gsfTrack()->p()); //ok
 	 //the seed cluster energy / track momentum at calo from outermost state
-	 part.set().setUserRecord<float>("ESCSeedPout", ele->eSeedClusterOverPout()); //ok
+	 part.set().setUserRecord<double>("ESCSeedPout", ele->eSeedClusterOverPout()); //ok
          //part.set().setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2()); //why was this left out?
          part.set().setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits()); //ok
 	 part.set().setUserRecord<int>("Class", ele->classification()); //ok
@@ -980,10 +981,16 @@ BasicClusterRefVector::iterator basicCluster_iterator;
 	 
 
 	 //store ID information
-	 //the default leptonID is cut-based for CMSSW_2_0_7 
-	 //I have not yet found if "robust" or "tight" cuts are applied probably "robust"(problem is solved in 2_1_0)
-	 part.set().setUserRecord<float>("CutBasedIDTight", ele->leptonID("tight"));
-	 part.set().setUserRecord<float>("CutBasedIDRobust", ele->leptonID("robust"));
+	 //Cut based ID is stored as float in 2_1_0 hence it is converted to bool for backwards compability
+
+	float IDfloat =  ele->leptonID("tight");
+	bool IDbool = false ;
+	if (IDfloat > 0.5) {IDbool = true;}
+	part.set().setUserRecord<bool>("CutBasedIDTight", IDbool);
+	IDfloat = ele->leptonID("robust");
+	IDbool = false;
+	if (IDfloat > 0.5) {IDbool = true;}	
+	part.set().setUserRecord<bool>("CutBasedIDRobust", IDbool);
 	 
 
 	 
@@ -993,7 +1000,7 @@ BasicClusterRefVector::iterator basicCluster_iterator;
 	 double TrkIso = ele->trackIso();
 
 	 part.set().setUserRecord<double>("CaloIso", CaloIso);
-	 part.set().setUserRecord<double>("TrkIso", TrkIso);
+	 part.set().setUserRecord<double>("TrackIso", TrkIso);
 
 	 
 
@@ -1003,8 +1010,8 @@ BasicClusterRefVector::iterator basicCluster_iterator;
 	//FIXME after moving to CMSSW_2_0_9 
 	//part.set().setUserRecord<float>("egammaTkIso", ele->egammaTkIso());
 	//part.set().setUserRecord<int>("egammaTkNumIso", ele->egammaTkNumIso());
-	part.set().setUserRecord<float>("egammaEcalIso", ele->ecalIso());
-	part.set().setUserRecord<float>("egammaHcalIso", ele->hcalIso());
+	part.set().setUserRecord<double>("ECALIso", ele->ecalIso());
+	part.set().setUserRecord<double>("HCALIso", ele->hcalIso());
 
 	//FIXME this should somehow be accessible after moving to CMSSW_2_0_9
  	// Get the association vector for track number
@@ -1075,7 +1082,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventViewRef Ev
 	 part.set().setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	 part.set().setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
 	 part.set().setUserRecord<int>("N90", jet->n90());
-	 part.set().setUserRecord<int>("N90", jet->n60());
+	 part.set().setUserRecord<int>("N60", jet->n60());
 	 std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
 	 part.set().setUserRecord<int>("NCaloRefs", caloRefs.size());
 	 part.set().setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
@@ -1130,15 +1137,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
    iEvent.getByLabel(fGammaRecoLabel, photonHandle);
    std::vector<pat::Photon> photons = *photonHandle;
 
-
-    
-   // get ECAL Cluster shapes FIXME in 2_1_0
-   //edm::Handle<reco::BasicClusterShapeAssociationCollection> barrelClShpHandle;
-   //iEvent.getByLabel(fBarrelClusterShapeAssocProducer, barrelClShpHandle);
-   //edm::Handle<reco::BasicClusterShapeAssociationCollection> endcapClShpHandle;
-   //iEvent.getByLabel(fEndcapClusterShapeAssocProducer, endcapClShpHandle);
-   //reco::BasicClusterShapeAssociationCollection::const_iterator seedShpItr;
-   
    
    int numGammaRec = 0;
    int numGammaAll = 0; //need counter for ID ???
@@ -1156,11 +1154,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
          part.set().vector(pxl::set).setE(photon->energy());
 
 
-	 //	FIXME does not work anymore in CMSSW_2_1_0	
-	 // ratio of E(3x3)/ESC 
-	 //part.set().setUserRecord<double>("r9", photon->r9());
-	 // ratio of Emax/E(3x3)
-	 //part.set().setUserRecord<double>("r19", photon->r19());
 	 /// Whether or not the SuperCluster has a matched pixel seed
 	 part.set().setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
 	 
@@ -1190,7 +1183,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 part.set().setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
 	 part.set().setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
          std::vector<float> covariances = lazyTools.covariances(*SCSeed );
-	 part.set().setUserRecord<double>("EtaEta", covariances[0] ); //used for CutBasedElectronID
+	 part.set().setUserRecord<double>("EtaEta", covariances[0] ); 
 	 part.set().setUserRecord<double>("EtaPhi", covariances[1] );
 	 part.set().setUserRecord<double>("PhiPhi", covariances[2] );
 	 part.set().setUserRecord<double>("Emax",  lazyTools.eMax(*SCSeed)  );
@@ -1205,7 +1198,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventViewRef 
 	 part.set().setUserRecord<double>("seedeta", SCRef->seed()->eta());
 	 //part.set().setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
 	        
-	 //end part that does not work in Layer1
 	 
 	 //set hadronic over electromagnetic energy fraction
 	 part.set().setUserRecord<float>("HoEm", photon->hadronicOverEm());
@@ -1375,25 +1367,6 @@ bool ePaxAnalyzer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) cons
    return true;
 }
 
-/*
-// ------------ method to define ELECTRON-cuts
-
-bool ePaxAnalyzer::Ele_cuts(SiStripElectronCollection::const_iterator ele) const {
-   //
-   if (ele->pt() < 15.) return false;
-   if (fabs(ele->eta()) > 3.) return false;
-   return true;
-}
-
-// ------------ method to define ELECTRON-cuts
-
-bool ePaxAnalyzer::Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const {
-   //
-   if (ele->pt() < 15.) return false;
-   if (fabs(ele->eta()) > 3.) return false;
-   return true;
-}
-*/
 // ------------ method to define JET-cuts
 
 bool ePaxAnalyzer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
