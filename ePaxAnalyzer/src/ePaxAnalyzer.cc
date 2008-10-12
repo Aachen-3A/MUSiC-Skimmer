@@ -641,11 +641,11 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Evt
          const reco::Particle* matched = muon->genLepton();
          for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++ pa ) {
 	    if (&(*pa) == matched) {
-               cout << "MATCH!" << endl;
+               //cout << "MATCH!" << endl;
                double ptrec = muon->pt();
                double ptgen = pa->pt(); 
-               cout << "pt des gen-mu: " << ptgen << endl;
-               cout << "pt des rec-mu: " << ptrec<< endl;
+               //cout << "pt des gen-mu: " << ptgen << endl;
+               //cout << "pt des rec-mu: " << ptrec<< endl;
                part->setUserRecord<double>("MatchedGenId", count); 
                count++;
             } else {
@@ -657,26 +657,28 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Evt
 	 //combinedMuon and standAloneMuon and track might then be deprecated sooner or later!
 
 	 //save info about quality of track-fit for combined muon (muon system + tracker)
-         part->setUserRecord<double>("NormChi2", muon->combinedMuon()->normalizedChi2()); //ok
-         part->setUserRecord<int>("ValidHits", muon->combinedMuon()->numberOfValidHits()); //ok
-         part->setUserRecord<int>("LostHits", muon->combinedMuon()->numberOfLostHits()); //ok
+	 reco::TrackRef muontrack; 
+	 if (!muon->track().isNull()) muontrack = muon->track();
+	 else   muontrack = muon->combinedMuon();
+         part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2()); //ok
+         part->setUserRecord<int>("ValidHits", muontrack->numberOfValidHits()); //ok
+         part->setUserRecord<int>("LostHits", muontrack->numberOfLostHits()); //ok
 	 //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
-	 part->setUserRecord<double>("dPtRelTrack", muon->combinedMuon()->error(0)/(muon->combinedMuon()->qoverp()) ); //ok
-	 part->setUserRecord<double>("dPtRelTrack_off", muon->combinedMuon()->ptError()/muon->combinedMuon()->pt() ); //ok
+	 part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()) ); //ok
+	 part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt() ); //ok
 	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
-	 part->setUserRecord<double>("DSZ", muon->combinedMuon()->dsz()); //ok
+	 part->setUserRecord<double>("DSZ", muontrack->dsz()); //ok
 	 //save info about quality of track-fit for standAloneMuon (muon system only)
+/*	 cout << "SA Mu" << endl;
 	 part->setUserRecord<double>("NormChi2_SA", muon->standAloneMuon()->normalizedChi2()); //ok
          part->setUserRecord<int>("ValidHits_SA", muon->standAloneMuon()->numberOfValidHits()); //ok
          part->setUserRecord<int>("LostHits_SA", muon->standAloneMuon()->numberOfLostHits()); //ok
 	 //save info about quality of track-fit for track (tracker only)
+	 cout << "Track Mu" << endl;
 	 part->setUserRecord<double>("NormChi2_TM", muon->track()->normalizedChi2()); //ok
          part->setUserRecord<int>("ValidHits_TM", muon->track()->numberOfValidHits()); //ok
          part->setUserRecord<int>("LostHits_TM", muon->track()->numberOfLostHits()); //ok
-	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
-	 part->setUserRecord<double>("DSZ", muon->combinedMuon()->dsz()); //ok
-	 
-	//Variables for outerTrack, innerTrack, globalTrack ...
+*/       //Variables for outerTrack, innerTrack, globalTrack ...
 	//FIXME variables containing information about muon quality ...
        
 	 //official CaloIso and TrkIso
@@ -802,11 +804,11 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          const reco::Particle* matched = ele->genLepton();
        	 for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++ pa ) {
             if (&(*pa) == matched) {
-               cout << "MATCH!" << endl;
+               //cout << "MATCH!" << endl;
                double ptrec = ele->pt();
                double ptgen = pa->pt(); 
-               cout << "pt des gen-el: " << ptgen << endl;
-               cout << "pt des rec-el: " << ptrec<< endl;
+               //cout << "pt des gen-el: " << ptgen << endl;
+               //cout << "pt des rec-el: " << ptrec<< endl;
                part->setUserRecord<double>("MatchedGenId", count); 
                count++;
             } else {
@@ -929,11 +931,11 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* EvtV
          const reco::Jet* matched = jet->genJet();
        	 for (reco::GenJetCollection::const_iterator pa = ItCone5_GenJets->begin(); pa != ItCone5_GenJets->end(); ++ pa ) {
             if (&(*pa) == matched ) {
-               cout << "MATCH!" << endl; 
+               //cout << "MATCH!" << endl; 
                double ptrec = jet->pt();
                double ptgen = pa->pt(); 
-               cout << "pt des gen-jets: " << ptgen << endl;         
-               cout << "pt des rec-jets: " << ptrec<< endl;
+               //cout << "pt des gen-jets: " << ptgen << endl;         
+               //cout << "pt des rec-jets: " << ptrec<< endl;
                part->setUserRecord<double>("MatchedGenId", count); 
                count++;
             } else {
