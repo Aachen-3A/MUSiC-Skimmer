@@ -1,78 +1,33 @@
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_hh
 #define pxl_hh
 
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_pcl_hh
-#define pxl_pcl_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+#ifndef pxl_base_hh
+#define pxl_base_hh
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pcl_macros_hh
 #define pxl_pcl_macros_hh
 
@@ -99,309 +54,23 @@
 #define PXL_BASE(t, f, v)		(reinterpret_cast<t*>(reinterpret_cast<char*>(v) - PXL_OFFSETOF(t, f)))
 
 #endif // pxl_pcl_macros_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_pcl_Exception_hh
-#define pxl_pcl_Exception_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-#include <string>
-
-namespace pxl {
-
-/**
-This class is provided for PXL exception and error handling.
-*/
-class Exception {
-  public: 
-    /// Constructor indicating unspecified routine and message.
-    Exception() :
-        routine("unspecified routine"),
-        message("unspecified error") {}
-
-    /// Standard constructor, routine and message can be specified as arguments.
-    Exception(const std::string& routine, const std::string& message) :
-        routine(routine),
-        message(message) {}
-
-    ~Exception() {} 
-
-    /// This method returns the routine the exception appeared in.
-    const std::string &getRoutine() const { return routine; }
-    /// This method returns a clear text message describing the exception.
-    const std::string &getMessage() const { return message; }
-
-  private:
-    std::string routine;
-    std::string message;
-};
-
-} // namespace pxl
-
-#endif // pxl_pcl_Exception_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_pcl_BasicIoStreamer_hh
-#define pxl_pcl_BasicIoStreamer_hh
-
-#include <iostream>
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_pcl_BasicLinuxIoStreamer_hh
-#define pxl_pcl_BasicLinuxIoStreamer_hh
-
-
-/*
- * FIXME / General comment:
- * BasicLinuxIoStreamer seems generic enough, not at all Linux specific?
- */
-
-namespace pxl {
-
-/**
-This internal class provides binary streaming of basic data types on a Linux platform.  
-*/ 
-class BasicLinuxIoStreamer {
-  protected:
-    // writing data
-    /// This methods stores a number of bytes \p bytes at address \p address to the \p cxxx stream.
-    inline void dumpMemory(std::ostream& cxxx, const char* address, int bytes)
-    {
-        cxxx.rdbuf()->sputn(address, bytes);
-        cxxx.rdbuf()->pubsync();
-    }
-
-    /// This methods stores a char \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeChar(std::ostream& cxxx, char data)
-    {
-        dumpMemory(cxxx, (const char*)&data, 1); 
-    }
-
-    /// This methods stores a bool \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeBool(std::ostream& cxxx, bool data)
-    {
-        if (data) dumpMemory(cxxx, "Y", 1);
-        else dumpMemory(cxxx, "N", 1);
-    }
-
-    /// This methods stores an int \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeInt(std::ostream& cxxx, int data)
-    {
-        dumpMemory(cxxx, (const char*)&data, 4); // FIXME: endian/64bit
-    }
-
-    /// This methods stores a float \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeFloat(std::ostream& cxxx, float data)
-    {
-        dumpMemory(cxxx, (const char*)&data, 4); // FIXME: endian/64bit
-    }
-
-    /// This methods stores a double \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeDouble(std::ostream& cxxx, double data)
-    {
-        dumpMemory(cxxx, (const char*)&data, 8); // FIXME: endian/64bit
-    }
-
-    /// This methods stores a C string \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeCStr(std::ostream& cxxx, const char* address)
-    {
-        for(; (*address) != '\0'; address++) // FIXME: performance!!!
-      	    cxxx.rdbuf()->sputc(*address);   // better: len, data ? (as below)
-        cxxx.rdbuf()->sputc('\0');
-    }
-
-    /// This methods stores a C++ std::string \p data in a device-independent representation to the \p cxxx stream.
-    inline void storeBasicTypeString(std::ostream& cxxx, const std::string& data)
-    {
-        int length = data.length();
-        storeBasicTypeInt(cxxx, length);
-        dumpMemory(cxxx, data.c_str(), length);
-    }
-  
-    // reading data
-    /// This methods restores a number of \p bytes bytes from the \p cxxx stream to the address \p address.
-    inline bool restoreMemory(std::istream& cxxx, char* address, int bytes)
-    {
-        cxxx.read(address, bytes);
-        return bytes == cxxx.gcount();
-    }
-
-    /// This methods restores a char \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeChar(std::istream& cxxx, char& data)
-    {
-        return restoreMemory(cxxx, (char*)&data, 1);
-    }
-
-    /// This methods restores a bool \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeBool(std::istream& cxxx, bool& data)
-    {
-      char cYesNo = ' ';
-      bool success = restoreMemory(cxxx, &cYesNo, 1);
-      data = (cYesNo == 'Y');
-      return success;
-    }
-
-    /// This methods restores a int \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeInt(std::istream& cxxx, int& data)
-    {
-        return restoreMemory(cxxx, (char*)&data, 4); // FIXME: endian/64bit
-    }
-
-    /// This methods restores a char \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeFloat(std::istream& cxxx, float& data)
-    {
-        return restoreMemory(cxxx, (char*)&data, 4); // FIXME: endian/64bit
-    }
-
-    /// This methods restores a double \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeDouble(std::istream& cxxx, double& data)
-    {
-        return restoreMemory(cxxx, (char*)&data, 8); // FIXME: endian/64bit
-    }
-
-    /// This methods restores a C string \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeCStr(std::istream& cxxx, std::string& data, int bytes = -1)
-    {
-        int read; // see comment above about persistent format
-        data.clear();
-        cxxx.get(_operationsBuffer, BUF_SIZE - 1, '\0');
-        read = cxxx.gcount();
-        _operationsBuffer[read + 1] = '\0';
-        while (read == BUF_SIZE - 1) {
-             data += _operationsBuffer;
-             cxxx.get(_operationsBuffer, BUF_SIZE - 1, '\0');
-             read = cxxx.gcount();
-             _operationsBuffer[read+1] = '\0';
-        }
-        data += _operationsBuffer;
-        cxxx.ignore(1);
-        return true;
-    }
-
-    /// This methods restores a C++ std::string \p data in a device-independent representation from the \p cxxx stream.
-    inline bool restoreBasicTypeString(std::istream& cxxx, std::string& data)
-    {
-        int length;
-        restoreBasicTypeInt(cxxx, length); 
-        if (length) {
-            char *buffer = new char[length];	// FIXME: performance
-            cxxx.read(buffer, length);
-            data.assign(buffer, length);
-            delete[] buffer;
-         } else
-            data = "";
-        return 1;
-    }
-
-  private:
-    static const unsigned int BUF_SIZE = 1024;
-
-    char _operationsBuffer[BUF_SIZE];
-};
-
-} // namespace pxl
-
-#endif // pxl_pcl_BasicLinuxIoStreamer_hh
-
-namespace pxl {
-
-/// This typedef is for platform selection (currently: pxl::BasicLinuxIoStreamer)
-typedef BasicLinuxIoStreamer BasicIoStreamer;
-
-} // namespace pxl
-
-#endif // pxl_pcl_BasicIoStreamer_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_pcl_VariantBase_hh
 #define pxl_pcl_VariantBase_hh
 
 #include <cstdlib>
 #include <vector>
+#include <string>
+#include <stdexcept>
+
+#include <string.h>
 
 
 namespace pxl {
@@ -436,8 +105,9 @@ class VariantBase {
         TYPE_USER
     };
 
-    inline VariantBase() { std::memset(&v, 0, sizeof v); }
+    inline VariantBase() { memset(&v, 0, sizeof v); }
     inline VariantBase(const pxl::VariantBase& orig) : v(orig.v) {}
+    inline VariantBase(const pxl::VariantBase* orig) : v(orig->v) {}
 
     /// This method template returns the variant content and tests for compatibility of the template expansion with the type given by \p t.
     template<typename T>
@@ -457,16 +127,16 @@ class VariantBase {
             if (tInfo.clear)
                 tInfo.clear(&v);
         }
-        std::memset(&v, 0, sizeof v);
+        memset(&v, 0, sizeof v);
     }
 
     /// This method ensures correct duplication of possible internal memory allocations after a copy of the variant, depending on the type given by \p t.
     inline void dup(Type t)
     { 
         if (t == TYPE_STRING) {
-            std::size_t len = std::strlen((char*)v.p) + 1;
+            std::size_t len = strlen((char*)v.p) + 1;
             char* copy = new char[len];
-            std::memcpy(copy, v.p, len);
+            memcpy(copy, v.p, len);
             v.p = copy;
         } else if (PXL_UNLIKELY(t >= TYPE_USER)) {
             const TypeInfo& tInfo = getTypeInfo(t);
@@ -516,10 +186,10 @@ class VariantBase {
     }
 
     /// This method throws a detailed exception about a type mismatch between \p tShould and \p tIs .
-    void wrongType(Type tShould, Type tIs) const;
+    void wrongType(Type tShould, Type tIs) const throw (std::runtime_error);
 
   private:
-    static const TypeInfo& fallbackGetTypeInfo(Type t);
+    static const TypeInfo& fallbackGetTypeInfo(Type t) throw (std::runtime_error);
 
     static std::vector<TypeInfo> types;
 };
@@ -581,7 +251,7 @@ inline void VariantBase::set(Type t, std::string arg)
         delete[] (char*)v.p;
     std::string::size_type size = arg.size();
     v.p = new char[size + 1];
-    std::memcpy(v.p, arg.c_str(), size);
+    memcpy(v.p, arg.c_str(), size);
     ((char*)v.p)[size] = 0;
 }
 
@@ -594,29 +264,14 @@ inline VariantBase::Type VariantBase::findType<std::string>()
 } // namespace pxl
 
 #endif // pxl_pcl_VariantBase_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pcl_Variant_hh
 #define pxl_pcl_Variant_hh
 
@@ -634,6 +289,8 @@ class Variant : public VariantBase {
     inline Variant(Type t) : type(t) {}
     inline Variant(const pxl::Variant& orig) :
     	VariantBase(orig), type(orig.type) { dup(type); }
+    inline Variant(const pxl::Variant* orig) :
+            VariantBase(orig), type(orig->type) { dup(type); }
     inline ~Variant() { if (type != TYPE_NULL) VariantBase::clear(type); }
 
     inline pxl::Variant& operator=(const pxl::Variant& orig)
@@ -687,29 +344,14 @@ class Variant : public VariantBase {
 } // namespace pxl
 
 #endif // pxl_pcl_Variant_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pcl_functions_hh
 #define pxl_pcl_functions_hh
 
@@ -719,109 +361,1059 @@ namespace pxl {
 /// @internal This function returns a platform-specific CPU timestamp; internally used for performance tests.
 double getCpuTime();
 
-// cheaper to call with <const char*> arguments, no inline string construction
-/// This function can be used to throw a pxl::Exception with routine and message information.
-void exception(const char* routine, const char* message);
-
-// <std::string>.c_str() is inlined as a simple pointer dereference, cheaper
-/// This function can be used to throw a pxl::Exception with routine and message information.
-inline void exception(const std::string& routine, const char* message)
-{ pxl::exception(routine.c_str(), message); }
-/// This function can be used to throw a pxl::Exception with routine and message information.
-inline void exception(const char *routine, const std::string& message)
-{ pxl::exception(routine, message.c_str()); }
-/// This function can be used to throw a pxl::Exception with routine and message information.
-inline void exception(const std::string& routine, const std::string& message)
-{ pxl::exception(routine.c_str(), message.c_str()); }
-
 } // namespace pxl
 
 #endif // pxl_pcl_functions_hh
 
-#endif // pxl_pcl_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_hh
-#define pxl_ptl_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_ptl_MutableId_hh
 #define pxl_ptl_MutableId_hh
 
-namespace pxl {
+// MersenneTwister.h
+// Mersenne Twister random number generator -- a C++ class MTRand
+// Based on code by Makoto Matsumoto, Takuji Nishimura, and Shawn Cokus
+// Richard J. Wagner  v1.0  15 May 2003  rjwagner@writeme.com
+
+// The Mersenne Twister is an algorithm for generating random numbers.  It
+// was designed with consideration of the flaws in various other generators.
+// The period, 2^19937-1, and the order of equidistribution, 623 dimensions,
+// are far greater.  The generator is also fast; it avoids multiplication and
+// division, and it benefits from caches and pipelines.  For more information
+// see the inventors' web page at http://www.math.keio.ac.jp/~matumoto/emt.html
+
+// Reference
+// M. Matsumoto and T. Nishimura, "Mersenne Twister: A 623-Dimensionally
+// Equidistributed Uniform Pseudo-Random Number Generator", ACM Transactions on
+// Modeling and Computer Simulation, Vol. 8, No. 1, January 1998, pp 3-30.
+
+// Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+// Copyright (C) 2000 - 2003, Richard J. Wagner
+// All rights reserved.                          
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+//
+//   1. Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//
+//   2. Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+//
+//   3. The names of its contributors may not be used to endorse or promote 
+//      products derived from this software without specific prior written 
+//      permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// The original code included the following notice:
+//
+//     When you use this, send an email to: matumoto@math.keio.ac.jp
+//     with an appropriate reference to your work.
+//
+// It would be nice to CC: rjwagner@writeme.com and Cokus@math.washington.edu
+// when you write.
+
+#ifndef MERSENNETWISTER_H
+#define MERSENNETWISTER_H
+
+// Not thread safe (unless auto-initialization is avoided and each thread has
+// its own MTRand object)
+
+#include <iostream>
+#include <limits.h>
+#include <stdio.h>
+#include <time.h>
+#include <math.h>
+
+class MTRand {
+// Data
+public:
+	typedef unsigned long uint32;  // unsigned integer type, at least 32 bits
+	
+	enum { N = 624 };       // length of state vector
+	enum { SAVE = N + 1 };  // length of array for save()
+
+protected:
+	enum { M = 397 };  // period parameter
+	
+	uint32 state[N];   // internal state
+	uint32 *pNext;     // next value to get from state
+	int left;          // number of values left before reload needed
+
+
+//Methods
+public:
+	MTRand( const uint32& oneSeed );  // initialize with a simple uint32
+	MTRand( uint32 *const bigSeed, uint32 const seedLength = N );  // or an array
+	MTRand();  // auto-initialize with /dev/urandom or time() and clock()
+	
+	// Do NOT use for CRYPTOGRAPHY without securely hashing several returned
+	// values together, otherwise the generator state can be learned after
+	// reading 624 consecutive values.
+	
+	// Access to 32-bit random numbers
+	double rand();                          // real number in [0,1]
+	double rand( const double& n );         // real number in [0,n]
+	double randExc();                       // real number in [0,1)
+	double randExc( const double& n );      // real number in [0,n)
+	double randDblExc();                    // real number in (0,1)
+	double randDblExc( const double& n );   // real number in (0,n)
+	uint32 randInt();                       // integer in [0,2^32-1]
+	uint32 randInt( const uint32& n );      // integer in [0,n] for n < 2^32
+	double operator()() { return rand(); }  // same as rand()
+	
+	// Access to 53-bit random numbers (capacity of IEEE double precision)
+	double rand53();  // real number in [0,1)
+	
+	// Access to nonuniform random number distributions
+	double randNorm( const double& mean = 0.0, const double& variance = 0.0 );
+	
+	// Re-seeding functions with same behavior as initializers
+	void seed( const uint32 oneSeed );
+	void seed( uint32 *const bigSeed, const uint32 seedLength = N );
+	void seed();
+	
+	// Saving and loading generator state
+	void save( uint32* saveArray ) const;  // to array of size SAVE
+	void load( uint32 *const loadArray );  // from such array
+	friend std::ostream& operator<<( std::ostream& os, const MTRand& mtrand );
+	friend std::istream& operator>>( std::istream& is, MTRand& mtrand );
+
+protected:
+	void initialize( const uint32 oneSeed );
+	void reload();
+	uint32 hiBit( const uint32& u ) const { return u & 0x80000000UL; }
+	uint32 loBit( const uint32& u ) const { return u & 0x00000001UL; }
+	uint32 loBits( const uint32& u ) const { return u & 0x7fffffffUL; }
+	uint32 mixBits( const uint32& u, const uint32& v ) const
+		{ return hiBit(u) | loBits(v); }
+	uint32 twist( const uint32& m, const uint32& s0, const uint32& s1 ) const
+		{ return m ^ (mixBits(s0,s1)>>1) ^ (-loBit(s1) & 0x9908b0dfUL); }
+	static uint32 hash( time_t t, clock_t c );
+};
+
+
+inline MTRand::MTRand( const uint32& oneSeed )
+	{ seed(oneSeed); }
+
+inline MTRand::MTRand( uint32 *const bigSeed, const uint32 seedLength )
+	{ seed(bigSeed,seedLength); }
+
+inline MTRand::MTRand()
+	{ seed(); }
+
+inline double MTRand::rand()
+	{ return double(randInt()) * (1.0/4294967295.0); }
+
+inline double MTRand::rand( const double& n )
+	{ return rand() * n; }
+
+inline double MTRand::randExc()
+	{ return double(randInt()) * (1.0/4294967296.0); }
+
+inline double MTRand::randExc( const double& n )
+	{ return randExc() * n; }
+
+inline double MTRand::randDblExc()
+	{ return ( double(randInt()) + 0.5 ) * (1.0/4294967296.0); }
+
+inline double MTRand::randDblExc( const double& n )
+	{ return randDblExc() * n; }
+
+inline double MTRand::rand53()
+{
+	uint32 a = randInt() >> 5, b = randInt() >> 6;
+	return ( a * 67108864.0 + b ) * (1.0/9007199254740992.0);  // by Isaku Wada
+}
+
+inline double MTRand::randNorm( const double& mean, const double& variance )
+{
+	// Return a real number from a normal (Gaussian) distribution with given
+	// mean and variance by Box-Muller method
+	double r = sqrt( -2.0 * log( 1.0-randDblExc()) ) * variance;
+	double phi = 2.0 * 3.14159265358979323846264338328 * randExc();
+	return mean + r * cos(phi);
+}
+
+inline MTRand::uint32 MTRand::randInt()
+{
+	// Pull a 32-bit integer from the generator state
+	// Every other access function simply transforms the numbers extracted here
+	
+	if( left == 0 ) reload();
+	--left;
+		
+	register uint32 s1;
+	s1 = *pNext++;
+	s1 ^= (s1 >> 11);
+	s1 ^= (s1 <<  7) & 0x9d2c5680UL;
+	s1 ^= (s1 << 15) & 0xefc60000UL;
+	return ( s1 ^ (s1 >> 18) );
+}
+
+inline MTRand::uint32 MTRand::randInt( const uint32& n )
+{
+	// Find which bits are used in n
+	// Optimized by Magnus Jonsson (magnus@smartelectronix.com)
+	uint32 used = n;
+	used |= used >> 1;
+	used |= used >> 2;
+	used |= used >> 4;
+	used |= used >> 8;
+	used |= used >> 16;
+	
+	// Draw numbers until one is found in [0,n]
+	uint32 i;
+	do
+		i = randInt() & used;  // toss unused bits to shorten search
+	while( i > n );
+	return i;
+}
+
+
+inline void MTRand::seed( const uint32 oneSeed )
+{
+	// Seed the generator with a simple uint32
+	initialize(oneSeed);
+	reload();
+}
+
+
+inline void MTRand::seed( uint32 *const bigSeed, const uint32 seedLength )
+{
+	// Seed the generator with an array of uint32's
+	// There are 2^19937-1 possible initial states.  This function allows
+	// all of those to be accessed by providing at least 19937 bits (with a
+	// default seed length of N = 624 uint32's).  Any bits above the lower 32
+	// in each element are discarded.
+	// Just call seed() if you want to get array from /dev/urandom
+	initialize(19650218UL);
+	register int i = 1;
+	register uint32 j = 0;
+	register int k = ( N > seedLength ? N : seedLength );
+	for( ; k; --k )
+	{
+		state[i] =
+			state[i] ^ ( (state[i-1] ^ (state[i-1] >> 30)) * 1664525UL );
+		state[i] += ( bigSeed[j] & 0xffffffffUL ) + j;
+		state[i] &= 0xffffffffUL;
+		++i;  ++j;
+		if( i >= N ) { state[0] = state[N-1];  i = 1; }
+		if( j >= seedLength ) j = 0;
+	}
+	for( k = N - 1; k; --k )
+	{
+		state[i] =
+			state[i] ^ ( (state[i-1] ^ (state[i-1] >> 30)) * 1566083941UL );
+		state[i] -= i;
+		state[i] &= 0xffffffffUL;
+		++i;
+		if( i >= N ) { state[0] = state[N-1];  i = 1; }
+	}
+	state[0] = 0x80000000UL;  // MSB is 1, assuring non-zero initial array
+	reload();
+}
+
+
+inline void MTRand::seed()
+{
+	// Seed the generator with an array from /dev/urandom if available
+	// Otherwise use a hash of time() and clock() values
+	
+	// First try getting an array from /dev/urandom
+	FILE* urandom = fopen( "/dev/urandom", "rb" );
+	if( urandom )
+	{
+		uint32 bigSeed[N];
+		register uint32 *s = bigSeed;
+		register int i = N;
+		register bool success = true;
+		while( success && i-- )
+			success = fread( s++, sizeof(uint32), 1, urandom );
+		fclose(urandom);
+		if( success ) { seed( bigSeed, N );  return; }
+	}
+	
+	// Was not successful, so use time() and clock() instead
+	seed( hash( time(NULL), clock() ) );
+}
+
+
+inline void MTRand::initialize( const uint32 seed )
+{
+	// Initialize generator state with seed
+	// See Knuth TAOCP Vol 2, 3rd Ed, p.106 for multiplier.
+	// In previous versions, most significant bits (MSBs) of the seed affect
+	// only MSBs of the state array.  Modified 9 Jan 2002 by Makoto Matsumoto.
+	register uint32 *s = state;
+	register uint32 *r = state;
+	register int i = 1;
+	*s++ = seed & 0xffffffffUL;
+	for( ; i < N; ++i )
+	{
+		*s++ = ( 1812433253UL * ( *r ^ (*r >> 30) ) + i ) & 0xffffffffUL;
+		r++;
+	}
+}
+
+
+inline void MTRand::reload()
+{
+	// Generate N new values in state
+	// Made clearer and faster by Matthew Bellew (matthew.bellew@home.com)
+	register uint32 *p = state;
+	register int i;
+	for( i = N - M; i--; ++p )
+		*p = twist( p[M], p[0], p[1] );
+	for( i = M; --i; ++p )
+		*p = twist( p[M-N], p[0], p[1] );
+	*p = twist( p[M-N], p[0], state[0] );
+
+	left = N, pNext = state;
+}
+
+
+inline MTRand::uint32 MTRand::hash( time_t t, clock_t c )
+{
+	// Get a uint32 from t and c
+	// Better than uint32(x) in case x is floating point in [0,1]
+	// Based on code by Lawrence Kirby (fred@genesis.demon.co.uk)
+
+	static uint32 differ = 0;  // guarantee time-based seeds will change
+
+	uint32 h1 = 0;
+	unsigned char *p = (unsigned char *) &t;
+	for( size_t i = 0; i < sizeof(t); ++i )
+	{
+		h1 *= UCHAR_MAX + 2U;
+		h1 += p[i];
+	}
+	uint32 h2 = 0;
+	p = (unsigned char *) &c;
+	for( size_t j = 0; j < sizeof(c); ++j )
+	{
+		h2 *= UCHAR_MAX + 2U;
+		h2 += p[j];
+	}
+	return ( h1 + differ++ ) ^ h2;
+}
+
+
+inline void MTRand::save( uint32* saveArray ) const
+{
+	register uint32 *sa = saveArray;
+	register const uint32 *s = state;
+	register int i = N;
+	for( ; i--; *sa++ = *s++ ) {}
+	*sa = left;
+}
+
+
+inline void MTRand::load( uint32 *const loadArray )
+{
+	register uint32 *s = state;
+	register uint32 *la = loadArray;
+	register int i = N;
+	for( ; i--; *s++ = *la++ ) {}
+	left = *la;
+	pNext = &state[N-left];
+}
+
+
+inline std::ostream& operator<<( std::ostream& os, const MTRand& mtrand )
+{
+	register const MTRand::uint32 *s = mtrand.state;
+	register int i = mtrand.N;
+	for( ; i--; os << *s++ << "\t" ) {}
+	return os << mtrand.left;
+}
+
+
+inline std::istream& operator>>( std::istream& is, MTRand& mtrand )
+{
+	register MTRand::uint32 *s = mtrand.state;
+	register int i = mtrand.N;
+	for( ; i--; is >> *s++ ) {}
+	is >> mtrand.left;
+	mtrand.pNext = &mtrand.state[mtrand.N-mtrand.left];
+	return is;
+}
+
+#endif  // MERSENNETWISTER_H
+
+// Change log:
+//
+// v0.1 - First release on 15 May 2000
+//      - Based on code by Makoto Matsumoto, Takuji Nishimura, and Shawn Cokus
+//      - Translated from C to C++
+//      - Made completely ANSI compliant
+//      - Designed convenient interface for initialization, seeding, and
+//        obtaining numbers in default or user-defined ranges
+//      - Added automatic seeding from /dev/urandom or time() and clock()
+//      - Provided functions for saving and loading generator state
+//
+// v0.2 - Fixed bug which reloaded generator one step too late
+//
+// v0.3 - Switched to clearer, faster reload() code from Matthew Bellew
+//
+// v0.4 - Removed trailing newline in saved generator format to be consistent
+//        with output format of built-in types
+//
+// v0.5 - Improved portability by replacing static const int's with enum's and
+//        clarifying return values in seed(); suggested by Eric Heimburg
+//      - Removed MAXINT constant; use 0xffffffffUL instead
+//
+// v0.6 - Eliminated seed overflow when uint32 is larger than 32 bits
+//      - Changed integer [0,n] generator to give better uniformity
+//
+// v0.7 - Fixed operator precedence ambiguity in reload()
+//      - Added access for real numbers in (0,1) and (0,n)
+//
+// v0.8 - Included time.h header to properly support time_t and clock_t
+//
+// v1.0 - Revised seeding to match 26 Jan 2002 update of Nishimura and Matsumoto
+//      - Allowed for seeding with arrays of any length
+//      - Added access for real numbers in [0,1) with 53-bit resolution
+//      - Added access for real numbers from normal (Gaussian) distributions
+//      - Increased overall speed by optimizing twist()
+//      - Doubled speed of integer [0,n] generation
+//      - Fixed out-of-range number generation on 64-bit machines
+//      - Improved portability by substituting literal constants for long enum's
+//      - Changed license from GNU LGPL to BSD
+
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_BinaryStream_hh
+#define pxl_io_BinaryStream_hh
+
+
+
+namespace pxl
+{
+
+typedef unsigned char uint8_t;
+typedef signed char int8_t;
+
+typedef unsigned short uint16_t;
+typedef signed short int16_t;
+
+typedef unsigned int uint32_t;
+typedef signed int int32_t;
+
+// io
+/**
+ This abstract class serves the internal PXL I/O scheme by defining how basic C++ types
+ are written to an output buffer.
+ */
+class OutputStream
+{
+
+public:
+	virtual void writeChar(char) const = 0;
+	virtual void writeUnsignedChar(unsigned char) const = 0;
+	virtual void writeFloat(float) const = 0;
+	virtual void writeDouble(double) const = 0;
+	virtual void writeShort(short) const = 0;
+	virtual void writeUnsignedShort(unsigned short) const = 0;
+	virtual void writeInt(int) const = 0;
+	virtual void writeUnsignedInt(unsigned int) const = 0;
+	virtual void writeLong(long) const = 0;
+	virtual void writeUnsignedLong(unsigned long) const = 0;
+	virtual void writeBool(bool) const = 0;
+	virtual void writeString(const std::string&) const = 0;
+};
+
+// iotl
+/**
+ This class serves the internal PXL I/O scheme by implementing how basic C++ types
+ are written to an output buffer.
+ */
+
+class BufferOutput : public OutputStream
+{
+	mutable char *_Buffer;
+	mutable size_t _BufferSize;
+	mutable size_t _BufferPos;
+
+public:
+
+	BufferOutput() :
+		_Buffer(0), _BufferSize(0), _BufferPos(0)
+	{
+
+	}
+
+	virtual ~BufferOutput()
+	{
+		destroy();
+	}
+
+	void destroy()
+	{
+		delete [] _Buffer;
+		_Buffer = 0;
+		_BufferSize = 0;
+		_BufferPos = 0;
+	}
+
+	void resize(size_t size) const
+	{
+		char *newBuffer = new char[size];
+		if (_BufferPos > 0)
+			memcpy(newBuffer, _Buffer, _BufferPos > size ? size : _BufferPos);
+		delete[] _Buffer;
+		_Buffer = newBuffer;
+		_BufferSize = size;
+	}
+
+	void reserve(size_t count) const
+	{
+		size_t needed = _BufferPos + count;
+		if (_BufferSize < needed)
+		{
+			size_t size = _BufferSize + 4096;
+			while (size < needed)
+				size += 4096;
+			resize(size);
+		}
+	}
+
+	void writeChar(char c) const
+	{
+		write(&c, 1);
+	}
+
+	void writeUnsignedChar(unsigned char c) const
+	{
+		write(&c, 1);
+	}
+
+	void writeString(const std::string& s) const
+	{
+		unsigned int len = static_cast<unsigned int>(s.size());
+		writeUnsignedInt(len);
+		write(s.c_str(), len);
+	}
+
+	void writeFloat(float f) const
+	{
+		reserve(4);
+		writeLE(&f, 4);
+	}
+
+	void writeDouble(double d) const
+	{
+		reserve(8);
+		writeLE(&d, 8);
+	}
+
+	void writeInt(int i) const
+	{
+		reserve(4);
+		writeLE(&i, 4);
+	}
+
+	void writeUnsignedInt(unsigned int i) const
+	{
+		reserve(4);
+		writeLE(&i, 4);
+	}
+
+	void writeLong(long l) const
+	{
+		reserve(4);
+		writeLE(&l, 4);
+	}
+
+	void writeUnsignedLong(unsigned long l) const
+	{
+		reserve(4);
+		writeLE(&l, 4);
+	}
+
+	void writeShort(short s) const
+	{
+		reserve(2);
+		writeLE(&s, 2);
+	}
+
+	void writeUnsignedShort(unsigned short s) const
+	{
+		reserve(2);
+		writeLE(&s, 2);
+	}
+
+	void writeBool(bool b) const
+	{
+		write(&b, 1);
+	}
+
+	void writeLE(const void *data, size_t size) const
+	{
+		reserve(size);
+#ifdef PXL_BIG_ENDIAN
+		char* src = data + size;
+		char* dst = _Buffer + _BufferPos;
+
+		for (size_t i = 0; i < size; i++)
+		{
+			*dst = *src;
+			dst++;
+			src--;
+		}
+#else
+		memcpy(_Buffer + _BufferPos, data, size);
+#endif
+		_BufferPos += size;
+	}
+
+	void write(const void *data, size_t size) const
+	{
+		reserve(size);
+		memcpy(_Buffer + _BufferPos, data, size);
+		_BufferPos += size;
+	}
+
+	const char *getData() const
+	{
+		return _Buffer;
+	}
+
+	size_t getSize() const
+	{
+		return _BufferPos;
+	}
+};
+
+// iotl
+/**
+ This abstract class serves the internal PXL I/O scheme by defining how basic C++ types
+ are read from an input buffer.
+ */
+class InputStream
+{
+
+public:
+	virtual bool good() const = 0;
+	virtual bool readChar(char &) const = 0;
+	virtual bool readUnsignedChar(unsigned char &) const = 0;
+	virtual bool readFloat(float &) const = 0;
+	virtual bool readDouble(double &) const = 0;
+	virtual bool readInt(int &) const = 0;
+	virtual bool readUnsignedInt(unsigned int &) const = 0;
+	virtual bool readLong(long &) const = 0;
+	virtual bool readUnsignedLong(unsigned long &) const = 0;
+	virtual bool readShort(short &) const = 0;
+	virtual bool readUnsignedShort(unsigned short &) const = 0;
+	virtual bool readBool(bool &) const = 0;
+	virtual bool readString(std::string &) const = 0;
+};
+
+// iotl
+/**
+ This class serves the internal PXL I/O scheme by implementing how basic C++ types
+ are read from an input buffer.
+ */
+class BufferInput : public InputStream
+{
+	char *_Buffer;
+	size_t _BufferSize;
+	mutable size_t _BufferPos;
+
+public:
+
+	BufferInput() :
+		_Buffer(0), _BufferSize(0), _BufferPos(0)
+	{
+
+	}
+
+	virtual ~BufferInput()
+	{
+		destroy();
+	}
+
+	void destroy()
+	{
+		delete [] _Buffer;
+		_Buffer = 0;
+		_BufferSize = 0;
+		_BufferPos = 0;
+	}
+
+	char *data()
+	{
+		return _Buffer;
+	}
+
+	const char *data() const
+	{
+		return _Buffer;
+	}
+
+	void resize(size_t size)
+	{
+		char *newBuffer = new char[size];
+		if (_BufferPos > 0)
+			memcpy(newBuffer, _Buffer, _BufferPos > size ? size : _BufferPos);
+		delete [] _Buffer;
+		_Buffer = newBuffer;
+		_BufferSize = size;
+	}
+
+	bool good() const
+	{
+		return ((_BufferSize - _BufferPos) > 0);
+	}
+
+	size_t available() const
+	{
+		return (_BufferSize - _BufferPos);
+	}
+
+	bool readChar(char& c) const
+	{
+		if (available() < 1)
+			return false;
+
+		read(&c, 1);
+		return true;
+	}
+
+	bool readUnsignedChar(unsigned char& c) const
+	{
+		if (available() < 1)
+			return false;
+
+		read(&c, 1);
+		return true;
+	}
+
+	bool readString(std::string& s) const
+	{
+		unsigned int size = 0;
+		readUnsignedInt(size);
+		if (available() < size)
+			return false;
+		char* temp = 0;
+		temp = new char[size+1];
+		temp[size]=0;
+		read(temp, size);
+		s.assign(temp);
+		delete [] temp;
+		return true;
+	}
+
+	bool readFloat(float& f) const
+	{
+		if (available() < 4)
+			return false;
+
+		readLE(&f, 4);
+		return true;
+	}
+
+	bool readDouble(double& d) const
+	{
+		if (available() < 8)
+			return false;
+
+		readLE(&d, 8);
+		return true;
+	}
+
+	bool readInt(int& i) const
+	{
+		if (available() < 4)
+			return false;
+
+		readLE(&i, 4);
+		return true;
+	}
+
+	bool readUnsignedInt(unsigned int& i) const
+	{
+		if (available() < 4)
+			return false;
+
+		readLE(&i, 4);
+		return true;
+	}
+
+	bool readLong(long& l) const
+	{
+		if (available() < 4)
+			return false;
+
+		readLE(&l, 4);
+		return true;
+	}
+
+	bool readUnsignedLong(unsigned long& l) const
+	{
+		if (available() < 4)
+			return false;
+
+		readLE(&l, 4);
+		return true;
+	}
+
+	bool readShort(short& s) const
+	{
+		if (available() < 2)
+			return false;
+
+		readLE(&s, 2);
+		return true;
+	}
+
+	bool readUnsignedShort(unsigned short& s) const
+	{
+		if (available() < 2)
+			return false;
+
+		readLE(&s, 2);
+		return true;
+	}
+
+	bool readBool(bool& b) const
+	{
+		if (available() < 1)
+			return false;
+
+		read(&b, 1);
+		return true;
+	}
+
+	void readLE(void *data, size_t size) const
+	{
+#ifdef PXL_BIG_ENDIAN
+		char* src = _Buffer + _BufferPos;
+		char* dst = data + size;
+
+		for (size_t i = 0; i < size; i++)
+		{
+			*dst = *src;
+			dst++;
+			src--;
+		}
+#else
+		memcpy(data, _Buffer + _BufferPos, size);
+#endif
+		_BufferPos += size;
+	}
+
+	void read(void *data, size_t size) const
+	{
+		memcpy(data, _Buffer + _BufferPos, size);
+		_BufferPos += size;
+	}
+};
+
+}
+
+#endif /*pxl_io_BinaryStream_hh*/
+
+namespace pxl
+{
 
 /// This typedef is intended to provide a data type for the PXL unique object-id
-typedef int MutableId;
+class MutableId
+{
+	unsigned char bytes[16];
+
+public:
+
+
+	MutableId()
+	{
+		generate();
+	}
+
+	MutableId (const InputStream& in)
+	{
+		deserialize (in);
+	}
+
+	MutableId(const char* id);
+
+	explicit MutableId(const std::string& id);
+
+	MutableId(MTRand& rand)
+	{
+		generate(rand);
+	}
+
+	void generate(MTRand& rand)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			MTRand::uint32 value = rand.randInt();
+			char *c = (char *)&value;
+			bytes[i*4+0] = c[0];
+			bytes[i*4+1] = c[1];
+			bytes[i*4+2] = c[2];
+			bytes[i*4+3] = c[3];
+		}
+
+		/* set version 4 (random)*/
+		bytes[7] &= ((1 << 4) - 1);
+		bytes[7] |= 4 << 4;
+
+		/* set variant (always DCE 1.1 only) */
+		bytes[8] &= ((1 << 7) - 1);
+		bytes[8] |= 2 << 6;
+	}
+
+	void generate()
+	{
+		static MTRand rand;
+		generate(rand);
+	}
+
+	static MutableId create()
+	{
+		MutableId id;
+		id.generate();
+		return id;
+	}
+	
+	bool operator ==(const MutableId& id) const
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (bytes[i] != id.bytes[i])
+				return false;
+		}
+
+		return true;
+	}
+
+	bool operator !=(const MutableId& id) const
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (bytes[i] != id.bytes[i])
+				return true;
+		}
+
+		return false;
+	}
+
+	void reset()
+	{
+		for (int j = 0; j < 16; j++)
+			bytes[j] = 0;
+	}
+
+	std::string toString() const;
+
+	bool operator <(const MutableId& op) const
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			if (bytes[i] < op.bytes[i])
+				return true;
+			else if (bytes[i] > op.bytes[i])
+				return false;
+		}
+
+		return false;
+	}
+
+	friend inline std::ostream& operator <<(std::ostream& os,
+			const MutableId &uid);
+
+	void serialize(const OutputStream &out) const
+	{
+		for (size_t i = 0; i < 16; i++)
+			out.writeUnsignedChar(bytes[i]);
+	}
+
+	void deserialize(const InputStream &in)
+	{
+		for (size_t i = 0; i < 16; i++)
+			in.readUnsignedChar(bytes[i]);
+	}
+
+};
+
+inline std::ostream& operator <<(std::ostream& os, const MutableId &id)
+{
+	static const char *hex[] =
+	{ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d",
+			"e", "f" };
+
+	for (int i = 0; i < 4; i++)
+	{
+		os << hex[id.bytes[i] >> 4];
+		os << hex[id.bytes[i] & 0x0F];
+	}
+	os << "-";
+	for (int i = 4; i < 6; i++)
+	{
+		os << hex[id.bytes[i] >> 4];
+		os << hex[id.bytes[i] & 0x0F];
+	}
+	os << "-";
+	for (int i = 6; i < 8; i++)
+	{
+		os << hex[id.bytes[i] >> 4];
+		os << hex[id.bytes[i] & 0x0F];
+	}
+	os << "-";
+	for (int i = 8; i < 10; i++)
+	{
+		os << hex[id.bytes[i] >> 4];
+		os << hex[id.bytes[i] & 0x0F];
+	}
+	os << "-";
+	for (int i = 10; i < 16; i++)
+	{
+		os << hex[id.bytes[i] >> 4];
+		os << hex[id.bytes[i] & 0x0F];
+	}
+
+	return os;
+}
 
 } // namespace pxl
 
 #endif // pxl_ptl_MutableId_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_ptl_Id_hh
 #define pxl_ptl_Id_hh
 
@@ -829,433 +1421,851 @@ typedef int MutableId;
 namespace pxl {
 
 /// This typedef is intended to provide a read-only data type for the PXL unique object-id
-typedef const pxl::MutableId Id;
+typedef pxl::MutableId Id;
 
 } // namespace pxl
 
 #endif // pxl_ptl_Id_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Ptr_hh
-#define pxl_ptl_Ptr_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-
-namespace pxl {
-
-// ptl
-
-/** 
-This class template implements a PXL style dumb C++ pointer to \p datatype; 
-it is intended to parallelize pointer-related analysis code for PXL objects and 
-user-defined C++ objects.   
-*/
-template<class datatype>
-class Ptr {
-  public:
-    Ptr() : _cppPtr(0) {}
-    Ptr(const pxl::Ptr<datatype>& original) : _cppPtr(original._cppPtr) {}
-    Ptr(datatype* original) : _cppPtr(original) {}
-    ~Ptr() {}
-
-    /// This method returns the C++ pointer to the referenced object  
-    inline datatype* pointer() const  { return _cppPtr; }
-    /// This method returns true, if the pointer is not a null pointer; 
-    /// CAUTION: valid() cannot check, if the referenced object (still) exists.   
-    inline bool valid() const         { return _cppPtr != 0; }
-
-    /// This method provides direct access to the referenced object;
-    /// CAUTION: object() will not check, if the referenced object (still) exists.   
-    inline datatype& object() const   { return *access(); }
-
-    /// This assignment operator causes the pointer to reference the C++ object referenced by \p pptr.
-    inline void operator=(const pxl::Ptr<datatype>& pptr) { _cppPtr = pptr._cppPtr; }
-    /// This assignment operator causes the pointer to reference the C++ object \p data.
-    inline void operator=(datatype& data)                 { _cppPtr = &data; }
-    /// This assignment operator causes the pointer to reference the C++ object pointed to by \p dataptr.
-    inline void operator=(datatype* dataptr)              { _cppPtr = dataptr; }
-
-    /// This arrow operator de-references the pointer.   
-    /// CAUTION: it will not be checked, if the referenced object (still) exists.   
-    inline datatype* operator->() const { return _cppPtr; }
-
-  protected:
-    // access to object
-    inline datatype* access() const
-    {
-        if (_cppPtr)
-            return _cppPtr; 
-        std::cerr << "pxl::Ptr::access(): FATAL: The object you intend to access does not exist!" << std::endl;
-        return 0; // FIXME: excexption?
-    }
-
-    datatype* _cppPtr;
-};
-
-
-template<class datatype>
-datatype& operator*(pxl::Ptr<datatype>& ptr)
-{ return ptr.object(); }
-
-template<class datatype>
-const datatype& operator*(const pxl::Ptr<datatype>& ptr)
-{ return ptr.object(); }
-
-} // namespace pxl
-
-#endif // pxl_ptl_Ptr_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Vector_hh
-#define pxl_ptl_Vector_hh
-
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-/** 
-This class template aggregates a STL vector and extends its functionalites. 
-*/
-template<class itemtype>
-class Vector {
-  public:
-    virtual ~Vector() {}
-
-    /// For STL-style access: std::vector<> data type of the aggregated STL vector
-    typedef          std::vector<itemtype>                 StlContainer;
-    /// For STL-style iteration: const_iterator data type of the aggregated STL vector 
-    typedef typename std::vector<itemtype>::const_iterator StlConstIterator;
-    /// For STL-style iteration: iterator data type of the aggregated STL vector 
-    typedef typename std::vector<itemtype>::iterator       StlIterator;
-
-    /// This method inserts \p item.
-    void pushBack(const itemtype& item) {_container.push_back(item);}
-
-    // navigation
-    /// For STL-style iteration: returns the STL begin iterator of the aggregated STL vector. 
-    const StlConstIterator begin() const { return _container.begin(); }
-    /// For STL-style iteration: returns the STL end iterator of the aggregated STL vector. 
-    const StlConstIterator end()   const { return _container.end(); }
-
-    /// This method grants access to the aggregated STL vector. 
-    inline StlContainer& getContainer() { return _container; }
-    /// This method clears the aggregated STL vector. 
-    virtual void clearContainer() { return _container.clear(); }
-
-    /// This method returns the number of items contained in the aggregated STL vector. 
-    inline int getSize() const { return _container.size(); }
-
-    /// For PXL-style iteration: PXL iterator class 
-    class Iterator {
-      public:
-        /// Go-to constructor moves iterator to the same positon as \p original. 
-        Iterator(const Iterator& original) :
-            _iter(original._iter), _containerRef(original._containerRef) {}
-
-        /// Standard constructor moves iterator to the beginning of \p vector. 
-        Iterator(const pxl::Vector<itemtype>& vector) :
-            _containerRef(&vector) { first(); }
-
-        /// This method moves the iterator to the beginning of the vector. 
-        inline void first()  { _iter = _containerRef->begin(); }
-        /// This method moves the iterator to the next pair in the vector. 
-        inline void next()   { _iter++; }
-         /// This method returns true, if the iterator hit upper or lower boundary of the vector. 
-        inline bool isDone() { return _iter == _containerRef->end(); }
-
-        /// This method returns the current item. 
-		inline itemtype item() { return *_iter; }
-
-      private:
-        Iterator() : _containerRef(0) {}
-
-        StlConstIterator             _iter;
-        const pxl::Vector<itemtype>* _containerRef;
-    };
-
-  protected:
-    StlContainer _container;
-
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
-};
-
-} // namespace pxl
-
-#endif // pxl_ptl_Vector_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Map_hh
-#define pxl_ptl_Map_hh
-
-#include <map>
-
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// pcl
-
-/** 
-This class template aggregates a STL map and extends its functionalites; 
-a map is a list of \p keytype-itemtype pairs sorted by a unique key of \p keytype. 
-*/
-template<class keytype, class itemtype>
-class Map {
-  public:
-    virtual ~Map() {}
-
-    /// For STL-style access: std::pair<> data type of the aggregated STL map
-    typedef          std::pair<keytype, itemtype>                StlPair;
-    /// For STL-style access: std::map<> data type of the aggregated STL map
-    typedef          std::map<keytype, itemtype>                 StlContainer;
-    /// For STL-style iteration: const_iterator data type of the aggregated STL map 
-    typedef typename std::map<keytype, itemtype>::const_iterator StlConstIterator;
-    /// For STL-style iteration: iterator data type of the aggregated STL map 
-    typedef typename std::map<keytype, itemtype>::iterator       StlIterator;
-
-    /// This method inserts (or replaces) the \p key-item pair indetified by \p key.
-    void set(const keytype& key, const itemtype& item)
-    {
-        StlIterator insertPos = _container.lower_bound(key);
-        if (insertPos == _container.end() || insertPos->first != key)
-            _container.insert(insertPos, StlPair(key, item));
-        else
-            insertPos->second = item;
-    }
-
-    /// This method removes (if existing) the \p key-item pair indetified by \p key. 
-    void remove(const keytype& key)
-    { _container.erase(key); }
-
-    /// This method searches and returns the item indetified by \p key; \p defaultitem is returned in case the key is not found. 
-    itemtype find(const keytype& key, itemtype defaultitem) const
-    {
-        StlConstIterator found = _container.find(key);
-        if (found != _container.end())
-            return found->second;
-        return defaultitem;
-    }
-
-    /// This method searches and returns the item indetified by \p key; a pxl::Exception is thrown in case the key is not found. 
-    itemtype find(const keytype& key) const
-    {
-        StlConstIterator found = _container.find(key);
-        if (found != _container.end())
-            return found->second;
-        pxl::exception("pxl::Map::find(...)", "key not found and no default item provided");
-        throw;
-    }
-
-  protected:
-    itemtype& findOrAlloc(const keytype &key)
-    {
-        StlIterator insertPos = _container.lower_bound(key);
-        if (insertPos == _container.end() || insertPos->first != key)
-            return _container.insert(insertPos, StlPair(key, itemtype()))->second;
-        else
-            return insertPos->second;
-    }
-
-    const itemtype* findOrReturn(const keytype &key) const
-    {
-        StlConstIterator found = _container.find(key);
-        if (found == _container.end())
-           return 0;
-        return &found->second;
-    }
-
-  public:
-    // navigation
-    /// For STL-style iteration: returns the STL begin iterator of the aggregated STL map. 
-    const StlConstIterator begin() const { return _container.begin(); }
-    /// For STL-style iteration: returns the STL end iterator of the aggregated STL map. 
-    const StlConstIterator end()   const { return _container.end(); }
-
-    /// This method grants access to the aggregated STL map. 
-    inline StlContainer& getContainer() { return _container; }
-    /// This method clears the aggregated STL map. 
-    virtual void clearContainer() { return _container.clear(); }
-
-    /// This method returns the number of pairs contained in the aggregated STL map. 
-    inline int getSize() const { return _container.size(); }
-
-    /// For PXL-style iteration: PXL iterator class 
-    class Iterator {
-      public:
-        /// Go-to constructor moves iterator to the same positon as the original. 
-        Iterator(const Iterator& original) :
-            _iter(original._iter), _containerRef(original._containerRef) {}
-
-        /// Standard constructor moves iterator to the beginning of the map. 
-        Iterator(const pxl::Map<keytype, itemtype>& map) :
-            _containerRef(&map) { first(); }
-
-        /// This method moves the iterator to the beginning of the map. 
-        inline void first()  { _iter = _containerRef->begin(); }
-        /// This method moves the iterator to the next pair in the map. 
-        inline void next()   { _iter++; }
-        /// This method returns true, if the iterator hit upper or lower boundary of the map. 
-        inline bool isDone() { return _iter == _containerRef->end(); }
-
-        /// This method returns the key of the current pair. 
-        inline keytype  key()  { return _iter->first; }
-        /// This method returns the item of the current pair. 
-		inline itemtype item() { return _iter->second; }
-
-      private:
-        Iterator() : _containerRef(0) {}
-
-        StlConstIterator                   _iter;
-        const pxl::Map<keytype, itemtype>* _containerRef;
-    };
-
-  protected:
-    StlContainer _container;
-
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
-};
-
-} // namespace pxl
-
-#endif // pxl_ptl_Map_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_ptl_CopyHistory_hh
 #define pxl_ptl_CopyHistory_hh
 
+#include <map>
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_ptl_ObjectBase_hh
+#define pxl_ptl_ObjectBase_hh
+
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_Serializable_hh
+#define pxl_io_Serializable_hh
+
+
+namespace pxl
+{
+
+// io
+/**
+ This class is the abstract base class for all objects to be stored in a PXL I/O file.
+ It holds the unique ID of each individual object. In addition, a UUID indicating the class
+ type must be implemented in derived classes. (De-) Serialization happens via consecutive calls to the
+ serialize/deserialize methods of the base classes.
+ */
+class Serializable
+{
+public:
+
+	virtual ~Serializable() {}
+
+	/// Id of the object's type.
+	virtual const Id& getTypeId() const = 0;
+	
+	/// Returns the unique ID of the individual object.
+	const Id& getId() const
+	{
+		return _id;
+	}
+
+	/// This method serializes the type ID and unique object ID. Derived classes should extend this method by first calling the base class method.
+	virtual void serialize(const OutputStream &out) const
+	{
+		// Serialize ID of the type.
+		getTypeId().serialize(out);
+		// Serialize UUID.
+		_id.serialize(out);
+	}
+
+	/// This method deserializes unique object ID. Derived classes should extend this method by first calling the base class method.
+	virtual void deserialize(const InputStream &in)
+	{
+		// Deserialize uuid;
+		_id.deserialize(in);
+	}
+private:
+	/// The unique ID.
+	Id _id;
+};
+
+}
+
+#endif /*pxl_io_Serializable_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_ptl_WkPtrBase_hh
+#define pxl_ptl_WkPtrBase_hh
+
+
+namespace pxl
+{
+
+// ptl
+
+class Relative;
+
+/** 
+ This base class provides common functionalities for all derived PXL weak pointers. 
+ */
+class WkPtrBase
+{
+public:
+	virtual ~WkPtrBase()
+	{
+		connect(0);
+	}
+
+	/// This virtual method creates a deep copy and returns a C++ pointer to the newly created weak pointer instance.  
+	virtual pxl::WkPtrBase* clone() const
+	{
+		return new pxl::WkPtrBase(*this);
+	}
+
+	/// This method returns a C++ pointer of type pxl::Relative to the referenced object  
+	inline pxl::Relative* pointer() const
+	{
+		return _objectRef;
+	}
+	/// This method returns true, if the referenced object exists.  
+	inline bool valid() const
+	{
+		return _objectRef != 0;
+	}
+
+	/// This allows pointer-like tests if the weak pointer is valid.
+	inline operator bool()
+	{
+		return valid();
+	}
+	/// This arrow operator de-references the weak pointer.   
+	inline pxl::Relative* operator->() const
+	{
+		return access();
+	}
+	/// compare the referenced object pointers
+	inline bool operator==(pxl::WkPtrBase &other) const
+	{
+		return (_objectRef == other.pointer());
+	}
+	/// compare the referenced object pointers   
+	inline bool operator!=(pxl::WkPtrBase &other) const
+	{
+		return (_objectRef != other.pointer());
+	}
+
+	/// This method attempts a dynamic cast on the referenced object
+	static inline WkPtrBase* cast_dynamic(WkPtrBase* orig)
+	{
+		return orig;
+	}
+
+	// safe access to object
+	inline Relative* access() const throw (std::runtime_error)
+	{
+		if (_objectRef)
+			return _objectRef;
+		throw std::runtime_error("pxl::WkPtrBase::access(): FATAL: The object you intend to access does not exist!");
+		return 0;
+	}
+
+protected:
+	WkPtrBase() :
+		_notifyChainIn(0), _notifyChainOut(0), _objectRef(0)
+	{
+	}
+
+	void notifyDeleted();
+
+	void connect(pxl::Relative* pointer);
+
+	pxl::WkPtrBase* _notifyChainIn;
+	pxl::WkPtrBase* _notifyChainOut;
+
+	pxl::Relative* _objectRef;
+
+	friend class Relative;
+};
+
+} // namespace pxl
+
+#endif // pxl_ptl_WkPtrBase_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_ptl_Relations_hh
+#define pxl_ptl_Relations_hh
+
+#include <set>
+
+
+namespace pxl
+{
+
+class Relative;
+
+/**
+ 
+ The class pxl::Relative owns three instances of pxl::Relations 
+ for managing mother, daughter and flat relations to other pxl::Relative derivatives. 
+ For decay tree integrity reasons, the class pxl::Relative allows to 
+ establish relations only to objects contained in the same object owner 
+ (and in the case of both objects not being contained in owners). 
+ */
+
+class Relations
+{
+public:
+	typedef std::set<pxl::Relative*>::const_iterator const_iterator;
+	typedef std::set<pxl::Relative*>::iterator iterator;
+
+	Relations()
+	{
+	}
+
+	virtual ~Relations()
+	{
+	}
+
+	void serialize(const OutputStream &out) const;
+
+	const std::set<pxl::Relative*>& getContainer() const
+	{
+		return _relatives;
+	}
+
+	bool set(pxl::Relative* relative)
+	{
+		return (_relatives.insert(relative)).second;
+	}
+
+	bool erase(pxl::Relative* relative)
+	{
+		return _relatives.erase(relative);
+	}
+
+	bool has(pxl::Relative* relative) const
+	{
+		return (_relatives.count(relative) > 0 );
+	}
+
+	template<class objecttype> int getObjectsOfType(
+			std::vector<objecttype*>& relatives) const
+	{
+		int size = relatives.size();
+		for (const_iterator iter = _relatives.begin(); iter!=_relatives.end(); ++iter)
+		{
+			objecttype* obj = dynamic_cast<objecttype*>(*iter);
+			if (obj)
+				relatives.push_back(obj);
+		}
+		return relatives.size()-size;
+	}
+
+	int size() const
+	{
+		return _relatives.size();
+	}
+
+	const_iterator begin() const
+	{
+		return _relatives.begin();
+	}
+
+	iterator begin()
+	{
+		return _relatives.begin();
+	}
+
+	const_iterator end() const
+	{
+		return _relatives.end();
+	}
+
+	iterator end()
+	{
+		return _relatives.end();
+	}
+
+	void clearContainer()
+	{
+		_relatives.clear();
+	}
+
+private:
+	std::set<pxl::Relative*> _relatives;
+};
+
+} // namespace pxl
+
+#endif // pxl_ptl_Relations_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef SOFTRELATIONS_HH_
+#define SOFTRELATIONS_HH_
+
+
+
+namespace pxl
+{
+class Relative;
+class ObjectOwner;
+
+class SoftRelations
+{
+public:
+	typedef std::multimap<std::string, pxl::Id>::const_iterator const_iterator;
+	typedef std::multimap<std::string, pxl::Id>::iterator iterator;
+
+	void serialize(const OutputStream &out) const
+	{
+		unsigned int size = _relationsMap.size();
+		out.writeUnsignedInt(size);
+		for (const_iterator iter = _relationsMap.begin(); iter
+				!=_relationsMap.end(); ++iter)
+		{
+			out.writeString(iter->first);
+			iter->second.serialize(out);
+		}
+	}
+
+	void deserialize(const InputStream &in)
+	{
+		_relationsMap.clear();
+		unsigned int size;
+		in.readUnsignedInt(size);
+		for (unsigned int i=0; i<size; ++i)
+		{
+			std::string name;
+			in.readString(name);
+			pxl::Id id(in);
+			_relationsMap.insert(std::pair<std::string, pxl::Id>(name, id));
+		}
+	}
+
+	pxl::Relative* getFirst(const pxl::ObjectOwner& owner, const std::string& type = "") const;
+
+	int getSoftRelatives(std::vector<pxl::Relative*>& vec, const pxl::ObjectOwner& owner, const std::string& type) const;
+	int getSoftRelatives(std::vector<pxl::Relative*>& vec, const pxl::ObjectOwner& owner) const;
+
+	template <class objecttype>
+	int getSoftRelativesOfType(std::vector<objecttype*>& vec, const pxl::ObjectOwner& owner, const std::string& type) const;
+
+	template <class objecttype>
+	int getSoftRelativesOfType(std::vector<objecttype*>& vec, const pxl::ObjectOwner& owner) const;
+
+	int keepSoftRelatives(std::vector<pxl::Relative*>& vec, const std::string& type) const;
+	int keepSoftRelatives(std::vector<pxl::Relative*>& vec) const;
+
+	bool has(const pxl::Relative* relative) const;
+	
+	bool has(const pxl::Relative* relative, const std::string& name) const;
+
+	bool has(const pxl::Id& id) const;
+	bool has(const pxl::Id& id, const std::string& name) const;
+
+	bool hasType(const std::string& name) const;
+
+	int count(const std::string& name) const;
+
+	void set(const pxl::Relative* relative, const std::string& type);
+
+	void remove(const pxl::Relative* relative, const std::string& type);
+
+	void remove(const pxl::Relative* relative);
+
+	int size() const
+	{
+		return _relationsMap.size();
+	}
+
+	void clearContainer()
+	{
+		_relationsMap.clear();
+	}
+
+	const std::multimap<std::string, pxl::Id>& getContainer() const
+	{
+		return _relationsMap;
+	}
+
+	const_iterator begin() const
+	{
+		return _relationsMap.begin();
+	}
+
+	iterator begin()
+	{
+		return _relationsMap.begin();
+	}
+
+	const_iterator end() const
+	{
+		return _relationsMap.end();
+	}
+
+	iterator end()
+	{
+		return _relationsMap.end();
+	}
+
+	std::ostream& print(int level = 0, std::ostream& os = std::cout) const;
+
+private:
+	//this way round?
+	std::multimap<std::string, pxl::Id> _relationsMap;
+};
+
+} //namespace pxl
+
+#endif /*SOFTRELATIONS_HH_*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_ptl_Layout_hh
+#define pxl_ptl_Layout_hh
+
+
+namespace pxl
+{
+
+// ptl
+
+/** 
+ This class holds layout information of PXL objects when visualized
+ in the Graphical User Interface VisualPxl. For internal use only, 
+ methods and data members are self-explanatory.  
+ */
+class Layout
+{
+public:
+	Layout() :
+		_type(0), _style(0), _color(0), _a(0.), _b(0.), _c(0.), _d(0.)
+	{
+	}
+	~Layout()
+	{
+	}
+
+	inline int getType()
+	{
+		return _type;
+	}
+	inline int getStyle()
+	{
+		return _style;
+	}
+	inline int getColor()
+	{
+		return _color;
+	}
+
+	inline double getA()
+	{
+		return _a;
+	}
+	inline double getB()
+	{
+		return _b;
+	}
+	inline double getC()
+	{
+		return _c;
+	}
+	inline double getD()
+	{
+		return _d;
+	}
+
+	inline void setType(int v)
+	{
+		_type = v;
+	}
+	inline void setStyle(int v)
+	{
+		_style = v;
+	}
+	inline void setColor(int v)
+	{
+		_color = v;
+	}
+
+	inline void setA(double v)
+	{
+		_a = v;
+	}
+	inline void setB(double v)
+	{
+		_b = v;
+	}
+	inline void setC(double v)
+	{
+		_c = v;
+	}
+	inline void setD(double v)
+	{
+		_d = v;
+	}
+
+	void serialize(const OutputStream &out) const;
+	
+	void deserialize(const InputStream &in);
+
+private:
+	int _type;
+	int _style;
+	int _color;
+
+	double _a;
+	double _b;
+	double _c;
+	double _d;
+};
+
+} // namespace pxl
+
+#endif // pxl_ptl_Layout_hh
+
+namespace pxl
+{
+
+// ptl
+
+class ObjectOwner;
+
+/** 
+ This base class provides common functionalities for all derived PXL objects,  
+ such as mother-daughter relations, weak pointer concept and related service routines. 
+ In addition, it aggregates the PXL unique object-id and layout information for visualization in VisualPxl.
+ It has a C++ pointer to the pxl::ObjectOwner it is aggregated in in order to avoid
+ mother/daughter relations to outside objects to be established.
+ */
+class Relative : public Serializable
+{
+public:
+
+	virtual ~Relative()
+	{
+		// remove all relations:
+		unlinkMothers();
+		unlinkDaughters();
+		unlinkFlat();
+		if (_refWkPtrSpec)
+			_refWkPtrSpec->notifyDeleted();
+		delete _ptrLayout;
+		if (_refObjectOwner)
+			std::cerr
+					<< "Error in ~Relative(): Relative derivative must be deleted by ObjectOwner to guarantee safe object handling!"
+					<< std::endl; //don't throw exception in destructor:
+	}
+
+	/// This method returns the PXL unique object-id.
+	inline pxl::Id id() const
+	{
+		return getId();
+	}
+
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("5dee644d-906f-4d8e-aecc-d9a644293260");
+		return id;
+	}
+
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		Serializable::serialize(out);
+
+		_softRelations.serialize(out);
+
+		out.writeString(_name);
+
+		if (_ptrLayout)
+		{
+			out.writeBool(true);
+			_ptrLayout->serialize(out);
+		}
+		else
+		{
+			out.writeBool(false);
+		}
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		Serializable::deserialize(in);
+
+		_softRelations.deserialize(in);
+
+		in.readString(_name);
+
+		bool hasLayout;
+		in.readBool(hasLayout);
+		if (hasLayout)
+		{
+			layout()->deserialize(in);
+		}
+		else
+		{
+			//necessary?
+			delete _ptrLayout;
+			_ptrLayout = 0;
+		}
+	}
+
+	/// This method returns a C++ pointer to the pxl::ObjectOwner it is owned by.  
+	inline pxl::ObjectOwner* owner() const
+	{
+		return _refObjectOwner;
+	}
+
+	/// This virtual method creates a deep copy and returns a C++ pointer to the newly created object.  
+	virtual pxl::Relative* clone() const
+	{
+		return new pxl::Relative(*this);
+	}
+
+	/// This method grants access to the pxl::Relations instance managing mother relations  
+	inline const pxl::Relations& getMotherRelations() const
+	{
+		return _motherRelations;
+	}
+	/// This method grants access to the pxl::Relations instance managing daughter relations  
+	inline const pxl::Relations& getDaughterRelations() const
+	{
+		return _daughterRelations;
+	}
+
+	/// This method grants access to the pxl::Relations instance managing flat relations  
+	inline const pxl::Relations& getFlatRelations() const
+	{
+		return _flatRelations;
+	}
+
+	/// This method establishes a mother relation to the \p target object; please notice, that
+	/// only relations between objects owned by the same object owner will be established.   
+	void linkMother(pxl::Relative* target) throw(std::runtime_error);
+	/// This method establishes a daughter relation to the \p target object; please notice, that
+	/// only relations between objects owned by the same object owner will be established.   
+	void linkDaughter(pxl::Relative* target) throw(std::runtime_error);
+	/// This method establishes a flat relation to the \p target object; please notice, that
+	/// only relations between objects owned by the same object owner will be established.
+	void linkFlat(pxl::Relative* target) throw(std::runtime_error);
+
+	/// This method removes an existing daughter relation to the \p target object.
+	void unlinkMother(pxl::Relative* target);
+	/// This method removes an existing daughter relation to the \p target object.
+	void unlinkDaughter(pxl::Relative* target);
+	/// This method removes an existing daughter relation to the \p target object.
+	void unlinkFlat(pxl::Relative* target);
+
+	/// This method removes all existing mother relations.
+	void unlinkMothers();
+	/// This method removes all existing daughter relations.
+	void unlinkDaughters();
+	/// This method removes all existing flat relations.
+	void unlinkFlat();
+
+	void linkSoft(pxl::Relative* relative, const std::string& type)
+	{
+		if (relative)
+		{
+			_softRelations.set(relative, type);
+			relative->_softRelations.set(this, type);
+		}
+	}
+
+	void unlinkSoft(pxl::Relative* relative, const std::string& type)
+	{
+		if (relative)
+		{
+			_softRelations.remove(relative, type);
+			relative->_softRelations.remove(this, type);
+		}
+	}
+
+	const pxl::SoftRelations& getSoftRelations() const
+	{
+		return _softRelations;
+	}
+
+	pxl::SoftRelations& setSoftRelations()
+	{
+		return _softRelations;
+	}
+
+	/// This method returns the name.
+	inline const std::string& getName() const
+	{
+		return _name;
+	}
+
+	/// This method sets the name to the contents of \p v.
+	inline void setName(const std::string& v)
+	{
+		_name = v;
+	}
+
+	/// This method grants access to the layout information provided for visualization in VisualPxl.
+	inline pxl::Layout* layout()
+	{
+		if (!_ptrLayout)
+			_ptrLayout = new pxl::Layout;
+		return _ptrLayout;
+	}
+
+	/// This method recursively invokes its own and the print() methods of all daughter objects.
+	/// @param level verbosity level
+	/// @param os output _stream, default is std::cout
+	/// @param pan print indention
+	/// @return output _stream
+	std::ostream& printDecayTree(int level = 0, std::ostream& os = std::cout,
+			int pan = 1) const;
+
+	/// This virtual method is intended to print out object state information on various verbosity levels.
+	/// @param level verbosity level
+	/// @param os output _stream, default is std::cout
+	/// @param pan print indention
+	/// @return output _stream
+	virtual std::ostream& print(int level = 1, std::ostream& os = std::cout,
+			int pan = 0) const;
+
+	/// This method creates a weak pointer to itself and returns a pxl::WkPtrBase* to the newly created weak pointer instance. 
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		throw std::runtime_error("pxl::ObjectBase::createSelfWkPtr(): ATTENTION! Inheriting class must reimplement this virtual method.");
+		return 0;
+	}
+	
+	inline const pxl::Relative& operator=(const pxl::Relative& pa)
+	{
+		if (pa._ptrLayout)
+			_ptrLayout = new pxl::Layout;
+		_name = pa._name;
+		
+		return *this;
+	}
+	
+protected:
+	Relative() :
+		pxl::Serializable(), _refWkPtrSpec(0), _refObjectOwner(0),
+				_motherRelations(), _daughterRelations(), _name("default"),
+				_ptrLayout(0)
+	{
+	}
+
+	Relative(const Relative& original) :
+		pxl::Serializable(), _refWkPtrSpec(0), _refObjectOwner(0),
+				_motherRelations(), _daughterRelations(),
+				_name(original._name), _ptrLayout(0)
+	{
+		this->init(original);
+	}
+
+	Relative(const Relative* original) :
+		pxl::Serializable(), _refWkPtrSpec(0), _refObjectOwner(0),
+				_motherRelations(), _daughterRelations(),
+				_name(original->_name), _ptrLayout(0)
+	{
+		this->init(*original);
+	}
+
+	inline void init(const Relative& original)
+	{
+		if (original._ptrLayout)
+			_ptrLayout = new pxl::Layout;
+	}
+
+	std::ostream& printPan1st(std::ostream& os, int pan) const;
+	std::ostream& printPan(std::ostream& os, int pan) const;
+
+private:
+	pxl::WkPtrBase* _refWkPtrSpec;
+	pxl::ObjectOwner* _refObjectOwner;
+
+	pxl::Relations _motherRelations;
+	pxl::Relations _daughterRelations;
+	pxl::Relations _flatRelations;
+
+	pxl::SoftRelations _softRelations;
+
+	std::string _name;
+
+	pxl::Layout* _ptrLayout;
+
+	friend class WkPtrBase;
+	friend class ObjectOwner;
+};
+
+} // namespace pxl
+
+// operators
+std::ostream& operator<<(std::ostream& cxxx, const pxl::Relative& obj);
+
+#endif // pxl_ptl_ObjectBase_hh
 
 namespace pxl {
 
 // ptl
 
-class ObjectBase;
-
 /// This typedef is intended to hold the origin information of copied objects in pxl::ObjectOwner instances. 
-typedef pxl::Map<pxl::Id, pxl::ObjectBase*> CopyHistory;
-/// This typedef defines a reference for pxl::CopyHistory
-typedef CopyHistory& CopyHistoryRef;
-/// This typedef defines a const reference for pxl::CopyHistory
-typedef const CopyHistory& CopyHistoryConstRef;
+typedef std::map<pxl::Id, pxl::Relative*> CopyHistory;
 
 } // namespace pxl
 
 #endif // pxl_ptl_CopyHistory_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_ptl_Index_hh
 #define pxl_ptl_Index_hh
 
@@ -1264,3193 +2274,2433 @@ namespace pxl {
 
 // ptl
 
-class ObjectBase;
-
 /// This typedef is intended to hold the index information (string-object associations) in pxl::ObjectOwner instances. 
-typedef pxl::Map<std::string, pxl::ObjectBase*> Index;
-/// This typedef defines a reference for pxl::Index
-typedef Index& IndexRef;
-/// This typedef defines a const reference for pxl::Index
-typedef const Index& IndexConstRef;
+typedef std::map<std::string, pxl::Relative*> Index;
 
 
 } // namespace pxl
 
 #endif // pxl_ptl_Index_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_WkPtrBase_hh
-#define pxl_ptl_WkPtrBase_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-namespace pxl {
-
-// ptl
-
-class ObjectBase;
-
-/** 
-This base class provides common functionalities for all derived PXL weak pointers. 
-*/
-class WkPtrBase {
-  public:
-    virtual ~WkPtrBase() { connect(0); }
-
-    /// This virtual method creates a deep copy and returns a C++ pointer to the newly created weak pointer instance.  
-    virtual pxl::WkPtrBase* clone() const
-    { return new pxl::WkPtrBase(*this); }
-
-    /// This method returns a C++ pointer of type pxl::ObjectBase to the referenced object  
-    inline pxl::ObjectBase* pointer() const { return _objectRef; }
-    /// This method returns true, if the referenced object exists.  
-    inline bool valid() const { return _objectRef != 0; }
-    /// This arrow operator de-references the weak pointer.   
-    inline pxl::ObjectBase* operator->() const { return _objectRef; }
-
-    /// This method attempts a dynamic cast on the referenced object
-    static inline WkPtrBase* cast_dynamic(WkPtrBase* orig)
-    { return orig; }
-
-  protected:
-    WkPtrBase() :
-        _notifyChainIn(0),
-        _notifyChainOut(0),
-        _objectRef(0) {}
-
-    void notifyDeleted();
-
-    void connect(pxl::ObjectBase* pointer);
-
-    pxl::WkPtrBase* _notifyChainIn;
-    pxl::WkPtrBase* _notifyChainOut;
-
-    pxl::ObjectBase* _objectRef;
-
-  friend class ObjectBase;
-};
-
-} // namespace pxl
-
-#endif // pxl_ptl_WkPtrBase_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_ptl_WkPtrSpec_hh
 #define pxl_ptl_WkPtrSpec_hh
 
 
 
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_GetSet_hh
-#define pxl_ptl_GetSet_hh
-
-namespace pxl {
-
-// ptl
-
-/// This class is used for overloading the bracket operator of PXL objects and weak pointers with read access. 
-class Get { public: Get() {} };
-/// This class is used for overloading the bracket operator of PXL objects and weak pointers with write access. 
-class Set { public: Set() {} };
-
-/// This constant can be used to select the bracket operator of PXL objects and weak pointers for read access. 
-extern const pxl::Get get;
-/// This constant can be used to select the bracket operator of PXL objects and weak pointers for write access. 
-extern const pxl::Set set;
-
-} // namespace pxl
-
-#endif // pxl_ptl_GetSet_hh
-
-namespace pxl {
-
-// iotl
-
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
 
 // ptl
 
 /** 
-This class template represents a weak pointer to PXL objects of \p objecttype that aggregate data of \p datatype.   
-*/
-template<class datatype, class objecttype>
-class WkPtrSpec : public pxl::WkPtrBase {
-  public:
-    WkPtrSpec() : pxl::WkPtrBase() {}
-    WkPtrSpec(objecttype* ptr) : pxl::WkPtrBase()
-    { pxl::WkPtrBase::connect(ptr); }
-    WkPtrSpec(objecttype& object) : pxl::WkPtrBase()
-    { pxl::WkPtrBase::connect(&object); }
-    WkPtrSpec(const pxl::WkPtrSpec<datatype, objecttype>& original) : pxl::WkPtrBase()
-    { pxl::WkPtrBase::connect((objecttype*) original._objectRef); }
-    virtual ~WkPtrSpec()
-    { pxl::WkPtrBase::connect(0); }
+ This class template represents a weak pointer to PXL objects of \p objecttype that aggregate data of \p datatype.   
+ */
+template<class objecttype> class weak_ptr : public pxl::WkPtrBase
+{
+public:
+	weak_ptr() :
+		pxl::WkPtrBase()
+	{
+	}
+	weak_ptr(objecttype* ptr) :
+		pxl::WkPtrBase()
+	{
+		pxl::WkPtrBase::connect(ptr);
+	}
+	weak_ptr(objecttype& object) :
+		pxl::WkPtrBase()
+	{
+		pxl::WkPtrBase::connect(&object);
+	}
+	weak_ptr(const pxl::weak_ptr<objecttype>& original) :
+		pxl::WkPtrBase()
+	{
+		pxl::WkPtrBase::connect((objecttype*) original._objectRef);
+	}
+	weak_ptr(const pxl::weak_ptr<objecttype>* original) :
+		pxl::WkPtrBase()
+	{
+		pxl::WkPtrBase::connect((objecttype*) original->_objectRef);
+	}
 
-    /// This virtual method creates a deep copy and returns a C++ pointer to the newly created weak pointer instance.  
-    virtual pxl::WkPtrBase* clone() const
-    { return new pxl::WkPtrSpec<datatype, objecttype>(*this); }
+	virtual ~weak_ptr()
+	{
+		pxl::WkPtrBase::connect(0);
+	}
 
-    /// This assignment operator causes the weak pointer to reference the object referenced by \p pptr.
-    inline void operator=(const pxl::WkPtrSpec<datatype, objecttype>& pptr)
-    { connect(pptr._objectRef); }
-    /// This assignment operator causes the weak pointer to reference the object.
-    inline void operator=(objecttype& object)
-    { connect(&object); }
-    /// This assignment operator causes the weak pointer to reference the object pointed to by \p objectptr.
-    inline void operator=(objecttype* objectptr)
-    { connect(objectptr); }
+	/// This virtual method creates a deep copy and returns a C++ pointer to the newly created weak pointer instance.  
+	virtual pxl::WkPtrBase* clone() const
+	{
+		return new pxl::weak_ptr<objecttype>(*this);
+	}
 
-    // methods to grant object & data access
-    /// This method provides direct access to the referenced object.
-    inline objecttype& object() const  { return *access(); }
-    /// This method grants read access to the data aggregated by the referenced object.
-    inline const datatype& get() const { return access()->get(); }
-    /// This method grants write access to the data aggregated by the referenced object.
-    inline       datatype& set()       { return access()->set(); }
+	/// This assignment operator causes the weak pointer to reference the object referenced by \p pptr.
+	inline void operator=(const pxl::weak_ptr<objecttype>& pptr)
+	{
+		connect(pptr._objectRef);
+	}
+	/// This assignment operator causes the weak pointer to reference the object.
+	inline void operator=(objecttype& object)
+	{
+		connect(&object);
+	}
+	/// This assignment operator causes the weak pointer to reference the object pointed to by \p objectptr.
+	inline void operator=(objecttype* objectptr)
+	{
+		connect(objectptr);
+	}
 
-    /// This bracket operator grants read access to the data aggregated by the referenced object.
-    inline const datatype& operator()()                const { return get(); }
-    /// This bracket operator grants read access to the data aggregated by the referenced object.
-    inline const datatype& operator()(const pxl::Get&) const { return get(); }
-    /// This bracket operator grants write access to the data aggregated by the referenced object.
-    inline       datatype& operator()(const pxl::Set&)       { return set(); }
+	// methods to grant object & data access
+	/// This method provides direct access to the referenced object.
+	inline objecttype& object() const
+	{
+		return *access();
+	}
 
-    /// This arrow operator de-references the weak pointer.   
-    inline objecttype* operator->() const { return access(); }
+	/// This arrow operator de-references the weak pointer.   
+	inline objecttype* operator->() const
+	{
+		return access();
+	}
 
-    /// This method attempts a dynamic cast on the referenced object
-    static inline WkPtrSpec<datatype, objecttype>* cast_dynamic(WkPtrBase* orig)
-    {
-        objecttype *object = dynamic_cast<objecttype*>(orig->pointer());
-        if (!object)
-            return 0;
+	/// This arrow operator de-references the weak pointer.   
+	inline objecttype* ptr() const
+	{
+		return dynamic_cast<objecttype*>(_objectRef);
+	}
 
-        // FIXME: This is crude but required:
-        if (PXL_UNLIKELY(reinterpret_cast<void*>(object) !=
-                         reinterpret_cast<void*>(orig->pointer())))
-                pxl::exception("pxl::WkPtrSpec::cast_dynamic()",
-                               "Unsupportede multiple inheritance configuration.");
+	inline operator objecttype*() const
+	{
+		return dynamic_cast<objecttype*>(_objectRef);
+	}
 
-        return reinterpret_cast<pxl::WkPtrSpec<datatype, objecttype>*>(orig);
-    }
+	/// This method attempts a dynamic cast on the referenced object
+	static weak_ptr<objecttype>* cast_dynamic(WkPtrBase* orig) throw (std::runtime_error)
+	{
+		objecttype *object = dynamic_cast<objecttype*>(orig->pointer());
+		if (!object)
+			return 0;
+		// FIXME: This is crude but required:
+		if (PXL_UNLIKELY(reinterpret_cast<void*>(object)
+				!= reinterpret_cast<void*>(orig->pointer())))
+			throw std::runtime_error("pxl::WkPtrSpec::cast_dynamic(): Unsupported multiple inheritance configuration.");
+		return reinterpret_cast<pxl::weak_ptr<objecttype>*>(orig);
+	}
 
-  protected:
-    // safe access to object
-    inline objecttype* access() const
-    {
-        if (_objectRef) return (objecttype*)_objectRef;
-        std::cerr << "pxl::WkPtrSpec::access(): FATAL: The object you intend to access does not exist!" << std::endl;
-        return 0; // FIXME: Exception?
-    }
+	// safe access to object
+	inline objecttype* access() const throw (std::runtime_error)
+	{
+		if (_objectRef)
+			return (objecttype*)_objectRef;
+		throw std::runtime_error("pxl::WkPtrSpec::access(): FATAL: The object you intend to access does not exist!");
+		return 0;
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
 };
 
-template<class datatype, class objecttype>
-objecttype& operator*(pxl::WkPtrSpec<datatype, objecttype>& wkPtr)
-{ return wkPtr.object(); }
+template<class objecttype> objecttype& operator*(pxl::weak_ptr<objecttype>& wkPtr)
+{
+	return wkPtr.object();
+}
 
-template<class datatype, class objecttype>
-const objecttype& operator*(const pxl::WkPtrSpec<datatype, objecttype>& wkPtr)
-{ return wkPtr.object(); }
+template<class objecttype> const objecttype& operator*(
+		const pxl::weak_ptr<objecttype>& wkPtr)
+{
+	return wkPtr.object();
+}
 
 } // namespace pxl
+
 
 #endif // pxl_ptl_WkPtrSpec_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourmap Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_WkPtrOwner_hh
-#define pxl_ptl_WkPtrOwner_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-class ObjectBase;
-
-/** 
-This class template is a container for weak pointers sorted (uniquely) by \p keytype. 
-It contains and manages weak pointers to PXL objects by using the inherited 
-functionality of the pxl::Map. Using the object-id as unique key, this class 
-is used for relation management and a C++ typedef is provided to pxl::Relations.
-*/
-template<class keytype>
-class WkPtrOwner : public pxl::Map<keytype, pxl::WkPtrBase*> {
-  public:
-    typedef          pxl::Map<keytype, pxl::WkPtrBase*>                   PtlMap;
-    typedef typename pxl::Map<keytype, pxl::WkPtrBase*>::StlConstIterator StlConstIterator;
-    typedef typename pxl::Map<keytype, pxl::WkPtrBase*>::StlIterator      StlIterator;
-
-    WkPtrOwner() : pxl::Map<keytype, pxl::WkPtrBase*>() {}
-    virtual ~WkPtrOwner() { pxl::WkPtrOwner<keytype>::clearContainer(); }
-
-    /// This method inserts (or replaces) the weak pointer \p wptr indetified by \p key.
-    void set(const keytype &key, pxl::WkPtrBase* wptr)
-    {
-        // FIXME: efficiency, remove & set in one?
-        pxl::WkPtrOwner<keytype>::remove(key);
-        PtlMap::set(key, wptr);
-    }
-
-     /// This method inserts (or replaces) the weak pointer \p wptr indetified by \p key.
-    void set(const keytype &key, const pxl::WkPtrBase& wptr)
-    {
-        // FIXME: efficiency, remove & set in one?
-        pxl::WkPtrOwner<keytype>::remove(key);
-        PtlMap::set(key, wptr.clone());
-    }
-
-    /// This method inserts (or replaces) a weak pointer to the object \p obj indetified by \p key.
-    void set(const keytype& key, pxl::ObjectBase& obj);
-
-    /// This method removes the weak pointer indetified by \p key.
-    void remove(const keytype& key)
-    {
-        delete find(key, 0);
-        PtlMap::_container.erase(key);
-    }
-
-    /// This method returns true, if a weak pointer associated with \p key is found.
-    bool has(const keytype& key) const { return find(key, 0) != 0; }
-
-    /// This method removes all  weak pointers contained.
-    virtual void clearContainer();
-
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /// For PXL-style iteration: PXL iterator class 
-    class Iterator {
-      public:
-        /// Go-to constructor moves iterator to the same positon as \p original. 
-        Iterator(const Iterator& original) :
-            _iter(original._iter), _containerRef(original._containerRef) {}
-         /// Standard constructor moves iterator to the beginning of \p wpo. 
-        Iterator(const pxl::WkPtrOwner<keytype>& wpo) :
-            _containerRef(&wpo) { first(); }
-
-        /// This method moves the iterator to the beginning of the map. 
-        inline void first()  { _iter = _containerRef->begin(); }
-         /// This method moves the iterator to the next pair in the map. 
-        inline void next()   { _iter++; }
-         /// This method returns true, if the iterator hit upper or lower boundary of the map. 
-        inline bool isDone() { return _iter == _containerRef->end(); }
-
-        /// This method returns the current key. 
-        inline keytype key()           { return _iter->first; }
-        /// This method returns the current item, thus a C++ pointer of type pxl::WkPtrBase* to the weak pointer; see also the wkPtr() and object() methods.  
-        inline pxl::WkPtrBase* item()  { return _iter->second; }
-        /// This method returns a pxl::WkPtrBase reference to the current weak pointer. 
-        inline pxl::WkPtrBase& wkPtr() { return *item(); }
-        /// This method returns a pxl::ObjectBase reference to the object pointed at by the current weak pointer. 
-        inline pxl::ObjectBase& object()
-        {
-            if (!wkPtr().valid()) // FIXME: exception?
-                std::cerr << "pxl::WkPtrOwner::object(): FATAL: The object you intend to access does not exist!" << std::endl;
-            return *wkPtr().pointer();
-        }
-
-      private:
-        Iterator() : _containerRef(0) {}
-
-        StlConstIterator                _iter;
-        const pxl::WkPtrOwner<keytype>* _containerRef;
-    };
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /// For PXL-style iteration: PXL iterator class template; 
-    /// this iterator behaves like a normal PXL iterator but ignores all weak pointers 
-    /// that cannot be interpreted as type wkptrtype (tested by dynamic casts). 
-    template<class wkptrtype>
-    class TypeIterator {
-      public:
-         /// Go-to constructor moves iterator to the same positon as the original. 
-        TypeIterator(const TypeIterator<wkptrtype>& original) :
-            _iter(original._iter), _containerRef(original._containerRef) {}
-
-         /// Standard constructor moves iterator to the beginning of \p wpo. 
-        TypeIterator(const pxl::WkPtrOwner<keytype>& wpo) :
-            _containerRef(&wpo) { first(); }
-
-        /// This method moves the iterator to the beginning of the map. 
-        inline void first()
-        { for(_iter = _containerRef->begin(); !isDone() && !item(); _iter++); }
-
-         /// This method moves the iterator to the next pair in the map. 
-        inline void next()
-        { do _iter++; while(!isDone() && !item()); }
-
-         /// This method returns true, if the iterator hits upper boundary of the map.
-        inline bool isDone() const
-        { return _iter == _containerRef->end(); }
-
-        /// This method returns the current key. 
-        inline keytype key() const
-        { return _iter->first; }
-
-        /// This method returns the current item, thus a C++ pointer of type \p wkptrtype* to the weak pointer; see also the wkPtr() and object() methods.  
-        inline wkptrtype* item() const
-        { return isDone() ? 0 : wkptrtype::cast_dynamic(_iter->second); }
-
-        /// This method returns a wkptrtype reference to the current weak pointer. 
-        inline const wkptrtype& wkPtr() const
-        { return *item(); }
-
-        /// This method returns a pxl::ObjectBase reference to the object pointed at by the current weak pointer. 
-        inline pxl::ObjectBase& object() const
-        {
-            if (!wkPtr().valid()) // FIXME: exception?
-                std::cerr << "pxl::WkPtrOwner::object(): FATAL: The object you intend to access does not exist!" << std::endl;
-            return *wkPtr().pointer();
-        }
-
-      private:
-        TypeIterator() : _containerRef(0) {}
-
-        StlConstIterator                _iter;
-        const pxl::WkPtrOwner<keytype>* _containerRef;
-    };
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  private:
-    WkPtrOwner(const pxl::WkPtrOwner<keytype>& original);
-
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
-};
-
-} // namespace pxl
-
-
-#endif // pxl_ptl_WkPtrOwner_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Relations_hh
-#define pxl_ptl_Relations_hh
-
-
-namespace pxl {
-
-/**
-For the convenience of an easy-to-read syntax, we provide this C++ typedef from pxl::WkPtrOwner with pxl::Id.
-The class pxl::ObjectBase owns two instances of pxl::Relations 
-for manageing mother and daughter relations to other pxl::ObjectBase derivatives. 
-For decay tree integrity reasons, the class pxl::ObjectBase allows to 
-establish relations only to objects contained in the same object owner 
-(and in the case of both objects not being contained in owners). 
-Please notice, that by building the relation management on the basis of weak 
-pointers, it becomes fail-safe and easy to debug even in the unforeseen case 
-of non-adequate object deletion.
-*/ 
-typedef pxl::WkPtrOwner<pxl::Id> Relations;
-/// This typedef defines a reference for pxl::Relations
-typedef Relations& RelationsRef;
-/// This typedef defines a const reference for pxl::Relations
-typedef const Relations& RelationsConstRef;
-
-
-} // namespace pxl
-
-#endif // pxl_ptl_Relations_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_ObjectBase_hh
-#define pxl_ptl_ObjectBase_hh
-
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Layout_hh
-#define pxl_ptl_Layout_hh
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-/** 
-This class holds layout information of PXL objects when visualized
-in the Graphical User Interface VisualPxl. For internal use only, 
-methods and data members are self-explanatory.  
-*/
-class Layout {
-  public:
-    Layout() : _type(0), _style(0), _color(0), _a(0.), _b(0.), _c(0.), _d(0.) {}
-    ~Layout() {}
-
-    inline int getType() { return _type; }
-    inline int getStyle() { return _style; }
-    inline int getColor() { return _color; }
-
-    inline double getA() { return _a; }
-    inline double getB() { return _b; }
-    inline double getC() { return _c; }
-    inline double getD() { return _d; }
-
-    inline void setType(int v){ _type = v; }
-    inline void setStyle(int v) { _style = v; }
-    inline void setColor(int v) { _color = v; }
-
-    inline void setA(double v) { _a = v; }
-    inline void setB(double v) { _b = v; }
-    inline void setC(double v) { _c = v; }
-    inline void setD(double v) { _d = v; }
-
-  protected:
-    int _type;
-    int _style;
-    int _color;
- 
-    double _a;
-    double _b;
-    double _c;
-    double _d;
-
-  friend class iStreamer;
-  friend class oStreamer;
-};
-
-} // namespace pxl
-
-#endif // pxl_ptl_Layout_hh
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-class ObjectOwner;
-
-/** 
-This base class provides common functionalities for all derived PXL objects,  
-such as mother-daughter relations, weak pointer concept and related service routines. 
-In addition, it aggregates the PXL unique object-id and layout information for visualization in VisualPxl.
-It has a C++ pointer to the pxl::ObjectOwner it is aggregated in in order to avoid
-mother/daughter relations to outside objects to be established.
-*/
-class ObjectBase {
-  public:
-    virtual ~ObjectBase()
-    {
-        if (_refWkPtrSpec)
-            _refWkPtrSpec->notifyDeleted();
-        delete _ptrLayout;
-    }
-
-    // FIXME: replace by uuid
-    /// This method returns the PXL unique object-id.
-    inline pxl::Id id() const { return (int)(void*)this;  }
-
-    /// This method returns a C++ pointer to the pxl::ObjectOwner it is owned by.  
-    inline pxl::ObjectOwner* owner() const { return _refObjectOwner; }
-
-    /// This virtual method creates a deep copy and returns a C++ pointer to the newly created object.  
-    virtual pxl::ObjectBase* clone() const { return new pxl::ObjectBase(*this); }
-
-    /// This method grants access to the pxl::Relations instance manageing mother relations  
-    inline pxl::Relations& getMotherRelations()   { return _motherRelations; }
-    /// This method grants access to the pxl::Relations instance manageing daughter relations  
-    inline pxl::Relations& getDaughterRelations() { return _daughterRelations; }
-
-    /// This method establishes a mother relation to the \p target object; please notice, that
-    /// only relations between objects owned by the same object owner will be established.   
-    void linkMother(pxl::ObjectBase& target);
-    /// This method establishes a daughter relation to the \p target object; please notice, that
-    /// only relations between objects owned by the same object owner will be established.   
-    void linkDaughter(pxl::ObjectBase& target);
-
-    /// This method establishes a mother relation to the object referred to by \p target; please notice, that
-    /// only relations between objects owned by the same object owner will be established.   
-    inline void linkMother(pxl::WkPtrBase& target)   { if (target._objectRef) linkMother(*(target._objectRef)); }
-    /// This method establishes a daughter relation to the object referred to by \p target; please notice, that
-    /// only relations between objects owned by the same object owner will be established.   
-    inline void linkDaughter(pxl::WkPtrBase& target) { if (target._objectRef) linkDaughter(*(target._objectRef)); }
-
-    /// This method removes an existing daughter relation to the \p target object.
-    void unlinkMother(pxl::ObjectBase& target);
-    /// This method removes an existing daughter relation to the \p target object.
-    void unlinkDaughter(pxl::ObjectBase& target);
-
-    /// This method removes an existing mother relation to the object referred to by \p target.
-    inline void unlinkMother(pxl::WkPtrBase& target)   { if (target._objectRef) unlinkMother(*(target._objectRef)); }
-    /// This method removes an existing daughter relation to the object referred to by \p target.
-    inline void unlinkDaughter(pxl::WkPtrBase& target) { if (target._objectRef) unlinkDaughter(*(target._objectRef)); }
-
-    /// This method removes all existing mother relations.
-    void unlinkMothers();
-    /// This method removes all existing daughter relations.
-    void unlinkDaughters();
-
-    /// This method grants access to the layout information provided for visualization in VisualPxl.
-    inline pxl::Layout& layout()
-    {
-        if (!_ptrLayout)
-            _ptrLayout = new pxl::Layout;
-        return *_ptrLayout;
-    }
-
-    /// This virtual method recursively invokes its own and the print() methods of all daughter objects.
-    /// @param level verbosity level
-    /// @param os output stream, default is std::cout
-    /// @param pan print indention
-    /// @return output stream
-    std::ostream& printDecayTree(int level = 0, std::ostream& os = std::cout, int pan = 1) const;
-    
-    /// This virtual method is intended to print out object state information on various verbosity levels.
-    /// @param level verbosity level
-    /// @param os output stream, default is std::cout
-    /// @param pan print indention
-    /// @return output stream
-    virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
-
-    /// This method creates a weak pointer to itself and returns a pxl::WkPtrBase* to the newly created weak pointer instance. 
-    virtual pxl::WkPtrBase* createSelfWkPtr()
-    { pxl::exception("pxl::ObjectBase::createSelfWkPtr()", "ATTENTION! Inheriting class must reimplement this virtual method."); return 0; }
-
-  protected:
-    ObjectBase() :
-        _refWkPtrSpec(0),
-        _refObjectOwner(0),
-        _motherRelations(),
-        _daughterRelations(),
-        _ptrLayout(0) {}
-
-    ObjectBase(const ObjectBase& original) :
-        _refWkPtrSpec(0),
-        _refObjectOwner(0),
-        _motherRelations(),
-        _daughterRelations(),
-        _ptrLayout(0)
-    {
-        if (original._ptrLayout)
-            _ptrLayout = new pxl::Layout;
-    }
-
-    virtual void storeYourSelf(pxl::oStreamer& output) const
-    { pxl::exception("pxl::ObjectBase::storeYourSelf()", "ATTENTION! Inheriting class must reimplement this virtual method."); }
-
-    std::ostream& printPan1st(std::ostream& os, int pan) const;
-    std::ostream& printPan(std::ostream& os, int pan) const;
-
-    pxl::WkPtrBase*   _refWkPtrSpec;
-    pxl::ObjectOwner* _refObjectOwner;
-
-    pxl::Relations _motherRelations;
-    pxl::Relations _daughterRelations;
-
-    pxl::Layout* _ptrLayout;
-
-  friend class WkPtrBase;
-  template<class keytype>
-  friend class WkPtrOwner;
-  friend class ObjectOwner; 
-      
-  friend class iStreamer;
-  friend class oStreamer;
-};
-
-} // namespace pxl
-
-// ptl operators
-
-std::ostream& operator<<(std::ostream& cxxx, const pxl::ObjectBase& obj);
-
-// FIXME: template methods for WkPtrOwner
-namespace pxl {
-
-template<class keytype>
-void WkPtrOwner<keytype>::clearContainer()
-{
-    for(StlConstIterator iter = PtlMap::_container.begin();
-        iter != PtlMap::_container.end(); iter++)
-        delete iter->second;
-    PtlMap::_container.clear();
-}
-
-template<class keytype>
-void WkPtrOwner<keytype>::set(const keytype& key, pxl::ObjectBase& obj)
-{
-    WkPtrOwner<keytype>::remove(key);
-    PtlMap::set(key, obj.createSelfWkPtr());
-}
-
-} // namespace pxl
-
-#endif // pxl_ptl_ObjectBase_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Object_hh
-#define pxl_ptl_Object_hh
-
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_WkPtr_hh
-#define pxl_ptl_WkPtr_hh
-
-
-namespace pxl {
-
-// ptl
-
-template<class datatype>
-class Object;
-
-/** 
-This class template is a weak pointer to pxl::Object instances; 
-it inherits methods and operators to directly access the data
-aggregated in the referenced pxl::Object objects.   
-Read/write access is granted by the methods get() and set() as well as by 
-the bracket operator.   
-Using the assignment operator one acts directly on the aggregated data. 
-This class is used to define the pxl::EventViewWkPtr, for instance.
-*/
-template<class datatype>
-class WkPtr : public pxl::WkPtrSpec<datatype, pxl::Object<datatype> > {
-  public:
-    WkPtr() :
-    	pxl::WkPtrSpec<datatype, pxl::Object<datatype> >() {}
-    WkPtr(pxl::Object<datatype>* ptr) :
-        pxl::WkPtrSpec<datatype, pxl::Object<datatype> >(ptr) {}
-    WkPtr(pxl::Object<datatype>& object) :
-        pxl::WkPtrSpec<datatype, pxl::Object<datatype> >(object) {}
-    WkPtr(const pxl::WkPtrSpec<datatype, pxl::Object<datatype> >& original) :
-        pxl::WkPtrSpec<datatype, pxl::Object<datatype> >(original) {}
-
-    /// This method attempts a dynamic cast on the referenced object
-    static inline WkPtr<datatype>* cast_dynamic(WkPtrBase* orig)
-    { return reinterpret_cast<WkPtr<datatype>*>(pxl::WkPtrSpec<datatype, pxl::Object<datatype> >::cast_dynamic(orig)); }
-};
-
-} // namespace pxl
-
-
-#endif // pxl_ptl_WkPtr_hh
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-/** 
-This class template aggregates arbitrary data (type \p datatype); it is able to manage mother-daughter 
-relations with other pxl::ObjectBase derivatives. 
-Read/write access to the aggregated data is granted by the methods get() and set() as well as by 
-the bracket operator. 
-Using the assignment operator one acts directly on the aggregated data. 
-The copy constructor of this class template copies the data to a 
-new instance with no relations.
-This class is used to define the pxl::EventView, for instance.
-*/
-template<class datatype>
-class Object : public pxl::ObjectBase {
-  public:
-    Object() : pxl::ObjectBase(), _data() {}
-    Object(const datatype& original) : pxl::ObjectBase(), _data(original) {}
-    Object(const pxl::Object<datatype>& original) :
-        pxl::ObjectBase(original), _data(original._data) {}
-    virtual ~Object() {}
-
-    /// This virtual method creates a deep copy and returns a C++ pointer to it.
-    virtual pxl::ObjectBase* clone() const { return new pxl::Object<datatype>(*this); }
-
-    /// This method grants read access to the aggregated data.
-    inline const datatype& get() const { return _data; }
-    /// This method grants write access to the aggregated data.
-    inline       datatype& set()       { return _data; }
-
-     /// This bracket operator grants read access to the aggregated data.
-    inline const datatype& operator()()                const { return get(); }
-     /// This bracket operator grants read access to the aggregated data.
-    inline const datatype& operator()(const pxl::Get&) const { return get(); }
-    /// This bracket operator grants write access to the aggregated data.
-    inline       datatype& operator()(const pxl::Set&)       { return set(); }
-
-    /// This assignment operator acts directly on the aggregated data.
-    inline pxl::Object<datatype>& operator=(const datatype& original)
-    { _data = original; return *this; }
-
-    /// This assignment operator acts directly on the aggregated data.
-    inline pxl::Object<datatype>& operator=(const pxl::Object<datatype>& original)
-    { _data = original._data; return *this; }
-
-    /// This virtual method is intended to print out object state information on various verbosity levels.
-    /// @param level verbosity level
-    /// @param os output stream, default is std::cout
-    /// @param pan print indention
-    /// @return output stream
-    virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const
-    {
-        os << "called by pxl::Object<...>: ";
-        return pxl::ObjectBase::print(level, os, pan);
-    }
-
-    virtual pxl::WkPtrBase* createSelfWkPtr()
-    { return new pxl::WkPtr<datatype>(*this); }
-
-  protected:
-    virtual void storeYourSelf(pxl::oStreamer& output) const;
-
-    datatype _data;
-
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
-};
-
-} // namespace pxl
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_oStreamer_hh
-#define pxl_iotl_oStreamer_hh
-
-#include <typeinfo>
-#include <sstream>
-
-
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_internal_hh
-#define pxl_iotl_internal_hh
-
-// defaults
-
-#define iotl__default__compressionMode '6'
-
-// file format
-
-#define iotl__eventMarker     "<E>"
-
-#endif // pxl_iotl_internal_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_TypeManager_hh
-#define pxl_iotl_TypeManager_hh
-
-
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_TypeIdKey_hh
-#define pxl_iotl_TypeIdKey_hh
-
-
-namespace pxl {
-
-/** 
-This PXL-internal class is used by the I/O type manager for fast string searching; 
-it carries the PXL invariant object- and data-id for a objecttype<datatype> combination 
-(such as pxl::Object<double>, for instance)
-*/ 
-class TypeIdKey {
-  public:
-    TypeIdKey(const std::string& objectTypeId, const std::string& dataTypeId) : 
-        _objectTypeId(objectTypeId), _dataTypeId(dataTypeId) {}
-
-    inline bool operator<(const pxl::TypeIdKey& other) const
-    {
-        if (_dataTypeId != other._dataTypeId)
-            return _dataTypeId < other._dataTypeId;
-        else
-            return _objectTypeId < other._objectTypeId;
-    }
-
-    inline bool operator==(const pxl::TypeIdKey& other) const
-    {
-        return _dataTypeId   == other._dataTypeId &&
-               _objectTypeId == other._objectTypeId;
-    }
-
-    inline bool operator!=(const pxl::TypeIdKey& other) const
-    { return !(*this == other); }
-
-    // FIXME: why public?
-    const std::string& _objectTypeId;
-    const std::string& _dataTypeId;
-
-  private:
-    TypeIdKey();
-};
-
-} // namespace pxl
-
-#endif // pxl_iotl_TypeIdKey_hh
-
-namespace pxl {
-
-class TypeAgentBase;
-
-/** 
-This PXL-internal class represents the I/O type manager singleton for  
-storing and restoring PXL and user-defined objects/data.
-It holds two maps (one sorted by the pxl::TypeIdKey and one by the C++ class-id) 
-with pointers to pxl::TypeAgent specializations for all supported object/data types.  
-*/ 
-class TypeManager {
-  public:
-    /// This static method provides the singleton access.
-    static TypeManager& instance();
-
-    /// This method registers a type agent pointed to by \p agent. It is called by the constructor of the class pxl::TypeAgent.
-    void registerAgent(pxl::TypeAgentBase* agent);
-
-    /// This method stores the pxl::ObjectBase derivative \p obj to the given output stream.
-    /// For a unique identification of the correct type agent, the C++ class-id of obj must be specified in 
-    /// \p cppTypeId.   
-    void storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj, const std::string& cppTypeId) const;
-    /// This method restores the pxl::ObjectBase derivative \p obj from the given input stream.
-    /// and returns the persistent (=old) object-id.    
-    /// For a unique identification of the correct type agent, the C++ class-id of obj must be specified in 
-    /// \p cppTypeId.   
-    pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj, const std::string& cppTypeId) const;
-    /// This method restores the pxl::ObjectBase derivative obj from the given input stream.
-    /// For a unique identification of the correct type agent, the PXL invariant object- and data-id of \p obj 
-    /// must be specified in the parameters \p objectTypeId and \p dataTypeId.   
-    /// It allocates memory for the new instance, 
-    /// makes the pxl::ObjectBase pointer \p (*ppobj) point to this instance,  
-    /// restores the object from the given input stream
-    /// and returns the persistent (=old) object-id.    
-    pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj, const std::string& objectTypeId, const std::string& dataTypeId) const;
-
-  protected:
-    TypeManager() {} // locked for singletons
-    ~TypeManager() {} // locked for singletons
-
-    pxl::Map<TypeIdKey, TypeAgentBase*>   _agentsByIotlTypeId;
-    pxl::Map<std::string, TypeAgentBase*> _agentsByCppTypeId;
-
-  private:
-    TypeManager(const TypeManager&); // locked for singletons
-    TypeManager& operator=(const TypeManager&); // locked for singletons
-
-    static TypeManager* _instance;
-};
-
-} // namespace pxl
-
-#endif // pxl_iotl_TypeManager_hh
-
-namespace pxl {
-
-// iotl
-
-/**
-This class template provides event-by-event data storage to STL streams; 
-it inherits from pxl::BasicIoStreamer ( = pxl::BasicLinuxIoStreamer).
-This class provides an event buffer to which PXL objects or data can 
-be stored using storeObject() and storeData(). The method getEvent()
-can be called at the end of each event to have the buffer compressed 
-(by ZLIB), streamed into a standard STL stream and finally cleared. 
-*/
-class oStreamer : public pxl::BasicIoStreamer {
-  public:
-    oStreamer() : pxl::BasicIoStreamer(), _buffer() {}
-    ~oStreamer() {}
-
-    /// This method can be called at the end of each event to have the 
-    /// event buffer compressed, streamed to \p cxxx and finally cleared.
-    /// An optional information string \p info can be provided for filtered restoring of the data with the pxl::iStreamer::putEventIf() method.
-    /// The optional \p compressionMode identifier can be '6' for ZLIB level 6 compression or ' ' for no compression.  
-    void getEvent(std::ostream& cxxx, const std::string& info="", char compressionMode = iotl__default__compressionMode);
-
-    /// This method template stores the pxl::ObjectBase derivative \p obj of the known type \p objecttype to the event buffer.
-    template<class objecttype>
-    void storeObject(const objecttype& obj)
-    { pxl::TypeManager::instance().storeObject(*this, obj, typeid(obj).name()); }
-
-    /// This method stores an unknown (abstract) pxl::ObjectBase derivative \p obj to the event buffer.
-    inline void storeAbstractObject(const pxl::ObjectBase& data)
-    { data.storeYourSelf(*this); }
-
-    /// This method template stores the \p data of \p datatype to the event buffer.
-    template<class datatype>
-    void storeData(const datatype& data);
-    /// This method stores the contents of a pxl::Vector to the event buffer.
-    template<class itemtype>
-    void storeData(const pxl::Vector<itemtype>& vector);
-    /// This method stores the contents of a pxl::Map to the event buffer.
-    template<class keytype, class itemtype>
-    void storeData(const pxl::Map<keytype, itemtype>& map);
-
-    /// This internal method stores a type-id to the event buffer.
-    inline void storeTypeId(const char* typeId)
-    { pxl::BasicIoStreamer::storeBasicTypeCStr(_buffer, typeId); }
-    /// This internal method stores a type-id to the stream \p cxxx.
-    inline void storeTypeId(std::ostream& cxxx, const char* typeId)
-    { pxl::BasicIoStreamer::storeBasicTypeCStr(cxxx, typeId); }
-
-  protected:
-    inline void storeId(pxl::Id& id)
-    { storeMemory((const char*)&id, 4); } // FIXME: endianess/64bit
-    inline void storeMemory(const char* address, int bytes)
-    { pxl::BasicIoStreamer::dumpMemory(_buffer, address, bytes); }
-
-    std::stringstream _buffer;
-};
-
-// template methods
-
-template<class itemtype>
-void oStreamer::storeData(const pxl::Vector<itemtype>& vector)
-{
-    typedef typename pxl::Vector<itemtype>::StlConstIterator PtlVectorConstIterator;
-
-    storeData<int>(vector.getSize());
-    for(PtlVectorConstIterator iter = vector.begin();
-        iter != vector.end(); iter++)
-        storeData<itemtype>(*iter);
-}
-
-template<class keytype, class itemtype>
-void oStreamer::storeData(const pxl::Map<keytype, itemtype>& map)
-{
-    typedef typename pxl::Map<keytype, itemtype>::StlConstIterator PtlMapConstIterator;
-
-    storeData<int>(map.getSize());
-    for(PtlMapConstIterator iter = map.begin();
-        iter != map.end(); iter++) {
-
-        storeData<keytype>(iter->first);
-        storeData<itemtype>(iter->second);
-    }
-}
-
-template<> void oStreamer::storeData<pxl::ObjectOwner>(const pxl::ObjectOwner& objects);
-
-} // namespace pxl
-
-#endif // pxl_iotl_oStreamer_hh
-
-namespace pxl {
-
-// template methods
-
-template<class datatype>
-void pxl::Object<datatype>::storeYourSelf(pxl::oStreamer& output) const
-{ output.storeObject(*this); }
-
-#define PCL_PRINT_NATIVE(type) \
-template<> \
-std::ostream& Object<type>::print(int level, std::ostream& os, int pan) const;
-
-PCL_PRINT_NATIVE(int)
-PCL_PRINT_NATIVE(unsigned int)
-PCL_PRINT_NATIVE(bool)
-PCL_PRINT_NATIVE(double)
-PCL_PRINT_NATIVE(float)
-
-#undef PCL_PRINT_NATIVE
-
-} // namespace pxl
-
-#endif // pxl_ptl_Object_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_ptl_ObjectOwner_hh
 #define pxl_ptl_ObjectOwner_hh
 
 
 
-namespace pxl {
 
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
 
 // ptl
 
 /** 
-This class is an active container for pxl::ObjectBase derivatives, such as 
-pxl::Object, pxl::CowObject, pxl::Particle or pxl::EventView; 
-it has the ownership and deletion responsability for the contained objects. 
-The method template create() can be used to create derivatives 
-of pxl::ObjectBase within object owners. The method set() can be 
-used to manually add objects, has() tests object ownerships, and 
-remove() explicitely removes objects from the owner and deletes them.
-The copy constructor of the class pxl::ObjectOwner also produces copies of 
-the contained objects, and re-establishes corresponding mother-daughter relations 
-amongst the copied objects. For the convenience of a quick and targeted object access, the
-newly created owner carries a so-called copy history for mapping original and 
-copied objects. This information is used by the findCopyOf() method:
-provided a reference to the original object, this method returns a pointer to the copied object.
-A further, powerful tool for targeted object access is the so-called index, which
-allows to map objects to unique string identifiers, the index-id. The method findObject() 
-can be used, to directly access objects by their index-ids or object-ids.
-The pxl::ObjectOwner extends the functionality of the specialized class 
-template pxl::Vector. It provides a selective iterator, the class template 
-pxl::ObjectOwner::TypeIterator, that ignores all objects other than the 
-specialized data type. 
-For the convenience of an easy-to-read syntax, we provide a C++ typedef to pxl::Objects. 
-*/
-class ObjectOwner : public pxl::Vector<pxl::ObjectBase*> {
-  public:
-    ObjectOwner();
-    /// This copy constructor performs a deep copy of object 
-    /// owner \p original and all contained objects with (redirected) relations.
-    /// A copy history keeps track of originals and copies
-    /// and the findCopyOf() method allows quick access to the copies. 
-    ObjectOwner(const pxl::ObjectOwner& original);
-    /// This destructor deletes all contained objects.
-    virtual ~ObjectOwner() { pxl::ObjectOwner::clearContainer(); }
+ This class is an active container for pxl::Relative derivatives, such as 
+ pxl::Vertex, pxl::Particle or pxl::EventView; 
+ it has the ownership and deletion responsability for the contained objects. 
+ The method template create() can be used to create derivatives 
+ of pxl::Relative within object owners. The method set() can be 
+ used to manually add objects, has() tests object ownerships, and 
+ remove() explicitely removes objects from the owner and deletes them.
+ The copy constructor of the class pxl::ObjectOwner also produces copies of 
+ the contained objects, and re-establishes corresponding mother-daughter relations 
+ amongst the copied objects. For the convenience of a quick and targeted object access, the
+ newly created owner carries a so-called copy history for mapping original and 
+ copied objects. This information is used by the findCopyOf() method:
+ provided a reference to the original object, this method returns a pointer to the copied object.
+ A further, powerful tool for targeted object access is the so-called index, which
+ allows to map objects to unique string identifiers, the index-id. The method findObject() 
+ can be used to directly access objects by their index-ids or object-ids.
+ The pxl::ObjectOwner extends the functionality of the contained STL vector. It provides a selective iterator, the class template 
+ pxl::ObjectOwner::TypeIterator, that ignores all objects other than the 
+ specialized data type. 
+ */
+class ObjectOwner
+{
+public:
+	ObjectOwner() :
+		_container(), _copyHistory(), _index(), _uuidSearchMap()
+	{
+	}
+	/// This copy constructor performs a deep copy of object 
+	/// owner \p original and all contained objects with (redirected) relations.
+	/// A copy history keeps track of originals and copies
+	/// and the findCopyOf() method allows quick access to the copies. 
+	ObjectOwner(const pxl::ObjectOwner& original) :
+		_container(), _copyHistory(), _index(), _uuidSearchMap()
+	{
+		this->init(original);
+	}
 
-    /// This method template creates a new instance of \p objecttype;
-    /// objecttype must be a class inheriting from pxl::ObjectBase;
-    /// the newly created instance is owned and will be deleted by this object owner. 
-    template<class objecttype>
-    inline objecttype& create()
-    {
-        objecttype* pitem = new objecttype;
-        pitem->_refObjectOwner = this;
-        _container.push_back(static_cast<pxl::ObjectBase*>(pitem));
-        return *pitem;
-    }
+	/// This copy constructor performs a deep copy of object 
+	/// owner \p original and all contained objects with (redirected) relations.
+	/// A copy history keeps track of originals and copies
+	/// and the findCopyOf() method allows quick access to the copies. 
+	ObjectOwner(const pxl::ObjectOwner* original) :
+		_container(), _copyHistory(), _index(), _uuidSearchMap()
+	{
+		this->init(*original);
+	}
+	/// This destructor deletes all contained objects.
+	virtual ~ObjectOwner()
+	{
+		pxl::ObjectOwner::clearContainer();
+	}
 
-    /// This method template creates a copy of \p original by invoking the copy constructor of \p objecttype; 
-    /// \p objecttype must be a class inheriting from pxl::ObjectBase;
-    /// the newly created instance is owned and will be deleted by this object owner. 
-    template<class objecttype>
-    inline objecttype& create(const objecttype& original)
-    {
-        objecttype* pitem = new objecttype(original);
-        pitem->_refObjectOwner = this;
-        _container.push_back(static_cast<pxl::ObjectBase*>(pitem));
-        return *pitem;
-    }
+	virtual void serialize(const OutputStream &out) const;
 
-    /// This method template creates a new \p objecttype instance by invoking a \p ctrtype overloaded constructor; 
-    /// \p objecttype must be a class inheriting from pxl::ObjectBase;
-    /// the newly created instance is owned and will be deleted by this object owner. 
-    template<class objecttype, class ctrtype>
-    inline objecttype& create(const ctrtype& original)
-    {
-        objecttype* pitem = new objecttype(original);
-        pitem->_refObjectOwner = this;
-        _container.push_back(static_cast<pxl::ObjectBase*>(pitem));
-        return *pitem;
-    }
+	virtual void deserialize(const InputStream &in);
 
-    /// This method inserts \p item in the container of this object owner and takes deletion responsability.
-    void set(pxl::ObjectBase& item);
-    /// This method deletes \p item.
-    void remove(pxl::ObjectBase& item);
-    /// This method returns true, if \p item is owned by this object owner.
-    bool has(const pxl::ObjectBase& item) const;
+	/// This method template creates a new instance of \p objecttype;
+	/// objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by this object owner. 
+	template<class objecttype> objecttype* create()
+	{
+		objecttype* pitem = new objecttype;
+		pitem->_refObjectOwner = this;
+		_container.push_back(static_cast<pxl::Relative*>(pitem));
+		_uuidSearchMap.insert(std::pair<pxl::Id, pxl::Relative*>(pitem->getId(), pitem));
+		return pitem;
+	}
 
-    /// This method clears the object owner and deletes all owned objects. 
-    virtual void clearContainer();
+	/// This method template creates a copy of \p original by invoking the copy constructor of \p objecttype; 
+	/// \p objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by this object owner. 
+	template<class objecttype> objecttype* create(
+	const objecttype* original)
+	{
+		objecttype* pitem = new objecttype(*original);
+		pitem->_refObjectOwner = this;
+		_container.push_back(static_cast<pxl::Relative*>(pitem));
+		_uuidSearchMap.insert(std::pair<pxl::Id, pxl::Relative*>(pitem->getId(), pitem));
+		return pitem;
+	}
 
-    /// This method searches the index for the index-id \p idx and returns a dynamically casted 
-    /// C++ pointer of type \p objecttype* to the corresponding object; 
-    /// in case idx is not found a null pointer is returned.
-    template<class objecttype>
-    inline objecttype* findObject(const std::string& idx) const	// goes via Index & casts
-    { return dynamic_cast<objecttype*>(_index.find(idx, 0)); }
+	/// This method template creates a new \p objecttype instance by invoking a \p ctrtype overloaded constructor; 
+	/// \p objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by this object owner. 
+	template<class objecttype, class ctrtype> objecttype* create(
+	const ctrtype& original)
+	{
+		objecttype* pitem = new objecttype(*original);
+		pitem->_refObjectOwner = this;
+		_container.push_back(static_cast<pxl::Relative*>(pitem));
+		_uuidSearchMap.insert(std::pair<pxl::Id, pxl::Relative*>(pitem->getId(), pitem));
+		return pitem;
+	}
 
-    /// This method searches the copy history to locate the copy of \p original and 
-    /// returns a dynamically casted C++ pointer of type \p objecttype* to the corresponding copy; 
-    /// in case no copy can be traced a null pointer is returned.
-    template<class objecttype>
-    inline objecttype* findCopyOf(const pxl::ObjectBase& original) const // goes via CopyHistory & casts
-    { return dynamic_cast<objecttype*>(_copyHistory.find(original.id(), 0)); }    
+	/// This method inserts \p item in the container of this object owner and takes deletion responsability.
+	void set(pxl::Relative* item);
+	/// This method deletes \p item.
+	void remove(pxl::Relative* item);
+	/// This method returns true if \p item is owned by this object owner.
+	bool has(const pxl::Relative* item) const;
 
-    /// This method provides direct access to the copy history (created by the copy constructor). 
-    inline const pxl::CopyHistory& getCopyHistory() const { return _copyHistory; }
-    /// This method clears the copy history  (created by the copy constructor). 
-    inline void clearCopyHistory() { _copyHistory.clearContainer(); }
+	/// This method clears the object owner and deletes all owned objects. 
+	void clearContainer();
 
-    /// This method registers the object \p obj with the index-id \p idx in the index and returns true in case of success;
-    /// please notice, that \p obj must be owned by this object owner and \p idx must not be a zero length string.  
-    inline bool setIndex(const std::string& idx, pxl::ObjectBase& obj)
-    {
-        if (!idx.length() || !has(obj))
-            return false;
-        _index.set(idx, &obj);
-        return true;
-    }
+	/// This method searches the index for the index-id \p idx and returns a dynamically casted 
+	/// C++ pointer of type \p objecttype* to the corresponding object; 
+	/// in case idx is not found a null pointer is returned.
+	template<class objecttype> inline objecttype* findObject(
+	const std::string& idx) const // goes via Index & casts
 
-    /// This method provides direct access to the index. 
-    inline const pxl::Index& getIndex() const { return _index; }
-    /// This method removes the index entry with index-id \p idx; please notice: it does not remove the object itself. 
-    inline void removeIndex(const std::string& idx) { _index.remove(idx); }
-    /// This method clears the index; please notice: it does not remove the objects themselves.
-    inline void clearIndex() { _index.clearContainer(); }
+	{
+		pxl::Index::const_iterator it = _index.find(idx);
+		if (it!=_index.end())
+		return dynamic_cast<objecttype*>(it->second);
+		return 0;
+	}
 
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /// For PXL-style iteration: PXL iterator class 
-    class Iterator {
-      public:
-        /// Go-to constructor moves iterator to the same positon as \p original. 
-        Iterator(const pxl::ObjectOwner::Iterator& original) :
-            _iter(original._iter), _containerRef(original._containerRef) {}
- 
-        /// Standard constructor moves iterator to the beginning of \p vector. 
-        Iterator(const pxl::ObjectOwner& vector) :
-            _containerRef(&vector) { first(); }
+	inline pxl::Relative* findObject(const std::string& idx) const
+	{
+		pxl::Index::const_iterator it = _index.find(idx);
+		if (it!=_index.end())
+		return it->second;
+		return 0;
+	}
 
-        /// This method moves the iterator to the beginning of the vector. 
-        inline void first()  { _iter = _containerRef->begin(); }
-        /// This method moves the iterator to the next pair in the vector. 
-        inline void next()   { _iter++; }
-         /// This method returns true, if the iterator hit upper or lower boundary of the vector. 
-        inline bool isDone() { return _iter == _containerRef->end(); }
+	pxl::Relative* getById(pxl::Id id) const
+	{
+		std::map<pxl::Id, pxl::Relative*>::const_iterator found = _uuidSearchMap.find(id);
+		if ( found != _uuidSearchMap.end() )
+		return found->second;
+		return 0;
+	}
 
-        /// This method returns the current item, thus a C++ pointer of type pxl::ObjectBase* to the object; see also the object() method. 
-        inline pxl::ObjectBase* item() { return *_iter; }
-        /// This method returns a pxl::ObjectBase reference to the current object. 
-        inline pxl::ObjectBase& object() { return *item(); }
+	/// This method searches the copy history to locate the copy of \p original and 
+	/// returns a dynamically casted C++ pointer of type \p objecttype* to the corresponding copy; 
+	/// in case no copy can be traced a null pointer is returned.
+	template<class objecttype> objecttype* findCopyOf(
+	const pxl::Relative* original) const // goes via CopyHistory & casts
 
-      private:
-        Iterator() : _containerRef(0) {;}
+	{
+		pxl::CopyHistory::const_iterator it = _copyHistory.find(original->id());
+		if (it!=_copyHistory.end())
+		return dynamic_cast<objecttype*>(it->second);
+		return 0;
+	}
 
-        StlConstIterator    _iter;
-        const pxl::ObjectOwner* _containerRef;
-    };
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    /// For PXL-style iteration: PXL iterator class template; 
-    /// this iterator behaves like a normal PXL iterator but ignores all objects 
-    /// that cannot be interpreted as type objecttype (tested by dynamic casts). 
-    template<class objecttype>
-    class TypeIterator {
-      public:
-        /// Go-to constructor moves iterator to the same positon as the original. 
-        TypeIterator(const pxl::ObjectOwner::TypeIterator<objecttype>& original) :
-            _iter(original._iter), _containerRef(original._containerRef) {}
+	/// This method provides direct access to the copy history (created by the copy constructor). 
+	inline const pxl::CopyHistory& getCopyHistory() const
+	{
+		return _copyHistory;
+	}
+	/// This method clears the copy history  (created by the copy constructor). 
+	inline void clearCopyHistory()
+	{
+		_copyHistory.clear();
+	}
 
-        /// Standard constructor moves iterator to the beginning of the vector of \p oo. 
-        TypeIterator(const pxl::ObjectOwner& oo) :
-            _containerRef(&oo) { first(); }
+	/// This method registers the object \p obj with the index-id \p idx in the index and returns true in case of success; 
+	/// in case the index string is present, by default an error message is given. A bool can be set which allows overwriting.
+	/// Please notice that \p obj must be owned by this object owner and \p idx must not be a zero length string.  
+	bool setIndex(const std::string& idx, pxl::Relative* obj, bool overwrite = false);
 
-        /// This method moves the iterator to the beginning of the vector. 
-        inline void first()  { for(_iter = _containerRef->begin(); !tryItem(); _iter++); }
-        /// This method moves the iterator to the next pair in the vector. 
-        inline void next()   { do _iter++; while(!tryItem()); }
-          /// This method returns true, if the iterator hit upper or lower boundary of the vector. 
-        inline bool isDone() { return _iter == _containerRef->end(); }
+	/// This method provides direct read access to the index. 
+	inline const pxl::Index& getIndex() const
+	{
+		return _index;
+	}
+	/// This method removes the index entry with index-id \p idx; please notice: it does not remove the object itself. 
+	inline void removeIndex(const std::string& idx)
+	{
+		_index.erase(idx);
+	}
+	/// This method clears the index; please notice: it does not remove the objects themselves.
+	inline void clearIndex()
+	{
+		_index.clear();
+	}
 
-        /// This method returns the current item, thus a C++ pointer of type \p objecttype* to the object; see also the object() method. 
-        inline objecttype* item() { return dynamic_cast<objecttype*>(*_iter); }
-        /// This method returns a objecttype reference to the current object. 
-        inline objecttype& object() { return *item(); }
- 
-      private:
-        TypeIterator() : _containerRef(0) {}
+	/// This method allows read access to the contained STL vector of Relative pointers to, e.g., use STL algorithms.
+	const std::vector<pxl::Relative*>& getObjects() const
+	{
+		return _container;
+	}
 
-        inline bool tryItem()
-        {
-            if (isDone()) return true;
-            return dynamic_cast<objecttype*>(*_iter) != 0;
-        }
+	/// Typedef for standard const_iterator.
+	typedef std::vector<pxl::Relative*>::const_iterator const_iterator;
+	typedef std::vector<pxl::Relative*>::iterator iterator;
 
-        StlConstIterator    _iter;
-        const pxl::ObjectOwner* _containerRef;
-    };
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	/// This returns the const iterator to the first element of the contained vector.  
+	inline const_iterator begin() const
+	{
+		return _container.begin();
+	}
 
-  protected:
-    pxl::CopyHistory _copyHistory;
-    pxl::Index       _index;
+	/// This returns the iterator to the first element of the contained vector.  
+	inline iterator begin()
+	{
+		return _container.begin();
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
+	/// This returns the const iterator to the end of the contained vector.
+	inline const_iterator end() const
+	{
+		return _container.end();
+	}
+
+	/// This returns the iterator to the end of the contained vector.
+	inline iterator end()
+	{
+		return _container.end();
+	}
+
+	/// Returns the number of elements the ObjectOwner holds.
+	inline unsigned int size() const
+	{
+		return _container.size();
+	}
+
+	/// Fills into the passed vector weak pointers to the objects of the type specified by the template argument.
+	template<class objecttype> int getObjectsOfType(std::vector<objecttype*>& vec) const
+	{
+		int size = vec.size();
+		for (pxl::ObjectOwner::const_iterator iter = begin(); iter!=end(); ++iter)
+		{
+			objecttype* obj = dynamic_cast<objecttype*>(*iter);
+			if (obj!=0)
+			vec.push_back(obj);
+		}
+		return vec.size()-size;
+	}
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	/// For STL-style iteration on selective class: iterator class template; 
+	/// this iterator behaves like a normal STL iterator but ignores all objects 
+	/// that cannot be interpreted as type objecttype (tested by dynamic casts).
+	/// Use in STL-style, except that either begin gets the objecttype class as template argument,
+	/// or a constructor of the TypeIterator is used.
+	template<class objecttype> class TypeIterator
+	{
+	public:
+		/// Copy constructor.	
+		TypeIterator(const TypeIterator& other) :
+		_containerRef(other._containerRef), _iter(other._iter)
+		{
+		}
+
+		/// Constructor from ObjectOwner instance.
+		TypeIterator(const pxl::ObjectOwner* container) :
+		_containerRef(container), _iter(container->begin())
+		{
+			if ( dynamic_cast<objecttype*>(*_iter)==0)
+			(*this)++;
+		}
+
+		const TypeIterator operator++(int)
+		{
+			TypeIterator orig = *this;
+			if (_iter!=_containerRef->end())
+			do
+			_iter++;
+			while (_iter!=_containerRef->end()
+			&& dynamic_cast<objecttype*>(*_iter)==0);
+			return orig;
+		}
+
+		const TypeIterator& operator++()
+		{
+			if (_iter!=_containerRef->end())
+			do
+			_iter++;
+			while (_iter!=_containerRef->end()
+			&& dynamic_cast<objecttype*>(*_iter)==0);
+			return *this;
+		}
+
+		inline objecttype* operator*()
+		{
+			return _iter==_containerRef->end() ? 0
+			: dynamic_cast<objecttype*>(*_iter);
+		}
+
+		inline bool operator==(pxl::ObjectOwner::const_iterator iter)
+		{
+			return (_iter==iter);
+		}
+
+		inline bool operator!=(pxl::ObjectOwner::const_iterator iter)
+		{
+			return (_iter!=iter);
+		}
+
+	private:
+		const pxl::ObjectOwner* _containerRef;
+		pxl::ObjectOwner::const_iterator _iter;
+	};
+
+	/// This templated method provides an STL-style begin()-method to
+	/// initialise the TypeIterator.
+	template<class objecttype> const TypeIterator<objecttype> begin() const
+	{
+		TypeIterator<objecttype> it(this);
+		return it;
+	}
+
+private:
+	void init(const pxl::ObjectOwner& original);
+
+	std::vector<pxl::Relative*> _container;
+	pxl::CopyHistory _copyHistory;
+	pxl::Index _index;
+	std::map<pxl::Id, pxl::Relative*> _uuidSearchMap;
+
 };
 
 } // namespace pxl
 
 #endif // pxl_ptl_ObjectOwner_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_Objects_hh
-#define pxl_ptl_Objects_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-
-namespace pxl {
-
-/// For the convenience of an easy-to-read syntax, we provide this C++ typedef from pxl::ObjectOwner. 
-typedef ObjectOwner Objects;
-/// This typedef defines a reference for pxl::Objects
-typedef Objects& ObjectsRef;
-/// This typedef defines a const reference for pxl::Objects
-typedef const Objects& ObjectsConstRef;
-
-
-} // namespace pxl
-
-#endif // pxl_ptl_Objects_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_CowObject_hh
-#define pxl_ptl_CowObject_hh
-
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_CowWkPtr_hh
-#define pxl_ptl_CowWkPtr_hh
-
-
-namespace pxl {
-
-// ptl
-
-template<class datatype>
-class CowObject;
-
-/** 
-This class template is a weak pointer to pxl::CowObject instances; 
-it inherits methods and operators to directly access the data
-aggregated in the referenced pxl::CowObject objects.   
-Read/write access is granted by the methods get() and set() as well as by 
-the bracket operator.  
-Using the assignment operator one acts directly on the aggregated data. 
-This class is used to define the pxl::ParticleWkPtr, for instance.
-*/
-template<class datatype>
-class CowWkPtr : public pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> > {
-  public:
-    CowWkPtr() :
-    	pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >() {}
-    CowWkPtr(pxl::CowObject<datatype>* ptr) :
-        pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >(ptr) {}
-    CowWkPtr(pxl::CowObject<datatype>& object) :
-        pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >(object) {}
-    CowWkPtr(const pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >& original) :
-        pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >(original) {}
-
-    /// This method attempts a dynamic cast on the referenced object
-    static inline CowWkPtr<datatype>* cast_dynamic(WkPtrBase* orig)
-    { return reinterpret_cast<CowWkPtr<datatype>*>(pxl::WkPtrSpec<datatype, pxl::CowObject<datatype> >::cast_dynamic(orig)); }
-};
-
-} // namespace pxl
-
-
-#endif // pxl_ptl_CowWkPtr_hh
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-/** 
-This class template deploys a copy-on-write mechanism to aggregate arbitrary data (type \p datatype); 
-it is able to manage mother-daughter relations with other pxl::ObjectBase derivatives.  
-Read/write access to the aggregated data is granted by the methods get() and set() as well as by   
-the bracket operator. 
-Using the assignment operator one acts directly on the aggregated data. 
-The copy constructor of this class template creates 
-a new instance with no relations. It does *not* copy the aggregated data, that is placed in 
-a pxl::CowObject::DataSocket, but increases its reference counter by one. 
-Only upon write access, and if more than one object refers to this pxl::CowObject::DataSocket  
-instance, the data socket including data are acutally duplicated. 
-This class is used to define the pxl::Particle, for instance. 
-*/
-template<class datatype>
-class CowObject : public pxl::ObjectBase {
-  private:
-    class DataSocket {
-      public:
-        DataSocket() : _references(1) {}
-        DataSocket(const datatype& original) :
-            _references(1), _data(original) {}
-        DataSocket(const DataSocket& original) :
-            _references(1), _data(original._data) {}
-        virtual ~DataSocket() {}
-
-        // for deep copies
-        virtual DataSocket* clone() const { return new DataSocket(*this); }
-
-        // methods to grant data access
-        inline datatype& getData() { return _data; }
-        inline void setData(const datatype& object) { _data = object; }
-
-        unsigned int _references;
-        datatype     _data;
-
-      friend class pxl::iStreamer;
-      friend class pxl::oStreamer;
-    };
-
-  public:
-    CowObject() : pxl::ObjectBase() { _dataSocket = new DataSocket; }
-    CowObject(const datatype& original) : pxl::ObjectBase() { _dataSocket = new DataSocket(original); }
-    CowObject(const pxl::CowObject<datatype>& original) : pxl::ObjectBase(original)
-    { _dataSocket = original._dataSocket; _dataSocket->_references++; }
-    virtual ~CowObject() { dropDataSocket(); }
-
-    /// This virtual method creates a deep copy and returns a C++ pointer to it.
-    virtual pxl::ObjectBase* clone() const { return new pxl::CowObject<datatype>(*this); }
-
-    /// This method grants read access to the aggregated data.
-    inline const datatype& get() const { return _dataSocket->getData(); }
-    
-    /// This method grants write access to the aggregated data; 
-    /// if necessary, the copy-on-write mechanism performs a deep copy of the aggregated data first. 
-    inline datatype& set()
-    {
-        if (_dataSocket->_references > 1) {
-            _dataSocket->_references--;
-            _dataSocket = new DataSocket(*_dataSocket);
-        }
-        return _dataSocket->getData(); 
-    }
-
-    /// This bracket operator grants read access to the aggregated data.
-    inline const datatype& operator()()                const { return get(); }
-    /// This bracket operator grants read access to the aggregated data.
-    inline const datatype& operator()(const pxl::Get&) const { return get(); }
-    /// This bracket operator grants write access to the aggregated data; 
-    /// if necessary, the copy-on-write mechanism performs a deep copy of the aggregated data first. 
-    inline       datatype& operator()(const pxl::Set&)       { return set(); }
-
-    /// This assignment operator acts directly on the aggregated data.
-    inline pxl::CowObject<datatype>& operator=(const datatype& original)
-    {
-        dropDataSocket();
-        _dataSocket = new DataSocket(original);
-        return *this;
-    }
-
-    /// This assignment operator acts directly on the aggregated data.
-    inline pxl::CowObject<datatype>& operator=(const pxl::CowObject<datatype>& original)
-    {
-        dropDataSocket();
-        _dataSocket = original._dataSocket;
-        _dataSocket->_references++;
-        return *this;
-    }
-
-    /// This virtual method is intended to print out object state information on various verbosity levels.
-    /// @param level verbosity level
-    /// @param os output stream, default is std::cout
-    /// @param pan print indention
-    /// @return output stream
-    virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const
-    {
-        os << "called by pxl::CowObject<...>: ";
-        return pxl::ObjectBase::print(level, os, pan);
-    }
-
-    virtual pxl::WkPtrBase* createSelfWkPtr()
-    { return new pxl::CowWkPtr<datatype>(*this); }
-
-  protected:
-    CowObject(DataSocket& original) : pxl::ObjectBase()
-    { _dataSocket = &original; _dataSocket->_references++; }
-
-    inline void dropDataSocket()
-    {
-        if (_dataSocket->_references-- == 1)
-            delete _dataSocket;
-    }
-
-    virtual void storeYourSelf(pxl::oStreamer& output) const;
-
-    DataSocket* _dataSocket;
-
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
-};
-
-} // namespace pxl
-
-
-namespace pxl {
-
-// template methods
-
-template<class datatype>
-void pxl::CowObject<datatype>::storeYourSelf(pxl::oStreamer& output) const
-{ output.storeObject(*this); }
-
-#define PCL_PRINT_NATIVE(type) \
-template<> \
-std::ostream& CowObject<type>::print(int level, std::ostream& os, int pan) const;
-
-PCL_PRINT_NATIVE(int)
-PCL_PRINT_NATIVE(unsigned int)
-PCL_PRINT_NATIVE(bool)
-PCL_PRINT_NATIVE(double)
-PCL_PRINT_NATIVE(float)
-
-#undef PCL_PRINT_NATIVE
-
-} // namespace pxl
-
-#endif // pxl_ptl_CowObject_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_SpyObject_hh
-#define pxl_ptl_SpyObject_hh
-
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_ptl_SpyWkPtr_hh
-#define pxl_ptl_SpyWkPtr_hh
-
-
-namespace pxl {
-
-// ptl
-
-template<class datatype>
-class SpyObject;
-
-/// This is an undocumented class under development. Usage deprecated. 
-template<class datatype>
-class SpyWkPtr : public pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> > {
-  public:
-    SpyWkPtr() : pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >() {}
-    SpyWkPtr(pxl::SpyObject<datatype>* ptr) :
-        pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >(ptr) {}
-    SpyWkPtr(pxl::SpyObject<datatype>& object) :
-        pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >(object) {}
-    SpyWkPtr(const pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >& original) :
-        pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >(original) {}
-
-    /// This method attempts a dynamic cast on the referenced object
-    static inline SpyWkPtr<datatype>* cast_dynamic(WkPtrBase* orig)
-    { return reinterpret_cast<SpyWkPtr<datatype>*>(pxl::WkPtrSpec<datatype, pxl::SpyObject<datatype> >::cast_dynamic(orig)); }
-};
-
-} // namespace pxl
-
-
-#endif // pxl_ptl_SpyWkPtr_hh
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
-// ptl
-
-/// This is an undocumented class under development. Usage deprecated. 
-template<class datatype>
-class SpyObject : public pxl::Object<pxl::Ptr<datatype> > {
-  public:
-    SpyObject() :
-        pxl::Object<pxl::Ptr<datatype> >() {}
-    SpyObject(datatype* original) :
-        pxl::Object<pxl::Ptr<datatype> >(pxl::Ptr<datatype>(original)) {}
-    SpyObject(const pxl::Ptr<datatype>& original) :
-        pxl::Object<pxl::Ptr<datatype> >(original) {}
-    SpyObject(const pxl::SpyObject<datatype>& original) :
-        pxl::Object<pxl::Ptr<datatype> >(original.get()) {}
-    virtual ~SpyObject() {}
-
-    // for deep copies:
-    virtual pxl::ObjectBase* clone() const { return new pxl::SpyObject<datatype>(*this); }
-
-    inline pxl::SpyObject<datatype>& operator=(datatype *original)
-    {
-        pxl::Object<pxl::Ptr<datatype> >::operator=(pxl::Ptr<datatype>(original));
-        return *this;
-    }
-    inline pxl::SpyObject<datatype>& operator=(const pxl::Ptr<datatype>& original)
-    {
-        pxl::Object<pxl::Ptr<datatype> >::operator=(original);
-        return *this;
-    }
-    inline pxl::SpyObject<datatype>& operator=(const pxl::SpyObject<datatype>& original)
-    {
-        pxl::Object<pxl::Ptr<datatype> >::operator=(pxl::Ptr<datatype>(original.get()));
-        return *this;
-    }
-
-    virtual std::ostream& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const
-    {
-        os << "called by pxl::SpyObject<...>: ";
-        return pxl::ObjectBase::print(level, os, pan);
-    }
-
-    virtual pxl::WkPtrBase* createSelfWkPtr()
-    { return new pxl::SpyWkPtr<datatype>(*this); }
-
-  protected:
-
-    virtual void storeYourSelf(pxl::oStreamer& output) const;
-
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
-};
-
-} // namespace pxl
-
-
-namespace pxl {
-
-// template methods
-
-template<class datatype>
-void SpyObject<datatype>::storeYourSelf(pxl::oStreamer& output) const
-{ output.storeObject(*this); }
-
-} // namespace pxl
-
-#endif // pxl_ptl_SpyObject_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_ptl_Filter_hh
 #define pxl_ptl_Filter_hh
 
+#include <algorithm>
 
 
-namespace pxl {
+namespace pxl
+{
 
-/** 
-This class template provides a sorted filter for PXL physics objects;
-it inherits from pxl::WkPtrOwner and can hold a list of weak pointers to 
-objects of type \p objecttype sorted by \p sorttype. The user can write
-his own filters by public inheritance from this class and reimplementation
-of the methods pass() and sort().  
-*/ 
-template<class objecttype, class sorttype>
-class Filter : public pxl::WkPtrOwner<int> {
-  public:
-    virtual ~Filter() {}
-
-  protected:
-    Filter() {}
-
-    /// This method returns true in case the object \p obj passes the filter criterion. 
-    virtual bool     pass(const objecttype& obj) const = 0;
-    /// This method returns the sort criterion of type \p sorttype. 
-    virtual sorttype sort(const objecttype& obj) const = 0;
-
-    /// This method applies the filter by running over the \p objects container and fills
-    /// itself with weak pointers to the objects passing the filter criteria.  
-    int apply(const pxl::ObjectOwner& objects)
-    {
-        typedef std::pair<sorttype,objecttype*>     LocalStlPair;
-        typedef std::multimap<sorttype,objecttype*> LocalStlMultiMap;
-
-        LocalStlMultiMap map;
-        // fill map:
-        for(pxl::Objects::TypeIterator<objecttype> iter(objects);
-            !iter.isDone(); iter.next()) {
-
-            if (!pass(iter.object()))
-                 continue;
-
-            map.insert(LocalStlPair(sort(iter.object()), iter.item()));
-        }
-
-        int position = 0;
-        clearContainer();
-        for(typename LocalStlMultiMap::const_iterator iterMap = map.begin();
-            iterMap != map.end(); ++iterMap)
-            set(position++, iterMap->second->createSelfWkPtr());
-
-        return position;   
-    }
+template<class comparetype> class Comparator
+{
+public:
+	virtual bool operator()(comparetype, comparetype) = 0;
+	virtual ~Comparator()
+	{
+	}
 };
 
-/// This typedef provides a PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::Iterator FilterIterator;
+template<class objecttype> class FilterCriterion
+{
+public:
+	virtual bool operator()(const objecttype&) const = 0;
+	virtual ~FilterCriterion()
+	{
+	}
+};
+
+/** 
+ This class template provides a sorted filter for PXL physics objects;
+ it handles objects of type \p objecttype sorted by \p sorttype. The user can write
+ his own filters by public inheritance from this class and reimplementation
+ of the methods pass() and sort().  
+ */
+template<class objecttype, class compare> class Filter
+{
+public:
+	virtual ~Filter()
+	{
+	}
+
+	/// This method applies the filter by running over the \p objects container and fills
+	/// the passed vector with pointers to the objects passing the filter criteria.
+	virtual int apply(const pxl::ObjectOwner* objects,
+			std::vector<objecttype*>& fillVector,
+			const FilterCriterion<objecttype>& criterion)
+	{
+		int size = fillVector.size();
+
+		// fill map:
+		for (pxl::ObjectOwner::TypeIterator<objecttype> iter(objects); iter
+				!=objects->end(); ++iter)
+		{
+			if (!criterion(*iter))
+				continue;
+			fillVector.push_back(*iter);
+		}
+		//<typename std::vector<objecttype*>::iterator, compare>
+		compare comp;
+		std::sort(fillVector.begin(), fillVector.end(), comp);
+		return fillVector.size()-size;
+	}
+
+};
 
 } // namespace pxl
 
 #endif // pxl_ptl_Filter_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_hh
-#define pxl_iotl_hh
-
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_iStreamer_hh
-#define pxl_iotl_iStreamer_hh
+#ifndef pxl_pol_UserRecord_hh
+#define pxl_pol_UserRecord_hh
 
 
 
 
+namespace pxl
+{
+/**
+ This class is intented to aggregate information complementary to data members in form
+ of string-variant pairs. 
+ All PXL physics objects own user records and provide methods for quick 
+ access to individual user record entries.
+ */
+class UserRecord
+{
 
-namespace pxl {
+private:
+	class DataSocket
+	{
+public:
+		DataSocket() :
+			_references(1)
+		{
+		}
+		DataSocket(const DataSocket& original) :
+			_references(1), _data(original._data)
+		{
+		}
+		DataSocket(const DataSocket* original) :
+			_references(1), _data(original->_data)
+		{
+		}
+		virtual ~DataSocket()
+		{
+		}
+
+		// for deep copies
+		virtual DataSocket* clone() const
+		{
+			return new DataSocket(this);
+		}
+
+		// methods to grant data access
+		inline std::map<std::string, pxl::Variant>* getData()
+		{
+			return &_data;
+		}
+		inline void setData(const std::map<std::string, pxl::Variant>* object)
+		{
+			_data = *object;
+		}
+
+		unsigned int _references;
+		std::map<std::string, pxl::Variant> _data;
+
+	}; //class Datasocket
+
+public:
+	typedef std::map<std::string, pxl::Variant> PtlMap;
+	typedef std::pair<std::string, pxl::Variant> StlPair;
+	typedef std::map<std::string, pxl::Variant>::const_iterator const_iterator;
+	typedef std::map<std::string, pxl::Variant>::iterator iterator;
+
+	UserRecord()
+	{
+		_dataSocket = new DataSocket;
+	}
+	UserRecord(const UserRecord& original)
+	{
+		_dataSocket = original._dataSocket;
+		_dataSocket->_references++;
+	}
+	UserRecord(const UserRecord* original)
+	{
+		_dataSocket = original->_dataSocket;
+		_dataSocket->_references++;
+	}
+	~UserRecord()
+	{
+		dropDataSocket();
+	}
+
+	void serialize(const OutputStream &out) const;
+	void deserialize(const InputStream &in);
+
+	/// This assignment operator acts directly on the aggregated data.
+	inline UserRecord& operator=(const UserRecord& original)
+	{
+		dropDataSocket();
+		_dataSocket = original._dataSocket;
+		_dataSocket->_references++;
+		return *this;
+	}
+
+	/// This method template inserts (or replaces) the user record indetified by \p key.
+	template<typename datatype> void set(const std::string& key,
+			const datatype& item)
+	{
+		pxl::Variant& value = findOrAlloc(key);
+		if (PXL_UNLIKELY(value.getType() != Variant::TYPE_NULL))
+			value.clear();
+
+		value.template init<datatype>();
+		value.template set<datatype>(item);
+	}
+
+	/// This method template searches and returns the user record item identified by \p key; \p defaultitem is returned in case the key is not found. 
+	template<typename datatype> datatype find(const std::string& key,
+			const datatype& defaultitem) const
+	{
+		const pxl::Variant* value = findOrReturn(key);
+		if (!value)
+			return defaultitem;
+		return value->template get<datatype>();
+	}
+
+	/// This method template searches and returns the user record item indetified by \p key; a pxl::Exception is thrown in case the key is not found. 
+	template<typename datatype> datatype find(const std::string& key) const
+			throw (std::runtime_error)
+	{
+		const pxl::Variant* value = findOrReturn(key);
+		if (!value)
+			throw std::runtime_error("pxl::UserRecord::find(...): key not found and no default item provided");
+		return value->template get<datatype>();
+	}
+
+	/// This method templates checks if the user record entry identified by key is present.
+	bool check(const std::string& key) const
+	{
+		const pxl::Variant* value = findOrReturn(key);
+		if (!value)
+			return false;
+		return true;
+	}
+
+	/// This method template checks if user record entry identified by \p key is present.
+	/// If yes, its value is put into the passed \p item. 
+	template<typename datatype> bool check(const std::string& key,
+			datatype& item) const
+	{
+		const pxl::Variant* value = findOrReturn(key);
+		if (!value)
+			return false;
+		item = value->template get<datatype>();
+		return true;
+	}
+
+	inline void clear()
+	{
+		setContainer()->clear();
+	}
+
+	inline void erase(const std::string& key)
+	{
+		setContainer()->erase(key);
+	}
+
+	/// This method grants read access to the aggregated data.
+	inline const std::map<std::string, pxl::Variant>* getContainer() const
+	{
+		return _dataSocket->getData();
+	}
+
+	inline const_iterator begin() const
+	{
+		return getContainer()->begin();
+	}
+
+	inline const_iterator end() const
+	{
+		return getContainer()->end();
+	}
+
+	inline int size() const
+	{
+		return getContainer()->size();
+	}
+
+	std::ostream
+			& print(int level = 0, std::ostream& os = std::cout, int pan = 0) const;
+
+private:
+	DataSocket* _dataSocket;
+
+	/// This method grants write access to the aggregated data; 
+	/// if necessary, the copy-on-write mechanism performs a deep copy of the aggregated data first. 
+	inline std::map<std::string, pxl::Variant>* setContainer()
+	{
+		if (_dataSocket->_references > 1)
+		{
+			_dataSocket->_references--;
+			_dataSocket = new DataSocket(*_dataSocket);
+		}
+		return _dataSocket->getData();
+	}
+
+	inline void dropDataSocket()
+	{
+		if (_dataSocket->_references-- == 1)
+			delete _dataSocket;
+	}
+
+	pxl::Variant& findOrAlloc(const std::string &key)
+	{
+		iterator insertPos = setContainer()->lower_bound(key);
+		if (insertPos == getContainer()->end() || insertPos->first != key)
+			return setContainer()->insert(insertPos, StlPair(key, pxl::Variant()))->second;
+		else
+			return insertPos->second;
+	}
+
+	const pxl::Variant* findOrReturn(const std::string &key) const
+	{
+		const_iterator found = getContainer()->find(key);
+		if (found == getContainer()->end())
+			return 0;
+		return &found->second;
+	}
+
+};
+
+} // namespace pxl
+
+#endif // pxl_pol_UserRecord_hh
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_hh
+#define pxl_io_hh
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_ObjectFactory_hh
+#define pxl_io_ObjectFactory_hh
+
+
 
 // iotl
-
 /**
-This class template provides event-by-event data reading from STL streams; 
-it inherits from pxl::BasicIoStreamer ( = pxl::BasicLinuxIoStreamer).
-This class provides an event buffer from which PXL objects or data can 
-be restored using restoreObject() and restoreData(). The method putEvent()
-must be called to have the buffer filled with the decompressed event data.
-*/
-class iStreamer : public pxl::BasicIoStreamer {
-  public:
-    iStreamer();
-    virtual ~iStreamer();
+ This class serves the PXL I/O scheme by managing
+ the relation of classes to UUIDs.
+ */
 
-    /// This method decompresses the next event from the input stream \p cxxx 
-    /// to the event buffer the information string of which is identical to \p info; 
-    /// if the end of the stream was reached, false is returned.
-    inline bool putEventIf(std::istream& cxxx, const std::string& info)
-    { return putEvent(cxxx, -1, info); }
-    
-    /// This method decompresses the next event from the input stream \p cxxx 
-    /// to the event buffer; if the end of the stream was reached, false is returned.
-    inline bool putEvent(std::istream& cxxx)
-    { return putEvent(cxxx, +1, ""); }
+namespace pxl
+{
 
-    /// This method proceeds to the beginning of the next event in the stream \p cxxx; true is returned in case of success.
-    inline bool next(std::istream& cxxx) { return putEvent(cxxx,  0, ""); }
-    /// This method steps back to the beginning of the previous event in the stream \p cxxx; true is returned in case of success.
-    bool previous(std::istream& cxxx);
-    
-    /// This method returns true, if the end of the stream was reached.
-    inline bool endOfEvent() { return _buffer.peek() == EOF; }
+class ObjectFactory
+{
+public:
+	
+	class ProducerInterface
+	{
+	public:
+		virtual Serializable *create () const = 0;
+	};
+	
+	template <class T>
+	class ProducerTemplate : public ProducerInterface
+	{
+	public:
 
-    /// This method template restores the subsequent pxl::ObjectBase derivative \p obj of the known type \p objecttype from the event buffer.
-    template<class objecttype>
-    pxl::Id restoreObject(objecttype& obj)
-    { return pxl::TypeManager::instance().restoreObject(*this, obj, typeid(obj).name()); }
+		ProducerTemplate (const Id& id)
+		{
+			ObjectFactory::registerClass (id, this);
+		}
+		
+		virtual Serializable *create () const
+		{
+			return new T();
+		}
+	};
 
-    /// This method creates and restores the subsequent pxl::ObjectBase derivative from the event buffer
-    /// and returns a pxl::ObjectBase reference to it.
-    inline pxl::ObjectBase& restoreAbstractObject()
-    {
-        pxl::ObjectBase* pobj;
-        restoreAbstractObject(&pobj);
-        return *pobj;
-    }
+private:
+	
+	ObjectFactory()
+	{
+	}
+	
+	std::map<Id,const ProducerInterface *> _Producers;
 
-    /// This method template restores the subsequent \p data of \p datatype from the event buffer.
-    template<class datatype>
-    pxl::Id restoreData(datatype& data);
-    /// This method restores the contents of the subsequent pxl::Vector from the event buffer.
-    template<class itemtype>
-    pxl::Id restoreData(pxl::Vector<itemtype>& vector);
-    /// This method restores the contents of the subsequent pxl::Map from the event buffer.
-    template<class keytype, class itemtype>
-    pxl::Id restoreData(pxl::Map<keytype, itemtype>& map);
-
-    /// This method restores the subsequent type id from the stream \p cxxx and returns it in form of a C++ std::string.
-    inline std::string restoreTypeId(std::istream& cxxx)
-    {
-        std::string read;
-        pxl::BasicIoStreamer::restoreBasicTypeCStr(cxxx, read);
-        return read;
-    }
-
-    /// This method restores the subsequent type id from the event buffer and returns it in form of a C++ std::string.
-    inline std::string restoreTypeId()
-    { return restoreTypeId(_buffer); }
-
-    /// This method restores the subsequent type id from the stream \p cxxx and ensures that it is identical to \p expectedTypeId.
-    inline void restoreTypeId(std::istream& cxxx, const char* expectedTypeId)
-    {
-        std::string read;
-        pxl::BasicIoStreamer::restoreBasicTypeCStr(cxxx, read);
-        if (read != expectedTypeId)
-            pxl::exception("pxl::iStreamer::restoreTypeId()",
-                           std::string("Unexpected object type: ") + read);
-    }
-
-    /// This method restores the subsequent type id from the event buffer and ensures that it is identical to \p expectedTypeId.
-    inline void restoreTypeId(const char* expectedTypeId)
-    { restoreTypeId(_buffer, expectedTypeId); }
-
-  protected:
-    bool putEvent(std::istream& cxxx, int mode, const std::string& infoCondition);
-    pxl::Id restoreAbstractObject(pxl::ObjectBase** ppobj);
-
-    inline void restoreId(pxl::MutableId& persistentId)
-    {
-        restoreMemory((char*)&persistentId, 4); // FIXME: endianess/64bit
-        persistentId *= -1;	// FIXME: What's this for?
-    }
-
-    using BasicIoStreamer::restoreMemory;
-    inline void restoreMemory(char* address, int bytes)
-    { pxl::BasicIoStreamer::restoreMemory(_buffer, address, bytes); }
-
-    std::stringstream _buffer;
-
-  private:
-    int unzipEventData(std::istream &in, int nBytes);
-
-    unsigned char *_inputBuffer;
-    unsigned char *_outputBuffer;
+public:
+	static ObjectFactory& instance()
+	{
+		static ObjectFactory f;
+		return f;
+	}
+		
+	static Serializable *create (const Id& id)
+	{
+		std::map<Id,const ProducerInterface *>::iterator result;
+		result = instance()._Producers.find (id);
+		if (result == instance()._Producers.end())
+			return 0;
+		else
+			return (*result).second->create();
+	}
+	
+	static void registerClass (const Id& id, const ProducerInterface* producer)
+	{
+		instance()._Producers[id] = producer;
+	}
 };
 
-// template methods
-
-template<class itemtype>
-pxl::Id iStreamer::restoreData(pxl::Vector<itemtype>& vector)
-{
-    vector.clearContainer();
-    int size = 0;
-    pxl::iStreamer::restoreData<int>(size);
-    for(int i = 0; i < size; i++) {
-        itemtype item;
-        pxl::iStreamer::restoreData<itemtype>(item);
-        vector.set(item);
-    }
-    return 0;
 }
 
-template<class keytype, class itemtype>
-pxl::Id iStreamer::restoreData(pxl::Map<keytype, itemtype>& map)
-{
-    map.clearContainer();
-    int size = 0;
-    pxl::iStreamer::restoreData<int>(size);
-    for(int i = 0; i < size; i++) {
-        keytype key;
-        itemtype item;
-        pxl::iStreamer::restoreData<keytype>(key);
-        pxl::iStreamer::restoreData<itemtype>(item);
-        map.set(key, item);
-    }
-    return 0;
-}
+#endif //pxl_io_ObjectFactory_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-class ObjectOwner;
-class Layout;
-
-template<> pxl::Id iStreamer::restoreData<pxl::Relations>(pxl::Relations& relations);
-template<> pxl::Id iStreamer::restoreData<pxl::ObjectOwner>(pxl::ObjectOwner& objects);
-template<> pxl::Id iStreamer::restoreData<pxl::Layout>(pxl::Layout& layout);
-template<> pxl::Id iStreamer::restoreData<pxl::ObjectBase>(pxl::ObjectBase& object);
-
-} // namespace pxl
-
-#endif // pxl_iotl_iStreamer_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_iFile_hh
-#define pxl_iotl_iFile_hh
-
-namespace pxl {
-
-/**
-This base class provides the user interface for file-based restoring of PXL objects; see pxl::iDiskFile (= pxl::iDiskFileVx) for a concrete implementation.   
-pxl::iFile provides methods for opening and closing files and for reading events.
-*/
-class iFile {
-  public:
-    virtual ~iFile() {}
-
-    /// This virtual method is intended to open a file named \p filename.
-    virtual bool open(const std::string& filename)
-    { return false; }
-
-    /// This virtual method is intended to close an open file.
-    virtual void close() {}
-    /// This virtual method is intended to read the following event in the open file;
-    virtual bool readEvent() { return false; }
-    /// This virtual method is intended to read the following event in the open file the information string of which is identical to \p info;
-    virtual bool readEventIf(const std::string& info) { return false; }
-    /// This virtual method skips the next event and returns 1 in case of success.
-    inline  int  skipEvent() { return skipEvents(1); }
-    /// This virtual method is intended to try to skip the next \p n events and to return the number of events actually skipped.
-    virtual int  skipEvents(int n) { return 0; }
-    /// This virtual method is intended to return true if the end of the file is reached.
-    virtual bool endOfFile() { return true; }
-
-  protected:
-    iFile() {}
-
-  private:
-    iFile(const pxl::iFile&) {}
-};
-
-} // namespace pxl
-
-#endif // pxl_iotl_iFile_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_iDiskFileVx_hh
-#define pxl_iotl_iDiskFileVx_hh
+#ifndef pxl_io_ChunkWriter_hh
+#define pxl_io_ChunkWriter_hh
 
 #include <fstream>
-#include <ios>
+#include <zlib.h>
 
 
+namespace pxl
+{
 
-namespace pxl {
-
+// io
 /**
-This class template allows to restore objects from PXL I/O disk files; it provides methods 
-for opening and closing files, for reading/skipping events and all methods inherited by \p istreamertype
-(pxl::iStreamer for the current PXL I/O file version).
-*/
-template<class istreamertype>
-class iDiskFileVx : public pxl::iFile, public istreamertype {
-  public:
-    iDiskFileVx() : pxl::iFile(), istreamertype() {}
-    virtual ~iDiskFileVx() { close(); }
+ This class implemenents methods for writing to PXL I/O files.
+ PXL I/O allows the storage of complete physics events and information chunks.
+ Each event or information chunk makes up a section in the output file. 
+ Each section consists of a header, and a number of blocks which can be compressed individually.
+ The compression is incorporated via zlib.
+ The entry point for the standard user is the class OutputFile. 
+ */
+class ChunkWriter
+{
+public:
+	ChunkWriter(std::ostream& stream) :
+		_stream(stream), _nBytes(0) 
+	{
+	}
 
-    /// This virtual method opens a disk file with name \p filename.
-    virtual bool open(const std::string& filename)
-    {
-        close();
-        _file.open(filename.c_str(), std::fstream::in | std::fstream::binary);
-        if (!_file.is_open()) {
-            // FIXME: cerr...
-            std::cerr << "pxl::oDiskFileVx::open(): error while opening file "
-                      << filename << std::endl;
-            return false;
-        }
-        return true;
-    }
+	~ChunkWriter()
+	{
+	}
 
-    /// This virtual method closes an open disk file.
-    virtual void close()
-    {
-        if (!_file.is_open()) return;
-        _file.close();
-    }
+	/// This method writes the current block to the output file stream.
+	bool write()
+	{
+		return write("");
+	}
 
-    /// This virtual method reads and decompresses the following event in the open file;
-    /// if the end of the file was reached, false is returned. 
-    virtual bool readEvent()
-    {
-        if (_file.is_open()) {
-            return istreamertype::putEvent(_file);
-        } else {
-            pxl::exception("pxl::iDiskFileVx<>::readEvent()", "No file open.");
-            return false;
-        }
-    }
+	/// Begin a new event, optionally pass information string.
+	bool newEvent(const std::string& info = "")
+	{
+		return newFileSection(info, 'E');
+	}
 
-    /// This virtual method reads and decompresses the next event in the open file
-    /// the information string of which is identical to \p info; all other events are skipped;
-    /// if the end of the file was reached, false is returned. 
-    virtual bool readEventIf(const std::string& info)
-    {
-        if (_file.is_open()) {
-            return istreamertype::putEventIf(_file, info);
-        } else {
-            pxl::exception("pxl::iDiskFileVx<>::readEventIf()", "No file open.");
-            return false;
-        }
-    }
+	/// Begin a new information chunk, optionally pass information string.
+	bool newInformationChunk(const std::string& info = "")
+	{
+		return newFileSection(info, 'I');
+	}
 
-    /// This virtual method tries to skip the next \p n events and returns the number of events actually skipped.
-    virtual int skipEvents(int n)
-    {
-        int s = 0;
-        for(; n < 0 && istreamertype::previous(_file); n++) s--;
-        for(; n > 0 && istreamertype::next(_file);     n--) s++;
-        return s;
-    }
+	/// Writes a new file section, indicating the content by the section marker char, and the passed information string.
+	bool newFileSection(const std::string& info, char cSectionMarker);
 
-    /// This virtual method returns true if the end of the file was reached.
-    virtual bool endOfFile()
-    { return _file.peek() == EOF; }
+	/// Writes a new block marker.
+	inline bool newBlock()
+	{
+		// begin block marker:
+		return writeFlag('B');
+	}
 
-  protected:
-    std::fstream _file;
+	/// Writes an end-of-event marker and the number of bytes stored in the event.
+	bool endEvent();
 
-  private:
-    iDiskFileVx(const pxl::iDiskFileVx<istreamertype>&) {}
+	/// End information chunk.
+	inline bool endInformationChunk()
+	{
+		return endEvent();
+	}
+
+	/// This method writes the current stream. An information string, and a compression mode char (allowed values between '0' and '9') are passed.
+	bool write(std::string info, char compressionMode = '6') throw(std::runtime_error);
+
+	const OutputStream& getOutputStream()
+	{
+		return _buffer;
+	}
+	
+protected:
+	/// Write char flag.
+	inline bool writeFlag(char cEvtMarker)
+	{
+		_stream.write(&cEvtMarker, 1);
+		_nBytes+=1;
+		return true;
+	}
+	
+private:
+	std::ostream& _stream;
+	BufferOutput _buffer;
+	pxl::int32_t _nBytes;
+};
+}
+#endif /*pxl_io_ChunkWriter_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_ChunkReader_hh
+#define pxl_io_ChunkReader_hh
+
+
+
+#define iotl__iStreamer__lengthUnzipBuffer 65536
+
+namespace pxl
+{
+
+namespace skipMode
+{
+
+enum skipMode
+{
+	off = 0,
+	on
 };
 
-} // namespace pxl
-
-#endif // pxl_iotl_iDiskFileVx_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_iDiskFile_hh
-#define pxl_iotl_iDiskFile_hh
-
-
-namespace pxl {
-
-/// This typedef provides the current PXL I/O file version by specializing  pxl::iDiskFileVx with pxl::iStreamer.
-typedef pxl::iDiskFileVx<pxl::iStreamer> iDiskFile;
-
-} // namespace pxl
-
-#endif // pxl_iotl_iDiskFile_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_oFile_hh
-#define pxl_iotl_oFile_hh
-
-
-namespace pxl {
-
+}
+// iotl
 /**
-This base class provides the user interface for file-based storing of PXL objects; see pxl::oDiskFile (= pxl::oDiskFileVx) for a concrete implementation.   
-pxl::oFile provides methods for opening and closing files and for writing events.
-*/
-class oFile {
-  public:
-    virtual ~oFile() {}
+ This class implemenents various methods for reading from PXL I/O and
+ bases on the event structure defined in the ChunkWriter class. 
+ The entry point for the user is the class InputFile.
+ */
 
-    /// This virtual method is intended to open a file named \p filename in append or overwrite mode.
-    virtual bool open(const std::string& filename, bool append = false)
-    { return false; }
+class ChunkReader
+{
+public:
+	typedef skipMode::skipMode skipMode;
 
-    /// This virtual method is intended to close an open file.
-    virtual void close() {}
+	enum statusFlag
+	{
+		preHeader = 0,
+		evPreBlock,
+		infoPreBlock,
+		preBlock
+	};
 
-    /// This virtual method is intended to write the current event buffer to the open file;
-    /// an information string as well as the compression mode can be provided.  
-    virtual void writeEvent(const std::string& info = "", char compressionMode = iotl__default__compressionMode) {}
+	enum readMode
+	{
+		all = 0,
+		event,
+		infoChunk
+	};
 
-  protected:
-    oFile() {}
+	enum infoMode
+	{
+		ignore = 0,
+		evaluate
+	};
 
-  private:
-    oFile(const pxl::oFile&) {}
+	ChunkReader(std::istream& stream) :
+		_stream(stream), _status(preHeader)
+	{
+	}
+
+	~ChunkReader()
+	{
+	}
+
+	/// Reads in the next event header. 
+	bool readHeader(readMode mode, skipMode skip, infoMode checkInfo,
+			const std::string& infoCondition);
+
+	/// Reads in the next block.
+	bool readBlock(skipMode skip, infoMode checkInfo,
+			const std::string& infoCondition) throw(std::runtime_error);
+
+	/// This methods skips an event/information chunk.
+	bool skip();
+
+	/// This method goes back one event or information chunk.
+	bool previous();
+
+	/// Reads in the header of the next event. False is returned if not successful.
+	bool next(skipMode skip = skipMode::on, infoMode checkInfo = ignore,
+			const std::string& infoCondition = "")
+	{
+		return readHeader(all, skip, checkInfo, infoCondition);
+	}
+
+	/// Reads in the header of the next event. False is returned if not successful.
+	bool nextEvent(skipMode skip = skipMode::on, infoMode checkInfo = ignore,
+			const std::string& infoCondition = "")
+	{
+		return readHeader(event, skip, checkInfo, infoCondition);
+	}
+
+	/// Reads in the header of the next event. False is returned if not successful.
+	bool nextInformationChunk(skipMode skip = skipMode::on,
+			infoMode checkInfo = ignore, const std::string& infoCondition = "")
+	{
+		return readHeader(infoChunk, skip, checkInfo, infoCondition);
+	}
+
+	/// Reads the next block and puts data into the input stream. False is returned if not successful.
+	bool nextBlock(skipMode skip = skipMode::on, infoMode checkInfo = ignore,
+			const std::string& infoCondition = "")
+	{
+		return readBlock(skip, checkInfo, infoCondition);
+	}
+
+	/// Access to the data read in the individual blocks.
+	inline const InputStream& getInputStream()
+	{
+		return _buffer;
+	}
+
+	bool isInformationChunk()
+	{
+		return ( (_status == preHeader && _stream.peek()=='I') || _status
+				== infoPreBlock );
+	}
+
+	bool isEvent()
+	{
+		return ( (_status == preHeader && _stream.peek()=='E') || _status
+				== evPreBlock );
+	}
+
+	bool isBlock()
+	{
+		return (_stream.peek()=='B');
+	}
+
+	bool isEnd()
+	{
+		return (_stream.peek()=='e');
+	}
+
+	/// Method used internally to get the status, indicating the position in the I/O file.
+	inline const statusFlag getStatus() const
+	{
+		return _status;
+	}
+
+	void endEvent()
+	{
+		if (_status!=preHeader)
+			while (nextBlock())
+				;
+	}
+
+protected:
+	/// Helper method to perform the unzipping.
+	int unzipEventData(int nBytes) throw(std::runtime_error);
+
+	/// Reads in a char from file and returns this.
+	inline char nextBlockId()
+	{
+		char identifier;
+		_stream.read(&identifier, 1);
+		return identifier;
+	}
+
+private:
+	std::istream& _stream;
+	BufferInput _buffer;
+	/// Status flag. 0 at end of event, 1 at end of block.
+	statusFlag _status;
+
+};
+
+} //namespace pxl
+
+#endif /*pxl_iotl_ChunkReader_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_InputHandler_hh
+#define pxl_io_InputHandler_hh
+
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_pol_Event_hh
+#define pxl_pol_Event_hh
+
+
+
+namespace pxl
+{
+
+class Event : public pxl::Serializable
+{
+public:
+	Event() :
+		pxl::Serializable()
+	{
+	}
+
+	Event(const Event& event) :
+		_objects(event._objects), _userRecords(event._userRecords)
+	{
+	}
+
+	virtual ~Event()
+	{
+	}
+
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	static const Id& getStaticTypeId();
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Serializable::serialize(out);
+		_objects.serialize(out);
+		_userRecords.serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Serializable::deserialize(in);
+		_objects.deserialize(in);
+		_userRecords.deserialize(in);
+	}
+
+	/// This method template creates a new instance of \p objecttype;
+	/// objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by the object owner. 
+	template<class datatype> datatype* create()
+	{
+		return _objects.create<datatype>();
+	}
+
+	/// This method template creates a new \p objecttype instance by invoking a \p ctrtype overloaded constructor; 
+	/// \p objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by the object owner. 
+	template<class datatype, class ctrdatatype> datatype* create(
+			const ctrdatatype& ori)
+	{
+		return _objects.create<datatype,ctrdatatype>(ori);
+	}
+
+	// crateIndexed
+	/// This method template acts like create() and registers the newly created instance under \p idx in the index.
+	template<class datatype> datatype* createIndexed(const std::string& idx)
+	{
+		datatype* obj = _objects.create<datatype>();
+		setIndex(idx, obj);
+		return obj;
+	}
+
+	/// This method template acts like create() and registers the newly created instance under \p idx in the index.
+	template<class datatype, class ctrdatatype> datatype* createIndexed(
+			const ctrdatatype& ori, const std::string& idx)
+	{
+		datatype* obj = _objects.create<datatype,ctrdatatype>(ori);
+		setIndex(idx, obj);
+		return obj;
+	}
+
+	/// This method inserts \p obj in the container of the object owner and takes deletion responsability.
+	inline void setObject(pxl::Relative* obj)
+	{
+		_objects.set(obj);
+	}
+
+	/// This method inserts \p obj with the index-id \p idx in the container of the object owner and takes deletion responsability.
+	inline void setObject(pxl::Relative* obj, const std::string& idx)
+	{
+		_objects.set(obj);
+		setIndex(idx, obj);
+	}
+
+	/// This method registers the object \p obj with the index-id \p idx in the index and returns true in case of success;
+	/// please notice, that obj must be owned by this object owner and \p idx must not be a zero length string.  
+	inline bool setIndex(const std::string& idx, pxl::Relative* obj)
+	{
+		return _objects.setIndex(idx, obj);
+	}
+
+	
+	inline pxl::ObjectOwner& getObjectOwner()
+	{
+		return _objects;
+	}
+
+	/// This method provides const access to the object owner.
+	inline const pxl::ObjectOwner& getObjectOwner() const
+	{
+		return _objects;
+	}
+
+	template<class objecttype> inline void getObjectsOfType(
+			std::vector<objecttype*>& vec) const
+	{
+		_objects.getObjectsOfType<objecttype>(vec);
+	}
+
+	inline const std::vector<pxl::Relative*>& getObjects() const
+	{
+		return _objects.getObjects();
+	}
+	
+	/// This method deletes the object \p obj.
+	inline void removeObject(pxl::Relative* obj)
+	{
+		_objects.remove(obj);
+	}
+
+	/// This method clears the object owner and deletes all owned objects. 
+	inline void clearObjects()
+	{
+		_objects.clearContainer();
+	}
+
+	/// This method searches the index for the index-id \p idx and returns a dynamically casted 
+	/// C++ pointer of type \p objecttype* to the corresponding object; 
+	/// in case idx is not found a null pointer is returned.
+	template<class objecttype> inline objecttype* findObject(
+			const std::string idx) const
+	{
+		return _objects.findObject<objecttype>(idx);
+	}
+
+	/// This method searches the copy history to locate the copy of \p original and 
+	/// returns a dynamically casted C++ pointer of type \p objecttype* to the corresponding copy; 
+	/// in case no copy can be traced a null pointer is returned.
+	template<class objecttype> inline objecttype* findCopyOf(
+			const pxl::Relative* original) const
+	{
+		return _objects.findCopyOf<objecttype>(original);
+	}
+
+	/// This method provides direct access to the index. 
+	inline const pxl::Index& getIndex() const
+	{
+		return _objects.getIndex();
+	}
+
+	/// This method removes the index entry with index-id \p idx; please notice: it does not remove the object itself. 
+	inline void removeIndex(const std::string& idx)
+	{
+		_objects.removeIndex(idx);
+	}
+
+	/// This method clears the index; please notice: it does not remove the objects themself.
+	inline void clearIndex()
+	{
+		_objects.clearIndex();
+	}
+	
+	/// This method sets the user record entry identified by \p key to \p item.
+	template<typename datatype> inline void setUserRecord(
+			const std::string& key, const datatype& item)
+	{
+		_userRecords.template set<datatype>(key, item);
+	}
+
+	/// This method removes the user record entry identified by \p key.
+	inline void removeUserRecord(const std::string& key)
+	{
+		_userRecords.erase(key);
+	}
+
+	inline void clearUserRecords()
+	{
+		_userRecords.clear();
+	}
+
+	/// This method searches the user record entry identified by \p key; \p defaultitem is returned in case key is not found.
+	template<typename datatype> inline datatype findUserRecord(
+			const std::string& key, const datatype& defaultitem) const
+	{
+		return _userRecords.template find<datatype>(key, defaultitem);
+	}
+
+	/// This method searches the user record entry identified by \p key; an exception is thrown in case key is not found.
+	template<typename datatype> inline datatype findUserRecord(
+			const std::string& key) const throw(std::runtime_error)
+	{
+		return _userRecords.template find<datatype>(key);
+	}
+
+	/// This method checks if the user record entry identified by \p key is present.
+	template<typename datatype> inline bool checkUserRecord(
+			const std::string& key) const
+	{
+		return _userRecords.template check<datatype>(key);
+	}
+
+	/// This method checks if the user record entry identified by \p key is present. If yes, \p item is set to the according value.
+	template<typename datatype> inline bool checkUserRecord(
+			const std::string& key, datatype& item) const
+	{
+		return _userRecords.template check<datatype>(key, item);
+	}
+	
+	std::ostream& print(int level=1, std::ostream& os=std::cout, int pan=1) const;
+
+private:
+	pxl::ObjectOwner _objects;
+	pxl::UserRecord _userRecords;
 };
 
 } // namespace pxl
 
-#endif // pxl_iotl_oFile_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_oDiskFileVx_hh
-#define pxl_iotl_oDiskFileVx_hh
+#endif // pxl_pol_Event_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_InformationChunk_hh
+#define pxl_io_InformationChunk_hh
 
 
 
+namespace pxl
+{
 
-namespace pxl {
+class InformationChunk : public pxl::Serializable
+{
+public:
 
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("7be73236-5038-4988-ba8e-9f65a26c4e72");
+		return id;
+	}
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Serializable::serialize(out);
+		_userRecords.serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Serializable::deserialize(in);
+		_userRecords.deserialize(in);
+	}
+
+	void setName(const std::string& name)
+	{
+		_name=name;
+	}
+
+	inline const std::string& getName() const
+	{
+		return _name;
+	}
+
+	/// This method provides access to the user records.
+	inline const pxl::UserRecord& getUserRecord() const
+	{
+		return _userRecords;
+	}
+
+	/// This method sets the user record entry identified by \p key to \p item.
+	template<typename datatype> inline void setUserRecord(
+			const std::string& key, const datatype& item)
+	{
+		_userRecords.template set<datatype>(key, item);
+	}
+
+	/// This method removes the user record entry identified by \p key.
+	inline void removeUserRecord(const std::string& key)
+	{
+		_userRecords.erase(key);
+	}
+
+	inline void clearUserRecords()
+	{
+		_userRecords.clear();
+	}
+
+	/// This method searches the user record entry identified by \p key; \p defaultitem is returned in case key is not found.
+	template<typename datatype> inline datatype findUserRecord(
+			const std::string& key, const datatype& defaultitem) const
+	{
+		return _userRecords.template find<datatype>(key, defaultitem);
+	}
+
+	/// This method searches the user record entry identified by \p key; an exception is thrown in case key is not found.
+	template<typename datatype> inline datatype findUserRecord(
+			const std::string& key) const throw(std::runtime_error)
+	{
+		return _userRecords.template find<datatype>(key);
+	}
+
+	/// This method checks if the user record entry identified by \p key is present.
+	template<typename datatype> inline bool checkUserRecord(
+			const std::string& key) const
+	{
+		return _userRecords.template check<datatype>(key);
+	}
+
+	/// This method checks if the user record entry identified by \p key is present. If yes, \p item is set to the according value.
+	template<typename datatype> inline bool checkUserRecord(
+			const std::string& key, datatype& item) const
+	{
+		return _userRecords.template check<datatype>(key, item);
+	}
+
+private:
+	std::string _name;
+	pxl::UserRecord _userRecords;
+
+};
+
+} //namespace pxl
+
+#endif /*pxl_io_InformationChunk_hh*/
+
+namespace pxl
+{
+// io
 /**
-This class template provides data storage to PXL I/O disk files; it provides methods 
-for opening and closing files, for writing events and all methods inherited by \p ostreamertype
-(pxl::oStreamer for the current PXL I/O file version).
-*/
-template<class ostreamertype>
-class oDiskFileVx : public pxl::oFile, public ostreamertype {
-  public:
-    oDiskFileVx() : pxl::oFile(), ostreamertype() {}
-    virtual ~oDiskFileVx() { close(); }
+ This abstract class offers the basic functionality for reading the PXL physics event structure.
+ Derived classes can handle concrete I/O operations.
+ */
+class InputHandler
+{
+public:
+	typedef skipMode::skipMode skipMode;
 
-    /// This virtual method opens a disk file with name \p filename in append or overwrite mode.
-    virtual bool open(const std::string& filename, bool append = false)
-    {
-        close();
-        if (append)
-            _file.open(filename.c_str(), std::fstream::app | std::fstream::out | std::fstream::binary);
-        else
-            _file.open(filename.c_str(), std::fstream::trunc | std::fstream::out | std::fstream::binary);
-        if (!_file.good()) {
-            // FIXME: cerr...
-            std::cerr << "pxl::oDiskFileVx::open(): error while opening file "
-                      << filename << std::endl;
-            return false;
-        }
-        return true;
-    }
+	InputHandler()
+	{
+	}
 
-    /// This virtual method closes an open disk file.
-    virtual void close()
-    {
-        if (!_file.is_open()) return;
-        _file.rdbuf()->pubsync();
-        _file.close();
-    }
+	virtual ~InputHandler()
+	{
+	}
 
-    /// This virtual method writes the current event buffer to the open file;
-    /// an information string as well as the compression mode can be provided  
-    /// (see pxl::oStreamer::getEvent() for details of the current PXL I/O file version).
-    virtual void writeEvent(const std::string& info = "", char compressionMode = iotl__default__compressionMode)
-    {
-        if (_file.is_open())
-            ostreamertype::getEvent(_file, info, compressionMode);
-        else
-            pxl::exception("pxl::oDiskFileVx<>::writeEvent()", "No file open.");
-    }
+	virtual ChunkReader& getChunkReader() = 0;
 
-  protected:
-    std::fstream _file;
+	/// This method reads in the header of the next event or information chunk.
+	bool next()
+	{
+		if (getChunkReader().next())
+			return true;
+		return false;
+	}
 
-  private:
-    oDiskFileVx(const pxl::oDiskFileVx<ostreamertype>&) {}
+	bool nextEvent(skipMode doSkip = skipMode::on)
+	{
+		if (getChunkReader().nextEvent(doSkip))
+			return true;
+		return false;
+	}
+
+	bool nextInformationChunk(skipMode doSkip = skipMode::on)
+	{
+		if (getChunkReader().nextInformationChunk(doSkip))
+			return true;
+		return false;
+	}
+
+	/// This method reads in the next event if the information condition is fulfilled. Else, false is returned.
+	bool nextIf(const std::string& info, skipMode doSkip = skipMode::on)
+	{
+		if (getChunkReader().next(doSkip, ChunkReader::evaluate, info))
+			return true;
+		return false;
+	}
+
+	/// This method reads in the next event if the information condition is fulfilled. Else, false is returned.
+	bool nextEventIf(const std::string& info, skipMode doSkip = skipMode::on)
+	{
+		if (getChunkReader().nextEvent(doSkip, ChunkReader::evaluate, info))
+			return true;
+		return false;
+	}
+
+	/// This method reads in the next event if the information condition is fulfilled. Else, false is returned.
+	bool nextInformationChunkIf(const std::string& info,
+			skipMode doSkip = skipMode::on)
+	{
+		if (getChunkReader().nextInformationChunk(doSkip, ChunkReader::evaluate, info))
+			return true;
+		return false;
+	}
+
+	/// A pxl::Event is passed to this method and filled with the current event.
+	bool readEvent(pxl::Event* event)
+	{
+		if (getChunkReader().nextBlock() && getChunkReader().getInputStream().good())
+		{
+			pxl::Id id(getChunkReader().getInputStream());
+			if (id==event->getStaticTypeId())
+			{
+				event->deserialize(getChunkReader().getInputStream());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// A pxl::Event is passed to this method and filled with the current event.
+	bool readEventIf(pxl::Event* event, const std::string& blockInfo,
+			skipMode doSkip = skipMode::on)
+	{
+		if (readBlockIf(blockInfo, doSkip))
+		{
+			pxl::Id id(getChunkReader().getInputStream());
+			if (id==event->getStaticTypeId())
+			{
+				event->deserialize(getChunkReader().getInputStream());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// A pxl::InformationChunk is passed to this method and filled if the next block contains an information chunk.
+	bool readInformationChunk(pxl::InformationChunk* chunk)
+	{
+		if (getChunkReader().nextBlock() && getChunkReader().getInputStream().good())
+		{
+			pxl::Id id(getChunkReader().getInputStream());
+			if (id==chunk->getStaticTypeId())
+			{
+				chunk->deserialize(getChunkReader().getInputStream());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// A pxl::InformationChunk is passed to this method and filled if the info condition is fulfilled and there is an information chunk.
+	bool readInformationChunkIf(pxl::InformationChunk* event,
+			const std::string& blockInfo, skipMode doSkip = skipMode::on)
+	{
+		if (readBlockIf(blockInfo, doSkip))
+		{
+			pxl::Id id(getChunkReader().getInputStream());
+			if (id==event->getStaticTypeId())
+			{
+				event->deserialize(getChunkReader().getInputStream());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	inline bool isInformationChunk()
+	{
+		return getChunkReader().isInformationChunk();
+	}
+
+	inline bool isEvent()
+	{
+		return getChunkReader().isEvent();
+	}
+
+	/// This methods skips one event or information chunk.
+	bool skip()
+	{
+		return getChunkReader().skip();
+	}
+
+	/// This method goes to the previous event.
+	bool previous()
+	{
+		return getChunkReader().previous();
+	}
+
+	/// With this method, n events can be skipped in forward or backward direction.
+	int skipEvents(int n)
+	{
+		int skipped = 0;
+		for (; n<0 && getChunkReader().previous(); ++n)
+			--skipped;
+		for (; n>0 && getChunkReader().skip(); --n)
+			++skipped;
+		return skipped;
+	}
+
+	/// This method reads in the next block.
+	bool readBlock()
+	{
+		return getChunkReader().nextBlock();
+	}
+
+	/// This method reads in the next block if the info condition is fulfilled.
+	bool readBlockIf(const std::string& blockInfo,
+			skipMode doSkip = skipMode::on)
+	{
+		bool success = false;
+		while (!success && getChunkReader().getStatus()!=0)
+		{
+			success = getChunkReader().nextBlock(doSkip, ChunkReader::evaluate, blockInfo);
+		}
+		return success;
+	}
+
+	/// This method explicitly reads an object of type objecttype. Caution: This method should only be used if the type of the following object is known by hard.
+	template<class objecttype> bool readObject(objecttype* obj) throw(std::runtime_error);
+
+	/// This method fills the objects from the read-in block into the passed vector. The number of added objects is returned.
+	int readObjects(std::vector<pxl::Serializable*>& objects);
+
+	/// This method fills the objects from the read-in block into the passed pxl::Event. The number of added objects is returned.
+	int readObjects(pxl::Event* event);
+
 };
 
-} // namespace pxl
+} //namespace pxl
 
-#endif // pxl_iotl_oDiskFileVx_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_oDiskFile_hh
-#define pxl_iotl_oDiskFile_hh
+#endif //pxl_io_InputHandler_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-
-namespace pxl {
-
-/// This typedef provides the current PXL I/O file version by specializing  pxl::oDiskFileVx with pxl::oStreamer.
-typedef pxl::oDiskFileVx<pxl::oStreamer> oDiskFile;
-
-} // namespace pxl
-
-#endif // pxl_iotl_oDiskFile_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_TypeAgentBase_hh
-#define pxl_iotl_TypeAgentBase_hh
+#ifndef pxl_iotl_OutputHandler_hh
+#define pxl_iotl_OutputHandler_hh
 
 
 
-namespace pxl {
+namespace pxl
+{
 
-/** 
-This PXL-internal base class is used with the I/O type manager singleton pxl::TypeManager 
-for storing and restoring PXL objects with PXL or user-defined data types; see also pxl::TypeAgent.
-*/ 
-class TypeAgentBase {
-  public:
-    virtual ~TypeAgentBase() {}
-    /// This virtual method is (re-)implemented in pxl::TypeAgent.  
-    virtual void storeObject(pxl::oStreamer& output, const pxl::ObjectBase& objectbase) {}
-    /// This virtual method is (re-)implemented in pxl::TypeAgent.  
-    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj) { return 0; }
-    /// This virtual method is (re-)implemented in pxl::TypeAgent.  
-    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj) { return 0; }
+// io
+/**
+ This abstract class allows the user an easy handling of the PXL general output. Methods to write event headers,
+ the PXL event class, and information chunks are offered.
+ */
+class OutputHandler
+{
+public:
 
-    /// This method returns the PXL invariant object-id that can be handled by this instance.
-    inline const std::string& getObjectTypeId() { return _objectTypeId; }
-    /// This method returns the PXL invariant data-id that can be handled by this instance.
-    inline const std::string& getDataTypeId() { return _dataTypeId; }
-    /// This method returns the (transient!) C++ class-id that can be handled by this instance.
-    inline const std::string& getCppTypeId() { return _cppTypeId; }
+	OutputHandler() :
+		_newEvent(true)
+	{
+	}
 
-  protected:
-    std::string _objectTypeId;
-    std::string _dataTypeId;
-    std::string _cppTypeId;
+	virtual ~OutputHandler()
+	{
+	}
+
+	virtual pxl::ChunkWriter& getChunkWriter() = 0;
+
+	/// This method writes the passed pxl::Event to the output file and finishes the current event.
+	bool writeEvent(pxl::Event* event, const std::string& eventInfo = "",
+			const std::string& blockInfo = "")
+	{
+		if (_newEvent)
+		{
+			getChunkWriter().newEvent(eventInfo);
+			_newEvent = false;
+		}
+		getChunkWriter().newBlock();
+		event->serialize(getChunkWriter().getOutputStream());
+		getChunkWriter().write(blockInfo);
+		_newEvent = true;
+		return getChunkWriter().endEvent();
+	}
+
+	/// This method writes the passed pxl::InformationChunk to the output file and finishes the current event.
+	bool writeInformationChunk(pxl::InformationChunk* infoChunk,
+			const std::string& chunkInfo = "")
+	{
+		if (_newEvent)
+		{
+			getChunkWriter().newInformationChunk(chunkInfo);
+			_newEvent = false;
+		}
+		getChunkWriter().newBlock();
+		infoChunk->serialize(getChunkWriter().getOutputStream());
+		getChunkWriter().write();
+		_newEvent = true;
+		return getChunkWriter().endInformationChunk();
+	}
+
+	/// This method queues the passed object for later writing to the output file.
+	template<class objecttype> void streamObject(objecttype* obj)
+	{
+		obj->serialize(getChunkWriter().getOutputStream());
+	}
+
+	/// Use this method to write an information string describing the new event. Otherwise, this method need not necessarily be used.
+	bool newEvent(const std::string& info)
+	{
+		if (!_newEvent)
+		{
+			std::cerr
+					<< "Error in OutputFile::newEvent: Finish the current event first."
+					<< std::endl;
+			return false;
+		}
+		getChunkWriter().newEvent(info);
+		_newEvent = false;
+		return true;
+	}
+
+	/// Use this method to write out a block to file. This method is not needed if you use the writeEvent-method.
+	bool writeStream(const std::string& info = "")
+	{
+		if (_newEvent)
+		{
+			getChunkWriter().newEvent("");
+			_newEvent = false;
+		}
+		getChunkWriter().newBlock();
+		return getChunkWriter().write(info);
+	}
+
+	/// Use this method to write out a block to disk and finish the current event.
+	bool writeEvent(const std::string& info = "")
+	{
+		if (_newEvent)
+		{
+			getChunkWriter().newEvent("");
+			_newEvent = false;
+		}
+		getChunkWriter().newBlock();
+		getChunkWriter().write(info);
+		_newEvent = true;
+		return getChunkWriter().endEvent();
+	}
+
+private:
+	bool _newEvent;
 };
 
-} // namespace pxl
+}//namespace pxl
 
-#endif // pxl_iotl_TypeAgentBase_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_TypeAgent_hh
-#define pxl_iotl_TypeAgent_hh
+#endif /*pxl_iotl_OutputHandler_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_InputFile_hh
+#define pxl_io_InputFile_hh
 
 
 
+namespace pxl
+{
+// io
+/**
+ This class offers an easy handling of the PXL I/O. Various methods to access
+ the content of I/O files are offered.
+ */
+class InputFile : public InputHandler
+{
+public:
 
-namespace pxl {
+	InputFile() :
+		InputHandler(), _stream(), _reader(_stream)
+	{
+	}
 
-/** 
-This PXL-internal class template is used with the I/O type manager singleton pxl::TypeManager for 
-storing and restoring PXL objects of type \p objecttype.
-(Please notice: pxl::TypeAgent specializations must be globally declard and register themselves 
-automatically with the pxl::TypeManager.) 
-*/ 
-template<class objecttype>
-class TypeAgent : public TypeAgentBase {
-  public:
-    /// This constructor accepts the PXL invariant object-id \p objectTypeId and determines 
-    /// data-id as well as the C++ class-id of \p objecttype; it registers this instance with 
-    /// the pxl::TypeManager.
-    TypeAgent(const std::string& objectTypeId);
-    virtual ~TypeAgent() {}
+	InputFile(const std::string& filename) :
+		InputHandler(), _stream(filename.c_str(), std::ios::binary),
+				_reader(_stream)
+	{
+	}
 
-    /// This virtual method stores \p obj (that must be of \p objecttype!) to the given output stream.  
-    virtual void storeObject(pxl::oStreamer &output, const pxl::ObjectBase& obj);
-    /// This virtual method restores \p obj (that must be of \p objecttype!) from the given input stream
-    /// and returns the persistent (=old) object-id.    
-    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj);
-    /// This virtual method allocates memory for a new objecttype instance, 
-    /// makes the pxl::ObjectBase pointer \p (*ppobj) point to this instance,  
-    /// restores the object from the given input stream
-    /// and returns the persistent (=old) object-id.    
-    virtual pxl::Id restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj);
+	virtual void open(const std::string& filename)
+	{
+		_stream.open(filename.c_str(), std::ios::binary);
+	}
+
+	virtual void close()
+	{
+		_stream.close();
+	}
+
+	virtual ~InputFile()
+	{
+		_stream.close();
+	}
+
+	virtual pxl::ChunkReader& getChunkReader()
+	{
+		return _reader;
+	}
+
+private:
+	std::ifstream _stream;
+	pxl::ChunkReader _reader;
 };
 
-template<class type>
-const char* getIotlTypeId(const type* = 0);
+} //namespace pxl
 
-// template methods
+#endif /*pxl_io_InputFile_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-template<class objecttype>
-TypeAgent<objecttype>::TypeAgent(const std::string& objectTypeId)
+#ifndef pxl_iotl_OutputFile_hh
+#define pxl_iotl_OutputFile_hh
+
+
+
+namespace pxl
 {
-    objecttype obj;
 
-    _objectTypeId = objectTypeId;
-    _dataTypeId   = pxl::getIotlTypeId(&obj.get());
-    _cppTypeId    = std::string(typeid(obj).name());
+// io
+/**
+ This class allows the user an easy handling of the PXL output to file. Methods to write event headers,
+ the PXL event class, and information chunks are offered by inheritance from the OutputHandler.
+ */
 
-    pxl::TypeManager::instance().registerAgent(this);
-}
-
-template<class objecttype>
-void TypeAgent<objecttype>::storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj)
+class OutputFile : public OutputHandler
 {
-    const objecttype* ptr = dynamic_cast<const objecttype*>(&obj);
+public:
 
-    output.storeTypeId(_objectTypeId.c_str());
-    output.storeTypeId(_dataTypeId.c_str());
-    output.storeData(ptr->get());
-    output.storeData(obj);
-}
+	OutputFile(const std::string& filename) :
+		OutputHandler(), _stream(filename.c_str(), std::ios::binary),
+				_writer(_stream)
+	{
+	}
 
-template<class objecttype>
-pxl::Id TypeAgent<objecttype>::restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj)
+	virtual ~OutputFile()
+	{
+		_stream.close();
+	}
+	
+	virtual void open(const std::string& filename)
+	{
+		_stream.open(filename.c_str(), std::ios::binary);
+	}
+	
+	virtual void close()
+	{
+		_stream.close();
+	}
+
+	virtual pxl::ChunkWriter& getChunkWriter()
+	{
+		return _writer;
+	}
+
+private:
+	std::ofstream _stream;
+	pxl::ChunkWriter _writer;
+};
+
+}//namespace pxl
+
+#endif /*pxl_io_OutputFile_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#ifndef pxl_io_GenericInputHandler_hh
+#define pxl_io_GenericInputHandler_hh
+
+
+
+namespace pxl
 {
-    objecttype* ptr = dynamic_cast<objecttype*>(&obj); // FIXME static_cast?
-
-    input.restoreTypeId(_objectTypeId.c_str());
-    input.restoreTypeId(_dataTypeId.c_str());
-    input.restoreData(ptr->set());
-    return input.restoreData(obj);
-}
-
-template<class objecttype>
-pxl::Id TypeAgent<objecttype>::restoreObject(pxl::iStreamer& input, pxl::ObjectBase** ppobj)
+// io
+/**
+ This class offers a generic handling of the PXL I/O. Various methods to access
+ the PXL I/O content are offered.
+ */
+class GenericInputHandler : public InputHandler
 {
-    objecttype* ptr = new objecttype;
-    // please notice: object & data type ids have been read already! 
-    input.restoreData(ptr->set());
-    (*ppobj) = static_cast<pxl::ObjectBase*>(ptr);
-    return input.restoreData(**ppobj);
-}
+public:
 
-} // namespace pxl
+	GenericInputHandler(pxl::ChunkReader& reader) :
+		InputHandler(),	_reader(&reader)
+	{
+	}
 
-#endif // pxl_iotl_TypeAgent_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_iotl_types_hh
-#define pxl_iotl_types_hh
+	virtual ~GenericInputHandler()
+	{
+	}
 
+	virtual pxl::ChunkReader& getChunkReader() throw (std::runtime_error)
+	{
+		if (!_reader)
+			throw std::runtime_error("GenericInputHandler::getChunkReader(): ChunkReader pointer invalid.");			
+		return *_reader;
+	}
+	
+	virtual void setChunkReader(pxl::ChunkReader* reader)
+	{
+		_reader=reader;
+	}
 
+private:
+	pxl::ChunkReader* _reader;
+};
 
+} //namespace pxl
 
-// complex data types
+#endif /*pxl_io_GenericInputHandler_hh*/
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-#define iotl__declareDataTypeExplicit(type, id, interfacename, data, storecode, restorecode) \
-namespace pxl { \
-\
-template<> \
-const char* getIotlTypeId<type>(const type*) \
-{ return id; } \
-\
-template<> \
-void oStreamer::storeData<type>(const type& data) \
-{ storecode; } \
-\
-template<> \
-pxl::Id iStreamer::restoreData<type>(type& data) \
-{ do { restorecode; } while(false); return 0; } \
-\
-TypeAgent<pxl::Object<type> > _typeInterface_ptl__Object_ ## interfacename("\1OO"); \
-TypeAgent<pxl::CowObject<type> > _typeInterface_ptl__CowObject_ ## interfacename("\1CO"); \
-\
-} // namespace pxl
-
-#define iotl__declareDataType(type, data, storecode, restorecode) \
-iotl__declareDataTypeExplicit(type, #type, type, data, storecode, restorecode)
-
-#define iotl__declareDataType(type, data, storecode, restorecode) \
-iotl__declareDataTypeExplicit(type, #type, type, data, storecode, restorecode)
-
-#define iotl__declareDataTypeProto(type) \
-namespace pxl { \
-\
-template<> \
-const char* getIotlTypeId<type>(const type*); \
-\
-template<> \
-void oStreamer::storeData<type>(const type& data); \
-\
-template<> \
-pxl::Id iStreamer::restoreData<type>(type& data); \
-\
-} // namespace pxl
-
-#define iotl__declareSpyTypeExplicit(type, id, interfacename, ptr, storecode, restorecode) \
-namespace pxl { \
-\
-template<> \
-const char* getIotlTypeId<pxl::Ptr<type> >(const pxl::Ptr<type>*) \
-{ return id; } \
-\
-template<> \
-void oStreamer::storeData<pxl::Ptr<type> >(const pxl::Ptr<type>& ptr) \
-{ storecode; } \
-\
-template<> \
-pxl::Id iStreamer::restoredata<pxl::Ptr<type> >(pxl::Ptr<type>& ptr) \
-{ do { restoredata; } while(false); return 0; } \
-\
-TypeAgent<pxl::SpyObject<type> > _typeInterface_ptl__SpyObject_ ## interfacename("\1SO"); \
-\
-} // namespace pxl
-
-#define iotl__declareSpyType(type, ptr, storecode, restorecode) \
-iotl__declareSpyTypeExplicit(type, #type, type, ptr, storecode, restorecode)
-
-#define iotl__declareSpyTypeProto(type) \
-namespace pxl { \
-\
-template<> \
-const char* getIotlTypeId<pxl::Ptr<type> >(const pxl::Ptr<type>*); \
-\
-template<> \
-void oStreamer::storeData<pxl::Ptr<type> >(const pxl::Ptr<type>& ptr); \
-\
-template<> \
-pxl::Id iStreamer::restoredata<pxl::Ptr<type> >(pxl::Ptr<type>& ptr); \
-\
-} // namespace pxl
-
-#define iotl__declareObjectTypeExplicit(type, id, interfacename) \
-namespace pxl { \
-\
-TypeAgent<type> _typeInterface_ ## interfacename(id); \
-\
-}
-
-#define iotl__declareObjectType(type) \
-iotl__declareObjectTypeExplicit(type, #type, type)
-
-#define iotl__declareObjectTypeProto(type)
+#ifndef pxl_iotl_GenericOutputHandler_hh
+#define pxl_iotl_GenericOutputHandler_hh
 
 
-iotl__declareDataTypeProto(char)
-iotl__declareDataTypeProto(std::string)
-iotl__declareDataTypeProto(bool)
-iotl__declareDataTypeProto(int)
-iotl__declareDataTypeProto(float)
-iotl__declareDataTypeProto(double)
 
-iotl__declareDataTypeProto(pxl::Variant)
+namespace pxl
+{
 
-#endif // pxl_iotl_types_hh
+// io
+/**
+ This class allows the user an easy handling of the PXL output using any ChunkWriter. Methods to write event headers,
+ the PXL event class, and information chunks are offered by inheritance from the OutputHandler.
+ */
 
-#endif // pxl_iotl_hh
+class GenericOutputHandler : public OutputHandler
+{
+public:
+	GenericOutputHandler(pxl::ChunkWriter& writer) :
+		OutputHandler(), _writer(&writer)
+	{
+	}
 
-#endif // pxl_ptl_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+	virtual ~GenericOutputHandler()
+	{
+	}
+
+	virtual pxl::ChunkWriter& getChunkWriter() throw(std::runtime_error)
+	{
+		if (!_writer)
+			throw std::runtime_error("GenericOutputHandler::getChunkWriter(): ChunkWriter pointer invalid.");
+		return *_writer;
+	}
+
+	virtual void setChunkWriter(pxl::ChunkWriter* writer)
+	{
+		_writer=writer;
+	}
+
+private:
+	pxl::ChunkWriter* _writer;
+};
+
+}//namespace pxl
+
+#endif /*pxl_iotl_GenericOutputHandler_hh*/
+
+#endif // pxl_io_hh
+
+#endif // pxl_base_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_hh
 #define pxl_pol_hh
 
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_Basic3Vector_hh
 #define pxl_pol_Basic3Vector_hh
 
 #include <cmath>
 
 
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
+namespace pxl
+{
 // pol
 
 #define EPSILON 1.0e-9
 #ifndef M_PI
-	#define M_PI        3.14159265358979323846
+#define M_PI        3.14159265358979323846
 #endif
 
 /** 
-This class provides a simple threevector with basic algebra. The methods provided are self-explanatory.
-*/
-class Basic3VectorData {
-  public:
-    Basic3VectorData() :
-        _x(0), _y(0), _z(0) {}
-    Basic3VectorData(const Basic3VectorData& orig) :
-        _x(orig._x), _y(orig._y), _z(orig._z) {}
-    Basic3VectorData(double x, double y, double z) :
-        _x(x), _y(y), _z(z) {}
+ This class provides a simple threevector with basic algebra. The methods provided are self-explanatory.
+ */
+class Basic3Vector
+{
+public:
+    Basic3Vector() :
+        _x(0), _y(0), _z(0)
+    {
+    }
+    Basic3Vector(const Basic3Vector& orig) :
+        _x(orig._x), _y(orig._y), _z(orig._z)
+    {
+    }
+    Basic3Vector(const Basic3Vector* orig) :
+        _x(orig->_x), _y(orig->_y), _z(orig->_z)
+    {
+    }
+    Basic3Vector(double x, double y, double z) :
+        _x(x), _y(y), _z(z)
+    {
+    }
 
-    inline void setX(double x) { _x = x; }
-    inline void setY(double y) { _y = y; }
-    inline void setZ(double z) { _z = z; }
+	virtual void serialize(const OutputStream &out) const
+	{
+		out.writeDouble(_x);
+		out.writeDouble(_y);
+		out.writeDouble(_z);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+	    in.readDouble(_x);
+	    in.readDouble(_y);
+	    in.readDouble(_z);
+	}
+    
+    inline void setX(double x)
+    {
+        _x = x;
+    }
+    inline void setY(double y)
+    {
+        _y = y;
+    }
+    inline void setZ(double z)
+    {
+        _z = z;
+    }
 
     inline void setRhoPhi(double perp, double phi)
-    { _x = std::cos(phi) * perp; _y = std::sin(phi) * perp; }
+    {
+        _x = std::cos(phi) * perp;
+        _y = std::sin(phi) * perp;
+    }
     inline void setRhoPhiZ(double perp, double phi, double z)
-    { setRhoPhi(perp, phi); _z = z; }
+    {
+        setRhoPhi(perp, phi);
+        _z = z;
+    }
     inline void setRThetaPhi(double r, double theta, double phi)
-    { setRhoPhiZ(std::cos(theta) * r, phi, std::sin(theta) * r); }
+    {
+        setRhoPhiZ(std::cos(theta) * r, phi, std::sin(theta) * r);
+    }
 
-    inline double getX() const { return _x; }
-    inline double getY() const { return _y; }
-    inline double getZ() const { return _z; }
+    inline double getX() const
+    {
+        return _x;
+    }
+    inline double getY() const
+    {
+        return _y;
+    }
+    inline double getZ() const
+    {
+        return _z;
+    }
 
     inline bool isNullPerp() const
-    { return _x > -EPSILON && _x < EPSILON && _y > -EPSILON && _y < EPSILON; }
+    {
+        return _x > -EPSILON && _x< EPSILON && _y> -EPSILON && _y < EPSILON;
+    }
     inline bool isNull() const
-    { return isNullPerp() && _z > -EPSILON && _z < EPSILON; }
+    {
+        return isNullPerp() && _z > -EPSILON && _z < EPSILON;
+    }
 
     inline double getPerp2() const
-    { return _x*_x + _y*_y; }
+    {
+        return _x*_x + _y*_y;
+    }
     inline double getPerp() const
-    { return std::sqrt(getPerp2()); }
+    {
+        return std::sqrt(getPerp2());
+    }
     inline double getPhi() const
-    { return isNullPerp() ? 0.0 : std::atan2(_y, _x); }
+    {
+        return isNullPerp() ? 0.0 : std::atan2(_y, _x);
+    }
 
     inline double getMag2() const
-    { return _x*_x + _y*_y + _z*_z; }
+    {
+        return _x*_x + _y*_y + _z*_z;
+    }
     inline double getMag() const
-    { return std::sqrt(getMag2()); }
+    {
+        return std::sqrt(getMag2());
+    }
 
     inline double getCosTheta() const
-    { double mag = getMag(); return mag < EPSILON ? 1.0 : _z / mag; }
+    {
+        double mag = getMag();
+        return mag < EPSILON ? 1.0 : _z / mag;
+    }
     inline double getCos2Theta() const
-    { double mag2 = getMag2(); return mag2 < EPSILON ? 1.0 : _z*_z / mag2; }
+    {
+        double mag2 = getMag2();
+        return mag2 < EPSILON ? 1.0 : _z*_z / mag2;
+    }
 
     inline double getTheta() const
-    { return isNull() ? 0.0 : std::atan2(getPerp(), _z); }
+    {
+        return isNull() ? 0.0 : std::atan2(getPerp(), _z);
+    }
 
-    inline double deltaRho(const Basic3VectorData& fv) const
+    inline double deltaRho(const Basic3Vector* fv) const
     {
         double dDtheta = deltaTheta(fv);
         double dDphi = deltaPhi(fv);
         return std::sqrt(dDtheta*dDtheta + dDphi*dDphi);
     }
 
-    inline double deltaPhi(const Basic3VectorData& fv) const
-    { 
-        double dDphi = getPhi() - fv.getPhi();
-        while(dDphi > M_PI)
+    inline double deltaPhi(const Basic3Vector* fv) const
+    {
+        double dDphi = getPhi() - fv->getPhi();
+        while (dDphi > M_PI)
             dDphi -= 2 * M_PI;
-        while(dDphi < -M_PI)
+        while (dDphi < -M_PI)
             dDphi += 2 * M_PI;
         return dDphi;
     }
 
-    inline double deltaTheta(const Basic3VectorData& fv) const
-    { 
-        double dDtheta = getTheta() - fv.getTheta();
-        while(dDtheta > M_PI)
+    inline double deltaTheta(const Basic3Vector* fv) const
+    {
+        double dDtheta = getTheta() - fv->getTheta();
+        while (dDtheta > M_PI)
             dDtheta -= 2 * M_PI;
-        while(dDtheta < -M_PI)
+        while (dDtheta < -M_PI)
             dDtheta += 2 * M_PI;
         return dDtheta;
     }
 
-    inline const pxl::Basic3VectorData& operator=(const pxl::Basic3VectorData& vec)
-    { _x = vec._x; _y = vec._y; _z = vec._z; return *this; }
+    inline const pxl::Basic3Vector& operator=(const pxl::Basic3Vector& vec)
+    {
+        _x = vec._x;
+        _y = vec._y;
+        _z = vec._z;
+        return *this;
+    }
 
-    inline const pxl::Basic3VectorData& operator+=(const pxl::Basic3VectorData& vec)
-    { _x += vec._x; _y += vec._y; _z += vec._z; return *this; }
-    inline const pxl::Basic3VectorData& operator-=(const pxl::Basic3VectorData& vec)
-    { _x -= vec._x; _y -= vec._y; _z -= vec._z; return *this; }
+    //FIXME: add functions for pointers, eg pxl::Basic3Vector* add(pxl::Basic3Vector* vec);
+    inline const pxl::Basic3Vector& operator+=(const pxl::Basic3Vector& vec)
+    {
+        _x += vec._x;
+        _y += vec._y;
+        _z += vec._z;
+        return *this;
+    }
+    inline const pxl::Basic3Vector& operator-=(const pxl::Basic3Vector& vec)
+    {
+        _x -= vec._x;
+        _y -= vec._y;
+        _z -= vec._z;
+        return *this;
+    }
 
-  private:
+private:
     double _x;
     double _y;
     double _z;
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;      
 };
 
 #undef EPSILON
 
 // non-member operators
-bool const operator==(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2);
-bool const operator!=(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2);
+bool const operator==(const pxl::Basic3Vector& obj1, const pxl::Basic3Vector& obj2);
+bool const operator!=(const pxl::Basic3Vector& obj1, const pxl::Basic3Vector& obj2);
 
 } // namespace pxl
 
-iotl__declareDataTypeProto(pxl::Basic3VectorData)
-
 #endif // pxl_pol_Basic3Vector_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_Basic4Vector_hh
 #define pxl_pol_Basic4Vector_hh
 
 
 
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
+namespace pxl
+{
 // pol
 
 /** 
-This class provides a simple Lorentz-fourvector with basic algebra. The methods provided are self-explanatory.
-*/
-class Basic4VectorData : public Basic3VectorData {
-  public:
-    Basic4VectorData() :
-        Basic3VectorData(0, 0, 0), _t(0) {}
-    Basic4VectorData(const Basic3VectorData &orig, double t = 0) :
-        Basic3VectorData(orig), _t(t) {}
-    Basic4VectorData(const Basic4VectorData &orig) :
-        Basic3VectorData(orig), _t(orig._t) {}
-    Basic4VectorData(double x, double y, double z, double t = 0) :
-        Basic3VectorData(x, y, z), _t(t) {}
+ This class provides a simple Lorentz-fourvector with basic algebra. The methods provided are self-explanatory.
+ */
+class Basic4Vector : public Basic3Vector
+{
+public:
+    Basic4Vector() :
+        Basic3Vector(0, 0, 0), _t(0)
+    {
+    }
+    Basic4Vector(const Basic3Vector &orig, double t = 0) :
+        Basic3Vector(orig), _t(t)
+    {
+    }
+    Basic4Vector(const Basic4Vector &orig) :
+        Basic3Vector(orig), _t(orig._t)
+    {
+    }
+    Basic4Vector(const Basic4Vector* orig) :
+        Basic3Vector(orig), _t(orig->_t)
+    {
+    }
+    Basic4Vector(double x, double y, double z, double t = 0) :
+        Basic3Vector(x, y, z), _t(t)
+    {
+    }
 
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Basic3Vector::serialize(out);
+		out.writeDouble(_t);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Basic3Vector::deserialize(in);
+		in.readDouble(_t);
+	}
+    
     // setX inherited
     // setY inherited
     // setZ inherited
-    inline void setT (double t) { _t = t; }
+    inline void setT(double t)
+    {
+        _t = t;
+    }
 
-    inline void setPx(double px) { setX(px); }
-    inline void setPy(double py) { setY(py); }
-    inline void setPz(double pz) { setZ(pz); }
+    inline void setPx(double px)
+    {
+        setX(px);
+    }
+    inline void setPy(double py)
+    {
+        setY(py);
+    }
+    inline void setPz(double pz)
+    {
+        setZ(pz);
+    }
 
-    inline void setE (double e)  { _t = e; }
+    inline void setE(double e)
+    {
+        _t = e;
+    }
     inline void setMass(double m)
-    { _t = std::sqrt(m*m + getMag2()); }
+    {
+        _t = std::sqrt(m*m + getMag2());
+    }
 
     // getX inherited
     // getY inherited
     // getZ inherited
-    inline double getT() const { return _t; }
+    inline double getT() const
+    {
+        return _t;
+    }
 
-    inline double getPx() const { return getX(); }
-    inline double getPy() const { return getY(); }
-    inline double getPz() const { return getZ(); }
+    inline double getPx() const
+    {
+        return getX();
+    }
+    inline double getPy() const
+    {
+        return getY();
+    }
+    inline double getPz() const
+    {
+        return getZ();
+    }
 
-    inline double getE()  const { return _t; }
+    inline double getE() const
+    {
+        return _t;
+    }
 
     inline double getMass2() const
-    { return _t*_t - getMag2(); }
+    {
+        return _t*_t - getMag2();
+    }
 
     inline double getMass() const
-    { double m2 = getMass2(); return m2 < 0.0 ? 0.0 : std::sqrt(m2); }
+    {
+        double m2 = getMass2();
+        return m2 < 0.0 ? 0.0 : std::sqrt(m2);
+    }
     // getPerp inherited
     inline double getPt() const
-    { return getPerp(); }
+    {
+        return getPerp();
+    }
 
     // getPhi inherited
     // getTheta inherited
@@ -4459,1182 +4709,1461 @@ class Basic4VectorData : public Basic3VectorData {
     // deltaTheta inherited
 
     inline double getEta() const
-    { return -std::log(std::tan(getTheta()*0.5)); }
+    {
+        return -std::log(std::tan(getTheta()*0.5));
+    }
 
     inline double getEt2() const
-    { double pt2 = getPerp2(); return pt2 == 0.0 ? 0.0 : _t*_t * pt2 / getMag2(); }
+    {
+        double pt2 = getPerp2();
+        return pt2 == 0.0 ? 0.0 : _t*_t * pt2 / getMag2();
+    }
     inline double getEt() const
-    { return std::sqrt(getEt2()); }
+    {
+        return std::sqrt(getEt2());
+    }
 
-    inline double deltaR(const Basic4VectorData& fv) const
-    { 
+    inline double deltaR(const Basic4Vector* fv) const
+    {
         double dDeta = deltaEta(fv);
         double dDphi = deltaPhi(fv);
         return std::sqrt(dDeta*dDeta + dDphi*dDphi);
     }
 
-    inline double deltaEta(const Basic4VectorData& fv) const
-    { return getEta() - fv.getEta(); }
+    inline double deltaEta(const Basic4Vector* fv) const
+    {
+        return getEta() - fv->getEta();
+    }
 
-    inline const pxl::Basic4VectorData& operator=(const pxl::Basic3VectorData& vec)
-    { Basic3VectorData::operator=(vec); return *this; }
-    inline const pxl::Basic4VectorData& operator=(const pxl::Basic4VectorData& vec)
-    { Basic3VectorData::operator=(vec); _t = vec._t; return *this; }
+    inline const pxl::Basic4Vector& operator=(const pxl::Basic3Vector& vec)
+    {
+        Basic3Vector::operator=(vec); return *this;}
+    inline const pxl::Basic4Vector& operator=(const pxl::Basic4Vector& vec)
+    {   Basic3Vector::operator=(vec); _t = vec._t; return *this;}
 
-    inline const pxl::Basic4VectorData& operator+=(const pxl::Basic4VectorData& vec)
-    { Basic3VectorData::operator+=(vec); _t += vec._t; return *this; }
-    inline const pxl::Basic4VectorData& operator-=(const pxl::Basic4VectorData& vec)
-    { Basic3VectorData::operator-=(vec); _t -= vec._t; return *this; }
+    inline const pxl::Basic4Vector& operator+=(const pxl::Basic4Vector& vec)
+    {   Basic3Vector::operator+=(vec); _t += vec._t; return *this;}
+    inline const pxl::Basic4Vector& operator-=(const pxl::Basic4Vector& vec)
+    {   Basic3Vector::operator-=(vec); _t -= vec._t; return *this;}
 
-  private:
+private:
     double _t;
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;      
 };
 
 // non-member operators
-bool const operator==(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2);
-bool const operator!=(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2);
+bool const operator==(const pxl::Basic4Vector& obj1, const pxl::Basic4Vector& obj2);
+bool const operator!=(const pxl::Basic4Vector& obj1, const pxl::Basic4Vector& obj2);
 
 } // namespace pxl
 
-iotl__declareDataTypeProto(pxl::Basic4VectorData)
 
 #endif // pxl_pol_Basic4Vector_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_pol_UserRecord_hh
-#define pxl_pol_UserRecord_hh
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-
-
-
-
-namespace pxl {
-/**
-This class is intented to aggregate information complementary to data members in form
-of string-variant pairs. 
-All PXL physics objects such as own user records and provide methods for quick 
-access to individual user record entries.
-*/ 
-class UserRecord : public pxl::Map<std::string, pxl::Variant> {
-  public:
-    typedef pxl::Map<std::string, pxl::Variant> PtlMap;
-
-    /// This method template inserts (or replaces) the user record indetified by \p key.
-    template<typename datatype>
-    inline void set(const std::string& key, const datatype& item)
-    {
-        pxl::Variant& value = PtlMap::findOrAlloc(key);
-        if (PXL_UNLIKELY(value.getType() != Variant::TYPE_NULL))
-            value.clear();
-
-        value.template init<datatype>();
-        value.template set<datatype>(item);
-    }
-
-    /// This method template searches and returns the user record item identified by \p key; \p defaultitem is returned in case the key is not found. 
-    template<typename datatype>
-    inline datatype find(const std::string& key, const datatype& defaultitem) const
-    {
-        const pxl::Variant* value = PtlMap::findOrReturn(key);
-        if (!value)
-            return defaultitem;
-        return value->template get<datatype>();
-    }
-
-    /// This method template searches and returns the user record item indetified by \p key; a pxl::Exception is thrown in case the key is not found. 
-    template<typename datatype>
-    inline datatype find(const std::string& key) const
-    {
-        const pxl::Variant* value = PtlMap::findOrReturn(key);
-        if (!value)
-            pxl::exception("pxl::UserRecord::find(...)",
-                           "key not found and no default item provided");
-        return value->template get<datatype>();
-    }
-};
-
-/// This typedef defines a reference for pxl::UserRecord
-typedef UserRecord& UserRecordRef;
-/// This typedef defines a const reference for pxl::UserRecord
-typedef const UserRecord& UserRecordConstRef;
-
-// map stream implementations to pxl::Map<...> base class
-
-template<>
-inline pxl::Id iStreamer::restoreData(pxl::UserRecord& map)
-{ return restoreData(static_cast<pxl::UserRecord::PtlMap&>(map)); }
-
-template<>
-inline void oStreamer::storeData(const pxl::UserRecord& map)
-{ storeData(static_cast<const pxl::UserRecord::PtlMap&>(map)); }
-
-} // namespace pxl
-
-#endif // pxl_pol_UserRecord_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 #ifndef pxl_pol_BasicObject_hh
 #define pxl_pol_BasicObject_hh
 
 
 
 
-
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
 
 // pol
 
 /** 
-This class provides common functionalities of PXL physics objects like 
-data members for storing an object name and flags for status, Monte-Carlo mode and 
-object locking; more specific information, such as b-tags, jet cone sizes or energy 
-corrections, for instance, can be stored in the so-called user records (see pxl::UserRecord). 
-An integer workflag facilitates tagging of individual objects. 
-*/
-class BasicObjectData {
-  public: 
-    BasicObjectData() :
-        _locked(0),
-        _monteCarloMode(0),
-        _name("default"),
-        _status(0),
-        _workflag(0),
-        _userRecords()
-    {}
+ This class provides common functionalities of PXL physics objects like 
+ data members for storing an object name and flags for status, Monte-Carlo mode and 
+ object locking; more specific information, such as b-tags, jet cone sizes or energy 
+ corrections, for instance, can be stored in the so-called user records (see pxl::UserRecord). 
+ An integer workflag facilitates tagging of individual objects. 
+ */
+class Object : public pxl::Relative
+{
+public:
+	Object() :
+		pxl::Relative(), _locked(0), _workflag(0), _userRecords()
+	{
+	}
 
-    /// This method returns the value of the lock flag.
-    inline bool        getLocked()   const { return _locked; }
-    /// This method returns the value of the Monte-Carlo flag.
-    inline int         getMonteCarloMode() const { return _monteCarloMode; }
-    /// This method returns the name.
-    inline std::string getName()     const { return _name; }
-    /// This method returns the value of the status flag.
-    inline int         getStatus()   const { return _status; }
-    /// This method returns the value of the workflag.
-    inline int         getWorkflag() const { return _workflag; }
+	Object(const Object* original) :
+		pxl::Relative(), _locked(original->_locked),
+				_workflag(original->_workflag),
+				_userRecords(original->_userRecords)
+	{
+	}
 
-    /// This method sets the value of the lock flag to \p v.
-    inline void setLocked(bool v)      { _locked = v; }
-    /// This method sets the value of the Monte-Carlo flag to \p v.
-    inline void setMonteCarloMode(int v) { _monteCarloMode = v; }
-    /// This method sets the name to the contents of \p v.
-    inline void setName(std::string v) { _name = v; }
-    /// This method sets the value of the status flag to \p v.
-    inline void setStatus(int v)       { _status = v; }
-    /// This method sets the value of the workflag to \p v.
-    inline void setWorkflag(int v)     { _workflag = v; }
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
 
-    /// This method provides access to the user records.
-    inline const pxl::UserRecord& getUserRecord() const { return _userRecords; }
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("3b3a2442-04f6-400e-8e30-1de2dbc8d628");
+		return id;
+	}
 
-    /// This method sets the user record entry identified by \p key to \p item.
-    template<typename datatype>
-    inline void setUserRecord(const std::string& key, const datatype& item)
-    { _userRecords.template set<datatype>(key, item); }
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Relative::serialize(out);
+		out.writeBool(_locked);
+		out.writeInt(_workflag);
+		_userRecords.serialize(out);
+	}
 
-    /// This method removes the user record entry identified by \p key.
-    inline void removeUserRecord(const std::string& key)
-    { _userRecords.remove(key); }
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Relative::deserialize(in);
+		in.readBool(_locked);
+		in.readInt(_workflag);
+		_userRecords.deserialize(in);
+	}
 
-    /// This method searches the user record entry identified by \p key; \p defaultitem is returned in case key is not found.
-    template<typename datatype>
-    inline datatype findUserRecord(const std::string& key, const datatype& defaultitem) const
-    { return _userRecords.template find<datatype>(key, defaultitem); }
+	/// This method returns the value of the lock flag.
+	inline bool getLocked() const
+	{
+		return _locked;
+	}
 
-    /// This method searches the user record entry identified by \p key; an exception is thrown in case key is not found.
-    template<typename datatype>
-    inline datatype findUserRecord(const std::string& key) const
-    { return _userRecords.template find<datatype>(key); }
+	/// This method returns the value of the workflag.
+	inline int getWorkflag() const
+	{
+		return _workflag;
+	}
 
-  protected:
-    bool        _locked;
-    int         _monteCarloMode;
-    std::string _name;
-    int         _status;
-    int         _workflag;
+	/// This method sets the value of the lock flag to \p v.
+	inline void setLocked(bool v)
+	{
+		_locked = v;
+	}
 
-    pxl::UserRecord  _userRecords;
+	/// This method sets the value of the workflag to \p v.
+	inline void setWorkflag(int v)
+	{
+		_workflag = v;
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;  
+	/// This method provides access to the user records.
+	inline const pxl::UserRecord& getUserRecord() const
+	{
+		return _userRecords;
+	}
+
+	/// This method sets the user record entry identified by \p key to \p item.
+	template<typename datatype> inline void setUserRecord(
+			const std::string& key, const datatype& item)
+	{
+		_userRecords.template set<datatype>(key, item);
+	}
+
+	/// This method removes the user record entry identified by \p key.
+	inline void removeUserRecord(const std::string& key)
+	{
+		_userRecords.erase(key);
+	}
+
+	inline void clearUserRecords()
+	{
+		_userRecords.clear();
+	}
+
+	/// This method searches the user record entry identified by \p key; \p defaultitem is returned in case key is not found.
+	template<typename datatype> inline datatype findUserRecord(
+			const std::string& key, const datatype& defaultitem) const
+	{
+		return _userRecords.template find<datatype>(key, defaultitem);
+	}
+
+	/// This method searches the user record entry identified by \p key; an exception is thrown in case key is not found.
+	template<typename datatype> inline datatype findUserRecord(
+			const std::string& key) const throw(std::runtime_error)
+	{
+		return _userRecords.template find<datatype>(key);
+	}
+
+	/// This method checks if the user record entry identified by \p key is present.
+	inline bool checkUserRecord(const std::string& key) const
+	{
+		return _userRecords.check(key);
+	}
+
+	/// This method checks if the user record entry identified by \p key is present. If yes, \p item is set to the according value.
+	template<typename datatype> inline bool checkUserRecord(
+			const std::string& key, datatype& item) const
+	{
+		return _userRecords.template check<datatype>(key, item);
+	}
+
+	inline const pxl::Object& operator=(const pxl::Object& pa)
+	{
+		pxl::Relative::operator=(pa);
+		_locked = pa._locked;
+		_workflag = pa._workflag;
+		_userRecords = pa._userRecords;
+		
+		return *this;
+	}
+
+	/// This virtual method is intended to print out object state information on various verbosity levels.
+	/// @param level verbosity level
+	/// @param os output _stream, default is std::cout
+	/// @param pan print indention
+	/// @return output _stream
+	virtual std::ostream& print(int level = 1, std::ostream& os = std::cout,
+			int pan = 0) const;
+
+	virtual std::ostream& printContent(int level = 1,
+			std::ostream& os = std::cout, int pan = 0) const;
+
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<Object>(this);
+	}
+
+private:
+	bool _locked;
+	int _workflag;
+
+	pxl::UserRecord _userRecords;
 };
 
-/// This typedef defines a basic PXL physics object with pxl::BasicObjectData as data.
-typedef pxl::CowObject<pxl::BasicObjectData> BasicObject;
-/// This typedef defines a weak pointer for pxl::BasicObject
-typedef pxl::WkPtrSpec<pxl::BasicObjectData, pxl::BasicObject> BasicObjectWkPtr;
-/// This typedef defines a reference for pxl::BasicObject
-typedef BasicObject& BasicObjectRef;
-/// This typedef defines a const reference for pxl::BasicObject
-typedef const BasicObject& BasicObjectConstRef;
+///// This typedef defines a weak pointer for pxl::Object
+typedef pxl::weak_ptr<Object> ObjectWkPtr;
 
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::BasicObject)
-iotl__declareDataTypeProto(pxl::BasicObjectData)
-
 #endif // pxl_pol_BasicObject_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_BasicManager_hh
 #define pxl_pol_BasicManager_hh
 
 
 
 
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
 
 // pol
 
 /** 
-This class the functionality of the pxl::BasicObjectData class by providing an object owner (see pxl::ObjectOwner) and 
-corresponding service methods. This way, physics objects (like instances of the classes 
-pxl::Particle, pxl::Vertex or pxl::Collision as well as other arbitrary pxl::ObjectBase derivatives can be 
-aggregated and managed. 
-*/
-class BasicObjectManagerData : public pxl::BasicObjectData {
-  public: 
-    BasicObjectManagerData() :
-        BasicObjectData(), _objects() {}
-    /// This copy constructor performs a deep copy of \p original 
-    /// with all contained objects and their (redirected) relations.
-    BasicObjectManagerData(const pxl::BasicObjectManagerData& original) :
-        BasicObjectData(original), _objects(original._objects) {}
+ This class the functionality of the pxl::BasicObjectData class by providing an object owner (see pxl::ObjectOwner) and 
+ corresponding service methods. This way, physics objects (like instances of the classes 
+ pxl::Particle, pxl::Vertex or pxl::Collision as well as other arbitrary pxl::Relative derivatives can be 
+ aggregated and managed. 
+ */
+class ObjectManager : public pxl::Object
+{
+public:
+	ObjectManager() :
+		Object(), _objects()
+	{
+	}
+	/// This copy constructor performs a deep copy of \p original 
+	/// with all contained objects and their (redirected) relations.
+	ObjectManager(const pxl::ObjectManager& original) :
+		Object(original), _objects(original._objects)
+	{
+	}
+	/// This copy constructor performs a deep copy of \p original 
+	/// with all contained objects and their (redirected) relations.
+	ObjectManager(const pxl::ObjectManager* original) :
+		Object(original), _objects(original->_objects)
+	{
+	}
 
-    // create
-    /// This method template creates a new instance of \p objecttype;
-    /// objecttype must be a class inheriting from pxl::ObjectBase;
-    /// the newly created instance is owned and will be deleted by the object owner. 
-    template<class datatype>
-    datatype& create()
-    { return _objects.create<datatype>(); }
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
 
-    /// This method template creates a new \p objecttype instance by invoking a \p ctrtype overloaded constructor; 
-    /// \p objecttype must be a class inheriting from pxl::ObjectBase;
-    /// the newly created instance is owned and will be deleted by the object owner. 
-    template<class datatype, class ctrdatatype>
-    datatype& create(const ctrdatatype& ori)
-    { return _objects.create<datatype,ctrdatatype>(ori); }
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("86cab8f4-6c08-477d-a4e9-bd718d6f899f");
+		return id;
+	}
 
-    // crateIndexed
-    /// This method template acts like create() and registers the newly created instance under \p idx in the index.
-    template<class datatype>
-    datatype& createIndexed(const std::string& idx)
-    { datatype& obj = _objects.create<datatype>(); setIndex(idx, obj); return obj; }
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Object::serialize(out);
+		_objects.serialize(out);
+	}
 
-    /// This method template acts like create() and registers the newly created instance under \p idx in the index.
-    template<class datatype, class ctrdatatype>
-    datatype& createIndexed(const ctrdatatype& ori, const std::string& idx)
-    { datatype& obj = _objects.create<datatype,ctrdatatype>(ori); setIndex(idx, obj); return obj; }
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Object::deserialize(in);
+		_objects.deserialize(in);
+	}
 
+	// create
+	/// This method template creates a new instance of \p objecttype;
+	/// objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by the object owner. 
+	template<class datatype> datatype* create()
+	{
+		return _objects.create<datatype>();
+	}
 
-    /// This method inserts \p obj in the container of the object owner and takes deletion responsability.
-    inline void setObject(pxl::ObjectBase& obj, const std::string& idx)
-    {_objects.set(obj); setIndex(idx, obj);}
+	/// This method template creates a new \p objecttype instance by invoking a \p ctrtype overloaded constructor; 
+	/// \p objecttype must be a class inheriting from pxl::Relative;
+	/// the newly created instance is owned and will be deleted by the object owner. 
+#ifndef SWIG
+	template<class datatype, class ctrdatatype> datatype* create(
+			const ctrdatatype& ori)
+	{
+		return _objects.create<datatype,ctrdatatype>(ori);
+	}
+#endif
+	// crateIndexed
+	/// This method template acts like create() and registers the newly created instance under \p idx in the index.
+	template<class datatype> datatype* createIndexed(const std::string& idx)
+	{
+		datatype* obj = _objects.create<datatype>();
+		setIndex(idx, obj);
+		return obj;
+	}
 
-    /// This method registers the object \p obj with the index-id \p idx in the index and returns true in case of success;
-    /// please notice, that obj must be owned by this object owner and \p idx must not be a zero length string.  
-    inline bool setIndex(const std::string& idx, pxl::ObjectBase& obj)
-    { return _objects.setIndex(idx, obj); }
+	/// This method template acts like create() and registers the newly created instance under \p idx in the index.
+	template<class datatype, class ctrdatatype> datatype* createIndexed(
+			const ctrdatatype& ori, const std::string& idx)
+	{
+		datatype* obj = _objects.create<datatype,ctrdatatype>(ori);
+		setIndex(idx, obj);
+		return obj;
+	}
 
-    /// This method provides access to the object owner.
-    inline const pxl::Objects& getObjects() const
-    { return _objects; }
+	/// This method inserts \p obj in the container of the object owner and takes deletion responsability.
+	inline void setObject(pxl::Relative* obj)
+	{
+		_objects.set(obj);
+	}
 
-    /// This method deletes the object \p obj.
-    inline void removeObject(pxl::ObjectBase& obj)
-    { _objects.remove(obj); }
+	/// This method inserts \p obj with the index-id \p idx in the container of the object owner and takes deletion responsability.
+	inline void setObject(pxl::Relative* obj, const std::string& idx)
+	{
+		_objects.set(obj);
+		setIndex(idx, obj);
+	}
 
-    /// This method clears the object owner and deletes all owned objects. 
-    inline void clearObjects()
-    { _objects.clearContainer(); }
+	/// This method registers the object \p obj with the index-id \p idx in the index and returns true in case of success;
+	/// please notice, that obj must be owned by this object owner and \p idx must not be a zero length string.  
+	inline bool setIndex(const std::string& idx, pxl::Relative* obj)
+	{
+		return _objects.setIndex(idx, obj);
+	}
 
+	/// This method provides access to the object owner.
+	inline pxl::ObjectOwner& getObjectOwner()
+	{
+		return _objects;
+	}
 
-    /// This method searches the index for the index-id \p idx and returns a dynamically casted 
-    /// C++ pointer of type \p objecttype* to the corresponding object; 
-    /// in case idx is not found a null pointer is returned.
-    template<class objecttype>
-    inline objecttype* findObject(const std::string idx) const
-    { return _objects.findObject<objecttype>(idx); }
+	inline const pxl::ObjectOwner& getObjectOwner() const
+	{
+		return _objects;
+	}
 
-    /// This method searches the copy history to locate the copy of \p original and 
-    /// returns a dynamically casted C++ pointer of type \p objecttype* to the corresponding copy; 
-    /// in case no copy can be traced a null pointer is returned.
-    template<class objecttype>
-    inline objecttype* findCopyOf(const pxl::ObjectBase& original) const
-    { return _objects.findCopyOf<objecttype>(original); }
+	inline const std::vector<pxl::Relative*>& getObjects() const
+	{
+		return _objects.getObjects();
+	}
 
+	template<class objecttype> inline void getObjectsOfType(
+			std::vector<objecttype*>& vec) const
+	{
+		_objects.getObjectsOfType<objecttype>(vec);
+	}
 
-    /// This method provides direct access to the copy history (created by the copy constructor). 
-    inline const pxl::CopyHistory& getCopyHistory() const
-    { return _objects.getCopyHistory(); }
+	/// This method deletes the object \p obj.
+	inline void removeObject(pxl::Relative* obj)
+	{
+		_objects.remove(obj);
+	}
 
-    /// This method clears the copy history  (created by the copy constructor). 
-    inline void clearCopyHistory()
-    { _objects.clearCopyHistory(); }
+	/// This method clears the object owner and deletes all owned objects. 
+	inline void clearObjects()
+	{
+		_objects.clearContainer();
+	}
 
+	/// This method searches the index for the index-id \p idx and returns a dynamically casted 
+	/// C++ pointer of type \p objecttype* to the corresponding object; 
+	/// in case idx is not found a null pointer is returned.
+	template<class objecttype> inline objecttype* findObject(
+			const std::string idx) const
+	{
+		return _objects.findObject<objecttype>(idx);
+	}
 
-    /// This method provides direct access to the index. 
-    inline const pxl::Index& getIndex() const
-    { return _objects.getIndex(); }
+	/// This method searches the copy history to locate the copy of \p original and 
+	/// returns a dynamically casted C++ pointer of type \p objecttype* to the corresponding copy; 
+	/// in case no copy can be traced a null pointer is returned.
+	template<class objecttype> inline objecttype* findCopyOf(
+			const pxl::Relative* original) const
+	{
+		return _objects.findCopyOf<objecttype>(original);
+	}
 
-    /// This method removes the index entry with index-id \p idx; please notice: it does not remove the object itself. 
-    inline void removeIndex(const std::string& idx)
-    { _objects.removeIndex(idx); }
+	/// This method provides direct access to the copy history (created by the copy constructor). 
+	inline const pxl::CopyHistory& getCopyHistory() const
+	{
+		return _objects.getCopyHistory();
+	}
 
-    /// This method clears the index; please notice: it does not remove the objects themself.
-    inline void clearIndex()
-    { _objects.clearIndex(); }
+	/// This method clears the copy history  (created by the copy constructor). 
+	inline void clearCopyHistory()
+	{
+		_objects.clearCopyHistory();
+	}
 
-  protected:
-    pxl::Objects _objects;
+	/// This method provides direct access to the index. 
+	inline const pxl::Index& getIndex() const
+	{
+		return _objects.getIndex();
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;      
+	/// This method removes the index entry with index-id \p idx; please notice: it does not remove the object itself. 
+	inline void removeIndex(const std::string& idx)
+	{
+		_objects.removeIndex(idx);
+	}
+
+	/// This method clears the index; please notice: it does not remove the objects themself.
+	inline void clearIndex()
+	{
+		_objects.clearIndex();
+	}
+
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<ObjectManager>(this);
+	}
+
+private:
+	pxl::ObjectOwner _objects;
 };
 
-/// This typedef defines a basic PXL physics object with pxl::BasicObjectManagerData as data.
-typedef pxl::Object<pxl::BasicObjectManagerData> BasicObjectManager; // NOTICE: BasicObjectManagers cannot be managed by Copy On Write!
-/// This typedef defines a weak pointer for pxl::BasicObjectManager
-typedef pxl::WkPtrSpec<pxl::BasicObjectManagerData, pxl::BasicObjectManager> BasicObjectManagerWkPtr;
-/// This typedef defines a reference for pxl::BasicObjectManager
-typedef BasicObjectManager& BasicObjectManagerRef;
-/// This typedef defines a const reference for pxl::BasicObjectManager
-typedef const BasicObjectManager& BasicObjectManagerConstRef;
+///// This typedef defines a weak pointer for pxl::ObjectManager
+typedef pxl::weak_ptr<pxl::ObjectManager> ObjectManagerWkPtr;
 
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::BasicObjectManager)
-iotl__declareDataTypeProto(pxl::BasicObjectManagerData)
 
 #endif // pxl_pol_BasicManager_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_Vertex_hh
 #define pxl_pol_Vertex_hh
 
 
 
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-namespace pxl {
+#ifndef pxl_pol_CommonVertex_hh
+#define pxl_pol_CommonVertex_hh
 
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
+/**
+ * This is the common, pure virtual interface class for vertices.
+ */
+
+class CommonVertex
+{
+public:
+	//getters for basic vector quantities.
+	virtual double getX() const = 0;
+	virtual double getY() const = 0;
+	virtual double getZ() const = 0;
+
+	//setters for basic fourvector quantities
+	virtual void setX(double x) = 0;
+	virtual void setY(double y) = 0;
+	virtual void setZ(double z) = 0;
+
+	//setters for basic fourvector quantities
+	virtual void setXYZ(double x, double y, double z) = 0;
+	virtual void addXYZ(double x, double y, double z) = 0;
+
+};
+
+}
+
+#endif /*pxl_pol_CommonVertex_hh*/
+
+namespace pxl
+{
 
 // pol
 /**
-This class allows to store threevector and further properties of the decay vertex; see also pxl::BasicObjectData.
-*/
-class VertexData : public pxl::BasicObjectData {
-  public:
-    /// This method grants read access to the vector. 
-    inline const pxl::Basic3VectorData& vector()                const { return _vector; }
-    /// This method grants read access to the vector. 
-    inline const pxl::Basic3VectorData& vector(const pxl::Get&) const { return _vector; }
-    /// This method grants write access to the vector. 
-    inline       pxl::Basic3VectorData& vector(const pxl::Set&)       { return _vector; }
+ This class allows to store threevector and further properties of the decay vertex; see also pxl::BasicObjectData.
+ */
+class Vertex : public pxl::Object, public pxl::CommonVertex
+{
+public:
+	Vertex() :
+		Object(), _vector()
+	{
+	}
 
-    /// This method adds the vector of \p vxd. 
-    inline const pxl::VertexData& operator+=(const pxl::VertexData& vxd) { this->vector(pxl::set) += vxd.vector(); return *this; }
-    /// This method subtracts the vector of \p vxd. 
-    inline const pxl::VertexData& operator-=(const pxl::VertexData& vxd) { this->vector(pxl::set) -= vxd.vector(); return *this; }
+	Vertex(const Vertex& original) :
+		Object(original), _vector(original._vector)
+	{
+	}
+	Vertex(const Vertex* original) :
+		Object(original), _vector(original->_vector)
+	{
+	}
 
-  protected:
-    pxl::Basic3VectorData _vector;
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("80da63d3-c838-466d-9d5b-cddb6110f0e3");
+		return id;
+	}
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Object::serialize(out);
+		_vector.serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Object::deserialize(in);
+		_vector.deserialize(in);
+	}
+
+	/// This method grants read access to the vector.
+    inline const pxl::Basic3Vector& getVector() const
+	{
+		return _vector;
+	}
+
+	inline double getX() const
+	{
+		return _vector.getX();
+	}
+	inline double getY() const
+	{
+		return _vector.getY();
+	}
+	inline double getZ() const
+	{
+		return _vector.getZ();
+	}
+
+	inline void setX(double x)
+	{
+		_vector.setX(x);
+	}
+	inline void setY(double y)
+	{
+		_vector.setY(y);
+	}
+	inline void setZ(double z)
+	{
+		_vector.setZ(z);
+	}
+
+	inline void setXYZ(double x, double y, double z)
+	{
+		_vector.setX(x);
+		_vector.setY(y);
+		_vector.setZ(z);
+	}
+	inline void setVector(const pxl::Basic3Vector& vector)
+	{
+		_vector = vector;
+	}
+
+	inline void addXYZ(double x, double y, double z)
+	{
+		_vector.setX(x + _vector.getX());
+		_vector.setY(y + _vector.getY());
+		_vector.setZ(z + _vector.getZ());
+	}
+
+	inline void addVector(const pxl::Basic3Vector& vector)
+	{
+		_vector+=vector;
+	}
+
+	inline void addVertex(const pxl::Vertex* vx)
+	{
+		_vector += vx->getVector();
+	}
+
+	/// This method adds the vector of \p vxd.
+	inline const pxl::Vertex& operator+=(const pxl::Vertex& vx)
+	{
+		_vector += vx._vector;
+		return *this;
+	}
+	/// This method subtracts the vector of \p vxd.
+	inline const pxl::Vertex& operator-=(const pxl::Vertex& vx)
+	{
+		_vector -= vx._vector;
+		return *this;
+	}
+
+	virtual pxl::Relative* clone() const
+	{
+		return new pxl::Vertex(*this);
+	}
+
+	virtual std::ostream& print(int level = 1, std::ostream& os = std::cout,
+			int pan = 0) const;
+
+private:
+	pxl::Basic3Vector _vector;
+
 };
 
 // non-member operators
-bool const operator==(const pxl::VertexData& obj1, const pxl::VertexData& obj2);
-bool const operator!=(const pxl::VertexData& obj1, const pxl::VertexData& obj2);
+bool const operator==(const pxl::Vertex& obj1, const pxl::Vertex& obj2);
+bool const operator!=(const pxl::Vertex& obj1, const pxl::Vertex& obj2);
 
 // typedefs
-/**
-This typedef represents decay vertices, thus spatial points of particle decays;
-data is aggregated in pxl::VertexData.
-It is intended to store three-vector and further properties of the decay vertex
-and to establish relations to mother and daughter pxl::Particle objects, for instance.
-*/
-typedef pxl::CowObject<pxl::VertexData> Vertex;
-/// This typedef defines a weak pointer for pxl::Vertex
-typedef pxl::WkPtrSpec<pxl::VertexData, pxl::Vertex> VertexWkPtr;
-/// This typedef defines a reference for pxl::Vertex
-typedef Vertex& VertexRef;
-/// This typedef defines a const reference for pxl::Vertex
-typedef const Vertex& VertexConstRef;
 
-template<> std::ostream& CowObject<pxl::VertexData>::print(int level, std::ostream& os, int pan) const;
+/// This typedef defines a weak pointer for pxl::Vertex
+typedef pxl::weak_ptr<pxl::Vertex> VertexWkPtr;
 
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::Vertex)
-iotl__declareDataTypeProto(pxl::VertexData)
-
 #endif // pxl_pol_Vertex_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_Particle_hh
 #define pxl_pol_Particle_hh
 
 
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-namespace pxl {
+#ifndef pxl_pol_CommonParticle_hh
+#define pxl_pol_CommonParticle_hh
 
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
+/**
+ * This is the common, pure virtual interface class for particles.
+ * The physical representation, (px, py, pz, E) or (pt, eta, phi, m/E), can
+ * be chosen by the concrete implementation.
+ */
 
+class CommonParticle
+{
+public:
+	//getters for basic fourvector quantities in (px, py, pz, E)-representation
+	virtual double getPx() const = 0;
+	virtual double getPy() const = 0;
+	virtual double getPz() const = 0;
+	virtual double getE() const = 0;
+
+	//getters for basic fourvector quantities in (pt, eta, phi, mass)-representation
+	virtual double getPt() const = 0;
+	virtual double getEta() const = 0;
+	virtual double getPhi() const = 0;
+	virtual double getMass() const = 0;
+	
+	virtual double getCharge() const = 0;
+
+	//setters for basic fourvector quantities
+	virtual void setP4(double px, double py, double pz, double e) = 0;
+	virtual void addP4(double px, double py, double pz, double e) = 0;
+	virtual void setCharge(double q) = 0;
+
+};
+
+}
+
+#endif /*pxl_pol_CommonParticle_hh*/
+
+namespace pxl
+{
 // pol
 /**
-This class allows to store Lorentz-fourvector and further properties of particles or reconstructed objects
-such as charge, particle-id plus the inherited properties of pxl::BasicObjectData.
-*/
-class ParticleData : public pxl::BasicObjectData {
-  public: 
-    ParticleData() :
-        BasicObjectData(), _vector(), _charge(0), _particleId(0) {}
+ This class allows to store Lorentz-fourvector and further properties of particles or reconstructed objects
+ such as charge, particle-id plus the inherited properties of pxl::BasicObjectData.
+ */
+class Particle : public pxl::Object, public pxl::CommonParticle
+{
+public:
+	Particle() :
+		Object(), _charge(0), _particleId(0)
+	{
+	}
 
-    /// This method grants read access to the vector. 
-    inline const pxl::Basic4VectorData& vector()                const { return _vector; }
-     /// This method grants read access to the vector. 
-    inline const pxl::Basic4VectorData& vector(const pxl::Get&) const { return _vector; }
-    /// This method grants write access to the vector. 
-    inline       pxl::Basic4VectorData& vector(const pxl::Set&)       { return _vector; }
+	Particle(const Particle& original) :
+		Object(original), _vector(original._vector), _charge(original._charge),
+				_particleId(original._particleId)
+	{
+	}
 
-    /// This method returns the particle charge.
-    inline double getCharge() const { return _charge; }
-    /// This method sets the particle charge to v.
-    inline void setCharge(double v) { _charge = v; }
+	Particle(const Particle* original) :
+		Object(original), _vector(original->_vector), _charge(original->_charge),
+				_particleId(original->_particleId)
+	{
+	}
 
-    /// This method returns the particle-id.
-    inline int getParticleId() const { return _particleId; }
-    /// This method sets the particle-id to \p v.
-    inline void setParticleId(int v) { _particleId = v; }
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
 
-    /// This method adds vector and charge of \p pad. 
-    inline const pxl::ParticleData& operator+=(const pxl::ParticleData& pad)
-    { this->vector(pxl::set) += pad.vector(); _charge += pad._charge; return *this; }
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("c5515a0d-36bf-4076-bf33-e14343cf5a88");
+		return id;
+	}
 
-    /// This method subtracts vector and charge of of \p pad. 
-    inline const pxl::ParticleData& operator-=(const pxl::ParticleData& pad)
-    { this->vector(pxl::set) -= pad.vector(); _charge += pad._charge; return *this; }
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Object::serialize(out);
+		_vector.serialize(out);
+		out.writeDouble(_charge);
+		out.writeInt(_particleId);
+	}
 
-  protected:
-    pxl::Basic4VectorData _vector;
-    double                _charge;
-    int                   _particleId;
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Object::deserialize(in);
+		_vector.deserialize(in);
+		in.readDouble(_charge);
+		in.readInt(_particleId);
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;      
-};    
+	/// This method grants read access to the vector.
+    inline const pxl::Basic4Vector& getVector() const
+	{
+		return _vector;
+	}
+
+	/// This method returns the particle charge.
+	inline double getCharge() const
+	{
+		return _charge;
+	}
+	/// This method sets the particle charge to v.
+	inline void setCharge(double v)
+	{
+		_charge = v;
+	}
+
+	/// This method returns the particle-id.
+	inline int getParticleId() const
+	{
+		return _particleId;
+	}
+	/// This method sets the particle-id to \p v.
+	inline void setParticleId(int v)
+	{
+		_particleId = v;
+	}
+
+	inline const pxl::Particle& operator=(const pxl::Particle& pa)
+	{
+		pxl::Object::operator=(pa);
+		_vector = pa._vector;
+		_charge = pa._charge;
+		_particleId = pa._particleId;
+		return *this;
+	}
+
+	/// This method adds vector and charge of \p pad.
+	inline const pxl::Particle& operator+=(const pxl::Particle& pa)
+	{
+		_vector += pa._vector;
+		_charge += pa._charge;
+		return *this;
+	}
+
+	/// This method subtracts vector and charge of of \p pad.
+	inline const pxl::Particle& operator-=(const pxl::Particle& pa)
+	{
+		_vector -= pa._vector;
+		_charge += pa._charge;
+		return *this;
+	}
+
+	virtual pxl::Relative* clone() const
+	{
+		return new pxl::Particle(*this);
+	}
+
+	inline double getPx() const
+	{
+		return _vector.getPx();
+	}
+
+	inline double getPy() const
+	{
+		return _vector.getPy();
+	}
+
+	inline double getPz() const
+	{
+		return _vector.getPz();
+	}
+
+	inline double getE() const
+	{
+		return _vector.getE();
+	}
+
+	inline double getMass() const
+	{
+		return _vector.getMass();
+	}
+
+	inline double getPt() const
+	{
+		return _vector.getPt();
+	}
+
+	inline double getEta() const
+	{
+		return _vector.getEta();
+	}
+
+	inline double getEt() const
+	{
+		return _vector.getEt();
+	}
+
+	inline double getPhi() const
+	{
+		return _vector.getPhi();
+	}
+
+	inline double getTheta() const
+	{
+		return _vector.getTheta();
+	}
+
+	inline void setP4(double px, double py, double pz, double e)
+	{
+		_vector.setPx(px);
+		_vector.setPy(py);
+		_vector.setPz(pz);
+		_vector.setE(e);
+	}
+
+	inline void setP4(const pxl::Basic4Vector& vector)
+	{
+		_vector = vector;
+	}
+
+	inline void addP4(double px, double py, double pz, double e)
+	{
+		_vector.setPx(px + _vector.getPx());
+		_vector.setPy(py + _vector.getPy());
+		_vector.setPz(pz + _vector.getPz());
+		_vector.setE(e + _vector.getE());
+	}
+
+	void setP4FromDaughters();
+
+	void setP4FromDaughtersRecursive();
+
+	inline void addP4(const pxl::Basic4Vector& vector)
+	{
+		_vector+=vector;
+	}
+
+	inline void addP4(const pxl::Particle* particle)
+	{
+		_vector+=particle->getVector();
+	}
+
+	inline void addParticle(const pxl::Particle* pa)
+	{
+		_vector += pa->getVector();
+		_charge += pa->getCharge();
+	}
+
+	virtual std::ostream& print(int level = 1, std::ostream& os = std::cout,
+			int pan = 0) const;
+
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<Particle>(this);
+	}
+
+private:
+	pxl::Basic4Vector _vector;
+	double _charge;
+	int _particleId;
+
+};
 
 // non-member operators
-bool const operator==(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2);
-bool const operator!=(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2);
+bool const operator==(const pxl::Particle& obj1, const pxl::Particle& obj2);
+bool const operator!=(const pxl::Particle& obj1, const pxl::Particle& obj2);
 
 // typedefs
 /**
-This typedef represents particles and reconstructed 
-objects such as muons, electrons, photons, jets; data is aggregated in pxl::ParticleData.
-*/
-typedef pxl::CowObject<pxl::ParticleData> Particle;
-/// This typedef defines a weak pointer for pxl::Particle
-typedef pxl::WkPtrSpec<pxl::ParticleData, pxl::Particle> ParticleWkPtr;
-/// This typedef defines a reference for pxl::Particle
-typedef Particle& ParticleRef;
-/// This typedef defines a const reference for pxl::Particle
-typedef const Particle& ParticleConstRef;
-
-template<> std::ostream& CowObject<pxl::ParticleData>::print(int level, std::ostream& os, int pan) const;
+ This typedef represents particles and reconstructed
+ objects such as muons, electrons, photons, jets; data is aggregated in pxl::ParticleData.
+ */
+typedef pxl::weak_ptr<pxl::Particle> ParticleWkPtr;
 
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::Particle)
-iotl__declareDataTypeProto(pxl::ParticleData)
 
 #endif // pxl_pol_Particle_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_Collision_hh
 #define pxl_pol_Collision_hh
 
 
-
-namespace pxl {
-
+namespace pxl
+{
 /**
-The data aggregated in pxl::CollisionData is identical to pxl::CollisionData;
-it allows the separation of different collisions in multicollision events 
-(as they occur at high-rate hadron colliders) by providing the relation management 
-necessary to associate pxl::Vertex or pxl::Particle objects, for instance.
-*/
-typedef pxl::BasicObjectData CollisionData;
+ This class represents individual interactions in  multicollision events.
+ It allows the separation of different collisions as they occur
+ at high-rate hadron colliders by providing the relation management
+ necessary to associate pxl::Vertex or pxl::Particle objects, for instance.
+ */
 
-/**
-This typedef represents individual interactions in  multicollision events; 
-data is aggregated in pxl::CollisionData (= pxl::BasicObjectData).
-It allows the separation of different collisions as they occur 
-at high-rate hadron colliders by providing the relation management 
-necessary to associate pxl::Vertex or pxl::Particle objects, for instance. 
-*/
-typedef pxl::CowObject<pxl::CollisionData> Collision;
+class Collision : public pxl::Object
+{
+public:
+	Collision() :
+		Object()
+	{
+	}
+	/// This copy constructor provides a deep copy of the event container \p original with all data members,
+	/// physics objects, and their (redirected) relations.
+	Collision(const pxl::Collision& original) :
+		Object(original)
+	{
+	}
+	/// This copy constructor provides a deep copy of the event container \p original with all data members,
+	/// physics objects, and their (redirected) relations.
+	Collision(const pxl::Collision* original) :
+		Object(original)
+	{
+	}
+
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<Collision>(this);
+	}
+
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("59b2f95c-5142-4970-844f-226ebbc57a99");
+		return id;
+	}
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::Object::serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::Object::deserialize(in);
+	}
+
+	std::ostream& print(int level=1, std::ostream& os=std::cout, int pan=0) const;
+
+};
+
 /// This typedef defines a weak pointer for pxl::Collision
-typedef pxl::WkPtrSpec<pxl::CollisionData, pxl::Collision> CollisionWkPtr;
-/// This typedef defines a reference for pxl::Collision
-typedef Collision& CollisionRef;
-/// This typedef defines a const reference for pxl::Collision
-typedef const Collision& CollisionConstRef;
-
-template<> std::ostream& CowObject<pxl::CollisionData>::print(int level, std::ostream& os, int pan) const;
+typedef pxl::weak_ptr<pxl::Collision> CollisionWkPtr;
 
 } // namespace pxl
 
 #endif // pxl_pol_Collision_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_EventView_hh
 #define pxl_pol_EventView_hh
 
 
 
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
 
 // pol
 /**
-By inheritance from pxl::BasicObjectManagerData and pxl::BasicObjectData, 
-this class is capable of holding the complete information of one 
-multicollision event with decay trees, spatial vertex information, 
-four-momenta as well as additional event-related reconstruction data 
-in the user records. Physics objects (i.e. instances of the classes pxl::Particle, 
-pxl::Vertex or pxl::Collision) as well as other arbitrary pxl::ObjectBase 
-derivatives can be aggregated and managed.
-The name 'event view'  arises from the fact, that it is 
-intended to represent a distinct view of an event (e.g. connecting 
-particles to the decay tree according to one out of a
-number of hypotheses, applying different jet energy corrections, etc.). 
-To facilitate the development of numerous 
-parallel or subsequent event views, as needed for hypothesis evolution, 
-for instance, this class features a copy constructor, 
-which provides a deep copy of the event container with all data members, 
-physics objects, and their (redirected) relations. 
-Please remember, that PXL physics objects are based on the copy-on-write 
-mechanism. 
-Although behaving like deep copies, it is only upon write access, 
-that the individual CPU and memory intense copy processes are carried out.
-This way, the PXL provides a flexible generalized event container 
-with comfortable high-performance duplication functionality, 
-meeting the needs of HEP analyses in channels with ambiguous 
-event topologies.
-*/
-class EventViewData : public pxl::BasicObjectManagerData {
-  public:
-    EventViewData()
-        : BasicObjectManagerData() {}
-    /// This copy constructor provides a deep copy of the event container \p original with all data members, 
-    /// physics objects, and their (redirected) relations. 
-    EventViewData(const pxl::EventViewData& original)
-        : BasicObjectManagerData(original) {}
+ By inheritance from pxl::ObjectManager, 
+ this class is capable of holding the complete information of one 
+ multicollision event with decay trees, spatial vertex information, 
+ four-momenta as well as additional event-related reconstruction data 
+ in the user records. Physics objects (i.e. instances of the classes pxl::Particle, 
+ pxl::Vertex or pxl::Collision) as well as other arbitrary pxl::Relative 
+ derivatives can be aggregated and managed.
+ The name 'event view'  arises from the fact that it is 
+ intended to represent a distinct view of an event (e.g. connecting 
+ particles to the decay tree according to one out of a
+ number of hypotheses, applying different jet energy corrections, etc.). 
+ To facilitate the development of numerous 
+ parallel or subsequent event views, as needed for hypothesis evolution, 
+ for instance, this class features a copy constructor, 
+ which provides a deep copy of the event container with all data members, 
+ physics objects, and their (redirected) relations. 
+ This way, the PXL provides a flexible generalized event container  
+ meeting the needs of HEP analyses in channels with ambiguous 
+ event topologies.
+ */
+class EventView : public pxl::ObjectManager
+{
+public:
+	EventView() :
+		ObjectManager()
+	{
+	}
+	/// This copy constructor provides a deep copy of the event container \p original with all data members, 
+	/// physics objects, and their (redirected) relations. 
+	EventView(const pxl::EventView& original) :
+		ObjectManager(original)
+	{
+	}
+	/// This copy constructor provides a deep copy of the event container \p original with all data members, 
+	/// physics objects, and their (redirected) relations.
+	EventView(const pxl::EventView* original) :
+		ObjectManager(original)
+	{
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;      
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<EventView>(this);
+	}
+
+	virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("c8db3cce-dc4b-421e-882a-83e213c9451f");
+		return id;
+	}
+	
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::ObjectManager::serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::ObjectManager::deserialize(in);
+	}
+
+	virtual pxl::Relative* clone() const
+	{
+		return new pxl::EventView(*this);
+	}
+	
+	std::ostream& print(int level=0, std::ostream& os=std::cout, int pan=1) const;
+
 };
 
-/**
-This typedef represents the generalized event container provided by PXL; 
-data is aggregated in pxl::EventViewData. 
-The event view is capable of holding the complete information of one 
-multicollision event with decay trees, spatial vertex information, 
-four-momenta as well as additional event-related reconstruction data 
-in the user records. Physics objects (i.e. instances of the classes pxl::Particle, 
-pxl::Vertex or pxl::Collision) as well as other arbitrary pxl::ObjectBase 
-derivatives can be aggregated and managed.
-The name 'event view'  arises from the fact, that it is 
-intended to represent a distinct view of an event (e.g. connecting 
-particles to the decay tree according to one out of a
-number of hypotheses, applying different jet energy corrections, etc.). 
-To facilitate the development of numerous 
-parallel or subsequent event views, as needed for hypothesis evolution, 
-for instance, the pxl::EventViewData class features a copy constructor, 
-which provides a deep copy of the event container with all data members, 
-physics objects, and their (redirected) relations. 
-Please remember, that PXL physics objects are based on the copy-on-write 
-mechanism. 
-Although behaving like deep copies, it is only upon write access, 
-that the individual CPU and memory intense copy processes are carried out.
-This way, the PXL provides a flexible generalized event container 
-with comfortable high-performance duplication functionality, 
-meeting the needs of HEP analyses in channels with ambiguous 
-event topologies.
-*/ 
-typedef pxl::Object<pxl::EventViewData> EventView; // NOTICE: EventViews cannot be managed by Copy On Write!
 /// This typedef defines a weak pointer for pxl::EventView
-typedef pxl::WkPtrSpec<pxl::EventViewData, pxl::EventView> EventViewWkPtr;
-/// This typedef defines a reference for pxl::EventView
-typedef EventView& EventViewRef;
-/// This typedef defines a const reference for pxl::EventView
-typedef const EventView& EventViewConstRef;
-
-template<> std::ostream& Object<pxl::EventViewData>::print(int level, std::ostream& os, int pan) const;
-
+typedef pxl::weak_ptr<pxl::EventView> EventViewWkPtr;
+typedef pxl::EventView& EventViewRef;
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::EventView)
-iotl__declareDataTypeProto(pxl::EventViewData)
 
 #endif // pxl_pol_EventView_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_AnalysisProcess_hh
 #define pxl_pol_AnalysisProcess_hh
 
 
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
-
+namespace pxl
+{
 // pol
 
 /**
-This class is designed for assisting the evolution of different 
-combinatorial hypotheses of an event according to a certain physics 
-process. It is derived from pxl::BasicObjectManagerData and 
-pxl::BasicObjectData and the  analyzer can store and manage an 
-arbitrary number of event views including physics objects and 
-relations.  
-*/ 
-class AnalysisProcessData : public pxl::BasicObjectManagerData {
-  public:
-    AnalysisProcessData() :
-        BasicObjectManagerData() {}
-    AnalysisProcessData(const pxl::AnalysisProcessData& original) :
-        BasicObjectManagerData(original) {}
+ This class is designed as a base class to assist the analyzer in the 
+ evolution of different combinatorial hypotheses of an event according 
+ to a certain physics process; data is aggregated in pxl::AnalysisProcessData.
+ This class provides virtual methods to be called at the beginning and end 
+ of a job, at the beginning and end of a run, and, of course, at event analysis 
+ and event finishing time (just as needed in a stand-alone analysis framework, 
+ for instance). When inheriting from this class, the analyst can
+ place user code in the according reimplementations of these methods. 
+ */
+class AnalysisProcess : public ObjectManager
+{
+public:
+	AnalysisProcess() :
+		pxl::ObjectManager()
+	{
+	}
+	AnalysisProcess(const pxl::AnalysisProcess& original) :
+		pxl::ObjectManager(original)
+	{
+	}
+	AnalysisProcess(const pxl::AnalysisProcess* original) :
+		pxl::ObjectManager(original)
+	{
+	}
+	virtual ~AnalysisProcess()
+	{
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;  
+	inline virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("36c128e0-b14a-4f35-a317-d972d28f1802");
+		return id;
+	}
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::ObjectManager::serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::ObjectManager::deserialize(in);
+	}
+
+	/// This method can be reimplemented to build/destroy 
+	/// a static template for user-defined tree creation. \p mode is a freely usable parameter.
+	virtual void buildTemplate(int mode = 0)
+	{
+	}
+
+	/// This method can be reimplemented to hold physics analysis code executed at the begin of a computing job 
+	/// (as needed for histogram booking etc.).
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	virtual void beginJob(const pxl::ObjectOwner* input = 0)
+	{
+	}
+	/// This method can be reimplemented to hold physics analysis code executed at the begin of a run. 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	virtual void beginRun(const pxl::ObjectOwner* input = 0)
+	{
+	}
+	/// This method can be reimplemented to hold physics analysis code executed for the actual event analysis. 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	virtual void analyseEvent(const pxl::ObjectOwner* input = 0)
+	{
+	}
+	/// This method can be reimplemented to hold physics analysis code executed at the end of each event.
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method clears the object owner and deletes all owned objects. 
+	virtual void finishEvent(const pxl::ObjectOwner* input = 0)
+	{
+		clearObjects();
+	}
+	/// This method can be reimplemented to hold physics analysis code executed at the end of a run. 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	virtual void endRun(const pxl::ObjectOwner* input = 0)
+	{
+	}
+	/// This method can be reimplemented to hold physics analysis code executed at the end of a computing job 
+	/// (as needed for histogram storing etc.). 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	virtual void endJob(const pxl::ObjectOwner* input = 0)
+	{
+	}
+
+	virtual pxl::Relative* clone() const;
+
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<AnalysisProcess>(this);
+	}
+
+	std::ostream& print(int level=1, std::ostream& os=std::cout, int pan=0) const;
 };
 
-/**
-This class is designed as a base class to assist the analyzer in the 
-evolution of different combinatorial hypotheses of an event according 
-to a certain physics process; data is aggregated in pxl::AnalysisProcessData.
-This class provides virtual methods to be called at the beginning and end 
-of a job, at the beginning and end of a run, and, of course, at event analysis 
-and event finishing time (just as needed in a stand-alone analysis framework, 
-for instance). When inheriting from this class, the analyst can
-place user code in the according reimplementations of these methods. 
-*/ 
-class AnalysisProcess : public pxl::Object<pxl::AnalysisProcessData> {
-	// NOTICE: AnalysisProcesses cannot be managed by Copy On Write!
-  public: 
-    AnalysisProcess() :
-        pxl::Object<pxl::AnalysisProcessData>() {}
-    AnalysisProcess(const pxl::AnalysisProcess& original) :
-        pxl::Object<pxl::AnalysisProcessData>(original) {}
-    virtual ~AnalysisProcess() {}
-
-    /// This method can be reimplemented to build/destroy 
-    /// a static template for user-defined tree creation. \p mode is a freely usable parameter.
-    virtual void buildTemplate(int mode = 0) {}
-
-    /// This method can be reimplemented to hold physics analysis code executed at the begin of a computing job 
-    /// (as needed for histogram booking etc.).
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    virtual void beginJob(const pxl::Objects* input = 0) {}
-    /// This method can be reimplemented to hold physics analysis code executed at the begin of a run. 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    virtual void beginRun(const pxl::Objects* input = 0) {}
-    /// This method can be reimplemented to hold physics analysis code executed for the actual event analysis. 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    virtual void analyseEvent(const pxl::Objects* input = 0) {}
-    /// This method can be reimplemented to hold physics analysis code executed at the end of each event.
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method clears the object owner and deletes all owned objects. 
-    virtual void finishEvent(const pxl::Objects* input = 0) { set().clearObjects(); }
-    /// This method can be reimplemented to hold physics analysis code executed at the end of a run. 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    virtual void endRun(const pxl::Objects* input = 0) {}
-    /// This method can be reimplemented to hold physics analysis code executed at the end of a computing job 
-    /// (as needed for histogram storing etc.). 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    virtual void endJob(const pxl::Objects* input = 0) {}
-
-    template<class objecttype>
-    const objecttype& castInput(const pxl::Objects* input)
-    {
-        const objecttype* obj = dynamic_cast<const objecttype*>(input);
-        if (!obj)
-            // FIXME: cerr vs exception vs possibly other rant
-            std::cerr << "pxl::AnalysisProcess::castInput(): FATAL: The pointer you intend to cast does not exist!" << std::endl;
-        return *obj;
-    }
-
-    virtual pxl::ObjectBase* clone() const;
-
-    virtual pxl::WkPtrBase* createSelfWkPtr();
-
-  protected:
-    virtual void storeYourSelf(pxl::oStreamer& output) const;
-};
+static ObjectFactory::ProducerTemplate<pxl::AnalysisProcess>
+		_AnalysisProcessProducer(pxl::AnalysisProcess::getStaticTypeId());
 
 /// This typedef defines a weak pointer for pxl::AnalysisProcess
-typedef pxl::WkPtrSpec<pxl::AnalysisProcessData, pxl::AnalysisProcess> AnalysisProcessWkPtr;
-/// This typedef defines a reference for pxl::AnalysisProcess
-typedef AnalysisProcess& AnalysisProcessRef;
-/// This typedef defines a const reference for pxl::AnalysisProcess
-typedef const AnalysisProcess& AnalysisProcessConstRef;
-
-template<> std::ostream& Object<pxl::AnalysisProcessData>::print(int level, std::ostream& os, int pan) const;
+typedef pxl::weak_ptr<pxl::AnalysisProcess> AnalysisProcessWkPtr;
 
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::AnalysisProcess)
-iotl__declareDataTypeProto(pxl::AnalysisProcessData)
 
 #endif // pxl_pol_AnalysisProcess_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_AnalysisFork_hh
 #define pxl_pol_AnalysisFork_hh
 
 
-
-
-namespace pxl {
-
-// iotl
-class iStreamer;
-class oStreamer;
+namespace pxl
+{
 
 // pol
 
 /**
-This class is designed for assisting the parallel evolution of 
-different physics process hypotheses or the analysis of different  
-(instrumental) aspects of an event. To allow easy management of 
-different physics process hypotheses of an event, this class 
-provides storage and easy access to an arbitrary number of 
-processes (pxl::AnalysisProcess derivatives) and further 
-analysis forks (pxl::AnalysisFork derivatives).
-*/ 
-class AnalysisForkData : public pxl::BasicObjectManagerData {
-  public: 
-    AnalysisForkData() :
-        BasicObjectManagerData() {}
-    AnalysisForkData(const pxl::AnalysisForkData& original) :
-        BasicObjectManagerData(original) {}
+ This class is designed as a base class to assist the analyzer in the 
+ parallel evolution of different physics process hypotheses or the analysis of different  
+ (instrumental) aspects of an event; data is aggregated in pxl::AnalysisForkData
+ */
+class AnalysisFork : public pxl::ObjectManager
+{
+public:
+	AnalysisFork() :
+		pxl::ObjectManager()
+	{
+	}
+	AnalysisFork(const pxl::AnalysisFork& original) :
+		pxl::ObjectManager(original)
+	{
+	}
+	AnalysisFork(const pxl::AnalysisFork* original) :
+		pxl::ObjectManager(original)
+	{
+	}
+	virtual ~AnalysisFork()
+	{
+	}
 
-  friend class pxl::iStreamer;
-  friend class pxl::oStreamer;
+	inline virtual const pxl::Id& getTypeId() const
+	{
+		return getStaticTypeId();
+	}
+
+	static const Id& getStaticTypeId()
+	{
+		static const Id id("91b6a6ec-4ecf-490f-ba92-47d20e42bc16");
+		return id;
+	}
+
+	virtual void serialize(const OutputStream &out) const
+	{
+		pxl::ObjectManager::serialize(out);
+	}
+
+	virtual void deserialize(const InputStream &in)
+	{
+		pxl::ObjectManager::deserialize(in);
+	}
+
+	/// This method can be reimplemented to hold physics analysis code executed at the begin of a computing job.  
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
+	virtual void beginJob(const pxl::ObjectOwner* input = 0);
+	/// This method can be reimplemented to hold physics analysis code executed at the begin of a run. 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
+	virtual void beginRun(const pxl::ObjectOwner* input = 0);
+	/// This method can be reimplemented to hold physics analysis code executed for the actual event analysis. 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
+	virtual void analyseEvent(const pxl::ObjectOwner* input = 0);
+	/// This method can be reimplemented to hold physics analysis code executed at the end of each event.
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
+	virtual void finishEvent(const pxl::ObjectOwner* input = 0);
+	/// This method can be reimplemented to hold physics analysis code executed at the end of a run. 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
+	virtual void endRun(const pxl::ObjectOwner* input = 0);
+	/// This method can be reimplemented to hold physics analysis code executed at the end of a computing job 
+	/// (as needed for histogram storing etc.). 
+	/// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::ObjectOwner instance (that might carry the reconstructed event data or generator information).  
+	/// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
+	virtual void endJob(const pxl::ObjectOwner* input = 0);
+
+	virtual pxl::Relative* clone() const;
+
+	virtual std::ostream& print(int level=1, std::ostream& os=std::cout, int pan=0) const;
+
+	virtual pxl::WkPtrBase* createSelfWkPtr()
+	{
+		return new pxl::weak_ptr<AnalysisFork>(this);
+	}
+
 };
 
-/**
-This class is designed as a base class to assist the analyzer in the 
-parallel evolution of different physics process hypotheses or the analysis of different  
-(instrumental) aspects of an event; data is aggregated in pxl::AnalysisForkData
-*/
-class AnalysisFork : public pxl::Object<pxl::AnalysisForkData> {
-	// NOTICE: AnalysisForks cannot be managed by Copy On Write!
-  public: 
-    AnalysisFork() :
-        pxl::Object<pxl::AnalysisForkData>() {}
-    AnalysisFork(const pxl::AnalysisFork& original) :
-        pxl::Object<pxl::AnalysisForkData>(original) {}
-    virtual ~AnalysisFork() {}
-
-    /// This method can be reimplemented to build/destroy 
-    /// a static template for user-defined tree creation. \p mode is a freely usable parameter.
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void buildTemplate(int mode = 0);
-
-    /// This method can be reimplemented to hold physics analysis code executed at the begin of a computing job.  
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void beginJob(const pxl::Objects*input = 0);
-    /// This method can be reimplemented to hold physics analysis code executed at the begin of a run. 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void beginRun(const pxl::Objects*input = 0);
-    /// This method can be reimplemented to hold physics analysis code executed for the actual event analysis. 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void analyseEvent(const pxl::Objects*input = 0);
-    /// This method can be reimplemented to hold physics analysis code executed at the end of each event.
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void finishEvent(const pxl::Objects*input = 0);
-    /// This method can be reimplemented to hold physics analysis code executed at the end of a run. 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void endRun(const pxl::Objects*input = 0);
-    /// This method can be reimplemented to hold physics analysis code executed at the end of a computing job 
-    /// (as needed for histogram storing etc.). 
-    /// The optional parameter \p input is a const pointer to a pxl::ObjectOwner or pxl::Objects instance (that might carry the reconstructed event data or generator information).  
-    /// By default, this method invokes the corresponding method of all managed pxl::AnalysisProcess instances.    
-    virtual void endJob(const pxl::Objects*input = 0);
-
-    virtual pxl::ObjectBase* clone() const;
-
-    virtual pxl::WkPtrBase* createSelfWkPtr();
-
-  protected:
-    virtual void storeYourSelf(pxl::oStreamer& output) const;
-};
-
+static ObjectFactory::ProducerTemplate<pxl::AnalysisFork>
+		_AnalysisForkProducer(pxl::AnalysisFork::getStaticTypeId());
+//
 /// This typedef defines a weak pointer for pxl::AnalysisFork
-typedef pxl::WkPtrSpec<pxl::AnalysisForkData, pxl::AnalysisFork> AnalysisForkWkPtr;
-/// This typedef defines a reference for pxl::AnalysisFork
-typedef AnalysisFork& AnalysisForkRef;
-/// This typedef defines a const reference for pxl::AnalysisFork
-typedef const AnalysisFork& AnalysisForkConstRef;
-
-template<> std::ostream& Object<pxl::AnalysisForkData>::print(int level, std::ostream& os, int pan) const;
+typedef pxl::weak_ptr<pxl::AnalysisFork> AnalysisForkWkPtr;
 
 } // namespace pxl
 
-iotl__declareObjectTypeProto(pxl::AnalysisFork)
-iotl__declareDataTypeProto(pxl::AnalysisForkData)
-
 #endif // pxl_pol_AnalysisFork_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #ifndef pxl_pol_ParticleFilter_hh
 #define pxl_pol_ParticleFilter_hh
 
 
 
 
-namespace pxl {
+namespace pxl
+{
 
 /** 
-This class provides a pT-sorted filter for PXL physics objects (requires the name, pT and |eta| to match).
-*/ 
-class ParticleFilter : public pxl::Filter<pxl::Particle, double> {
-  public:
-    /// This constructor defines filter name, minimum pT and maximum |eta| value and runs the filter on the \p objects container. 
-    ParticleFilter(const pxl::ObjectOwner& objects, const std::string& name,
-                   double ptMin = 0.0, double etaMax = 0.0);
-
-    virtual bool pass(const pxl::Particle& pa) const;
-    virtual double sort(const pxl::Particle& pa) const;
-
-  private: 
-    std::string _name;
-    double _ptMin;
-    double _etaMax;
+ This class provides a pT-sorted filter for PXL physics objects (requires the name, pT and |eta| to match).
+ */
+class ParticlePtComparator : public Comparator<pxl::Particle>
+{
+public:
+	virtual bool operator()(pxl::Particle p1, pxl::Particle p2)
+	{
+		return (p1.getPt()>p2.getPt());
+	}
 };
+
+class ParticlePtEtaNameCriterion : public FilterCriterion<pxl::Particle>
+{
+public:
+	ParticlePtEtaNameCriterion(const std::string& name, double ptMin = 0.0,
+			double etaMax = 0.0) :
+		_name(name), _ptMin(ptMin), _etaMax(etaMax)
+	{
+	}
+
+	virtual bool operator()(const pxl::Particle& pa) const
+	{
+		if ((_name != "" && pa.getName() != _name) || (_ptMin > 0.0
+				&& pa.getPt() < _ptMin) || (_etaMax > 0.0
+				&& std::fabs(pa.getEta()) > _etaMax))
+			return false;
+		return true;
+	}
+
+private:
+	std::string _name;
+	double _ptMin;
+	double _etaMax;
+};
+
+class ParticlePtCriterion : public FilterCriterion<pxl::Particle>
+{
+public:
+	ParticlePtCriterion(double ptMin = 0.0) :
+		_ptMin(ptMin)
+	{
+	}
+
+	virtual bool operator()(const pxl::Particle& pa) const
+	{
+		if ((_ptMin > 0.0 && pa.getPt() < _ptMin))
+			return false;
+		return true;
+	}
+
+private:
+	double _ptMin;
+};
+
+class ParticleNameCriterion : public FilterCriterion<pxl::Particle>
+{
+public:
+	ParticleNameCriterion(const std::string& name) :
+		_name(name)
+	{
+	}
+
+	virtual bool operator()(const pxl::Particle& pa) const
+	{
+		if (_name != "" && pa.getName() != _name) return false;
+		return true;
+	}
+
+private:
+	std::string _name;
+};
+
+
+typedef pxl::Filter<pxl::Particle, ParticlePtComparator> ParticleFilter;
+/// This typedef defines a reference for pxl::Particle
+typedef pxl::Particle& ParticleRef;
 
 } // namespace pxl
 
 #endif // pxl_pol_ParticleFilter_hh
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#ifndef pxl_pol_types_hh
-#define pxl_pol_types_hh
-
-
-
-namespace pxl {
-	
-/// This typedef provides a PXL-style Iterator for pxl::Objects
-typedef Objects::Iterator ObjectIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Objects
-typedef Objects::TypeIterator<Particle> ParticleIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Objects
-typedef Objects::TypeIterator<Vertex> VertexIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Objects
-typedef Objects::TypeIterator<Collision> CollisionIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Objects
-typedef Objects::TypeIterator<EventView> EventViewIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Objects
-typedef Objects::TypeIterator<AnalysisProcess> AnalysisProcessIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Objects
-typedef Objects::TypeIterator<AnalysisFork> AnalysisForkIterator;
-
-/// This typedef provides a PXL-style Iterator for pxl::Relations
-typedef Relations::Iterator RelationIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Relations
-typedef Relations::TypeIterator<ParticleWkPtr> ParticleRelationIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Relations
-typedef Relations::TypeIterator<VertexWkPtr> VertexRelationIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Relations
-typedef Relations::TypeIterator<CollisionWkPtr> CollisionRelationIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Relations
-typedef Relations::TypeIterator<EventViewWkPtr> EventViewRelationIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Relations
-typedef Relations::TypeIterator<AnalysisProcessWkPtr> AnalysisProcessRelationIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Relations
-typedef Relations::TypeIterator<AnalysisForkWkPtr> AnalysisForkRelationIterator;
-
-/// This typedef provides a type selective PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::TypeIterator<ParticleWkPtr> ParticleFilterIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::TypeIterator<VertexWkPtr> VertexFilterIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::TypeIterator<CollisionWkPtr> CollisionFilterIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::TypeIterator<EventViewWkPtr> EventViewFilterIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::TypeIterator<AnalysisProcessWkPtr> AnalysisProcessFilterIterator;
-/// This typedef provides a type selective PXL-style Iterator for pxl::Filter
-typedef WkPtrOwner<int>::TypeIterator<AnalysisForkWkPtr> AnalysisForkFilterIterator;
-
-} // namespace pxl
-
-#endif // pxl_pol_types_hh
 
 #endif // pxl_pol_hh
 

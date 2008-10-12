@@ -1,789 +1,1235 @@
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#include "ePaxPxl/ePax/interface/ePax.h"
+
+namespace pxl
+{
+
+void Layout::serialize(const OutputStream &out) const
+{
+	out.writeInt(_type);
+	out.writeInt(_style);
+	out.writeInt(_color);
+	out.writeDouble(_a);
+	out.writeDouble(_b);
+	out.writeDouble(_c);
+	out.writeDouble(_d);
+}
+void Layout::deserialize(const InputStream &in)
+{
+	in.readInt(_type);
+	in.readInt(_style);
+	in.readInt(_color);
+	in.readDouble(_a);
+	in.readDouble(_b);
+	in.readDouble(_c);
+	in.readDouble(_d);
+}
+
+} //namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+namespace pxl
+{
+
+MutableId::MutableId(const char* id)
+{
+	// reset
+	for (int j = 0; j < 16; j++)
+		bytes[j] = 0;
+
+	// read 32 char = 16 bytes
+	unsigned char first, second;
+	int byte = 0;
+	const char* source = id;
+	unsigned char* target = &first;
+
+	while (*source != 0 && byte < 16)
+	{
+		// find next a valid character
+		if (*source >= '0' && *source <= '9')
+		{
+			*target = *source -'0';
+		}
+		else if (*source >= 'a' && *source <= 'f')
+		{
+			*target = *source -'a' + 10;
+		}
+		else if (*source >= 'A' && *source <= 'F')
+		{
+			*target = *source -'A' + 10;
+		}
+		else
+		{
+			source++;
+			continue;
+		}
+
+		// 
+		if (target == &first)
+			target = &second;
+		else
+		{
+			bytes[byte] = ((first << 4) | second);
+			byte++;
+			target = &first;
+		}
+
+		source++;
+	}
+}
+
+MutableId::MutableId(const std::string& id)
+{
+	unsigned char first, second;
+	int byte = 0;
+	unsigned char* target = &first;
+	std::string::const_iterator source = id.begin();
+	std::string::const_iterator end = id.end();
+
+	while (source != end && byte < 16)
+	{
+		if (*source >= '0' && *source <= '9')
+		{
+			*target = *source -'0';
+		}
+		else if (*source >= 'a' && *source <= 'f')
+		{
+			*target = *source -'a' + 10;
+		}
+		else if (*source >= 'A' && *source <= 'F')
+		{
+			*target = *source -'A' + 10;
+		}
+		else
+		{
+			source++;
+			continue;
+		}
+
+		if (target == &first)
+			target = &second;
+		else
+		{
+			bytes[byte] = ((first << 4) | second);
+			byte++;
+			target = &first;
+		}
+
+		source++;
+	}
+}
+
+
+std::string MutableId::toString() const
+{
+	static const char hex[] =
+	{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
+			'e', 'f' };
+
+	std::string id;
+	id.reserve(36);
+
+	for (int i = 0; i < 4; i++)
+	{
+		id += hex[bytes[i] >> 4];
+		id += hex[bytes[i] & 0x0F];
+	}
+	id += '-';
+	for (int i = 4; i < 6; i++)
+	{
+		id += hex[bytes[i] >> 4];
+		id += hex[bytes[i] & 0x0F];
+	}
+	id += '-';
+	for (int i = 6; i < 8; i++)
+	{
+		id += hex[bytes[i] >> 4];
+		id += hex[bytes[i] & 0x0F];
+	}
+	id += '-';
+	for (int i = 8; i < 10; i++)
+	{
+		id += hex[bytes[i] >> 4];
+		id += hex[bytes[i] & 0x0F];
+	}
+	id += '-';
+	for (int i = 10; i < 16; i++)
+	{
+		id += hex[bytes[i] >> 4];
+		id += hex[bytes[i] & 0x0F];
+	}
+
+	return id;
+}
+
+
+} //namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#include <iostream>
+
+
+namespace pxl
+{
+
+void ObjectOwner::init(const pxl::ObjectOwner& original)
+{
+	// copy objects: loop in STL style
+	for (const_iterator iter = original._container.begin(); iter
+			!= original._container.end(); iter++)
+	{
+
+		pxl::Relative* pOld = *iter;
+		pxl::Relative* pNew = pOld->clone();
+
+		set(pNew);
+
+		pxl::CopyHistory::iterator insertPos =
+				_copyHistory.lower_bound(pOld->id());
+		if (insertPos == _copyHistory.end() || insertPos->first != pOld->id())
+			_copyHistory.insert(insertPos,
+					pxl::CopyHistory::iterator::value_type(pOld->id(), pNew));
+		else
+			insertPos->second = pNew;
+	}
+
+	// FIXME: possibly inefficient, might be done all in one loop
+	// redirect relations: loop in PTL style
+	for (const_iterator iter = original._container.begin(); iter
+			!=original._container.end(); iter++)
+	{
+		pxl::Relative* pOld = *iter;
+		pxl::Relative* pNew = 0;
+		pxl::CopyHistory::const_iterator found = _copyHistory.find(pOld->id());
+		if (found != _copyHistory.end())
+			pNew = found->second;
+
+		// mother relations
+		for (pxl::Relations::const_iterator iter = pOld->getMotherRelations().begin(); iter!=pOld->getMotherRelations().end(); ++iter)
+		{
+			pxl::Relative* pOldRel = *iter;
+			pxl::Relative* pNewRel = 0;
+			pxl::CopyHistory::const_iterator foundRel =
+					_copyHistory.find(pOldRel->id());
+			if (foundRel != _copyHistory.end())
+				pNewRel = foundRel->second;
+
+			if (pOldRel)
+			{
+				if (pNewRel)
+					pNew->linkMother(pNewRel);
+				else
+					// FIXME: cerr again?
+					std::cerr
+							<< "pxl::ObjectOwner::ObjectOwner(...): WARNING: some original objects had relations to objects of other owners."
+							<< std::endl;
+			}
+			else
+				std::cerr
+						<< "pxl::ObjectOwner::ObjectOwner(...): WARNING: some originally related objects no longer exist."
+						<< std::endl;
+		}
+
+		// daughter relations
+		// have been set automatically above
+	}
+
+	// redirect index:
+	for (pxl::Index::const_iterator iter = original._index.begin(); iter
+			!=original._index.end(); ++iter)
+	{
+
+		pxl::Relative* pOld = iter->second;
+
+		pxl::Relative* pNew = 0;
+		pxl::CopyHistory::const_iterator found = _copyHistory.find(pOld->id());
+		if (found != _copyHistory.end())
+			pNew = found->second;
+
+		if (pNew)
+			_index.insert(pxl::Index::const_iterator::value_type(iter->first,
+					pNew));
+		else
+			std::cerr
+					<< "pxl::ObjectOwner::ObjectOwner(...): WARNING: some original indices pointed to objects of other owners."
+					<< std::endl;
+	}
+}
+
+void ObjectOwner::clearContainer()
+{
+	for (iterator iter = _container.begin(); iter != _container.end(); iter++)
+	{
+		(*iter)->_refObjectOwner=0;
+		delete (*iter);
+	}
+	_container.clear();
+	_copyHistory.clear();
+	_index.clear();
+	_uuidSearchMap.clear();
+}
+
+void ObjectOwner::set(pxl::Relative* item)
+{
+	item->_refObjectOwner = this;
+	_container.push_back(item);
+	_uuidSearchMap.insert(std::pair<pxl::Id, pxl::Relative*>(item->getId(), item));
+}
+
+void ObjectOwner::remove(pxl::Relative* item)
+{
+	// search & remove possible indices (multiple occurrences possible!)
+	for (pxl::Index::const_iterator iter = _index.begin(); iter != _index.end(); iter++)
+	{
+		if (item == iter->second)
+			_index.erase(iter->first);
+	}
+
+	// search & remove possible copy history
+	for (pxl::CopyHistory::const_iterator iter = _copyHistory.begin(); iter
+	!= _copyHistory.end(); iter++)
+	{
+
+		// FIXME: inefficient
+		if (item == iter->second)
+		{
+			_copyHistory.erase(iter->first);
+			break; // multiple occurrences *not* possible!
+		}
+	}
+
+	_uuidSearchMap.erase(item->getId());
+
+	item->_refObjectOwner=0;
+	for (iterator iter = _container.begin(); iter != _container.end(); iter++)
+	{
+
+		if (item == (*iter))
+		{
+			delete *iter;
+			_container.erase(iter);
+			break;
+		}
+	}
+
+}
+
+bool ObjectOwner::has(const pxl::Relative* item) const
+{
+	return item->_refObjectOwner == this;
+}
+
+bool ObjectOwner::setIndex(const std::string& idx, pxl::Relative* obj,
+bool overwrite)
+{
+	if (!idx.length() || !has(obj))
+	{
+		if (!idx.length())
+		std::cerr << "Error in setting index: id has zero length!"
+		<< std::endl;
+		else
+		std::cerr
+		<< "Error in setting index: Object does not belong to ObjectOwner."
+		<< std::endl;
+		return false;
+	}
+
+	pxl::Index::iterator insertPos = _index.lower_bound(idx);
+	if (insertPos == _index.end() || insertPos->first != idx)
+	_index.insert(insertPos, pxl::Index::iterator::value_type(idx, obj));
+	else
+	{
+		if (overwrite)
+		insertPos->second = obj;
+		else
+		{
+			std::cerr << "Warning in setting Index: Key "<< idx
+			<< " already present and bool 'overwrite' set to false."
+			<< std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+
+void ObjectOwner::serialize(const OutputStream &out) const
+{
+	// contents of vector
+	out.writeUnsignedInt(size());
+	for (const_iterator iter = begin(); iter!=end(); ++iter)
+	{
+		(*iter)->serialize(out);
+
+		//serialize relations explicitly
+		(*iter)->getMotherRelations().serialize(out);
+		(*iter)->getDaughterRelations().serialize(out);
+		(*iter)->getFlatRelations().serialize(out);
+	}
+
+	// index
+	out.writeInt(_index.size());
+	for (pxl::Index::const_iterator iter = _index.begin(); iter != _index.end(); ++iter)
+	{
+		out.writeString(iter->first);
+		(iter->second->id()).serialize(out);
+	}
+
+}
+
+void ObjectOwner::deserialize(const InputStream &in)
+{
+	/* Algorithm:
+	 * a) deserialize all objects. those deserialize themselves, and their relations 
+	 * as the related objects' uuids.
+	 * b) create temprorary id-object map within the same loop.
+	 * (no need (!) for orphan relations in this new algorithm)
+	 * c) recreate relations (fetching objects from map)
+	 * d) fill index (fetching objects from map)
+	 * [e) shall the CopyHistory be serialised/deserialised? this is hard since
+	 * one would need to have all ObjectOwners in memory, ie the whole event, and do some
+	 * explicit stuff afterwards.]
+	 * no error handling at the moment
+	 */
+
+	std::map<pxl::Id, pxl::Relative*> objIdMap;
+	std::multimap<pxl::Relative*, pxl::Id> daughterRelationsMap;
+	std::multimap<pxl::Relative*, pxl::Id> motherRelationsMap;
+	std::multimap<pxl::Relative*, pxl::Id> flatRelationsMap;
+
+	unsigned int size = 0;
+	in.readUnsignedInt(size);
+	for (unsigned int i=0; i<size; ++i)
+	{
+		pxl::Id typeId (in);
+		// Contained object must be a Relative derivative
+		pxl::Relative* object = dynamic_cast<pxl::Relative*>(pxl::ObjectFactory::instance().create(typeId));
+		object->deserialize(in);
+		set(object);
+		objIdMap.insert(std::pair<pxl::Id, pxl::Relative*>(object->id(), object));
+
+		int msize = 0;
+		in.readInt(msize);
+		for (int j=0; j<msize;++j)
+		{
+			pxl::Id id (in);
+			motherRelationsMap.insert(std::pair<pxl::Relative*, pxl::Id>(object, id));
+		}
+
+		int dsize = 0;
+		in.readInt(dsize);
+		for (int j=0; j<dsize;++j)
+		{
+			pxl::Id id (in);
+			daughterRelationsMap.insert(std::pair<pxl::Relative*, pxl::Id>(object, id));
+		}
+		int fsize = 0;
+		in.readInt(fsize);
+		for (int j=0; j<fsize;++j)
+		{
+			pxl::Id id (in);
+			flatRelationsMap.insert(std::pair<pxl::Relative*, pxl::Id>(object, id));
+		}
+
+	}
+
+	for (std::multimap<pxl::Relative*, pxl::Id>::const_iterator iter = daughterRelationsMap.begin();
+	iter!=daughterRelationsMap.end(); ++iter)
+	{
+		pxl::Relative* target = objIdMap.find(iter->second)->second;
+		iter->first->linkDaughter(target);
+	}
+	
+	for (std::multimap<pxl::Relative*, pxl::Id>::const_iterator iter = flatRelationsMap.begin();
+	iter!=flatRelationsMap.end(); ++iter)
+	{
+		pxl::Relative* target = objIdMap.find(iter->second)->second;
+		iter->first->linkFlat(target);
+	}
+
+	
+
+	in.readUnsignedInt(size);
+
+	for (unsigned int i=0; i<size; ++i)
+	{
+		std::string name;
+		in.readString(name);
+		pxl::Id id (in);
+		_index.insert(std::pair<std::string, pxl::Relative*>(name, objIdMap.find(id)->second));
+	}
+}
+
+} // namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+namespace pxl
+{
+
+void pxl::Relations::serialize(const OutputStream &out) const
+{
+	out.writeInt(size());
+	for (const_iterator iter = begin(); iter!=end(); ++iter)
+	{
+		(*iter)->getId().serialize(out);
+	}
+}
+
+}
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+#include <stdexcept>
+
+
+namespace pxl
+{
+
+void Relative::linkMother(pxl::Relative* target) throw(std::runtime_error)
+{
+	if (target->_refObjectOwner != this->_refObjectOwner)
+		throw std::runtime_error("pxl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object holder!");
+
+	this->_motherRelations.set(target);
+	target->_daughterRelations.set(this);
+}
+
+void Relative::linkDaughter(pxl::Relative* target) throw(std::runtime_error)
+{
+	if (target->_refObjectOwner != this->_refObjectOwner)
+		throw std::runtime_error("pxl::ObjectBase::linkMother(...): WARNING: mother and daughter have not the same object holder!");
+
+	this->_daughterRelations.set(target);
+	target->_motherRelations.set(this);
+}
+
+void Relative::linkFlat(pxl::Relative* target) throw(std::runtime_error)
+{
+	if (target->_refObjectOwner != this->_refObjectOwner)
+		throw std::runtime_error("pxl::ObjectBase::linkFlat(...): WARNING: potential relatives have not the same object holder!");
+
+	this->_flatRelations.set(target);
+	target->_flatRelations.set(this);
+}
+
+void Relative::unlinkMother(pxl::Relative* target)
+{
+	this->_motherRelations.erase(target);
+	target->_daughterRelations.erase(this);
+}
+
+void Relative::unlinkDaughter(pxl::Relative* target)
+{
+	this->_daughterRelations.erase(target);
+	target->_motherRelations.erase(this);
+}
+
+void Relative::unlinkFlat(pxl::Relative* target)
+{
+	this->_flatRelations.erase(target);
+	target->_flatRelations.erase(this);
+}
+
+void Relative::unlinkMothers()
+{
+	for (pxl::Relations::const_iterator iter = _motherRelations.begin(); iter
+			!=_motherRelations.end(); ++iter)
+	{
+		(*iter)->_daughterRelations.erase(this);
+	}
+
+	_motherRelations.clearContainer();
+}
+
+void Relative::unlinkDaughters()
+{
+	for (pxl::Relations::const_iterator iter = _daughterRelations.begin(); iter
+			!=_daughterRelations.end(); ++iter)
+	{
+
+		(*iter)->_motherRelations.erase(this);
+	}
+
+	_daughterRelations.clearContainer();
+}
+
+void Relative::unlinkFlat()
+{
+	for (pxl::Relations::const_iterator iter = _flatRelations.begin(); iter
+			!=_flatRelations.end(); ++iter)
+	{
+
+		(*iter)->_flatRelations.erase(this);
+	}
+
+	_flatRelations.clearContainer();
+}
+
+std::ostream& Relative::printDecayTree(int level, std::ostream& os, int pan) const
+{
+	int daughters = 0;
+
+	print(level, os, pan);
+
+	for (pxl::Relations::const_iterator iter = _daughterRelations.begin(); iter
+			!=_daughterRelations.end(); ++iter)
+	{
+
+		(*iter)->printDecayTree(level, os, pan + 1);
+		daughters++;
+
+	}
+
+	if (daughters && pan > 1)
+	{
+		for (int p = 0; p < pan; p++)
+			os << "|  ";
+		os << "*" << std::endl;
+	}
+
+	return os;
+}
+
+std::ostream& Relative::print(int level, std::ostream& os, int pan) const
+{
+	return printPan1st(os, pan) << "pxl::ObjectBase with id: " << id()
+			<< std::endl;
+}
+
+std::ostream& Relative::printPan1st(std::ostream& os, int pan) const
+{
+	for (int p = 0; p < pan - 2; p++)
+		os << "|  ";
+	if (pan - 1 > 0)
+		os << "+--";
+	if (pan)
+		os << "{ ";
+		
+	return os;
+}
+
+std::ostream& Relative::printPan(std::ostream& os, int pan) const
+{
+	for (int p = 0; p < pan - 1; p++)
+		os << "|  ";
+	if (pan)
+		os << "| ";
+	return os;
+}
+
+} // namespace pxl
+
+std::ostream& operator<<(std::ostream& cxxx, const pxl::Relative& obj)
+{
+	return obj.print(0, cxxx, 0);
+}
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+
+namespace pxl
+{
+pxl::Relative* SoftRelations::getFirst(const pxl::ObjectOwner& owner,
+const std::string& type) const
+{
+	if (type=="")
+	{
+		const_iterator found = _relationsMap.begin();
+		if (found!=_relationsMap.end())
+		{
+			return owner.getById(found->second);
+		}
+		else
+		return 0;
+	}
+	else
+	{
+		const_iterator found = _relationsMap.find(type);
+		if (found!=_relationsMap.end())
+		{
+			return owner.getById(found->second);
+		}
+		else
+		return 0;
+	}
+
+}
+
+int SoftRelations::getSoftRelatives(std::vector<pxl::Relative*>& vec,
+const pxl::ObjectOwner& owner, const std::string& type) const
+{
+	int size = vec.size();
+
+	std::pair<const_iterator, const_iterator> iterators = _relationsMap.equal_range(type);
+	for (const_iterator iter = iterators.first; iter!= iterators.second; ++iter)
+	{
+		pxl::Relative* relative = owner.getById(iter->second);
+		if (relative!=0)
+		vec.push_back(relative);
+	}
+
+	return vec.size()-size;
+}
+
+int SoftRelations::getSoftRelatives(std::vector<pxl::Relative*>& vec,
+const pxl::ObjectOwner& owner) const
+{
+	int size = vec.size();
+	for (const_iterator iter = _relationsMap.begin(); iter
+	!= _relationsMap.end(); ++iter)
+	{
+		pxl::Relative* relative = owner.getById(iter->second);
+		if (relative!=0)
+		vec.push_back(relative);
+	}
+	return vec.size()-size;
+}
+
+template<class objecttype>
+int SoftRelations::getSoftRelativesOfType(std::vector<objecttype*>& vec,
+const pxl::ObjectOwner& owner, const std::string& type) const
+{
+	int size = vec.size();
+	std::pair<const_iterator, const_iterator> iterators = _relationsMap.equal_range(type);
+	for (const_iterator iter = iterators.first; iter!= iterators.second; ++iter)
+	{
+		pxl::Relative* relative = owner.getById(iter->second);
+		if (relative!=0)
+		{
+			objecttype* object = dynamic_cast<objecttype*>(relative);
+			if (object!=0)
+			vec.push_back(object);
+		}
+	}
+	return vec.size()-size;
+}
+
+template<class objecttype>
+int SoftRelations::getSoftRelativesOfType(std::vector<objecttype*>& vec,
+const pxl::ObjectOwner& owner) const
+{
+	int size = vec.size();
+	for (const_iterator iter = _relationsMap.begin(); iter
+	!= _relationsMap.end(); ++iter)
+	{
+		pxl::Relative* relative = owner.getById(iter->second);
+		if (relative!=0)
+		{
+			objecttype* object = dynamic_cast<objecttype*>(relative);
+			if (object!=0)
+			vec.push_back(object);
+		}
+	}
+	return vec.size()-size;
+}
+
+int SoftRelations::keepSoftRelatives(std::vector<pxl::Relative*>& vec) const
+{
+	std::vector<pxl::Relative*> keepItems;
+	for (const_iterator iter = _relationsMap.begin(); iter
+	!= _relationsMap.end(); ++iter)
+	{
+		for (std::vector<pxl::Relative*>::const_iterator itVec = vec.begin(); itVec!=vec.end(); ++itVec)
+		{
+			if ( (*itVec)->getId() == iter->second )
+			keepItems.push_back(*itVec);
+		}
+	}
+	vec.swap(keepItems);
+	return vec.size();
+}
+
+int SoftRelations::keepSoftRelatives(std::vector<pxl::Relative*>& vec, const std::string& type) const
+{
+	std::vector<pxl::Relative*> keepItems;
+	for (const_iterator iter = _relationsMap.begin(); iter
+	!= _relationsMap.end(); ++iter)
+	{
+		if (iter->first==type)
+		{
+			for (std::vector<pxl::Relative*>::const_iterator itVec = vec.begin(); itVec!=vec.end(); ++itVec)
+			{
+				if ( (*itVec)->getId() == iter->second )
+				keepItems.push_back(*itVec);
+			}
+		}
+	}
+	vec.swap(keepItems);
+	return vec.size();
+}
+
+bool SoftRelations::has(const pxl::Relative* relative) const
+{
+	for (const_iterator iter = _relationsMap.begin(); iter
+	!= _relationsMap.end(); ++iter)
+	{
+		if ( relative->getId() == iter->second )
+		return true;
+	}
+	return false;
+}
+
+bool SoftRelations::has(const pxl::Relative* relative, const std::string& type) const
+{
+	std::pair<const_iterator, const_iterator> iterators = _relationsMap.equal_range(type);
+	for (const_iterator iter = iterators.first; iter!= iterators.second; ++iter)
+	{
+		if ( relative->getId() == iter->second)
+		return true;
+	}
+	return false;
+}
+
+bool SoftRelations::has(const pxl::Id& id) const
+{
+	for (const_iterator iter = _relationsMap.begin(); iter
+	!= _relationsMap.end(); ++iter)
+	{
+		if ( id == iter->second )
+		return true;
+	}
+	return false;
+}
+
+bool SoftRelations::has(const pxl::Id& id, const std::string& type) const
+{
+	std::pair<const_iterator, const_iterator> iterators = _relationsMap.equal_range(type);
+	for (const_iterator iter = iterators.first; iter!= iterators.second; ++iter)
+	{
+		if ( id == iter->second )
+		return true;
+	}
+	return false;
+}
+
+bool SoftRelations::hasType(const std::string& name) const
+{
+	if ( _relationsMap.count(name)>0 )
+	return true;
+	return false;
+}
+
+void SoftRelations::set(const pxl::Relative* relative, const std::string& type)
+{
+	_relationsMap.insert(std::pair<std::string, pxl::Id>(type, relative->getId()));
+}
+
+int SoftRelations::count(const std::string& name) const
+{
+	return _relationsMap.count(name);
+}
+
+void SoftRelations::remove(const pxl::Relative* relative)
+{
+	for (iterator iter = _relationsMap.begin(); iter != _relationsMap.end(); ++iter)
+	{
+		if (iter->second==relative->getId())
+		{
+			_relationsMap.erase(iter);
+			break;
+		}
+	}
+}
+
+void SoftRelations::remove(const pxl::Relative* relative, const std::string& type)
+{
+	std::pair<iterator, iterator> iterators = _relationsMap.equal_range(type);
+	for (iterator iter = iterators.first; iter!= iterators.second; ++iter)
+	{
+		if (iter->second==relative->getId())
+		{
+			_relationsMap.erase(iter);
+			break;
+		}
+	}
+}
+
+std::ostream& SoftRelations::print(int level, std::ostream& os) const
+{
+	os << "SoftRelations of size " << _relationsMap.size() << "\n";
+	for (const_iterator iter = _relationsMap.begin(); iter!=_relationsMap.end(); ++iter)
+	{
+		os << "--> ('" << iter->first << "', " << iter->second << ") \n";
+	}
+	return os;
+}
+
+} //namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+
+namespace pxl
+{
+
+void UserRecord::serialize(const OutputStream &out) const
+{
+	out.writeUnsignedInt(getContainer()->size());
+	for (const_iterator iter = getContainer()->begin(); iter!=getContainer()->end(); ++iter)
+	{
+		out.writeString(iter->first);
+		pxl::Variant::Type type = iter->second.getType();
+
+		char cType = ' ';
+		switch (type)
+		{
+		case pxl::Variant::TYPE_BOOL:
+			cType='b';
+			out.writeChar(cType);
+			out.writeBool(iter->second.get<bool>());
+			break;
+		case pxl::Variant::TYPE_CHAR:
+			cType = 'c';
+			out.writeChar(cType);
+			out.writeChar(iter->second.get<char>());
+			break;
+		case pxl::Variant::TYPE_UCHAR:
+			cType = 'C';
+			out.writeChar(cType);
+			out.writeUnsignedChar(iter->second.get<unsigned char>());
+			break;
+		case pxl::Variant::TYPE_INT:
+			cType = 'i';
+			out.writeChar(cType);
+			out.writeInt(iter->second.get<int>());
+			break;
+		case pxl::Variant::TYPE_UINT:
+			cType = 'I';
+			out.writeChar(cType);
+			out.writeUnsignedInt(iter->second.get<unsigned int>());
+			break;
+		case pxl::Variant::TYPE_SHORT:
+			cType = 'o';
+			out.writeChar(cType);
+			out.writeShort(iter->second.get<short>());
+			break;
+		case pxl::Variant::TYPE_USHORT:
+			cType = 'O';
+			out.writeChar(cType);
+			out.writeUnsignedShort(iter->second.get<unsigned short>());
+			break;
+		case pxl::Variant::TYPE_LONG:
+			cType = 'l';
+			out.writeChar(cType);
+			out.writeLong(iter->second.get<long>());
+			break;
+		case pxl::Variant::TYPE_ULONG:
+			cType = 'L';
+			out.writeChar(cType);
+			out.writeUnsignedLong(iter->second.get<unsigned long>());
+			break;
+		case pxl::Variant::TYPE_DOUBLE:
+			cType = 'd';
+			out.writeChar(cType);
+			out.writeDouble(iter->second.get<double>());
+			break;
+		case pxl::Variant::TYPE_FLOAT:
+			cType = 'f';
+			out.writeChar(cType);
+			out.writeFloat(iter->second.get<float>());
+			break;
+		case pxl::Variant::TYPE_STRING:
+			cType = 's';
+			out.writeChar(cType);
+			out.writeString(iter->second.get<std::string>());
+			break;
+		case pxl::Variant::TYPE_USER:
+			cType = 'u';
+			out.writeChar(cType);
+			break;
+		case pxl::Variant::TYPE_PTR:
+			cType = 'p';
+			out.writeChar(cType);
+			break;
+		default:
+			out.writeChar(cType);
+			std::cerr << "Type not handled in pxl::Variant I/O." << std::endl;
+		}
+
+	}
+}
+
+void UserRecord::deserialize(const InputStream &in)
+{
+	unsigned int size = 0;
+	in.readUnsignedInt(size);
+	for (unsigned int j=0; j<size; ++j)
+	{
+		std::string name;
+		in.readString(name);
+		char cType;
+		in.readChar(cType);
+		//FIXME: temporary solution here - could also use static lookup-map,
+		//but leave this unchanged until decided if to switch to new UR implementation.
+		switch (cType)
+		{
+		case 'b':
+		{
+			bool b;
+			in.readBool(b);
+			set<bool>(name, b);
+		}
+			break;
+		case 'c':
+		{
+			char c;
+			in.readChar(c);
+			set<char>(name, c);
+		}
+			break;
+		case 'C':
+		{
+			unsigned char c;
+			in.readUnsignedChar(c);
+			set<unsigned char>(name, c);
+		}
+			break;
+
+		case 'i':
+		{
+			int ii;
+			in.readInt(ii);
+			set<int>(name, ii);
+		}
+			break;
+		case 'I':
+		{
+			unsigned int ui;
+			in.readUnsignedInt(ui);
+			set<unsigned int>(name, ui);
+		}
+			break;
+		case 'o':
+		{
+			short s;
+			in.readShort(s);
+			set<short>(name, s);
+		}
+			break;
+		case 'O':
+		{
+			unsigned short us;
+			in.readUnsignedShort(us);
+			set<unsigned short>(name, us);
+		}
+			break;
+		case 'l':
+		{
+			long l;
+			in.readLong(l);
+			set<long>(name, l);
+		}
+			break;
+		case 'L':
+		{
+			unsigned long ul;
+			in.readUnsignedLong(ul);
+			set<unsigned long>(name, ul);
+		}
+			break;
+		case 'd':
+		{
+			double d;
+			in.readDouble(d);
+			set<double>(name, d);
+		}
+			break;
+		case 'f':
+		{
+			float f;
+			in.readFloat(f);
+			set<float>(name, f);
+		}
+			break;
+		case 's':
+		{
+			std::string ss;
+			in.readString(ss);
+			set<std::string>(name, ss);
+		}
+			break;
+		case 'u':
+		case 'p':
+		default:
+			std::cerr << "Type " << cType
+					<< " not handled in pxl::Variant I/O." << std::endl;
+		}
+	}
+}
+
+std::ostream& UserRecord::print(int level, std::ostream& os, int pan) const
+{
+	os << "UserRecord size " << size() << "\n";
+	for (const_iterator iter = getContainer()->begin(); iter!=getContainer()->end(); ++iter)
+	{
+		os << "-->";
+		pxl::Variant::Type type = iter->second.getType();
+
+		os << " ('" << iter->first << "', ";
+		switch (type)
+		{
+		case pxl::Variant::TYPE_BOOL:
+			os << iter->second.get<bool>();
+			break;
+		case pxl::Variant::TYPE_CHAR:
+			os << iter->second.get<char>();
+			break;
+		case pxl::Variant::TYPE_UCHAR:
+			os << iter->second.get<unsigned char>();
+			break;
+		case pxl::Variant::TYPE_INT:
+			os << iter->second.get<int>();
+			break;
+		case pxl::Variant::TYPE_UINT:
+			os << iter->second.get<unsigned int>();
+			break;
+		case pxl::Variant::TYPE_SHORT:
+			os << iter->second.get<short>();
+			break;
+		case pxl::Variant::TYPE_USHORT:
+			os << iter->second.get<unsigned short>();
+			break;
+		case pxl::Variant::TYPE_LONG:
+			os << iter->second.get<long>();
+			break;
+		case pxl::Variant::TYPE_ULONG:
+			os << iter->second.get<unsigned long>();
+			break;
+		case pxl::Variant::TYPE_DOUBLE:
+			os << iter->second.get<double>();
+			break;
+		case pxl::Variant::TYPE_FLOAT:
+			os << iter->second.get<float>();
+			break;
+		case pxl::Variant::TYPE_STRING:
+			os << iter->second.get<std::string>();
+			break;
+		case pxl::Variant::TYPE_USER:
+			break;
+		case pxl::Variant::TYPE_PTR:
+			os << iter->second.get<void*>();
+			break;
+		default:
+			;
+		}
+		os << "), type: " << iter->second.getTypeName() << ".\n";
+	}
+
+	return os;
+}
+
+} //namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
 #include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "ePaxPxl/ePax/interface/ePax.h"
 
-namespace pxl {
+namespace pxl
+{
 
 std::vector<pxl::VariantBase::TypeInfo> VariantBase::types;
 
 /// This constant array serves the PXL variant data type. 
-static const char *typeNames[] = { // Note: must match pxl::VariantBase::Type
-    "null", "bool", "char", "uchar", "short", "ushort", "int", "uint",
-    "long", "ulong", "float", "double", "string", "ptr"
-};
+static const char *typeNames[] =
+{ // Note: must match pxl::VariantBase::Type
+		"null", "bool", "char", "uchar", "short", "ushort", "int", "uint",
+				"long", "ulong", "float", "double", "string", "ptr" };
 
-const pxl::VariantBase::TypeInfo& VariantBase::fallbackGetTypeInfo(Type t)
+const pxl::VariantBase::TypeInfo& VariantBase::fallbackGetTypeInfo(Type t)  throw (std::runtime_error)
 {
-    if (PXL_UNLIKELY(types.begin() == types.end())) {
-        for(unsigned int i = 0; i < sizeof typeNames / sizeof *typeNames; i++)
-            types.push_back(typeNames[i]);
-    }
+	if (PXL_UNLIKELY(types.begin() == types.end()))
+	{
+		for (unsigned int i = 0; i < sizeof typeNames / sizeof *typeNames; i++)
+			types.push_back(typeNames[i]);
+	}
 
-    if ((std::size_t)t >= types.size()) {
-        std::ostringstream ss;
-        ss << "Variant type " << (std::size_t)t << " undefined.";
-        pxl::exception("pxl::VariantBase::fallbackGetTypeInfo", ss.str());
-    }
+	if ((std::size_t)t >= types.size())
+	{
+		std::ostringstream ss;
+		ss <<"pxl::VariantBase::fallbackGetTypeInfo: " << "Variant type "
+				<< (std::size_t)t << " undefined.";
+		throw std::runtime_error(ss.str());
+	}
 
-    return types[t];
+	return types[t];
 }
 
-void VariantBase::wrongType(Type tShould, Type tIs) const
+void VariantBase::wrongType(Type tShould, Type tIs) const  throw (std::runtime_error)
 {
-    const TypeInfo& is     = getTypeInfo(tIs);
-    const TypeInfo& should = getTypeInfo(tShould);
+	const TypeInfo& is = getTypeInfo(tIs);
+	const TypeInfo& should = getTypeInfo(tShould);
 
-    pxl::exception("pxl::VariantBase::wrongType",
-                   std::string("Trying to access pxl::Variant of type \"")
-                   + is.name + "\" as \"" + should.name + "\".");
+	std::ostringstream ss;
+	ss << "pxl::VariantBase::wrongType: "
+			<< "Trying to access pxl::Variant of type \"" << is.name
+			<< "\" as \"" << should.name << "\".";
+
+	throw std::runtime_error(ss.str());
+
 }
 
 } // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#include <iostream>
-#ifdef WIN32
-#else
-	#include <sys/time.h>
-#endif
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-
-namespace pxl {
-
-double getCpuTime()
-{
-#ifdef WIN32
-	return timeGetTime() / 1000.;
-#else
-	struct timeval  tv;
-	gettimeofday( &tv, NULL );
-	return ( (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0 );
-#endif
-}
-
-void exception(const char* routine, const char* message)
-{
-    //FIXME: use logging facility instead of cerr
-    std::cerr << routine << ": " << message << std::endl;
-    std::cerr << "pxl::exception(): throwing pxl::Exception." << std::endl;
-    throw pxl::Exception(routine, message);
-}
-
-//void exception(const std::string& routine, const std::string& message)
-//{
-//    std::cerr << routine << ": " << message << std::endl;
-//    std::cerr << "pxl::exception(): throwing pxl::Exception." << std::endl;
-//    throw pxl::Exception(routine, message);
-//}
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-namespace pxl {
-
-#define PRINT_NATIVE(type) \
-template<> \
-std::ostream& CowObject<type>::print(int level, std::ostream& os, int pan) const \
-{ \
-    return printPan1st(os, pan) << "pxl::CowObject<" #type "> with id: " \
-                                << id() << " is " << get() << std::endl; \
-}
-
-PRINT_NATIVE(int)
-PRINT_NATIVE(unsigned int)
-PRINT_NATIVE(bool)
-PRINT_NATIVE(double)
-PRINT_NATIVE(float)
-
-#undef PRINT_NATIVE
-
-// EXPLICIT INSTANCIATION
-template class CowObject<int>;
-template class CowObject<unsigned int>;
-template class CowObject<bool>;
-template class CowObject<double>;
-template class CowObject<float>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class CowWkPtr<int>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-const pxl::Get get;
-const pxl::Set set;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class Map<int, int>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-namespace pxl {
-
-#define PRINT_NATIVE(type) \
-template<> \
-std::ostream& Object<type>::print(int level, std::ostream& os, int pan) const \
-{ \
-    return printPan1st(os, pan) << "pxl::Object<" #type "> with id: " \
-                                << id() << " is " << get() << std::endl; \
-}
-
-PRINT_NATIVE(int)
-PRINT_NATIVE(unsigned int)
-PRINT_NATIVE(bool)
-PRINT_NATIVE(double)
-PRINT_NATIVE(float)
-
-#undef PRINT_NATIVE
-
-// EXPLICIT INSTANCIATION
-template class Object<int>;
-template class Object<unsigned int>;
-template class Object<bool>;
-template class Object<double>;
-template class Object<float>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-namespace pxl {
-
-void ObjectBase::linkMother(pxl::ObjectBase& target)
-{
-    pxl::WkPtrBase* pTarget = target.createSelfWkPtr();
-    pxl::WkPtrBase* pThis   = this->createSelfWkPtr(); 
-
-    if (target._refObjectOwner != this->_refObjectOwner)
-        // FIXME: exception?
-        std::cerr << "pxl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object holder!" << std::endl;
-
-    this->_motherRelations.set(target.id(), pTarget);
-    target._daughterRelations.set(this->id(), pThis);
-}
-
-void ObjectBase::linkDaughter(pxl::ObjectBase& target)
-{
-    pxl::WkPtrBase* pTarget = target.createSelfWkPtr();
-    pxl::WkPtrBase* pThis   = this->createSelfWkPtr(); 
-
-   if (target._refObjectOwner != this->_refObjectOwner)
-       // FIXME: exception?
-       std::cerr << "pxl::ObjectBase::linkDaughter(...): WARNING: mother and daughter have not the same object holder!" << std::endl;
-
-   this->_daughterRelations.set(target.id(), pTarget);
-   target._motherRelations.set(this->id(), pThis);
-}
-
-void ObjectBase::unlinkMother(pxl::ObjectBase& target)
-{
-    this->_motherRelations.remove(target.id());
-    target._daughterRelations.remove(this->id());
-}
-
-void ObjectBase::unlinkDaughter(pxl::ObjectBase& target)
-{
-    this->_daughterRelations.remove(target.id());
-    target._motherRelations.remove(this->id());  
-}
-
-void ObjectBase::unlinkMothers() {
-    for(pxl::Relations::Iterator iter(_motherRelations);
-        !iter.isDone(); iter.next()) {
-
-        if (iter.item()->_objectRef)
-            iter.item()->_objectRef->_daughterRelations.remove(this->id());
-    }
-
-    _motherRelations.clearContainer();
-}
-
-void ObjectBase::unlinkDaughters() {
-    for(pxl::Relations::Iterator iter(_daughterRelations);
-       !iter.isDone(); iter.next()) {
-
-       if (iter.item()->_objectRef)
-           iter.item()->_objectRef->_motherRelations.remove(this->id());
-    }
-
-    _daughterRelations.clearContainer();
-}
-
-std::ostream& ObjectBase::printDecayTree(int level, std::ostream& os, int pan) const
-{
-    int daughters = 0;
-
-    print(level, os, pan);
-
-    for(pxl::Relations::Iterator iter(_daughterRelations);
-        !iter.isDone(); iter.next()) {
-
-        if (iter.item()->_objectRef) {
-            iter.item()->_objectRef->printDecayTree(level, os, pan + 1);
-            daughters++;
-        }
-    }
-
-   if (daughters && pan > 1) {
-       for(int p = 0; p < pan; p++)
-           os << "|  ";
-       os << "*" << std::endl;
-   }
-
-   return os;
-}
-
-std::ostream& ObjectBase::print(int level, std::ostream& os, int pan) const
-{
-    return printPan1st(os, pan) << "pxl::ObjectBase with id: " << id() << std::endl;
-}
-
-std::ostream& ObjectBase::printPan1st(std::ostream& os, int pan) const
-{
-    for(int p = 0; p < pan - 2; p++)
-        os << "|  ";
-    if (pan - 1 > 0)
-        os << "+--";
-    if (pan)
-        os << "{ ";
-    return os;
-}
-
-std::ostream& ObjectBase::printPan(std::ostream& os, int pan) const
-{
-    for(int p = 0; p < pan - 1; p++)
-        os << "|  ";
-    if (pan)
-        os << "| ";
-    return os;
-}
-
-} // namespace pxl
-
-std::ostream& operator<<(std::ostream& cxxx, const pxl::ObjectBase& obj)
-{
-    return obj.print(0, cxxx, 0);
-}
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-namespace pxl {
-
-ObjectOwner::ObjectOwner() :
-    pxl::Vector<pxl::ObjectBase*>(),
-    _copyHistory(),
-    _index()
-{
-}
-
-ObjectOwner::ObjectOwner(const pxl::ObjectOwner& original) :
-    pxl::Vector<pxl::ObjectBase*>(),
-    _copyHistory(),
-    _index()
-{
-    // copy objects: loop in STL style
-    for(StlConstIterator iter = original._container.begin();
-        iter != original._container.end(); iter++) {
-
-        pxl::ObjectBase* pOld = *iter;
-        pxl::ObjectBase* pNew = pOld->clone();
-
-        set(*pNew);
-        _copyHistory.set(pOld->id(), pNew);
-    }
-
-    // FIXME: possibly, inefficient, might be done all in one loop
-    // redirect relations: loop in PTL style
-    for(Iterator iter(original); !iter.isDone(); iter.next()) {
-        pxl::ObjectBase* pOld = iter.item();
-        pxl::ObjectBase* pNew = _copyHistory.find(pOld->id(), 0);
-
-        // mother relations
-        for(pxl::Relations::Iterator iter(pOld->getMotherRelations());
-            !iter.isDone(); iter.next()) {
-
-            pxl::ObjectBase* pOldRel = iter.item()->pointer();
-            pxl::ObjectBase* pNewRel = _copyHistory.find(pOldRel->id(), 0);
-
-            if (pOldRel) {
-                if (pNewRel)
-                    pNew->linkMother(*pNewRel);
-                else
-                    // FIXME: cerr again?
-                    std::cerr << "pxl::ObjectOwner::ObjectOwner(...): WARNING: some original objects had relations to objects of other owners." << std::endl;
-            } else
-                std::cerr << "pxl::ObjectOwner::ObjectOwner(...): WARNING: some originally related objects no longer exist." << std::endl;
-        }
-
-        // daughter relations
-        // have been set automatically above
-    }
-
-    // redirect index:
-    for(pxl::Index::Iterator iter(original._index);
-        !iter.isDone(); iter.next()) {
-
-        pxl::ObjectBase* pOld = iter.item();
-        pxl::ObjectBase* pNew = _copyHistory.find(pOld->id(), 0);
-
-        if (pNew)
-            _index.set(iter.key(), pNew);
-        else
-            std::cerr << "pxl::ObjectOwner::ObjectOwner(...): WARNING: some original indices pointed to objects of other owners." << std::endl;
-    }
-}
-
-void ObjectOwner::clearContainer() {
-    for(StlConstIterator iter = _container.begin();
-        iter != _container.end(); iter++)
-        delete (*iter);
-    _container.clear();
-    _copyHistory.clearContainer();
-    _index.clearContainer();
-}
-
-void ObjectOwner::set(pxl::ObjectBase& item)
-{
-    item._refObjectOwner = this;
-    _container.push_back(&item);
-}
-
-void ObjectOwner::remove(pxl::ObjectBase& item)
-{
-    // search & remove possible indices (multiple occurrences possible!)
-    for(pxl::Index::StlConstIterator iter = _index.begin();
-        iter != _index.end(); iter++) {
-
-        // FIXME: inefficient
-        if (&item == iter->second)
-            _index.remove(iter->first);
-    }
-
-    // search & remove possible copy history
-    for(pxl::CopyHistory::StlConstIterator iter = _copyHistory.begin();
-        iter != _copyHistory.end(); iter++) {
-
-        // FIXME: inefficient
-        if (&item == iter->second) {
-            _copyHistory.remove(iter->first);
-            break; // multiple occurrences *not* possible!
-        }
-    }
-
-    // remove all relations:
-    item.unlinkMothers();
-    item.unlinkDaughters();
-
-    for(StlIterator iter = _container.begin();
-        iter != _container.end(); iter++) {
-
-        if (&item == (*iter)) {
-            delete *iter;
-            _container.erase(iter);
-            break;
-        }
-    }
-}
-
-bool ObjectOwner::has(const pxl::ObjectBase& item) const
-{
-    return item._refObjectOwner == this;
-}
-
-// EXPLICIT INSTANCIATION
-template class ObjectOwner::TypeIterator<pxl::Object<int> >;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class Ptr<int>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class pxl::Relations::TypeIterator<pxl::WkPtr<int> >;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class SpyObject<int>;   
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class Vector<int>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class WkPtr<int>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 
 namespace pxl {
 
@@ -796,7 +1242,7 @@ void WkPtrBase::notifyDeleted()
     _notifyChainOut = 0;
 }
 
-void WkPtrBase::connect(pxl::ObjectBase* pointer)
+void WkPtrBase::connect(pxl::Relative* pointer)
 {
     // disconnect:
     if (_objectRef) {
@@ -828,1530 +1274,950 @@ void WkPtrBase::connect(pxl::ObjectBase* pointer)
 }
 
 } // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class WkPtrSpec<int, pxl::Object<int> >;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+#ifdef WIN32
+#else
+	#include <sys/time.h>
+#endif
 
 
 namespace pxl {
 
-// EXPLICIT INSTANCIATION
-template class TypeAgent<pxl::Object<int> >;
-template class TypeAgent<pxl::CowObject<int> >;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-
-
-namespace pxl {
-
-// The singleton instance
-TypeManager* TypeManager::_instance = 0;
-
-TypeManager& TypeManager::instance()
+double getCpuTime()
 {
-    if (!_instance)
-        _instance = new TypeManager;
-
-    return *_instance;    
-}
-
-void pxl::TypeManager::registerAgent(pxl::TypeAgentBase* agent) {
-// for debugging purposes:
-//    std::cout << "pxl::TypeManager::registerAgent(): type registered: [" 
-//              << agent->getObjectTypeId() << "," << agent->getDataTypeId() 
-//              << "]" << std::endl;
-//              //<< "] = '" << agent->getCppTypeId() << "'" << std::endl;
-
-    // add entries to maps:
-    _agentsByIotlTypeId.set(pxl::TypeIdKey(agent->getObjectTypeId(), agent->getDataTypeId()), agent);
-    _agentsByCppTypeId.set(agent->getCppTypeId(), agent);
-}
-
-pxl::Id TypeManager::restoreObject(iStreamer& input, pxl::ObjectBase** ppobj, const std::string& objectTypeId, const std::string& dataTypeId) const
-{
-    TypeAgentBase* agent = _agentsByIotlTypeId.find(pxl::TypeIdKey(objectTypeId, dataTypeId), 0);
-    if (!agent) {
-        std::string message; 
-        message += "undeclared IOTL type: [";
-        message += objectTypeId;
-        message += ", "; 
-        message += dataTypeId; 
-        message += "]"; 
-        pxl::exception("pxl::TypeManager::restoreObject()", message);
-
-        return 0;
-    }
-
-    return agent->restoreObject(input, ppobj);
-}
-
-pxl::Id TypeManager::restoreObject(pxl::iStreamer& input, pxl::ObjectBase& obj, const std::string& cppTypeId) const
-{
-    TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
-    if (!agent) {
-        std::string message; 
-        message += "undeclared C++ type: '";
-        message += cppTypeId;
-        message += "'";
-        pxl::exception("pxl::TypeManager::restoreObject()", message); 
-
-        return 0;
-    }
-
-    return agent->restoreObject(input, obj);
-}
-
-void TypeManager::storeObject(pxl::oStreamer& output, const pxl::ObjectBase& obj, const std::string& cppTypeId) const
-{
-    TypeAgentBase* agent = _agentsByCppTypeId.find(cppTypeId, 0);
-    if (!agent) {
-        std::string message; 
-        message += "undeclared C++ type: '";
-        message += cppTypeId;
-        message += "'";
-        pxl::exception("pxl::TypeManager::storeObject()", message);
- 
-        return;
-    }
-
-    agent->storeObject(output, obj);
+#ifdef WIN32
+	return timeGetTime() / 1000.;
+#else
+	struct timeval  tv;
+	gettimeofday( &tv, NULL );
+	return ( (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0 );
+#endif
 }
 
 } // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class pxl::iDiskFileVx<pxl::iStreamer>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#include <cstring>
-
-#include <zlib.h>
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
 
-
-#define iotl__iStreamer__lengthUnzipBuffer	65536
-
-namespace pxl {
-
-// help class
-/**
-This internal class serves the PXL I/O scheme. 
-*/ 
-class Orphan {};
-
-iStreamer::iStreamer() :
-    pxl::BasicIoStreamer(), _buffer()  
+namespace pxl
 {
-    _inputBuffer = new unsigned char[iotl__iStreamer__lengthUnzipBuffer];
-    _outputBuffer = new unsigned char[iotl__iStreamer__lengthUnzipBuffer];
+
+bool ChunkReader::skip()
+{
+	if (_stream.peek()==EOF)
+		return false;
+
+	//skip event header
+	if (_status == preHeader)
+	{
+		_stream.ignore(1);
+		// read info size
+		pxl::int32_t infoSize = 0;
+		_stream.read((char *)&infoSize, 4);
+		_stream.ignore(infoSize);
+	}
+
+	//skip all blocks
+	while (nextBlockId()=='B' && !_stream.eof() )
+	{
+		// read info size
+		pxl::int32_t infoSize = 0;
+		_stream.read((char *)&infoSize, 4);
+		_stream.ignore(infoSize);
+		_stream.ignore(1);
+
+		// read chunk size
+		pxl::int32_t chunkSize = 0;
+		_stream.read((char *)&chunkSize, 4);
+		_stream.ignore(chunkSize);
+	}
+
+	_stream.ignore(4);
+	_status = preHeader;
+
+	return true;
 }
 
-iStreamer::~iStreamer()
+bool ChunkReader::previous()
 {
-    delete[] _inputBuffer;
-    delete[] _outputBuffer;
+	if (_status != preHeader)
+		return false;
+
+	std::streampos pos = _stream.tellg();
+
+	pxl::int32_t eventSize;
+	pos -= 4;
+	if (pos<0)
+		return false;
+	_stream.seekg(pos);
+	_stream.read((char*)&eventSize, 4);
+
+	pos -= eventSize;
+	if (pos<0)
+		return false;
+	_stream.seekg(pos);
+	_status = preHeader;
+	return true;
 }
 
-int iStreamer::unzipEventData(std::istream &in, int nBytes)
+/// Reads next block from file to stream. If mode is -1, the information condition string is evaluated,
+/// i.e. the block is read only if the string equals the one in the input.
+bool ChunkReader::readBlock(skipMode skip, infoMode checkInfo,
+		const std::string& infoCondition) throw(std::runtime_error)
 {
-    int ret, length = 0;
-    unsigned int have;
+	//if event header not read, return
+	if (_status == preHeader)
+		return false;
 
-    z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL; 
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;   
-    strm.next_in = Z_NULL;
+	//check if beginning of block
+	char id = nextBlockId();
 
-    ret = inflateInit(&strm);
-    if (ret != Z_OK)
-        return 0;
+	if (id!='B')
+	{
+		if (id=='e') //end of event
+		{
+			_status = preHeader;
+			_stream.ignore(4);
+			return false;
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << "Unknown char identifier: " << id	<< "in pxl::ChunkReader::nextBlockIf.";
+			throw std::runtime_error(ss.str());
+		}
+	}
 
-    // decompress until deflate stream ends or end of file
-    do {
-        int size = nBytes;
-        if (size > iotl__iStreamer__lengthUnzipBuffer)
-            size = iotl__iStreamer__lengthUnzipBuffer;
+	pxl::int32_t infoSize = 0;
+	_stream.read((char *)&infoSize, 4);
 
-        strm.avail_in = in.read((char*)_inputBuffer, size).gcount();
-        if (in.bad()) {
-            inflateEnd(&strm);
-            return 0;
-        }
+	bool readStream = true;
 
-        nBytes -= strm.avail_in;
-        if (in.eof())
-            nBytes = 0;
+	if (checkInfo == evaluate)
+	{
+		char* infoBuffer = new char[infoSize+1];
+		infoBuffer[infoSize]=0;
+		_stream.read(infoBuffer, infoSize);
+		std::string info;
+		info.assign(infoBuffer);
+		//the mode is set to -2 if the info condition is not fulfilled.
+		//rest of block must be skipped and false be returned.
+		if (infoCondition!=info)
+			readStream = false;
+		delete infoBuffer;
+	}
+	else
+		_stream.ignore(infoSize);
 
-        if (strm.avail_in == 0)
-            break;
+	char compressionMode;
+	_stream.read(&compressionMode, 1);
 
-        strm.next_in = _inputBuffer;
+	// read chunk size
+	pxl::int32_t chunkSize = 0;
+	_stream.read((char *)&chunkSize, 4);
+	if (_stream.bad() || _stream.eof())
+		return false;
 
-        // run inflate() on input until output buffer not full
-        do {
-            strm.avail_out = iotl__iStreamer__lengthUnzipBuffer;
-            strm.next_out = _outputBuffer;
+	if (readStream == false)
+	{
+		_stream.ignore(chunkSize);
+		if (skip == skipMode::on)
+			return readBlock(skip, checkInfo, infoCondition);
+		else
+			return false;
+	}
+	else
+	{
+		// read chunk into buffer
+		if (compressionMode==' ')
+		{
+			_buffer.resize(chunkSize);
+			_stream.read(_buffer.data(), chunkSize);
+			if (_stream.bad() || _stream.eof() )
+				return false;
+		}
+		else if (compressionMode=='Z')
+		{
+			unzipEventData(chunkSize);
+		}
+		else
+		{
+			throw std::runtime_error("ChunkReader::readBlock(): Invalid compression mode.");
+		}
+	}
 
-            ret = inflate(&strm, Z_NO_FLUSH);
-            switch(ret) {
-                case Z_STREAM_ERROR:
-                    pxl::exception("pxl::unzipEventData()", "Internal inflate stream error.");
-                case Z_NEED_DICT:
-                    ret = Z_DATA_ERROR;	// fall through
-                case Z_DATA_ERROR:
-                case Z_MEM_ERROR:
-                    inflateEnd(&strm);
-                    return 0;
-                default:
-                    break;
-            }
-
-            have = iotl__iStreamer__lengthUnzipBuffer - strm.avail_out;
-            _buffer.write((char *)_outputBuffer, have);
-
-            length += have;
-        } while(strm.avail_out == 0);
-    } while(nBytes > 0); // done when inflate() says it's done
-
-    inflateEnd(&strm);
-
-    return length;
+	return true;
 }
 
-bool iStreamer::putEvent(std::istream& cxxx, int mode, const std::string& infoCondition)
+bool ChunkReader::readHeader(readMode mode, skipMode doSkip,
+		infoMode checkInfo, const std::string& infoCondition)
 {
-    _buffer.clear();
-    _buffer.str("");
+	endEvent();
 
-    char eventMarker[4] = "   ";
-    std::string info;
-    char compressionMode = 0;
+	if (_stream.peek()==EOF || _stream.bad() )
+		return false;
 
-    int lengthInfo = 0;
-    int lengthInfoVerify = 0;
+	switch (mode)
+	{
+	case infoChunk:
+		_status = infoPreBlock;
+		if (nextBlockId()!='I')
+		{
+			skip();
+			if (doSkip == skipMode::on)
+				return readHeader(mode, doSkip, checkInfo, infoCondition);
+			else
+				return false;
+		}
+		break;
 
-    int lengthZip = 0;
-    int lengthZipVerify = 0;
+	case event:
+		_status = evPreBlock;
+		if (nextBlockId()!='E')
+		{
+			skip();
+			if (doSkip == skipMode::on)
+				return readHeader(mode, doSkip, checkInfo, infoCondition);
+			else
+				return false;
+		}
+		break;
 
-    restoreMemory(cxxx, eventMarker, 4);	// event marker
-    if (!cxxx.good())
-        return false;
-    if (std::strcmp(iotl__eventMarker, eventMarker) != 0)
-        pxl::exception("pxl::iStreamer::getEvent()",
-                       "Invalid event marker while reading event header.");
+	default:
+		_status = preBlock;
+		_stream.ignore(1);
+	}
 
-    restoreBasicTypeChar(cxxx, compressionMode); // compression mode
+	pxl::int32_t infoSize = 0;
+	_stream.read((char *)&infoSize, 4);
 
-    restoreBasicTypeInt(cxxx, lengthInfo);       // forward jumper
-    if (lengthInfo) {
-        char* buffer = new char[lengthInfo];
-        cxxx.read(buffer, lengthInfo);
-        info.assign(buffer, lengthInfo);
-        delete[] buffer;
-    }
-    restoreBasicTypeInt(cxxx, lengthInfoVerify); // backward jumper & consistency check
+	if (_stream.eof() || _stream.bad() )
+		return false;
 
-    if (lengthInfo != lengthInfoVerify)
-        return false;
+	if (checkInfo==evaluate)
+	{
+		char* infoBuffer = new char[infoSize+1];
+		infoBuffer[infoSize]=0;
+		_stream.read(infoBuffer, infoSize);
+		std::string info;
+		info.assign(infoBuffer);
+		delete infoBuffer;
+		if (infoCondition!=info)
+		{
+			if (doSkip == skipMode::on)
+				return readHeader(mode, doSkip, checkInfo, infoCondition);
+			else
+				return false;
+		}
+	}
+	else
+		_stream.ignore(infoSize);
 
-    if (mode == -1 && infoCondition != info)
-        mode = 0;
+	if (_stream.eof() || _stream.bad() )
+		return false;
 
-    restoreBasicTypeInt(cxxx, lengthZip);        // forward jumper
-    if (mode == 0)
-        cxxx.ignore(lengthZip); // ignore data
-    else if (compressionMode == ' ') {
-        // just read the data:
-        int size;
-        for(int bytes = lengthZip; bytes > 0; bytes -= size) {
-            size = bytes;
-            if (size > iotl__iStreamer__lengthUnzipBuffer)
-                size = iotl__iStreamer__lengthUnzipBuffer;
-
-            restoreMemory(cxxx, (char*)_outputBuffer, size);  
-            _buffer.write((char*)_outputBuffer, size);
-        }
-    } else // unzip the data:
-        unzipEventData(cxxx, lengthZip);
-
-    restoreBasicTypeInt(cxxx, lengthZipVerify); // backward jumper & consistency check
-
-    _buffer.seekg(0);
-
-    return lengthZip == lengthZipVerify;
+	return true;
 }
 
-bool iStreamer::previous(std::istream& cxxx)
+int ChunkReader::unzipEventData(int nBytes) throw(std::runtime_error)
 {
-    int pos = cxxx.tellg();	// FIXME: Yikes! offset_t or something
-    int lengthInfoVerify;
-    int lengthZipVerify;
+	int ret, length = 0;
+	pxl::int32_t have;
 
-    // read zip length information:
-    pos -= 4;
-    if (pos < 0)
-        return false;
-    cxxx.seekg(pos);
+	unsigned char* _inputBuffer =
+			new unsigned char[iotl__iStreamer__lengthUnzipBuffer];
+	unsigned char* _outputBuffer =
+			new unsigned char[iotl__iStreamer__lengthUnzipBuffer];
 
-    restoreBasicTypeInt(cxxx, lengthZipVerify); // backward jumper & consistency check
-    if (lengthZipVerify < 0)
-        pxl::exception("pxl::iStreamer::previous()", "Invalid zip block length information.");
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.avail_in = 0;
+	strm.next_in = Z_NULL;
 
-    pos -= lengthZipVerify;
-    pos -= 4;
+	ret = inflateInit(&strm);
+	if (ret != Z_OK)
+		return 0;
 
-    // read info length information:
-    pos -= 4;
-    if (pos < 0)
-        return false;
-    cxxx.seekg(pos);
+	// decompress until deflate stream ends or end of file
+	do
+	{
+		int size = nBytes;
+		if (size > iotl__iStreamer__lengthUnzipBuffer)
+			size = iotl__iStreamer__lengthUnzipBuffer;
 
-    restoreBasicTypeInt(cxxx, lengthInfoVerify); // backward jumper & consistency check
-    if (lengthInfoVerify < 0)
-        pxl::exception("pxl::iStreamer::previous()", "Invalid info block length information.");
+		strm.avail_in = _stream.read((char*)_inputBuffer, size).gcount();
+		if (_stream.bad())
+		{
+			inflateEnd(&strm);
+			return 0;
+		}
 
-    pos -= lengthInfoVerify;
-    pos -= 4;
+		nBytes -= strm.avail_in;
+		if (_stream.eof())
+			nBytes = 0;
 
-    pos -= 1; // compression mode;
-    pos -= 4; // event marker
+		if (strm.avail_in == 0)
+			break;
 
-    if (pos < 0) {
-        pxl::exception("pxl::iStreamer::previous()", "Invalid block length information.");
-        return false;
-    }
-    cxxx.seekg(pos);
-    return true;
+		strm.next_in = _inputBuffer;
+
+		// run inflate() on input until output buffer not full
+		do
+		{
+			strm.avail_out = iotl__iStreamer__lengthUnzipBuffer;
+			strm.next_out = _outputBuffer;
+
+			ret = inflate(&strm, Z_NO_FLUSH);
+			switch (ret)
+			{
+			case Z_STREAM_ERROR:
+				throw std::runtime_error("pxl::ChunkReader::unzipEventData(): Internal inflate stream error.");
+			case Z_NEED_DICT:
+				ret = Z_DATA_ERROR; // fall through
+			case Z_DATA_ERROR:
+			case Z_MEM_ERROR:
+				inflateEnd(&strm);
+				return 0;
+			default:
+				break;
+			}
+
+			have = iotl__iStreamer__lengthUnzipBuffer - strm.avail_out;
+
+			length += have;
+
+			_buffer.destroy();
+			_buffer.resize(length);
+			memcpy(_buffer.data(), _outputBuffer+(length-have), have);
+
+		} while (strm.avail_out == 0);
+	} while (nBytes > 0); // done when inflate() says it's done
+	inflateEnd(&strm);
+
+	delete[] _inputBuffer;
+	delete[] _outputBuffer;
+
+	return length;
 }
 
-template<>
-pxl::Id iStreamer::restoreData<pxl::Relations>(pxl::Relations& relations)
-{
-    relations.clearContainer();
-
-    int size = 0;
-    restoreData<int>(size);
-    for(int i = 0; i < size; i++) {
-        pxl::MutableId persistentId = 0; 
-
-        restoreId(persistentId);
-        // provide orphan relation
-        if (persistentId != 0)
-            relations.set(persistentId, new pxl::WkPtr<pxl::Orphan>);
-    }
-
-    return 0;
 }
 
-template<>
-pxl::Id iStreamer::restoreData<pxl::ObjectOwner>(pxl::ObjectOwner& objects)
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+
+namespace pxl
 {
-    objects.clearContainer();
 
-    int size;
-    std::string key;
-    pxl::MutableId persistentId = 0;
+bool ChunkWriter::newFileSection(const std::string& info, char cSectionMarker)
+{
+	_stream.write(&cSectionMarker, 1);
+	_nBytes+=1;
 
-    // reload objects (with orphan relations)
-    size = 0;
-    restoreData<int>(size);
-    for(int i = 0; i < size; i++) {
-        pxl::ObjectBase* item = 0;
-        persistentId = restoreAbstractObject(&item);
-        objects.set(*item);
-        objects._copyHistory.set(persistentId, item);
-    }
+	// info block:
+	const char* cInfo = info.c_str();
+	pxl::int32_t lengthInfo = info.length();
+	_stream.write((char *) &lengthInfo, 4);
+	_nBytes+=4;
+	_stream.write(cInfo, lengthInfo);
+	_nBytes+=lengthInfo;
 
-    // redirect relations: loop in PTL style
-    for(pxl::ObjectOwner::Iterator iter(objects);
-        !iter.isDone(); iter.next()) {
-        pxl::ObjectBase* pNew = iter.item();
-
-        // mother relations
-        for(pxl::Relations::TypeIterator<pxl::WkPtr<pxl::Orphan> > iterRelations(pNew->_motherRelations);
-            !iterRelations.isDone(); iterRelations.next()) {
-
-            pxl::ObjectBase* pNewRel = objects._copyHistory.find(iterRelations.key(), 0);
-            if (pNewRel)
-                pNew->linkMother(*pNewRel);
-            else  // FIXME:: std::cerr again?
-                std::cerr << "pxl::iStreamer::restoreData<pxl::ObjectOwner>(...): WARNING: some original objects seem have invalid relations."
-                          << " (persistent id is " << iterRelations.key() << ")" << std::endl;
-        }
-
-        // daughter relations have been set automatically above
-        // remove orphan relations
-
-        // mother relations
-        pxl::Relations::TypeIterator<pxl::WkPtr<pxl::Orphan> > iterM(pNew->_motherRelations); 
-        while(!iterM.isDone()) {
-            pxl::Id id = iterM.key();
-            iterM.next();
-            pNew->_motherRelations.remove(id);
-        }
-
-        // daughter relations
-        pxl::Relations::TypeIterator<pxl::WkPtr<pxl::Orphan> > iterD(pNew->_daughterRelations);
-        while(!iterD.isDone()) {
-            pxl::Id id = iterD.key();
-            iterD.next();
-            pNew->_daughterRelations.remove(id);
-        }
-    }
-
-    // reload & redirect index
-    size = 0;
-    restoreData<int>(size);
-    for(int i = 0; i < size; i++) {
-        restoreData<std::string>(key);
-        restoreId(persistentId);
-
-        pxl::ObjectBase* pNew = objects._copyHistory.find(persistentId, 0);
-
-        if (pNew) {
-            objects._index.set(key, pNew);
-        } else {
-            // FIXME: my standard cerr complaint
-            std::cerr << "pxl::iStreamer::restoreData<pxl::Objects>(...): WARNING: some original indices could not be reconstructed." << std::endl;
-            std::cerr << key << ": " << persistentId << std::endl;
-        }
-    }
-
-    return 0;
+	return true;
 }
 
-template<>
-pxl::Id iStreamer::restoreData<pxl::Layout>(pxl::Layout& layout)
+bool ChunkWriter::endEvent()
 {
-    restoreData<int>(layout._type);
-    restoreData<int>(layout._style);
-    restoreData<int>(layout._color);
-    restoreData<double>(layout._a);
-    restoreData<double>(layout._b);
-    restoreData<double>(layout._c);
-    restoreData<double>(layout._d);
-    return 0;
+	// end event marker:
+	writeFlag('e');
+	_stream.write((char* ) &_nBytes, 4);
+	_nBytes=0;
+	return true;
 }
 
-template<>
-pxl::Id iStreamer::restoreData<pxl::ObjectBase>(pxl::ObjectBase& object)
+bool ChunkWriter::write(std::string info, char compressionMode) throw(std::runtime_error)
 {
-    pxl::MutableId persistentId ;
-    bool hasLayout;
+	// write out block information
+	const char* cInfo = info.c_str();
+	pxl::int32_t lengthInfo = info.length();
+	_stream.write((char *) &lengthInfo, 4);
+	_nBytes+=4;
+	_stream.write(cInfo, lengthInfo);
+	_nBytes+=lengthInfo;
 
-    restoreId(persistentId);
+	// write out compression mode
+	char compressed = 'Z';
+	if (compressionMode == ' ') compressed = ' ';
+	_stream.write((char *) &compressed, 1);
+	_nBytes+=1;
 
-    restoreData<pxl::Relations>(object._motherRelations);
-    restoreData<pxl::Relations>(object._daughterRelations);
+	// zip block:
+	const char* cBuffer = _buffer.getData();
+	pxl::int32_t lengthBuffer = _buffer.getSize();
 
-    restoreData<bool>(hasLayout);
-    if (hasLayout) {
-        restoreData<pxl::Layout>(object.layout());
-    } else {
-        delete object._ptrLayout;
-        object._ptrLayout = 0;
-    }
+	const char* cZip = cBuffer;
+	pxl::int32_t lengthZip = lengthBuffer;
 
-    return persistentId;
+	char* cZipSpace = 0;
+	pxl::int32_t lengthZipSpace = 0;
+
+	if (compressionMode == ' ')
+	{
+		// no compression requires no action...
+	}
+	else if (compressionMode >= '0' && compressionMode <= '9')
+	{
+		// data compression a la Gero, i.e. compression level = 6:
+		lengthZipSpace = int(double(lengthBuffer) * 1.05 + 16);
+		cZipSpace = new char[lengthZipSpace];
+
+		int status = compress2((Bytef*)cZipSpace, (uLongf*)&lengthZipSpace,
+				(const Bytef*)cBuffer, lengthBuffer, compressionMode - '0');
+		switch (status)
+		{
+		case Z_MEM_ERROR:
+			throw std::runtime_error("pxl::ChunkWriter::write(): zlib: not enough memory");
+			break;
+		case Z_BUF_ERROR:
+			throw std::runtime_error("pxl::ChunkWriter::write(): zlib: buffer too small");
+			break;
+		case Z_STREAM_ERROR:
+			throw std::runtime_error("pxl::ChunkWriter::write(): zlib: level parameter invalid");
+			break;
+		default:
+			break;
+		}
+
+		cZip = cZipSpace;
+		lengthZip = lengthZipSpace;
+	}
+	else
+		throw std::runtime_error("pxl::FileChunkWriter::write(): Invalid compression mode.");
+
+	_stream.write((char *) &lengthZip, 4);
+	_nBytes+=4;
+	_stream.write(cZip, lengthZip);
+	_nBytes+=lengthZip;
+
+	if (cZipSpace)
+		delete[] cZipSpace;
+
+	_buffer.destroy();
+
+	return true;
 }
 
-pxl::Id iStreamer::restoreAbstractObject(pxl::ObjectBase** ppobj)
+} //namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+
+namespace pxl
 {
-    std::string objectTypeId; 
-    std::string dataTypeId;
 
-    pxl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, objectTypeId);   
-    pxl::BasicIoStreamer::restoreBasicTypeCStr(_buffer, dataTypeId); 
-
-    return pxl::TypeManager::instance().restoreObject(*this, ppobj, objectTypeId, dataTypeId);
+/// This method explicitly reads an object of type objecttype. Caution: This method should only be used if the type of the following object is known by hard.
+template<class objecttype> bool InputHandler::readObject(objecttype* obj)  throw(std::runtime_error)
+{
+	if (getChunkReader().getInputStream().good())
+	{
+		pxl::Id id(getChunkReader().getInputStream());
+		if (id!=objecttype::getStaticTypeId())
+			 throw std::runtime_error("InputFile::readObject(objecttype* obj): unexpected object in file!");
+		obj->deserialize(getChunkReader().getInputStream());
+		return true;
+	}
+	return false;
 }
 
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-namespace pxl {
-
-// EXPLICIT INSTANCIATION
-template class pxl::oDiskFileVx<pxl::oStreamer>;
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-
-
-
-namespace pxl {
-
-void oStreamer::getEvent(std::ostream& cxxx, const std::string& info, char compressionMode)
+/// This method fills the objects from the read-in block into the passed vector. The number of added objects is returned.
+int InputHandler::readObjects(std::vector<pxl::Serializable*>& objects)
 {
-    // info block:
-    const char* cInfo = info.c_str();
-    int lengthInfo = info.length();
+	int nObjects = 0;
+	while (getChunkReader().getInputStream().good())
+	{
+		pxl::Id id(getChunkReader().getInputStream());
 
-    // zip block:
-    const std::string& strBuffer = _buffer.str();
-
-    const char* cBuffer = strBuffer.c_str();
-    int lengthBuffer = strBuffer.length();
-
-    const char* cZip = cBuffer;
-    int lengthZip = lengthBuffer;
-
-    char* cZipSpace = 0;
-    unsigned long lengthZipSpace = 0;
-
-    if (compressionMode == ' ') {
-        // no compression requires no action...
-    } else if (compressionMode >= '0' && compressionMode <= '9') {
-        // data compression a la Gero, i.e. compression level = 6:
-        lengthZipSpace = int(double(lengthBuffer) * 1.05 + 16);
-        cZipSpace = new char[lengthZipSpace];
-
-        int status = compress2((Bytef*)cZipSpace,
-                               (uLongf*)&lengthZipSpace,
-                               (const Bytef*)cBuffer,
-                               lengthBuffer,
-                               compressionMode - '0');
-        switch(status) {
-          case Z_MEM_ERROR:
-            pxl::exception("pxl::oStreamer::getEvent()", "zlib: not enough memory");
-            break;
-          case Z_BUF_ERROR:
-            pxl::exception("pxl::oStreamer::getEvent()", "zlib: buffer too small");
-            break;
-          case Z_STREAM_ERROR:
-            pxl::exception("pxl::oStreamer::getEvent()", "zlib: level parameter invalid");
-            break;
-          default:
-            break;
-        }
-
-        cZip = cZipSpace;
-        lengthZip = lengthZipSpace;
-    } else
-        pxl::exception("pxl::oStreamer::getEvent()","Invalid compression mode.");
-
-    // write event
-    dumpMemory(cxxx, iotl__eventMarker, 4);       // event marker
-    storeBasicTypeChar(cxxx, compressionMode);    // compression mode
-
-    storeBasicTypeInt(cxxx, lengthInfo);          // forward jumper
-    cxxx.rdbuf()->sputn(cInfo, lengthInfo);       // info block
-    cxxx.rdbuf()->pubsync();
-    storeBasicTypeInt(cxxx, lengthInfo);          // backward jumper & consistency check
-
-    storeBasicTypeInt(cxxx, lengthZip);           // forward jumper
-    cxxx.rdbuf()->sputn(cZip, lengthZip);         // compressed data block
-    cxxx.rdbuf()->pubsync();
-    storeBasicTypeInt(cxxx, lengthZip);           // backward jumper & consistency check
-
-    if (cZipSpace)
-        delete[] cZipSpace;
-
-    _buffer.str("");
-    _buffer.clear();
+		pxl::Serializable* obj = pxl::ObjectFactory::instance().create(id);
+		if (obj)
+		{
+			obj->deserialize(getChunkReader().getInputStream());
+			objects.push_back(obj);
+			nObjects++;
+		}
+		else
+			std::cerr
+					<< "pxl::InputFile::readObjects: Warning: Unknown object Id."
+					<< std::endl;
+	}
+	return nObjects;
 }
 
-template<>
-void oStreamer::storeData<pxl::Relations>(const pxl::Relations& relations)
+/// This method fills the objects from the read-in block into the passed pxl::Event. The number of added objects is returned.
+int InputHandler::readObjects(pxl::Event* event)
 {
-    storeData<int>(relations.getSize());
-    for(pxl::Relations::StlConstIterator iter = relations.begin();
-        iter != relations.end(); iter++) {
-
-        const pxl::WkPtrBase& ptr = (*iter->second);
-        pxl::Id id = ptr.valid() ? ptr.pointer()->id() : 0;
-
-        storeId(id);
-    }
+	int nObjects = 0;
+	while (getChunkReader().getInputStream().good())
+	{
+		pxl::Id id(getChunkReader().getInputStream());
+		pxl::Relative *obj =
+				dynamic_cast<pxl::Relative*>(pxl::ObjectFactory::instance().create(id));
+		if (obj)
+		{
+			obj->deserialize(getChunkReader().getInputStream());
+			event->setObject(obj);
+			nObjects++;
+		}
+		else
+			std::cerr
+					<< "pxl::InputFile::readObjects(pxl::Event*): Warning: Unknown object Id or no ObjectBase derivative."
+					<< std::endl;
+	}
+	return nObjects;
 }
 
-template<>
-void oStreamer::storeData<pxl::ObjectOwner>(const pxl::ObjectOwner& objects)
-{
-    // objects
-    storeData<int>(objects.getSize());
-    for(pxl::ObjectOwner::StlConstIterator iter = objects.begin(); 
-        iter != objects.end(); iter++)
-        storeAbstractObject(**iter);
-
-    // index
-    storeData<int>(objects._index.getSize());
-    for(pxl::Index::StlConstIterator iter = objects._index.begin(); 
-        iter != objects._index.end(); iter++) {
-
-        storeData<std::string>(iter->first);
-        storeId(iter->second->id());
-    }
-}
-
-template<>
-void oStreamer::storeData<pxl::Layout>(const pxl::Layout& layout)
-{
-    storeData<int>(layout._type);
-    storeData<int>(layout._style);
-    storeData<int>(layout._color);
-    storeData<double>(layout._a);
-    storeData<double>(layout._b);
-    storeData<double>(layout._c);
-    storeData<double>(layout._d);
-}
-
-template<>
-void oStreamer::storeData<pxl::ObjectBase>(const pxl::ObjectBase& object)
-{
-    pxl::Id id = object.id();
-    storeId(id);
-
-    storeData<pxl::Relations>(object._motherRelations);
-    storeData<pxl::Relations>(object._daughterRelations);
-
-    if (object._ptrLayout) {
-        storeData<bool>(true);
-        storeData<pxl::Layout>(*object._ptrLayout);
-    } else
-        storeData<bool>(false);
-}
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#include <map>
-
-
-
-
-iotl__declareDataTypeExplicit(char,        "\1c",      __char, data, { pxl::BasicIoStreamer::storeBasicTypeChar(_buffer, data); },   { pxl::BasicIoStreamer::restoreBasicTypeChar(_buffer, data); })
-iotl__declareDataTypeExplicit(std::string, "\1s", std__string, data, { pxl::BasicIoStreamer::storeBasicTypeString(_buffer, data); }, { pxl::BasicIoStreamer::restoreBasicTypeString(_buffer, data); })
-iotl__declareDataTypeExplicit(bool,        "\1b",      __bool, data, { pxl::BasicIoStreamer::storeBasicTypeBool(_buffer, data); },   { pxl::BasicIoStreamer::restoreBasicTypeBool(_buffer, data); })
-iotl__declareDataTypeExplicit(int,         "\1i",       __int, data, { pxl::BasicIoStreamer::storeBasicTypeInt(_buffer, data); },    { pxl::BasicIoStreamer::restoreBasicTypeInt(_buffer, data); })
-iotl__declareDataTypeExplicit(float,       "\1f",     __float, data, { pxl::BasicIoStreamer::storeBasicTypeFloat(_buffer, data); },  { pxl::BasicIoStreamer::restoreBasicTypeFloat(_buffer, data); })
-iotl__declareDataTypeExplicit(double,      "\1d",    __double, data, { pxl::BasicIoStreamer::storeBasicTypeDouble(_buffer, data); }, { pxl::BasicIoStreamer::restoreBasicTypeDouble(_buffer, data); })
-
-// pxl::Variant handling
-
-namespace pxl {
-
-typedef std::map<std::string, pxl::Variant::Type> VariantTypeMap;
-static VariantTypeMap variantTypeMap;
-
-static void initVariantTypeMap()
-{
-    variantTypeMap.insert(std::make_pair("\1c", pxl::Variant::TYPE_CHAR));
-    variantTypeMap.insert(std::make_pair("\1s", pxl::Variant::TYPE_STRING));
-    variantTypeMap.insert(std::make_pair("\1b", pxl::Variant::TYPE_BOOL));
-    variantTypeMap.insert(std::make_pair("\1i", pxl::Variant::TYPE_INT));
-    variantTypeMap.insert(std::make_pair("\1f", pxl::Variant::TYPE_FLOAT));
-    variantTypeMap.insert(std::make_pair("\1d", pxl::Variant::TYPE_DOUBLE));
-}
-
-} // namespace pxl
-
-#define IOTL_STORE_ANY_TYPE(type, id, name, method) \
-  case pxl::Variant::TYPE_ ## name: \
-    storeTypeId(id); \
-    pxl::BasicIoStreamer::storeBasicType ## method(_buffer, data.get<type>()); \
-    break;
-
-#define IOTL_RESTORE_ANY_TYPE(type, name, method) \
-  case pxl::Variant::TYPE_ ## name: { \
-    type tmp; \
-    pxl::BasicIoStreamer::restoreBasicType ## method(_buffer, tmp); \
-    data.init<type>(); \
-    data.set<type>(tmp); \
-  } break;
-
-iotl__declareDataTypeExplicit(pxl::Variant, "\1A", pxl__Variant, data, {
-    pxl::Variant::Type type = data.getType();
-    switch(type) {
-      IOTL_STORE_ANY_TYPE(char,        "\1c", CHAR,   Char) 
-      IOTL_STORE_ANY_TYPE(std::string, "\1s", STRING, String) 
-      IOTL_STORE_ANY_TYPE(bool,        "\1b", BOOL,   Bool) 
-      IOTL_STORE_ANY_TYPE(int,         "\1i", INT,    Int) 
-      IOTL_STORE_ANY_TYPE(float,       "\1f", FLOAT,  Float) 
-      IOTL_STORE_ANY_TYPE(double,      "\1d", DOUBLE, Double) 
-      default:
-        pxl::exception("pxl::oStreamer::storeData<pxl::Variant>",
-                       std::string("Unsupported type \"")
-                       + data.getTypeName() + "\".");
-    }
-}, {
-    if (PXL_UNLIKELY(variantTypeMap.begin() == variantTypeMap.end()))
-        initVariantTypeMap();
-    std::string typeId = restoreTypeId();
-    VariantTypeMap::const_iterator found = variantTypeMap.find(typeId);
-    if (PXL_UNLIKELY(found == variantTypeMap.end()))
-        pxl::exception("pxl::iStreamer::restoreData<pxl::Variant>",
-                       "Unsupported type encountered");
-    switch(found->second) {
-      IOTL_RESTORE_ANY_TYPE(char,        CHAR,   Char) 
-      IOTL_RESTORE_ANY_TYPE(std::string, STRING, String) 
-      IOTL_RESTORE_ANY_TYPE(bool,        BOOL,   Bool) 
-      IOTL_RESTORE_ANY_TYPE(int,         INT,    Int) 
-      IOTL_RESTORE_ANY_TYPE(float,       FLOAT,  Float) 
-      IOTL_RESTORE_ANY_TYPE(double,      DOUBLE, Double) 
-      default:
-        pxl::exception("pxl::iStreamer::restoreData<pxl::Variant>",
-                       std::string("Unsupported type \"")
-                       + data.getTypeName() + "\".");
-    }
-})
-
-#undef IOTL_STORE_ANY_TYPE
-#undef IOTL_RESTORE_ANY_TYPE
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+} //namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
 
 
 namespace pxl {
 
-void AnalysisFork::beginJob(const pxl::Objects* input)
+void AnalysisFork::beginJob(const pxl::ObjectOwner* input)
 {
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-       !iter.isDone(); iter.next())
-        iter.object().beginJob(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisFork> iter(&getObjectOwner());
+       iter!=getObjectOwner().end(); iter++)
+        (*iter)->beginJob(input);
 
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().beginJob(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisProcess> iter(&getObjectOwner());
+    iter!=getObjectOwner().end(); iter++)
+        (*iter)->beginJob(input);
 }
 
-void AnalysisFork::buildTemplate(int mode)
-{
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().buildTemplate(mode);
 
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().buildTemplate(mode);
+void pxl::AnalysisFork::beginRun(const pxl::ObjectOwner* input)
+{
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisFork> iter(&getObjectOwner());
+       iter!=getObjectOwner().end(); iter++)
+        (*iter)->beginRun(input);
+
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisProcess> iter(&getObjectOwner());
+    iter!=getObjectOwner().end(); iter++)
+        (*iter)->beginRun(input);
 }
 
-void pxl::AnalysisFork::beginRun(const pxl::Objects* input)
+void pxl::AnalysisFork::analyseEvent(const pxl::ObjectOwner* input)
 {
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().beginRun(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisFork> iter(&getObjectOwner());
+       iter!=getObjectOwner().end(); iter++)
+        (*iter)->analyseEvent(input);
 
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().beginRun(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisProcess> iter(&getObjectOwner());
+    iter!=getObjectOwner().end(); iter++)
+        (*iter)->analyseEvent(input);
 }
 
-void pxl::AnalysisFork::analyseEvent(const pxl::Objects* input)
+void pxl::AnalysisFork::finishEvent(const pxl::ObjectOwner* input)
 {
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().analyseEvent(input);
-      
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().analyseEvent(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisFork> iter(&getObjectOwner());
+       iter!=getObjectOwner().end(); iter++)
+        (*iter)->finishEvent(input);
+
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisProcess> iter(&getObjectOwner());
+    iter!=getObjectOwner().end(); iter++)
+        (*iter)->finishEvent(input);
 }
 
-void pxl::AnalysisFork::finishEvent(const pxl::Objects* input)
+void pxl::AnalysisFork::endRun(const pxl::ObjectOwner* input)
 {
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().finishEvent(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisFork> iter(&getObjectOwner());
+       iter!=getObjectOwner().end(); iter++)
+        (*iter)->endRun(input);
 
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().finishEvent(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisProcess> iter(&getObjectOwner());
+    iter!=getObjectOwner().end(); iter++)
+        (*iter)->endRun(input);
 }
 
-void pxl::AnalysisFork::endRun(const pxl::Objects* input)
+void pxl::AnalysisFork::endJob(const pxl::ObjectOwner* input)
 {
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().endRun(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisFork> iter(&getObjectOwner());
+       iter!=getObjectOwner().end(); iter++)
+        (*iter)->endJob(input);
 
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().endRun(input);
+    for(pxl::ObjectOwner::TypeIterator<pxl::AnalysisProcess> iter(&getObjectOwner());
+    iter!=getObjectOwner().end(); iter++)
+        (*iter)->endJob(input);
 }
 
-void pxl::AnalysisFork::endJob(const pxl::Objects* input)
-{
-    for(pxl::Objects::TypeIterator<pxl::AnalysisFork> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().endJob(input);
-
-    for(pxl::Objects::TypeIterator<pxl::AnalysisProcess> iter(get().getObjects());
-        !iter.isDone(); iter.next())
-        iter.object().endJob(input);
-}
-
-pxl::ObjectBase* AnalysisFork::clone() const
+pxl::Relative* AnalysisFork::clone() const
 {
     return new AnalysisFork(*this);
 }
 
-pxl::WkPtrBase* AnalysisFork::createSelfWkPtr()
+std::ostream& AnalysisFork::print(int level, std::ostream& os, int pan) const
 {
-    return new AnalysisForkWkPtr(*this);
-}
+    printPan1st(os, pan) << "AnalysisFork: " << getName() << std::endl;
+    
+    if (level>0) os << printContent(level, os, pan);
+    
+    for(pxl::ObjectOwner::const_iterator iter = getObjectOwner().begin();
+        iter!=getObjectOwner().end(); ++iter) 
+    {
 
-void AnalysisFork::storeYourSelf(pxl::oStreamer& output) const
-{
-    output.storeObject(*this);
-}
-
-template<>
-std::ostream& pxl::Object<pxl::AnalysisForkData>::print(int level, std::ostream& os, int pan) const
-{
-//    printPan1st(os, pan) << "pxl::CowObject<pxl::AnalysisForkData> with id: " << id() << std::endl;
-//    printPan(os, pan)    << "     name: " << get().getName() << std::endl;
-    printPan1st(os, pan) << "AnalysisFork: " << get().getName() << std::endl;
-    for(pxl::Objects::Iterator iter(get().getObjects());
-        !iter.isDone(); iter.next()) {
-
-        if (iter.object().getMotherRelations().getSize() == 0)
-            iter.object().printDecayTree(level, os, pan);
+        if ((*iter)->getMotherRelations().size() == 0)
+            (*iter)->printDecayTree(level, os, pan);
     }
     return os;
 }
 
 } // namespace pxl
 
-iotl__declareObjectTypeExplicit(pxl::AnalysisFork, "\3Af", pol__AnalysisFork)
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
-iotl__declareDataTypeExplicit(pxl::AnalysisForkData, "\3AfD", pol__AnalysisForkData, data, {
-    storeData<pxl::BasicObjectManagerData>(data);
-}, {
-    restoreData<pxl::BasicObjectManagerData>(data);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
 
+
+namespace pxl
+{
+
+pxl::Relative* AnalysisProcess::clone() const
+{
+	return new AnalysisProcess(*this);
+}
+
+std::ostream& AnalysisProcess::print(int level, std::ostream& os, int pan) const
+{
+	printPan1st(os, pan) << "AnalysisProcess: " << getName() << std::endl;
+	
+	if (level>0) os << printContent(level, os, pan);
+	
+	for (pxl::ObjectOwner::const_iterator iter = getObjectOwner().begin(); iter!=getObjectOwner().end(); ++iter)
+	{
+		if ((*iter)->getMotherRelations().size() == 0)
+			(*iter)->printDecayTree(level, os, pan);
+	}
+	return os;
+}
+
+} // namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+
+namespace pxl
+{
+
+bool const operator==(const pxl::Basic3Vector& obj1, const pxl::Basic3Vector& obj2)
+{
+    return obj1.getX() == obj2.getX() && obj1.getY() == obj2.getY() && obj1.getZ() == obj2.getZ();
+}
+
+bool const operator!=(const pxl::Basic3Vector& obj1, const pxl::Basic3Vector& obj2)
+{
+    return obj1.getX() != obj2.getX() || obj1.getY() != obj2.getY() || obj1.getZ() != obj2.getZ();
+}
+
+} // namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+
+namespace pxl
+{
+
+bool const operator==(const pxl::Basic4Vector& obj1, const pxl::Basic4Vector& obj2)
+{
+    return obj1.getX() == obj2.getX() && obj1.getY() == obj2.getY() && obj1.getZ() == obj2.getZ() && obj1.getE()
+            == obj2.getE();
+}
+
+bool const operator!=(const pxl::Basic4Vector& obj1, const pxl::Basic4Vector& obj2)
+{
+    return obj1.getX() != obj2.getX() || obj1.getY() != obj2.getY() || obj1.getZ() != obj2.getZ() || obj1.getE()
+            != obj2.getE();
+}
+
+} // namespace pxl
+
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+namespace pxl {
+
+std::ostream& pxl::Collision::print(int level, std::ostream& os, int pan) const
+{
+    printPan1st(os, pan) << "Collision: " << getName() << std::endl;
+
+    if (level>0) os << printContent(level, os, pan);
+
+    return os;
+}
+
+static ObjectFactory::ProducerTemplate<pxl::Collision>
+		_CollisionProducer(pxl::Collision::getStaticTypeId());
+
+} // namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
+
+
+namespace pxl
+{
+
+std::ostream& Event::print(int level, std::ostream& os, int pan) const
+{
+	os << "Event." << std::endl;
+
+	if (level>0)
+		_userRecords.print(level, os, pan);
+
+	for (pxl::ObjectOwner::const_iterator iter = _objects.begin(); iter
+			!=_objects.end(); ++iter)
+	{
+		if ((*iter)->getMotherRelations().size() == 0)
+			(*iter)->printDecayTree(0, os, pan);
+	}
+	return os;
+}
+
+const Id& Event::getStaticTypeId()
+{
+	static const Id id("c95f7434-2481-45e2-91dc-9baff0669bb3");
+	return id;
+}
+
+} // namespace pxl
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
 
 namespace pxl {
 
-pxl::ObjectBase* AnalysisProcess::clone() const
+std::ostream& pxl::EventView::print(int level, std::ostream& os, int pan) const
 {
-    return new AnalysisProcess(*this);
-}
+    printPan1st(os, pan) << "EventView: " << getName() << std::endl;
+    
+    if (level>0) printContent(level, os, pan);
+    
+    for(pxl::ObjectOwner::const_iterator iter = getObjectOwner().begin();
+        iter!=getObjectOwner().end(); iter++) {
 
-pxl::WkPtrBase* AnalysisProcess::createSelfWkPtr()
-{
-    return new AnalysisProcessWkPtr(*this);
-}
-
-void AnalysisProcess::storeYourSelf(pxl::oStreamer& output) const
-{
-    output.storeObject(*this);
-}
-
-template<>
-std::ostream& pxl::Object<pxl::AnalysisProcessData>::print(int level, std::ostream& os, int pan) const
-{
-//    printPan1st(os, pan) << "pxl::CowObject<pxl::AnalysisProcessData> with id: " << id() << std::endl;
-//    printPan(os, pan)    << "     name: " << get().getName() << std::endl;
-    printPan1st(os, pan) << "AnalysisProcess: " << get().getName() << std::endl;
-    for(pxl::Objects::Iterator iter(get().getObjects());
-        !iter.isDone(); iter.next()) {
-
-        if (iter.object().getMotherRelations().getSize() == 0)
-            iter.object().printDecayTree(level, os, pan);
+        if ((*iter)->getMotherRelations().size() == 0)
+            (*iter)->printDecayTree(level, os, pan);
     }
     return os;
 }
 
-} // namespace pxl
-
-iotl__declareObjectTypeExplicit(pxl::AnalysisProcess, "\3Ap", pol__AnalysisProcess)
-
-iotl__declareDataTypeExplicit(pxl::AnalysisProcessData, "\3ApD", pol__AnalysisProcessData, data, {
-    storeData<pxl::BasicObjectManagerData>(data);
-}, {
-    restoreData<pxl::BasicObjectManagerData>(data);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-namespace pxl {
-
-bool const operator==(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2) 
-{
-    return obj1.getX() == obj2.getX() &&
-           obj1.getY() == obj2.getY() &&
-           obj1.getZ() == obj2.getZ();
-}
-
-bool const operator!=(const pxl::Basic3VectorData& obj1, const pxl::Basic3VectorData& obj2) 
-{
-    return obj1.getX() != obj2.getX() ||
-           obj1.getY() != obj2.getY() ||
-           obj1.getZ() != obj2.getZ();
-}
+static pxl::ObjectFactory::ProducerTemplate<pxl::EventView>
+		_EventViewProducer(pxl::EventView::getStaticTypeId());
 
 } // namespace pxl
-
-iotl__declareDataTypeExplicit(pxl::Basic3VectorData, "\3B3vD", pol__Basic3VectorData, data, {
-    storeData<double>(data._x);
-    storeData<double>(data._y);
-    storeData<double>(data._z);
-}, {
-    restoreData<double>(data._x);
-    restoreData<double>(data._y);
-    restoreData<double>(data._z);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
-namespace pxl {
-
-bool const operator==(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2)
+std::ostream& pxl::Object::print(int level, std::ostream& os, int pan) const
 {
-    return obj1.getX() == obj2.getX() &&
-           obj1.getY() == obj2.getY() &&
-           obj1.getZ() == obj2.getZ() &&
-           obj1.getE() == obj2.getE();
+	printPan1st(os, pan);
+	os << "pxl::Object with name: " << getName() << "\n";
+	if (level>0) printContent(level, os, pan);
+	return os;
 }
 
-bool const operator!=(const pxl::Basic4VectorData& obj1, const pxl::Basic4VectorData& obj2)
+std::ostream& pxl::Object::printContent(int level, std::ostream& os, int pan) const
 {
-    return obj1.getX() != obj2.getX() ||
-           obj1.getY() != obj2.getY() ||
-           obj1.getZ() != obj2.getZ() ||
-           obj1.getE() != obj2.getE();
+	os << "Workflag: " << _workflag << ", locked: " << _locked;
+	os << std::endl;
+	_userRecords.print(level, os, pan);
+	return os;
 }
 
-} // namespace pxl
-
-iotl__declareDataTypeExplicit(pxl::Basic4VectorData, "\3B4vD", pol__Basic4VectorData, data, {
-    storeData<double>(data._x);
-    storeData<double>(data._y);
-    storeData<double>(data._z);
-    storeData<double>(data._t);
-}, {
-    restoreData<double>(data._x);
-    restoreData<double>(data._y);
-    restoreData<double>(data._z);
-    restoreData<double>(data._t);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+static pxl::ObjectFactory::ProducerTemplate<pxl::Object> _ObjectProducer(pxl::Object::getStaticTypeId());
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
-iotl__declareObjectTypeExplicit(pxl::BasicObject, "\3Bo", pol__BasicObject)
-
-iotl__declareDataTypeExplicit(pxl::BasicObjectData, "\3BoD", pol__BasicObjectData, data, {
-    storeData<bool>(data._locked);
-    storeData<int>(data._monteCarloMode);
-    storeData<std::string>(data._name);
-    storeData<int>(data._status);
-    storeData<int>(data._workflag);
-    storeData(data._userRecords);
-    // storeData<pxl::CppPointers>(_cppPointers); // we don't store the c++ pointers!
-}, {
-    restoreData<bool>(data._locked);
-    restoreData<int>(data._monteCarloMode);
-    restoreData<std::string>(data._name);
-    restoreData<int>(data._status);
-    restoreData<int>(data._workflag);
-    restoreData(data._userRecords);
-    // restoreData<pxl::CppPointers>(_cppPointers); // we don't restore the c++ pointers!
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-iotl__declareObjectTypeExplicit(pxl::BasicObjectManager, "\3Bom", pol__BasicObjectManager)
-
-iotl__declareDataTypeExplicit(pxl::BasicObjectManagerData, "\3BomD", pol__BasicObjectManagerData, data, {
-    storeData<pxl::Objects>(data._objects);
-    storeData<pxl::BasicObjectData>(data);
-}, {
-    restoreData<pxl::Objects>(data._objects);
-    restoreData<pxl::BasicObjectData>(data);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+static pxl::ObjectFactory::ProducerTemplate<pxl::ObjectManager>
+		_ObjectManagerProducer(pxl::ObjectManager::getStaticTypeId());
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
 
-namespace pxl {
-
-template<>
-std::ostream& pxl::CowObject<pxl::CollisionData>::print(int level, std::ostream& os, int pan) const
+namespace pxl
 {
-//    printPan1st(os, pan) << "pxl::CowObject<pxl::CollisionData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
-//    printPan(os, pan)    << "     name: " << get().getName() << std::endl;
-    printPan1st(os, pan) << "Collision: " << get().getName() << std::endl;
-    return os;
+
+bool const operator==(const pxl::Particle& obj1, const pxl::Particle& obj2)
+{
+	return obj1.getVector() == obj2.getVector() && obj1.getCharge()
+			== obj2.getCharge();
 }
 
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-
-namespace pxl {
-
-template<>
-std::ostream& pxl::Object<pxl::EventViewData>::print(int level, std::ostream& os, int pan) const
+bool const operator!=(const pxl::Particle& obj1, const pxl::Particle& obj2)
 {
-//    printPan1st(os, pan) << "pxl::CowObject<pxl::EventViewData> with id: " << id() << std::endl;
-//    printPan(os, pan)    << "     name: " << get().getName() << std::endl;
-    printPan1st(os, pan) << "EventView: " << get().getName() << std::endl;
-    for(pxl::Objects::Iterator iter(get().getObjects());
-        !iter.isDone(); iter.next()) {
-
-        if (iter.object().getMotherRelations().getSize() == 0)
-            iter.object().printDecayTree(level, os, pan);
-    }
-    return os;
+	return obj1.getVector() != obj2.getVector() || obj1.getCharge()
+			== obj2.getCharge();
 }
+
+std::ostream& pxl::Particle::print(int level, std::ostream& os, int pan) const
+{
+	printPan1st(os, pan);
+	os << "Particle: '" << getName() << "', p = (" << getPt()
+			<< ", " << getPz() << ") m = " << getMass() << std::endl;
+	if (level>0)
+		pxl::Object::printContent(level, os, pan);
+	return os;
+}
+
+void pxl::Particle::setP4FromDaughters()
+{
+	setP4(0., 0., 0., 0.);
+	for (pxl::Relations::const_iterator iter = getDaughterRelations().begin(); iter!=getDaughterRelations().end(); ++iter)
+	{
+		pxl::CommonParticle* daughter = dynamic_cast<pxl::CommonParticle*>(*iter);
+		if (daughter)
+			addP4(daughter->getPx(), daughter->getPy(), daughter->getPz(), daughter->getE());
+	}
+}
+
+void pxl::Particle::setP4FromDaughtersRecursive()
+{
+	if (getDaughterRelations().size() > 0)
+		setP4(0., 0., 0., 0.);
+
+	for (pxl::Relations::const_iterator iter = getDaughterRelations().begin(); iter!=getDaughterRelations().end(); ++iter)
+	{
+		// update daughter particles
+		pxl::Particle *particle = dynamic_cast<pxl::Particle *>(*iter);
+		if (particle)
+			particle->setP4FromDaughtersRecursive();
+
+		// add all common particles
+		pxl::CommonParticle* daughter = dynamic_cast<pxl::CommonParticle*>(*iter);
+		if (daughter)
+			addP4(daughter->getPx(), daughter->getPy(), daughter->getPz(), daughter->getE());
+	}
+}
+
+static ObjectFactory::ProducerTemplate<pxl::Particle> _ParticleProducer(pxl::Particle::getStaticTypeId());
 
 } // namespace pxl
 
-iotl__declareObjectTypeExplicit(pxl::EventView, "\3Ev", pol__EventView)
-
-iotl__declareDataTypeExplicit(pxl::EventViewData, "\3EvD", pol__EventViewData, data, {
-    storeData<pxl::BasicObjectManagerData>(data);
-}, {
-    restoreData<pxl::BasicObjectManagerData>(data);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
+//-------------------------------------------
+// Project: Physics eXtension Library (PXL) -
+//          http://pxl.sourceforge.net      -
+// Copyright (C) 2006-2008                  -
+//               RWTH Aachen, Germany       -
+// Contact: pxl-users@lists.sourceforge.net -
+//-------------------------------------------
 
 
 
-namespace pxl {
-
-bool const operator==(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2) 
+namespace pxl
 {
-    return obj1.vector() == obj2.vector() &&
-           obj1.getCharge() == obj2.getCharge();
+
+bool const operator==(const pxl::Vertex& obj1, const pxl::Vertex& obj2)
+{
+	return obj1.getVector() == obj2.getVector();
 }
 
-bool const operator!=(const pxl::ParticleData& obj1, const pxl::ParticleData& obj2) 
+bool const operator!=(const pxl::Vertex& obj1, const pxl::Vertex& obj2)
 {
-    return obj1.vector() != obj2.vector() ||
-           obj1.getCharge() != obj2.getCharge();
+	return obj1.getVector() != obj2.getVector();
 }
 
-template<>
-std::ostream& pxl::CowObject<pxl::ParticleData>::print(int level, std::ostream& os, int pan) const
+std::ostream& pxl::Vertex::print(int level, std::ostream& os, int pan) const
 {
-//    printPan1st(os, pan) << "pxl::CowObject<pxl::ParticleData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
-//    printPan(os, pan)    << "     name: " << get().getName() << std::endl;
-    printPan1st(os, pan) << "Particle: '" << get().getName() << "', p = ("
-                         << get().vector().getPt() << ", " 
-                         << get().vector().getPz() << ") m = " 
-                         << get().vector().getMass() << std::endl;
-    return os;
+	printPan1st(os, pan) << "Vertex: '" << getName() << "', x = (" << getX()
+			<< ", " << getY() << ", " << getZ() << ")" << std::endl;
+	if (level > 0) printContent(level, os, pan);
+	return os;
 }
+
+static pxl::ObjectFactory::ProducerTemplate<pxl::Vertex>
+		_VertexProducer(pxl::Vertex::getStaticTypeId());
 
 } // namespace pxl
 
-iotl__declareObjectTypeExplicit(pxl::Particle, "\3Pa", pol__Particle)
-
-iotl__declareDataTypeExplicit(pxl::ParticleData, "\3PaD", pol__ParticleData, data, {
-    storeData<double>(data._charge);
-    storeData<int>(data._particleId);
-    storeData(data.vector());
-    storeData<pxl::BasicObjectData>(data);
-}, {
-    restoreData<double>(data._charge);
-    restoreData<int>(data._particleId);
-    restoreData(data.vector(pxl::set));
-    restoreData<pxl::BasicObjectData>(data);
-})
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-#include <cmath>
-
-
-namespace pxl {
-
-ParticleFilter::ParticleFilter(const pxl::ObjectOwner& objects,
-                               const std::string& name,
-                               double ptMin, double etaMax) :
-    _name(name), _ptMin(ptMin), _etaMax(etaMax)
-{ apply(objects); }
-
-bool ParticleFilter::pass(const pxl::Particle& pa) const
-{
-    if ((_name != ""   &&           pa().getName() != _name)          ||
-        (_ptMin  > 0.0 &&           pa().vector().getPt()  < _ptMin)  ||
-        (_etaMax > 0.0 && std::fabs(pa().vector().getEta()) > _etaMax))
-        return false;
-    return true;
-}
-
-double ParticleFilter::sort(const pxl::Particle& pa) const
-{ return -pa().vector().getPt(); }
-
-} // namespace pxl
-//------------------------------------------------------------------------------
-//
-//    Physics eXtension Library (PXL)
-//    C++ Toolkit for Fourvector Analysis, Relation Management 
-//    and Hypothesis Evolution in High Energy Physics
-//    Copyright (C) 2006-2007  S. Kappler, G. Mueller, C. Saout
-//    E-mail contact: project-PXL@cern.ch
-//    
-//    This library is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU Lesser General Public
-//    License as published by the Free Software Foundation; either
-//    version 2.1 of the License, or (at your option) any later version.
-//
-//    This library is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//    Lesser General Public License for more details.
-//
-//    You should have received a copy of the GNU Lesser General Public
-//    License along with this library; if not, write to the Free Software
-//    Foundation, Inc., 51 Franklin Street, 5th Floor, Boston, MA 02110-1301 USA
-//
-//------------------------------------------------------------------------------
-
-
-
-namespace pxl {
-
-bool const operator==(const pxl::VertexData& obj1, const pxl::VertexData& obj2)
-{
-    return obj1.vector() == obj2.vector();
-}
-
-bool const operator!=(const pxl::VertexData& obj1, const pxl::VertexData& obj2) 
-{
-    return obj1.vector() != obj2.vector();
-}
-
-template<>
-std::ostream& pxl::CowObject<pxl::VertexData>::print(int level, std::ostream& os, int pan) const
-{
-//    printPan1st(os, pan) << "pxl::CowObject<pxl::VertexData> with id: " << id() << " (data socket currently located at " << _dataSocket << ")" << std::endl;
-//    printPan(os, pan)    << "     name: " << get().getName() << std::endl;
-    printPan1st(os, pan) << "Vertex: '" << get().getName() << "', x = ("
-                         << get().vector().getX() << ", "
-                         << get().vector().getY() << ", "
-                         << get().vector().getZ() << ")" << std::endl;
-    return os;
-}
-
-} // namespace pxl
-
-iotl__declareObjectTypeExplicit(pxl::Vertex, "\3Vx", pol__Vertex)
-
-iotl__declareDataTypeExplicit(pxl::VertexData, "\3VxD", pol__VertexData, data, {
-    storeData(data.vector());
-    storeData<pxl::BasicObjectData>(data);
-}, {
-    restoreData(data.vector(pxl::set));
-    restoreData<pxl::BasicObjectData>(data);
-})
