@@ -81,6 +81,7 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          debug = cms.untracked.int32(1),
          Process = cms.untracked.string("test_PAT_Zee"),
          # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
+	 GenOnly = cms.untracked.bool(False),
          #untracked bool GenOnly = false
          #labels of source
          #untracked string TruthVertexLabel = "trackingParticles"

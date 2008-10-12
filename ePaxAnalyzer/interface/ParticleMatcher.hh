@@ -21,13 +21,13 @@ class ParticleMatcher {
       // Destruktor
       ~ParticleMatcher() {;};
       // Match method
-      void matchObjects(pxl::EventViewRef GenView, pxl::EventViewRef RecView); 
-      void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
+      void matchObjects(pxl::EventView* GenView, pxl::EventView* RecView); 
+      void makeMatching(std::vector<pxl::Particle*>& gen_particles, std::vector<pxl::Particle*>& rec_particles);
       
    private:
       // Some helper methods
-      int SmallestRowElement(TMatrixT<double>* matrix, int row);   
-      int SmallestColumnElement(TMatrixT<double>* matrix, int col);
+      int SmallestRowElement(TMatrixT<double>* matrix, unsigned int row);   
+      int SmallestColumnElement(TMatrixT<double>* matrix, unsigned int col);
       int fDebug; 
       //variable to define dR which decides matching
       double DeltaRMatching;
