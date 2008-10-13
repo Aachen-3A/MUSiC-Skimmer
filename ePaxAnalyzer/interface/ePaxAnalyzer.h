@@ -25,8 +25,6 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
-//auskommentiert nach Wechsel zu 2_1_0
-//#include "DataFormats/EgammaCandidates/interface/PixelMatchGsfElectronFwd.h" 
 #include "DataFormats/EgammaCandidates/interface/SiStripElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/SiStripElectron.h"
 #include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
@@ -89,7 +87,7 @@ private:
    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
    bool METMC_cuts(const pxl::Particle* MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
-   bool Muon_cuts(std::vector<pat::Muon>::const_iterator muon) const;
+   bool Muon_cuts(const pat::Muon& muon) const;
    bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
    //bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
    //bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;

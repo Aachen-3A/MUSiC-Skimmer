@@ -625,17 +625,18 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 
 void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, pxl::EventView* GenView, std::map<const Particle*, pxl::Particle*> & genmap) {
 
+   // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
    std::vector<pat::Muon> muons = *muonHandle;
-   int numMuonRec = 0;
-
    //gen particles for PAT-matching
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
-
+   // count muons   
+   int numMuonRec = 0;
+   // loop over all pat::Muon's but store only store GLOBAL MUONs
    for (std::vector<pat::Muon>::const_iterator muon = muons.begin();  muon != muons.end(); ++muon ) {
-      if (Muon_cuts(muon)) { 
+      if (Muon_cuts(*muon)) { 
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName("Muon");
          part->setCharge(muon->charge());
@@ -643,87 +644,71 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setUserRecord<double>("Vtx_X", muon->vx());
          part->setUserRecord<double>("Vtx_Y", muon->vy());
          part->setUserRecord<double>("Vtx_Z", muon->vz()); 
-
-//store PAT matching info
+         //store PAT matching info
          const reco::Particle* recogen = muon->genLepton();
-
-	  pxl::Particle* pxlgen = genmap[recogen];
-	  if(pxlgen != NULL){
-	  part->linkSoft(pxlgen, "pat-match");
+         
+	 pxl::Particle* pxlgen = genmap[recogen];
+	 if (pxlgen != NULL) {
+	    part->linkSoft(pxlgen, "pat-match");
 	  
-	  /*//check stored matching info
-	  if (part->getSoftRelations().has(pxlgen)) {
-	  	cout << "Soft-Relation ele rec -> gen ok" << endl;
-	  }
-	  if (pxlgen->getSoftRelations().has(part)) {
-	  	cout << "Soft-Relation ele gen -> rec ok" << endl;
-	  }
-	  cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	  cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
-	  //end check*/
-	  }
-
+	    /*//check stored matching info
+	    if (part->getSoftRelations().has(pxlgen)) {
+	   	cout << "Soft-Relation ele rec -> gen ok" << endl;
+	    }
+	    if (pxlgen->getSoftRelations().has(part)) {
+	   	cout << "Soft-Relation ele gen -> rec ok" << endl;
+	    }
+	    cout << "pt of the matched rec-electron: " << part->getPt() << endl;
+	    cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
+	    //end check*/
+	 }
+	 
 	 //mind that from CMSSW 2.1 on information will be stored in outerTrack, innerTrack, globalTrack
 	 //combinedMuon and standAloneMuon and track might then be deprecated sooner or later!
-
+         // since we are only interested in Global Muons we can look at the track given by combinedMuon() or globalTrack() 
+	 // both methods return the same! See DataFormats/PatCandidates/interface/Muon.h
+	 
 	 //save info about quality of track-fit for combined muon (muon system + tracker)
-	 reco::TrackRef muontrack; 
-	 if (!muon->track().isNull()) muontrack = muon->track();
-	 else   muontrack = muon->combinedMuon();
-         part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2()); //ok
-         part->setUserRecord<int>("ValidHits", muontrack->numberOfValidHits()); //ok
-         part->setUserRecord<int>("LostHits", muontrack->numberOfLostHits()); //ok
+	 reco::TrackRef muontrack = muon->globalTrack();
+         part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2());
+         part->setUserRecord<int>("ValidHits", muontrack->numberOfValidHits());
+         part->setUserRecord<int>("LostHits", muontrack->numberOfLostHits());
 	 //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
-	 part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()) ); //ok
-	 part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt() ); //ok
+	 part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
+	 part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
 	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
-	 part->setUserRecord<double>("DSZ", muontrack->dsz()); //ok
-	 //save info about quality of track-fit for standAloneMuon (muon system only)
-/*	 cout << "SA Mu" << endl;
-	 part->setUserRecord<double>("NormChi2_SA", muon->standAloneMuon()->normalizedChi2()); //ok
-         part->setUserRecord<int>("ValidHits_SA", muon->standAloneMuon()->numberOfValidHits()); //ok
-         part->setUserRecord<int>("LostHits_SA", muon->standAloneMuon()->numberOfLostHits()); //ok
-	 //save info about quality of track-fit for track (tracker only)
-	 cout << "Track Mu" << endl;
-	 part->setUserRecord<double>("NormChi2_TM", muon->track()->normalizedChi2()); //ok
-         part->setUserRecord<int>("ValidHits_TM", muon->track()->numberOfValidHits()); //ok
-         part->setUserRecord<int>("LostHits_TM", muon->track()->numberOfLostHits()); //ok
-*/       //Variables for outerTrack, innerTrack, globalTrack ...
-	//FIXME variables containing information about muon quality ...
+	 part->setUserRecord<double>("DSZ", muontrack->dsz());
        
 	 //official CaloIso and TrkIso
 	 //Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
-	 double CaloIso = muon->caloIso();
-	 double TrkIso = muon->trackIso();
-	 part->setUserRecord<double>("CaloIso", CaloIso);
-	 part->setUserRecord<double>("TrkIso", TrkIso);
- 
-	 //save offical isolation information
+	 part->setUserRecord<double>("CaloIso", muon->caloIso());
+	 part->setUserRecord<double>("TrkIso", muon->trackIso()); 
+	 //save offical isolation information: delta R = 0.3
 	 const MuonIsolation& muonIsoR03 = muon->isolationR03();
-	 part->setUserRecord<double>("IsoR03SumPt", muonIsoR03.sumPt);
-	 part->setUserRecord<double>("IsoR03EmEt", muonIsoR03.emEt);
-	 part->setUserRecord<double>("IsoR03HadEt", muonIsoR03.hadEt);
-	 part->setUserRecord<double>("IsoR03HoEt", muonIsoR03.hoEt);
-	 part->setUserRecord<int>("IsoR03NTracks", muonIsoR03.nTracks);
-	 part->setUserRecord<int>("IsoR03NJets", muonIsoR03.nJets);
- 
+	 part->setUserRecord<double>("IsoR3SumPt", muonIsoR03.sumPt);
+	 part->setUserRecord<double>("IsoR3EmEt", muonIsoR03.emEt);
+	 part->setUserRecord<double>("IsoR3HadEt", muonIsoR03.hadEt);
+	 part->setUserRecord<double>("IsoR3HoEt", muonIsoR03.hoEt);
+	 part->setUserRecord<int>("IsoR3NTracks", muonIsoR03.nTracks);
+	 part->setUserRecord<int>("IsoR3NJets", muonIsoR03.nJets);
+         //save offical isolation information: delta R = 0.5
 	 const MuonIsolation& muonIsoR05 = muon->isolationR05();
-	 part->setUserRecord<double>("IsoR05SumPt", muonIsoR05.sumPt);
-	 part->setUserRecord<double>("IsoR05EmEt", muonIsoR05.emEt);
-	 part->setUserRecord<double>("IsoR05HadEt", muonIsoR05.hadEt);
-	 part->setUserRecord<double>("IsoR05HoEt", muonIsoR05.hoEt);
-	 part->setUserRecord<int>("IsoR05NTracks", muonIsoR05.nTracks);
-	 part->setUserRecord<int>("IsoR05NJets", muonIsoR05.nJets);
-
+	 part->setUserRecord<double>("IsoR5SumPt", muonIsoR05.sumPt);
+	 part->setUserRecord<double>("IsoR5EmEt", muonIsoR05.emEt);
+	 part->setUserRecord<double>("IsoR5HadEt", muonIsoR05.hadEt);
+	 part->setUserRecord<double>("IsoR5HoEt", muonIsoR05.hoEt);
+	 part->setUserRecord<int>("IsoR5NTracks", muonIsoR05.nTracks);
+	 part->setUserRecord<int>("IsoR5NJets", muonIsoR05.nJets);
 	 //save some stuff related to Muon-ID (Calo-info etc.)
-	 part->setUserRecord<double>("CaloCompatibility", muon->caloCompatibility());
-	 part->setUserRecord<int>("NumberOfChambers", muon->numberOfChambers());
-	 part->setUserRecord<int>("NumberOfMatches", muon->numberOfMatches());
-	 part->setUserRecord<double>("MuonDepositEM", muon->calEnergy().em);
-	 part->setUserRecord<double>("MuonDepositHCAL", muon->calEnergy().had);
-	 
+	 part->setUserRecord<double>("CaloComp", muon->caloCompatibility());
+	 part->setUserRecord<int>("NumChambers", muon->numberOfChambers());
+	 part->setUserRecord<int>("NumMatches", muon->numberOfMatches());
+	 part->setUserRecord<double>("EMDeposit", muon->calEnergy().em);
+	 part->setUserRecord<double>("HCALDeposit", muon->calEnergy().had);
+	 // check good muon method
+	 part->setUserRecord<bool>("isGood", muon->isGood(reco::Muon::GlobalMuonPromptTight));
+         part->setUserRecord<float>("SegComp", muon->segmentCompatibility());
          numMuonRec++;
-	//cout << "numMuonRec=" << numMuonRec <<endl;
       }
    }
    RecView->setUserRecord<int>("NumMuon", numMuonRec);
@@ -810,26 +795,24 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          
 
 	 //store PAT matching info
+
          const reco::Particle* recogen = ele->genLepton();
 
-	  pxl::Particle* pxlgen = genmap[recogen];
-	  if(pxlgen != NULL){
-	  part->linkSoft(pxlgen, "pat-match");
+	 pxl::Particle* pxlgen = genmap[recogen];
+	 if (pxlgen != NULL) {
+	    part->linkSoft(pxlgen, "pat-match");
 	  
-	  /*//check stored matching info
-	  if (part->getSoftRelations().has(pxlgen)) {
+	    /*//check stored matching info
+	    if (part->getSoftRelations().has(pxlgen)) {
 	  	cout << "Soft-Relation ele rec -> gen ok" << endl;
-	  }
-	  if (pxlgen->getSoftRelations().has(part)) {
+	    }
+	    if (pxlgen->getSoftRelations().has(part)) {
 	  	cout << "Soft-Relation ele gen -> rec ok" << endl;
-	  }
-	  cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	  cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
-	  //end check*/
-	  }
-
-           
-
+	    }
+	    cout << "pt of the matched rec-electron: " << part->getPt() << endl;
+	    cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
+	    //end check*/
+	 }
 	 // Get the supercluster (ref) of the Electron
 	 // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
 	 // a SuperClusterCollection is a std::vector<SuperCluster>
@@ -946,8 +929,8 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* EvtV
        	 for (reco::GenJetCollection::const_iterator pa = ItCone5_GenJets->begin(); pa != ItCone5_GenJets->end(); ++ pa ) {
             if (&(*pa) == matched ) {
                //cout << "MATCH!" << endl; 
-               double ptrec = jet->pt();
-               double ptgen = pa->pt(); 
+               //double ptrec = jet->pt();
+               //double ptgen = pa->pt(); 
                //cout << "pt des gen-jets: " << ptgen << endl;         
                //cout << "pt des rec-jets: " << ptrec<< endl;
                part->setUserRecord<double>("MatchedGenId", count); 
@@ -1175,9 +1158,11 @@ bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) co
 
 // ------------ method to define MUON-cuts
 
-bool ePaxAnalyzer::Muon_cuts(std::vector<pat::Muon>::const_iterator muon) const {
-   if (muon->pt() < 15.)  return false;
-   if (fabs(muon->eta()) > 3.) return false;
+bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
+   // basic preselection cuts
+   if (!muon.isGlobalMuon()) return false;
+   if (muon.pt() < 15.)  return false;
+   if (fabs(muon.eta()) > 3.) return false;
    return true;
 }
 
