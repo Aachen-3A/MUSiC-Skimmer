@@ -70,18 +70,18 @@ private:
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
-   virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*);
+   virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
    virtual void analyzeGenJets(const edm::Event&, pxl::EventView*);
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
    
    virtual void analyzeTrigger(const edm::Event&, pxl::EventView*); //not complete!
    //virtual void saveHLTobjects(const edm::Event&, pxl::EventView*, string&);
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
-   virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*);
-   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, EcalClusterLazyTools&);
+   virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
+   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, pxl::EventView*, EcalClusterLazyTools&, std::map<const Particle*, pxl::Particle*>&);
    virtual void analyzeRecJets(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*);
-   virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, EcalClusterLazyTools&);
+   virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, pxl::EventView*, EcalClusterLazyTools&, std::map<const Particle*, pxl::Particle*>&);
 
    bool MuonMC_cuts(const GenParticle* MCmuon) const;
    bool EleMC_cuts(const GenParticle* MCele) const;
