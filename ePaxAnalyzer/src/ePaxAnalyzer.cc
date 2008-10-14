@@ -187,29 +187,25 @@ ePaxAnalyzer::~ePaxAnalyzer()
 // ------------ method called to for each event  ------------
 
 void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  //cout<<"Event Number: "<<fNumEvt<<endl;
+
    // set event counter   
-   fNumEvt++;    // set this as setUserRecord ?
-   
+   fNumEvt++;    // set this as setUserRecord ?   
    // get the calorimeter geometry in order to navigate through it for HadOverEm calculation
    //probably no longer needed and not available in this way in CMSSW 2.0.7 anyway
    //iSetup.get<IdealGeometryRecord>().get(theCaloGeom);
+  
    // Owner of all Pxl Objects 
    pxl::Event* event = new pxl::Event();
-
    // event-specific data
-   event->setUserRecord<bool>("MC", true);  //distinguish between MC and data; replace this dummy later
+   event->setUserRecord<bool>("MC", !iEvent.isRealData());  //distinguish between MC and data
    event->setUserRecord<int>("Run", iEvent.id().run());
    event->setUserRecord<int>("ID", iEvent.id().event());	
-   //cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << endl;  
-
    // create two ePaxEventViews for Generator/Reconstructed Objects
    pxl::EventView* GenEvtView = event->createIndexed<pxl::EventView>("Gen");
    pxl::EventView* RecEvtView = event->createIndexed<pxl::EventView>("Rec");
    GenEvtView->setUserRecord<std::string>("Type", "Gen");
    RecEvtView->setUserRecord<std::string>("Type", "Rec");
    
-
    double processID = 0.;
    double pthat = 0.;
    
@@ -225,8 +221,8 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     
 
    //maps for matching
-	std::map<const Particle*, pxl::Particle*> genmap;
-	std::map<const Particle*, pxl::Particle*> genjetmap;
+   std::map<const Particle*, pxl::Particle*> genmap;
+   std::map<const Particle*, pxl::Particle*> genjetmap;
 
    //set process name
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
@@ -248,10 +244,10 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    
    // Generator stuff
    bool MC = event->findUserRecord<bool>("MC");
-   if (  MC == true){
-   	analyzeGenInfo(iEvent, GenEvtView, genmap);
-   	analyzeGenJets(iEvent, GenEvtView, genjetmap);
-	analyzeGenMET(iEvent, GenEvtView);
+   if (MC == true) {
+      analyzeGenInfo(iEvent, GenEvtView, genmap);
+      analyzeGenJets(iEvent, GenEvtView, genjetmap);
+      analyzeGenMET(iEvent, GenEvtView);
    }
    // store Rec Objects only if requested
    if (!fGenOnly) {
