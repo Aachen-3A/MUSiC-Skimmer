@@ -198,7 +198,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    pxl::Event* event = new pxl::Event();
 
    // event-specific data
-   event->setUserRecord<bool>("Data", false);  //distinguish between data and MC
+   event->setUserRecord<bool>("MC", true);  //distinguish between MC and data; replace this dummy later
    event->setUserRecord<int>("Run", iEvent.id().run());
    event->setUserRecord<int>("ID", iEvent.id().event());	
    //cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << endl;  
@@ -226,6 +226,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    //maps for matching
 	std::map<const Particle*, pxl::Particle*> genmap;
+	std::map<const Particle*, pxl::Particle*> genjetmap;
 
    //set process name
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
@@ -244,21 +245,25 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    RecEvtView->setUserRecord<double>("ProcID", processID);
    //create object for EcalClusterLazyTools
    EcalClusterLazyTools lazyTools( iEvent, iSetup, freducedBarrelRecHitCollection, freducedEndcapRecHitCollection);
+   
    // Generator stuff
-   analyzeGenInfo(iEvent, GenEvtView, genmap);
-   analyzeGenJets(iEvent, GenEvtView);
+   bool MC = event->findUserRecord<bool>("MC");
+   if (  MC == true){
+   	analyzeGenInfo(iEvent, GenEvtView, genmap);
+   	analyzeGenJets(iEvent, GenEvtView, genjetmap);
+	analyzeGenMET(iEvent, GenEvtView);
+   }
    // store Rec Objects only if requested
    if (!fGenOnly) {
-      analyzeGenMET(iEvent, GenEvtView);
       //Trigger bits
       analyzeTrigger(iEvent, RecEvtView);
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
-      analyzeRecMuons(iEvent, RecEvtView, GenEvtView, genmap);
-      analyzeRecElectrons(iEvent, RecEvtView, GenEvtView, lazyTools, genmap);
-      analyzeRecJets(iEvent, RecEvtView);
+      analyzeRecMuons(iEvent, RecEvtView, MC, genmap);
+      analyzeRecElectrons(iEvent, RecEvtView, MC, lazyTools, genmap);
+      analyzeRecJets(iEvent, RecEvtView, MC, genjetmap);
       analyzeRecMET(iEvent, RecEvtView);
-      analyzeRecGammas(iEvent, RecEvtView, GenEvtView, lazyTools, genmap);
+      analyzeRecGammas(iEvent, RecEvtView, MC, lazyTools, genmap);
    }
 
    // set event class strings
@@ -449,7 +454,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
       }
 
       GenId++;
-   } //end of loop over generated-particles
+   } //end of loop over generated particles
 
    if (fDebug > 1)  cout << "MC Found:  " << numMuonMC <<  " mu  " << numEleMC << " e  " << numGammaMC << " gamma" << endl;
    EvtView->setUserRecord<int>("NumMuon", numMuonMC);
@@ -459,7 +464,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator Jets ------------
 
-void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Particle*, pxl::Particle*> & genjetmap) {
 
    //Get the GenJet collections
    //edm::Handle<reco::GenJetCollection> Kt_GenJets;
@@ -480,6 +485,10 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
    for (reco::GenJetCollection::const_iterator genJet = ItCone5_GenJets->begin(); genJet != ItCone5_GenJets->end(); ++genJet) {
       if (JetMC_cuts(genJet)) {
          pxl::Particle* part = EvtView->create<pxl::Particle>();
+
+	 //cast iterator into GenParticleCandidate
+         const GenParticle* p = (const GenParticle*) &(*genJet);
+	 genjetmap[p] = part;
          part->setName("ItCone5Jet");
          part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
 	 //fill additional jet-related infos
@@ -623,15 +632,18 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 
 // ------------ reading Reconstructed Muons ------------
 
-void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, pxl::EventView* GenView, std::map<const Particle*, pxl::Particle*> & genmap) {
+void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map<const Particle*, pxl::Particle*> & genmap) {
+
 
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
    std::vector<pat::Muon> muons = *muonHandle;
+
    //gen particles for PAT-matching
-   edm::Handle<reco::GenParticleCollection> genParticleHandel;
-   iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
+   //edm::Handle<reco::GenParticleCollection> genParticleHandel;
+   //iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
+
    // count muons   
    int numMuonRec = 0;
    // loop over all pat::Muon's but store only store GLOBAL MUONs
@@ -644,23 +656,25 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setUserRecord<double>("Vtx_X", muon->vx());
          part->setUserRecord<double>("Vtx_Y", muon->vy());
          part->setUserRecord<double>("Vtx_Z", muon->vz()); 
-         //store PAT matching info
-         const reco::Particle* recogen = muon->genLepton();
-         
-	 pxl::Particle* pxlgen = genmap[recogen];
-	 if (pxlgen != NULL) {
-	    part->linkSoft(pxlgen, "pat-match");
+
+         //store PAT matching info if MC
+	 if (MC){
+         	const reco::Particle* recogen = muon->genLepton();
+	 	pxl::Particle* pxlgen = genmap[recogen];
+	 	if (pxlgen != NULL) {
+	  		part->linkSoft(pxlgen, "pat-match");
 	  
-	    /*//check stored matching info
-	    if (part->getSoftRelations().has(pxlgen)) {
-	   	cout << "Soft-Relation ele rec -> gen ok" << endl;
-	    }
-	    if (pxlgen->getSoftRelations().has(part)) {
-	   	cout << "Soft-Relation ele gen -> rec ok" << endl;
-	    }
-	    cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	    cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
-	    //end check*/
+	    	//check stored matching info
+	    	if (part->getSoftRelations().has(pxlgen)) {
+	   		cout << "Soft-Relation muon rec -> gen ok" << endl;
+	    	}
+	    	if (pxlgen->getSoftRelations().has(part)) {
+	   		cout << "Soft-Relation muon gen -> rec ok" << endl;
+	    	}
+	    		cout << "pt of the matched rec-muon: " << part->getPt() << endl;
+	    		cout << "pt of the matched rec-muon: " << pxlgen->getPt() << endl;
+	    	//end check*/
+	 	}
 	 }
 	 
 	 //mind that from CMSSW 2.1 on information will be stored in outerTrack, innerTrack, globalTrack
@@ -717,7 +731,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
 // ------------ reading Reconstructed Electrons ------------
 
-void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView* RecView, pxl::EventView* GenView, EcalClusterLazyTools& lazyTools, std::map<const Particle*, pxl::Particle*> & genmap) {
+void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Particle*, pxl::Particle*> & genmap) {
 
    int numEleRec = 0;   
    int numEleAll = 0;   // for matching
@@ -729,8 +743,8 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
    const std::vector<pat::Electron> &electrons = *electronHandle;
 
    //gen particles for PAT-matching
-   edm::Handle<reco::GenParticleCollection> genParticleHandel;
-   iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
+   //edm::Handle<reco::GenParticleCollection> genParticleHandel;
+   //iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
 
    // Get association maps linking BasicClusters to ClusterShape FIXME make this work in 2_1_0
    edm::Handle<reco::BasicClusterShapeAssociationCollection> barrelClShpHandle;
@@ -794,25 +808,26 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 //part->setUserRecord<double>("DZ", ele->gsfTrack()->dz()); //not needed since vz()==dz()
          
 
-	 //store PAT matching info
-
-         const reco::Particle* recogen = ele->genLepton();
-
-	 pxl::Particle* pxlgen = genmap[recogen];
-	 if (pxlgen != NULL) {
-	    part->linkSoft(pxlgen, "pat-match");
+	 //store PAT matching info if MC
+	 if (MC) {
+         	const reco::Particle* recogen = ele->genLepton();
+	 	pxl::Particle* pxlgen = genmap[recogen];
+	 	if (pxlgen != NULL) {
+	   		part->linkSoft(pxlgen, "pat-match");
 	  
-	    /*//check stored matching info
-	    if (part->getSoftRelations().has(pxlgen)) {
-	  	cout << "Soft-Relation ele rec -> gen ok" << endl;
-	    }
-	    if (pxlgen->getSoftRelations().has(part)) {
-	  	cout << "Soft-Relation ele gen -> rec ok" << endl;
-	    }
-	    cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	    cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
+	    	/*//check stored matching info
+	    	if (part->getSoftRelations().has(pxlgen)) {
+	  		cout << "Soft-Relation ele rec -> gen ok" << endl;
+	   	}
+	   	if (pxlgen->getSoftRelations().has(part)) {
+	  		cout << "Soft-Relation ele gen -> rec ok" << endl;
+	    	}
+	   	cout << "pt of the matched rec-electron: " << part->getPt() << endl;
+	    	cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
 	    //end check*/
+	 	}
 	 }
+
 	 // Get the supercluster (ref) of the Electron
 	 // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
 	 // a SuperClusterCollection is a std::vector<SuperCluster>
@@ -885,13 +900,13 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 // by default for creating the allLayer0Jets the iterativeCone5CaloJets are used
 // discuss if we also need informations from other Jet-Collections
 
-void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, std::map<const Particle*, pxl::Particle*>& genjetmap) {
 
    int numItCone5JetRec = 0;
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
-   if (EvtView->findUserRecord<int>("NumVertices") > 0) {
-      pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = EvtView->getObjectOwner().begin<pxl::Vertex>();
+   if (RecView->findUserRecord<int>("NumVertices") > 0) {
+      pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
       VertexZ = (*vtx_iter)->getZ();
    } 
    
@@ -901,13 +916,13 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* EvtV
    
    //Get the GenJet collections for PAT matching
    //edm::Handle<reco::GenJetCollection> Kt_GenJets;
-   edm::Handle<reco::GenJetCollection> ItCone5_GenJets;
+   //edm::Handle<reco::GenJetCollection> ItCone5_GenJets;
    //iEvent.getByLabel(fKtJetMCLabel, Kt_GenJets);
-   iEvent.getByLabel(fItCone5JetMCLabel, ItCone5_GenJets);
+   //iEvent.getByLabel(fItCone5JetMCLabel, ItCone5_GenJets);
 
    for (std::vector<pat::Jet>::const_iterator jet = jets.begin(); jet != jets.end(); ++jet) {
       if (Jet_cuts(jet)) {
-         pxl::Particle* part = EvtView->create<pxl::Particle>();
+         pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName("ItCone5Jet"); //compare with Clemens; this may need further discussion
          part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
 	 part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
@@ -921,36 +936,40 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* EvtV
  	 part->setUserRecord<double>("TowersArea", jet->towersArea());
 	 part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
 
-	 /*
-         //store PAT matching info
-         //FIXME does not work, because implementation of genJet() differs from genLepton()
-         int count = 0;
-         const reco::Jet* matched = jet->genJet();
-       	 for (reco::GenJetCollection::const_iterator pa = ItCone5_GenJets->begin(); pa != ItCone5_GenJets->end(); ++ pa ) {
-            if (&(*pa) == matched ) {
-               //cout << "MATCH!" << endl; 
-               //double ptrec = jet->pt();
-               //double ptgen = pa->pt(); 
-               //cout << "pt des gen-jets: " << ptgen << endl;         
-               //cout << "pt des rec-jets: " << ptrec<< endl;
-               part->setUserRecord<double>("MatchedGenId", count); 
-               count++;
-            } else {
-               part->setUserRecord<double>("MatchedGenId", -1);
-               count++;           
-            }
+	 
+         //store PAT matching info if MC
+	 if(MC){
+	 	const reco::Particle* recogen = jet->genJet();
+	 	pxl::Particle* pxlgen = genjetmap[recogen];
+	 	if (pxlgen != NULL) {
+	    		part->linkSoft(pxlgen, "pat-match");
+	  
+	 		/*//check stored matching info
+	    	if (part->getSoftRelations().has(pxlgen)) {
+	  		cout << "Soft-Relation jet rec -> gen ok" << endl;
+	    	}
+	    	if (pxlgen->getSoftRelations().has(part)) {
+	  		cout << "Soft-Relation jet gen -> rec ok" << endl;
+	    	}
+	    	cout << "pt of the matched rec-jet: " << part->getPt() << endl;
+	    	cout << "pt of the matched rec-jet: " << pxlgen->getPt() << endl;
+	    	//end check*/
+	 	}
 	 }
-	*/
+
+
+
+         
          numItCone5JetRec++;
       }
    }
-   EvtView->setUserRecord<int>("NumItCone5Jet", numItCone5JetRec);
+   RecView->setUserRecord<int>("NumItCone5Jet", numItCone5JetRec);
    if (fDebug > 1) cout << "Found Rec Jets:  " << numItCone5JetRec << " It5  " << endl;
 }
 
 // ------------ reading Reconstructed Gammas ------------
 
-void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* RecView, pxl::EventView* GenView, EcalClusterLazyTools& lazyTools, std::map<const Particle*, pxl::Particle*> & genmap){
+void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Particle*, pxl::Particle*> & genmap){
    
    // get Photon Collection     
    edm::Handle<std::vector<pat::Photon> > photonHandle;
@@ -1041,23 +1060,23 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	 part->setUserRecord<double>("PhysicsPt", localPho.p4().pt());
 
 
-//store PAT matching info
-         const reco::Particle* recogen = photon->genPhoton();
-
+	  //store PAT matching info
+	  if(MC){
+          const reco::Particle* recogen = photon->genPhoton();
 	  pxl::Particle* pxlgen = genmap[recogen];
-	  if(pxlgen != NULL){
-	  part->linkSoft(pxlgen, "pat-match");
-	  
-	  /*//check stored matching info
-	  if (part->getSoftRelations().has(pxlgen)) {
-	  	cout << "Soft-Relation ele rec -> gen ok" << endl;
-	  }
-	  if (pxlgen->getSoftRelations().has(part)) {
-	  	cout << "Soft-Relation ele gen -> rec ok" << endl;
-	  }
-	  cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	  cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
-	  //end check*/
+	  	if(pxlgen != NULL){
+	  		part->linkSoft(pxlgen, "pat-match");
+	  		/*//check stored matching info
+	  		if (part->getSoftRelations().has(pxlgen)) {
+	  			cout << "Soft-Relation photon rec -> gen ok" << endl;
+	  		}
+	  		if (pxlgen->getSoftRelations().has(part)) {
+	  			cout << "Soft-Relation photon gen -> rec ok" << endl;
+	  		}
+	  		cout << "pt of the matched rec-photon: " << part->getPt() << endl;
+	  		cout << "pt of the matched rec-photon: " << pxlgen->getPt() << endl;
+	  		//end check*/
+	  	}
 	  }
 	 
 	 //FIXME Pi0 stuff still missing
