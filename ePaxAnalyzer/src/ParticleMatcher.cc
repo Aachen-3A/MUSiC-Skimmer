@@ -20,8 +20,10 @@ void ParticleMatcher::matchObjects(pxl::EventView* GenView, pxl::EventView* RecV
    std::vector<pxl::Particle*> rec_particles;
 
    // getTypeList(&typeList, GenView, RecView);
-   for (std::vector<std::string>::const_iterator partType = typeList.begin(); partType != typeList.end(); partType++) {
+   for (std::vector<std::string>::const_iterator partType = typeList.begin(); partType != typeList.end(); ++partType) {
       // Choose name filter criterion
+      gen_particles.clear();
+      rec_particles.clear();
       pxl::ParticleNameCriterion crit(*partType);
       filter.apply(&GenView->getObjectOwner(), gen_particles, crit);
       filter.apply(&RecView->getObjectOwner(), rec_particles, crit);
@@ -36,7 +38,8 @@ void ParticleMatcher::matchObjects(pxl::EventView* GenView, pxl::EventView* RecV
 
 void ParticleMatcher::makeMatching(std::vector<pxl::Particle*>& gen_particles, std::vector<pxl::Particle*>& rec_particles) {
 //void ParticleMatcher::makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter) {
-   // First set all Matches to -1 and reset bools:
+
+   // First set for Gen all Matches to -1 and reset bools:
    for (std::vector<pxl::Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
       (*gen_iter)->setUserRecord<int>("Match", -1);
       (*gen_iter)->setUserRecord<bool>("hctaM", false);      
@@ -55,7 +58,10 @@ void ParticleMatcher::makeMatching(std::vector<pxl::Particle*>& gen_particles, s
       unsigned int col = 0;
       unsigned int row = 0;
       std::string particle;
-      if (fDebug > 1) cout << "Found " << num_gen << " Gen Objects and " << num_rec << " Rec Objects" << endl;
+
+//if (fDebug > 1)
+cout << "Found " << num_gen << " Gen Objects and " << num_rec << " Rec Objects" << endl;
+
       TMatrixT<double> DistanzMatrix(num_gen, num_rec);
       for (std::vector<pxl::Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
       //for (pxl::ParticleFilterIterator gen_iter(GenFilter); !gen_iter.isDone(); gen_iter.next()) {
@@ -85,88 +91,49 @@ void ParticleMatcher::makeMatching(std::vector<pxl::Particle*>& gen_particles, s
       
       
       if (fDebug > 0) DistanzMatrix.Print(); 
+
+	//define value in dR which defines matching
+	DeltaRMatching = DeltaRParticles;
+	particle = (gen_particles.front())->getName();
+	if (particle == "MET" || particle == "METCorr") DeltaRMatching = DeltaRMET;
+
       // go through every row and pushback index of Rec with smallest Distance
       for (unsigned int irow = 0; irow < num_gen; irow++) {
-	 //define value in dR which defines matching
-	 DeltaRMatching = DeltaRParticles;
 	 //pxl::ParticleFilterIterator tmp_gen_iter(GenFilter);
 	 //pxl::ParticleWkPtr tmp_gen_pa = tmp_gen_iter.wkPtr();
-	 particle = (gen_particles.front())->getName();
-	 if (particle == "MET" || particle == "METCorr") DeltaRMatching = DeltaRMET;
-         // better implementation then always iterate over all particles?????
-	 int matched = SmallestRowElement(&DistanzMatrix, irow);
-	 unsigned int count = 0;
-	 bool found = false;
-	 std::vector<pxl::Particle*>::iterator gen_iter = gen_particles.begin();
-         //pxl::ParticleFilterIterator gen_iter(GenFilter);
-	 while (gen_iter != gen_particles.end() && !found) {
-	    if (count == irow) {
-	       //pxl::ParticleWkPtr pa = gen_iter.wkPtr();
-	       (*gen_iter)->setUserRecord<int>("Match", matched);
-               //pa.set().setUserRecord<int>("Match", matched);
-	       found = true;
-               if (fDebug > 0) cout << "GenObject " << irow << " is matched with " << matched << endl;     
-	    }
-	    count++;
-	    gen_iter++;
-	 }
-         if (matched != -1) {
-            count = 0;
-            found = false;
-	    std::vector<pxl::Particle*>::iterator rec_iter = rec_particles.begin();
-            //pxl::ParticleFilterIterator rec_iter(RecFilter);
-            while (rec_iter != rec_particles.end() && !found) {
-               if ((int)count == matched) {
-                  //pxl::ParticleWkPtr pa = rec_iter.wkPtr();
-                  (*rec_iter)->setUserRecord<bool>("hctaM", true);
-                  found = true;
-                  if (fDebug > 0) cout << "RecObject " << matched << " has matching Gen " << endl;      
-               }
-               count++;
-               rec_iter++;
-            }
-         } 
-      }
-      for (unsigned int icol = 0; icol < num_rec; icol++) {
-         //define value in dR which defines matching
-	 DeltaRMatching = DeltaRParticles;
-	 //pxl::ParticleFilterIterator tmp_gen_iter(RecFilter);
-	 //pxl::ParticleWkPtr tmp_gen_pa = tmp_gen_iter.wkPtr();
-	 particle = (rec_particles.front())->getName();
-	 if (particle == "MET" || particle == "METCorr") DeltaRMatching = DeltaRMET;
-         // better implementation then always iterate over all particles?????
-	 int matched = SmallestColumnElement(&DistanzMatrix, icol);
-         unsigned int count = 0;
-	 bool found = false;
-	 std::vector<pxl::Particle*>::iterator rec_iter = rec_particles.begin();
-         //pxl::ParticleFilterIterator rec_iter(RecFilter); 
-	 while (rec_iter != rec_particles.end() && !found) {
-	    if (count == icol) {
-	       //pxl::ParticleWkPtr pa = rec_iter.wkPtr();
-               (*rec_iter)->setUserRecord<int>("Match", matched);
-	       found = true;
-	       if (fDebug > 0) cout << "RecObject " << icol << " is matched with " << matched << endl;
-	    }
-	    count++;
-	    rec_iter++;
-	 }
-         if (matched != -1) {
-            count = 0;
-            found = false;
-	    std::vector<pxl::Particle*>::iterator gen_iter = gen_particles.begin();
-            while (gen_iter != gen_particles.end() && !found) {	    
-               if ((int)count == matched) {
-                  //pxl::ParticleWkPtr pa = gen_iter.wkPtr();
-                  (*gen_iter)->setUserRecord<bool>("hctaM", true);
-                  found = true;
-                  if (fDebug > 0) cout << "GenObject " << matched << " has matching Rec " << endl;           
-               }
-               count++;
-               gen_iter++;
-            }
+       	 int matched = SmallestRowElement(&DistanzMatrix, irow);
+	 gen_particles[irow]->setUserRecord<int>("Match", matched);
+	 if (fDebug > 0) cout << "GenObject " << irow << " is matched with " << matched << endl;
+
+	 if (matched != -1){
+	 	//redundant information with softlink, should replace the UserRecords after testing
+	 	gen_particles[irow]->linkSoft(rec_particles[matched],"priv-gen-rec");
+
+	 	cout << "pt of the private matched rec: " << rec_particles[matched]->getPt() << endl; //temporary!
+	 	cout << "pt of the private matched gen: " << gen_particles[irow]->getPt() << endl; //temporary!
+
+      	 	rec_particles[matched]->setUserRecord<bool>("hctaM", true);
+	        if (fDebug > 0) cout << "RecObject " << matched << " has matching Gen " << endl;      
          }
       }
-   }
+
+      for (unsigned int icol = 0; icol < num_rec; icol++) {
+         //define value in dR which defines matching
+	 //pxl::ParticleFilterIterator tmp_gen_iter(RecFilter);
+	 //pxl::ParticleWkPtr tmp_gen_pa = tmp_gen_iter.wkPtr();
+	 int matched = SmallestColumnElement(&DistanzMatrix, icol);
+         rec_particles[icol]->setUserRecord<int>("Match", matched);
+	 if (fDebug > 0) cout << "RecObject " << icol << " is matched with " << matched << endl;
+	
+	 if (matched != -1) {
+	 	//redundant information with softlink, should replace the UserRecords after testing
+	 	rec_particles[icol]->linkSoft(gen_particles[matched],"priv-rec-gen");
+	
+         	gen_particles[matched]->setUserRecord<bool>("hctaM", true);
+		if (fDebug > 0) cout << "GenObject " << matched << " has matching Rec " << endl;           
+         }
+     }
+  }
 }
 
 

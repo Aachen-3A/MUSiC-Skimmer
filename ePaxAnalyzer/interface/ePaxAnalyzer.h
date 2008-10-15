@@ -30,19 +30,13 @@
 #include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+
  
 // ROOT stuff
 
 #include "TFile.h"
 #include "TTree.h"
 #include "TMatrixT.h"
-
-// ePax stuff
-// Has to be included as the last header otherwise there will be a warning concerning the 
-// zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
-// but ePax can deal with both of them
-#include "ePaxPxl/ePax/interface/ePax.h"
-//#include "ePaxDemo/ePaxAnalyzer/interface/ParticleMatcher.hh"
 
 //PAT related stuff
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -53,6 +47,13 @@
 
 //for ClusterShape variables
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+
+// ePax stuff
+// Has to be included as the last header otherwise there will be a warning concerning the 
+// zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
+// but ePax can deal with both of them
+#include "ePaxPxl/ePax/interface/ePax.h"
+#include "ePaxDemo/ePaxAnalyzer/interface/ParticleMatcher.hh"
 
 
 class ePaxAnalyzer : public edm::EDAnalyzer {
@@ -153,7 +154,7 @@ private:
    
    //edm::ESHandle<CaloGeometry>  theCaloGeom;
    
-   //ParticleMatcher* Matcher;
+   ParticleMatcher* Matcher;
 
   
    // to be used for ePax output 

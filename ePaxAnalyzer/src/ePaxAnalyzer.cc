@@ -167,7 +167,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    //fHBHELabel = iConfig.getUntrackedParameter<string>("fHBHELabel");
    //fHBHEInstanceName = iConfig.getUntrackedParameter<string>("fHBHEInstanceName");
    
-   
+   Matcher = new ParticleMatcher();
    fNumEvt=0;
 }
 
@@ -180,7 +180,7 @@ ePaxAnalyzer::~ePaxAnalyzer()
    // (e.g. close files, deallocate resources etc.)
    
    fePaxFile.close();
-   
+   delete Matcher;
 
 }
 
@@ -260,6 +260,10 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecJets(iEvent, RecEvtView, MC, genjetmap);
       analyzeRecMET(iEvent, RecEvtView);
       analyzeRecGammas(iEvent, RecEvtView, MC, lazyTools, genmap);
+   }
+
+   if(MC == true){
+	Matcher->matchObjects(GenEvtView, RecEvtView);
    }
 
    // set event class strings
@@ -642,7 +646,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
    // count muons   
    int numMuonRec = 0;
-   // loop over all pat::Muon's but store only store GLOBAL MUONs
+   // loop over all pat::Muon's but only store GLOBAL MUONs
    for (std::vector<pat::Muon>::const_iterator muon = muons.begin();  muon != muons.end(); ++muon ) {
       if (Muon_cuts(*muon)) { 
          pxl::Particle* part = RecView->create<pxl::Particle>();
@@ -668,7 +672,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	   		cout << "Soft-Relation muon gen -> rec ok" << endl;
 	    	}
 	    		cout << "pt of the matched rec-muon: " << part->getPt() << endl;
-	    		cout << "pt of the matched rec-muon: " << pxlgen->getPt() << endl;
+	    		cout << "pt of the matched gen-muon: " << pxlgen->getPt() << endl;
 	    	//end check*/
 	 	}
 	 }
@@ -819,7 +823,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	  		cout << "Soft-Relation ele gen -> rec ok" << endl;
 	    	}
 	   	cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	    	cout << "pt of the matched rec-electron: " << pxlgen->getPt() << endl;
+	    	cout << "pt of the matched gen-electron: " << pxlgen->getPt() << endl;
 	    //end check*/
 	 	}
 	 }
@@ -948,7 +952,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
 	  		cout << "Soft-Relation jet gen -> rec ok" << endl;
 	    	}
 	    	cout << "pt of the matched rec-jet: " << part->getPt() << endl;
-	    	cout << "pt of the matched rec-jet: " << pxlgen->getPt() << endl;
+	    	cout << "pt of the matched gen-jet: " << pxlgen->getPt() << endl;
 	    	//end check*/
 	 	}
 	 }
@@ -1070,7 +1074,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	  			cout << "Soft-Relation photon gen -> rec ok" << endl;
 	  		}
 	  		cout << "pt of the matched rec-photon: " << part->getPt() << endl;
-	  		cout << "pt of the matched rec-photon: " << pxlgen->getPt() << endl;
+	  		cout << "pt of the matched gen-photon: " << pxlgen->getPt() << endl;
 	  		//end check*/
 	  	}
 	  }
