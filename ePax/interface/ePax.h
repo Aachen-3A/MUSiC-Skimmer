@@ -2817,7 +2817,7 @@ public:
 		for (pxl::ObjectOwner::TypeIterator<objecttype> iter(objects); iter
 				!=objects->end(); ++iter)
 		{
-			if (!criterion(*iter))
+			if (!criterion(**iter))
 				continue;
 			fillVector.push_back(*iter);
 		}
