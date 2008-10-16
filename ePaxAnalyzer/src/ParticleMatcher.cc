@@ -32,6 +32,8 @@ void ParticleMatcher::matchObjects(pxl::EventView* GenView, pxl::EventView* RecV
       //pxl::ParticleFilter RecFilter(RecView->getObjectOwner(), (*partType));
       //makeMatching(GenFilter, RecFilter);
    }   
+
+	cout << "NEW EVENT ----------------------------------" << endl; //temporary
 }
 
 // ------------ implementation of the matching Gen <--> Rec ------------
@@ -109,8 +111,8 @@ cout << "Found " << num_gen << " Gen Objects and " << num_rec << " Rec Objects" 
 	 	//redundant information with softlink, should replace the UserRecords after testing
 	 	gen_particles[irow]->linkSoft(rec_particles[matched],"priv-gen-rec");
 
-	 	cout << "pt of the private matched rec: " << rec_particles[matched]->getPt() << endl; //temporary!
-	 	cout << "pt of the private matched gen: " << gen_particles[irow]->getPt() << endl; //temporary!
+	 	//cout << "pt of the private matched " << rec_particles[matched]->getName() << " rec: " << rec_particles[matched]->getPt() << endl; //temporary!
+	 	//cout << "pt of the private matched " << gen_particles[irow]->getName() << " gen: " << gen_particles[irow]->getPt() << endl; //temporary!
 
       	 	rec_particles[matched]->setUserRecord<bool>("hctaM", true);
 	        if (fDebug > 0) cout << "RecObject " << matched << " has matching Gen " << endl;      
