@@ -17,7 +17,8 @@ class ParticleMatcher {
 
    public: 
       // Konstruktor
-      ParticleMatcher() {fDebug = 0;};
+      ParticleMatcher(double DeltaR_Particles = 0.2, double DeltaR_MET = 0.5) : 
+            _DeltaR_Particles(DeltaR_Particles), _DeltaR_MET(DeltaR_MET), _fDebug(0) {};
       // Destruktor
       ~ParticleMatcher() {;};
       // Match method
@@ -26,12 +27,11 @@ class ParticleMatcher {
       
    private:
       // Some helper methods
-      int SmallestRowElement(TMatrixT<double>* matrix, unsigned int row);   
-      int SmallestColumnElement(TMatrixT<double>* matrix, unsigned int col);
-      int fDebug; 
+      int SmallestRowElement(TMatrixT<double>* matrix, const unsigned int& row, const double& DeltaRMatching);   
+      int SmallestColumnElement(TMatrixT<double>* matrix, const unsigned int& col, const double& DeltaRMatching);
       //variable to define dR which decides matching
-      double DeltaRMatching;
-      double DeltaRMET;
-      double DeltaRParticles;
+      double _DeltaR_Particles;
+      double _DeltaR_MET;
+      int _fDebug; 
 };
 #endif
