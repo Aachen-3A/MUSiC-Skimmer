@@ -2144,8 +2144,9 @@ bool const operator!=(const pxl::Particle& obj1, const pxl::Particle& obj2)
 std::ostream& pxl::Particle::print(int level, std::ostream& os, int pan) const
 {
 	printPan1st(os, pan);
-	os << "Particle: '" << getName() << "', p = (" << getPt()
-			<< ", " << getPz() << ") m = " << getMass() << std::endl;
+	os << "Particle: '" << getName() << "', p = (" << getPx()
+			<< ", " << getPy() << ", " << getPz() << ") m = " << getMass() 
+			<< ", E = " << getE() << std::endl;
 	if (level>0)
 		pxl::Object::printContent(level, os, pan);
 	return os;

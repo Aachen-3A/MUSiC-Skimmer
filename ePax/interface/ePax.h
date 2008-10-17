@@ -2198,7 +2198,7 @@ protected:
 	{
 	}
 
-	Relative(const Relative& original) :
+	explicit Relative(const Relative& original) :
 		pxl::Serializable(), _refWkPtrSpec(0), _refObjectOwner(0),
 				_motherRelations(), _daughterRelations(),
 				_name(original._name), _ptrLayout(0)
@@ -2206,7 +2206,7 @@ protected:
 		this->init(original);
 	}
 
-	Relative(const Relative* original) :
+	explicit Relative(const Relative* original) :
 		pxl::Serializable(), _refWkPtrSpec(0), _refObjectOwner(0),
 				_motherRelations(), _daughterRelations(),
 				_name(original->_name), _ptrLayout(0)
@@ -2777,7 +2777,8 @@ namespace pxl
 template<class comparetype> class Comparator
 {
 public:
-	virtual bool operator()(comparetype, comparetype) = 0;
+	virtual bool operator()(const comparetype&, const comparetype&) = 0;
+	virtual bool operator()(const comparetype*, const comparetype*) = 0;	
 	virtual ~Comparator()
 	{
 	}
@@ -3573,6 +3574,14 @@ public:
 	{
 		_objects.getObjectsOfType<objecttype>(vec);
 	}
+	
+	template<class objecttype, class comparator> inline void getObjectsOfType(
+			std::vector<objecttype*>& vec, const FilterCriterion<objecttype>& criterion) const
+	{
+	        pxl::Filter<objecttype, comparator> filter; 
+		filter.apply(&_objects, vec, criterion);
+		//_objects.getObjectsOfType<objecttype>(vec);
+	}        
 
 	inline const std::vector<pxl::Relative*>& getObjects() const
 	{
@@ -4793,8 +4802,8 @@ public:
 	{
 	}
 
-	Object(const Object* original) :
-		pxl::Relative(), _locked(original->_locked),
+	explicit Object(const Object* original) :
+		pxl::Relative(original), _locked(original->_locked),
 				_workflag(original->_workflag),
 				_userRecords(original->_userRecords)
 	{
@@ -5087,6 +5096,21 @@ public:
 	{
 		_objects.getObjectsOfType<objecttype>(vec);
 	}
+
+	template<class objecttype, class comparator> inline void getObjectsOfType(
+			std::vector<objecttype*>& vec, const FilterCriterion<objecttype>& criterion) const
+	{
+	        pxl::Filter<objecttype, comparator> filter; 
+		filter.apply(&_objects, vec, criterion);
+		//_objects.getObjectsOfType<objecttype>(vec);
+	}   
+	/*
+	template<> inline void getObjectsOfType(std::vector<Particle*>& vec, const FilterCriterion<Particle>& criterion)
+	const
+	{
+	   pxl::Filter<Particle, ParticlePtComparator> filter;
+	   filter.apply(&_objects, vec, criterion);
+	}     */
 
 	/// This method deletes the object \p obj.
 	inline void removeObject(pxl::Relative* obj)
@@ -5436,13 +5460,13 @@ public:
 	{
 	}
 
-	Particle(const Particle& original) :
+	explicit Particle(const Particle& original) :
 		Object(original), _vector(original._vector), _charge(original._charge),
 				_particleId(original._particleId)
 	{
 	}
 
-	Particle(const Particle* original) :
+	explicit Particle(const Particle* original) :
 		Object(original), _vector(original->_vector), _charge(original->_charge),
 				_particleId(original->_particleId)
 	{
@@ -5476,7 +5500,7 @@ public:
 	}
 
 	/// This method grants read access to the vector.
-    inline const pxl::Basic4Vector& getVector() const
+        inline const pxl::Basic4Vector& getVector() const
 	{
 		return _vector;
 	}
@@ -5826,7 +5850,6 @@ public:
 
 /// This typedef defines a weak pointer for pxl::EventView
 typedef pxl::weak_ptr<pxl::EventView> EventViewWkPtr;
-typedef pxl::EventView& EventViewRef;
 } // namespace pxl
 
 
@@ -6089,11 +6112,17 @@ namespace pxl
 class ParticlePtComparator : public Comparator<pxl::Particle>
 {
 public:
-	virtual bool operator()(pxl::Particle p1, pxl::Particle p2)
+	virtual bool operator()(const pxl::Particle& p1, const pxl::Particle& p2)
 	{
 		return (p1.getPt()>p2.getPt());
 	}
+	virtual bool operator()(const pxl::Particle* p1, const pxl::Particle* p2)
+	{
+		return (p1->getPt()>p2->getPt());
+	}
+	
 };
+typedef ParticlePtComparator PtComparator;
 
 class ParticlePtEtaNameCriterion : public FilterCriterion<pxl::Particle>
 {
@@ -6158,8 +6187,6 @@ private:
 
 
 typedef pxl::Filter<pxl::Particle, ParticlePtComparator> ParticleFilter;
-/// This typedef defines a reference for pxl::Particle
-typedef pxl::Particle& ParticleRef;
 
 } // namespace pxl
 
