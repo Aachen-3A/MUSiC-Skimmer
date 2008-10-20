@@ -150,8 +150,10 @@ private:
    edm::InputTag fendcapClusterCollection;
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;   
+   edm::InputTag ftriggerResultsTag; 
+   edm::InputTag ftriggerEventTag; 
 
-   
+
    //edm::ESHandle<CaloGeometry>  theCaloGeom;
    
    ParticleMatcher* Matcher;

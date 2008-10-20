@@ -46,7 +46,7 @@ process.source = cms.Source("PoolSource",
 '/store/mc/Summer08/TauolaTTbar/GEN-SIM-RECO/IDEAL_V9_v1/0004/16AAC418-218A-DD11-AC33-001F2908F0E4.root'
 )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
 
 process.load("Configuration.StandardSequences.Geometry_cff")
 
@@ -83,6 +83,13 @@ process.load("PhysicsTools.PatAlgos.patLayer1_cff")
 #    SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
 #    outputCommands = cms.untracked.vstring('drop *')
 #)
+
+#insert following lines in order to get info about the HLT content (don't forget to include into path)
+#import HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi
+#process.hltAnalyzer = HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi.hltEventAnalyzerAOD.clone()
+
+
+
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:
@@ -132,9 +139,12 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
     	 reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
      	 barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
     	 endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
-      	 TriggerResults = cms.untracked.string("hltTriggerSummaryAOD")
+      	 #TriggerResults = cms.untracked.string("hltTriggerSummaryAOD")
 	 #untracked string fHBHELabel = "hbhereco"
          #untracked string fHBHEInstanceName = ""
+	 triggerResults = cms.InputTag("TriggerResults","","HLT"),
+         triggerEvent   = cms.InputTag("hltTriggerSummaryAOD","","HLT")
+
 
 )
 

@@ -24,6 +24,7 @@
 <use name=ePaxPxl/ePax>
 <use name=root>
 <use name=hepmc>
+<use name=HLTrigger/HLTcore>
 <flags EDM_PLUGIN=1>
 <export>
   <use name=DataFormats/DetId>
@@ -50,6 +51,7 @@
   <use name=RecoEcal/EgammaCoreTools>
   <use name=root>
   <use name=hepmc>
+  <use name=HLTrigger/HLTcore>
   <lib name=ePaxDemoePaxAnalyzer>
 </export>
 

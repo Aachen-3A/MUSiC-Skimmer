@@ -24,6 +24,7 @@
 #include <sstream>
 #include <iostream>
 #include <map>
+#include <vector>
 // include Message Logger for Debug
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "TLorentzVector.h"
@@ -116,6 +117,10 @@
 //#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
  
+//includes for trigger info in 2_1_9
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 
 
@@ -166,6 +171,10 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    //fMETCorrRecoLabel = iConfig.getUntrackedParameter<string>("METCorrRecoLabel");
    //fHBHELabel = iConfig.getUntrackedParameter<string>("fHBHELabel");
    //fHBHEInstanceName = iConfig.getUntrackedParameter<string>("fHBHEInstanceName");
+   ftriggerResultsTag =iConfig.getParameter<edm::InputTag>("triggerResults");
+   ftriggerEventTag = iConfig.getParameter<edm::InputTag>("triggerEvent");
+
+
    
    Matcher = new ParticleMatcher();
    fNumEvt=0;
@@ -579,7 +588,6 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    try {iEvent.getByLabel(hlt, hltresults);} catch (...) { errMsg=errMsg + "  -- No HLTRESULTS";}
    // trigger names
    edm::TriggerNames triggerNames_;
-  */
 
    //HLT: set to false as default
    EvtView->setUserRecord<bool>("HLT1Electron", false);
@@ -607,6 +615,71 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    EvtView->setUserRecord<bool>("L1_SingleEG15", false);
    EvtView->setUserRecord<bool>("L1_DoubleIsoEG8", false);
    EvtView->setUserRecord<bool>("L1_DoubleEG10", false);
+   */
+
+   //reference for some of the following parts: CMSSW/HLTrigger/HLTcore/plugins/HLTEventAnalyzerAOD.cc
+
+   //define HLT Trigger vector FIXME:there might be a better place to define this
+   std::vector<string> HLTVec;
+   HLTVec.reserve(20); //preventing reallocation
+   HLTVec.push_back("HLT_IsoEle15_L1I");
+   HLTVec.push_back("HLT_Ele15_SW_L1R");
+   HLTVec.push_back("HLT_Ele15_LW_L1R");
+   HLTVec.push_back("HLT_EM80");
+   HLTVec.push_back("HLT_EM200");
+   HLTVec.push_back("HLT_DoubleEle10_Z");
+   HLTVec.push_back("HLT_Mu15");
+   HLTVec.push_back("HLT_IsoEle15_LW_L1I");
+   HLTVec.push_back("HLT_DoubleIsoEle12_L1R");
+   HLTVec.push_back("HLT_DoubleEle10_Z");
+   HLTVec.push_back("HLT_IsoPhoton30_L1I");
+   HLTVec.push_back("HLT_IsoPhoton40_L1R");
+   HLTVec.push_back("HLT_Photon25_L1R");
+   HLTVec.push_back("HLT_Mu15");
+   HLTVec.push_back("HLT_DoubleMu3");
+   HLTVec.push_back("HLT_DoubleIsoMu3");
+
+   using namespace edm;
+   using namespace trigger;
+   edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
+   edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
+
+   HLTConfigProvider hltConfig_;
+   hltConfig_.init("HLT");
+
+   //cout << "Available TriggerNames are: " << endl;
+   //hltConfig_.dump("Triggers"); //dump table of available HLT
+ 
+   iEvent.getByLabel( ftriggerResultsTag, triggerResultsHandle_); 
+   iEvent.getByLabel( ftriggerEventTag, triggerEventHandle_); 
+
+   //loop over selected trigger names
+   for(unsigned int i=0; i<HLTVec.size() ;++i){
+	const std::string triggerName = HLTVec[i];
+	const unsigned int triggerIndex(hltConfig_.triggerIndex(triggerName)); //returns size() if triggerName does not exist
+	const unsigned int n(hltConfig_.size()); //for checking availabilty of triggerName
+
+   	if(triggerIndex<n){  //makes sure that triggerName is defined for the event
+	
+   		//save trigger path status
+		EvtView->setUserRecord<bool>(triggerName+"_wasrun",triggerResultsHandle_->wasrun(triggerIndex));
+		EvtView->setUserRecord<bool>(triggerName+"_accept",triggerResultsHandle_->accept(triggerIndex));
+		EvtView->setUserRecord<bool>(triggerName+"_error",triggerResultsHandle_->error(triggerIndex));
+   		/*//begin cout of saved information for debugging
+   		cout << "triggerName: " << triggerName << "triggerIndex: " << triggerIndex << endl;
+   		cout << " Trigger path status:"
+        		<< " WasRun=" << triggerResultsHandle_->wasrun(triggerIndex)
+        		<< " Accept=" << triggerResultsHandle_->accept(triggerIndex)
+        		<< " Error =" << triggerResultsHandle_->error(triggerIndex)
+        		<< endl;
+   		//end debugging output*/
+   	}
+   	else { cout << "triggerName not defined for this event!" << endl;}
+
+   
+   }
+
+
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
