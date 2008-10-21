@@ -746,7 +746,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	 	if (pxlgen != NULL) {
 	  		part->linkSoft(pxlgen, "pat-match");
 	  
-	    	/*//check stored matching info
+	    	//check stored matching info
 	    	//if (part->getSoftRelations().has(pxlgen)) {
 	   	//	cout << "Soft-Relation muon rec -> gen ok" << endl;
 	    	//}
@@ -824,9 +824,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
    iEvent.getByLabel(fElectronRecoLabel, electronHandle);
    const std::vector<pat::Electron> &electrons = *electronHandle;
 
-   //gen particles for PAT-matching
-   //edm::Handle<reco::GenParticleCollection> genParticleHandel;
-   //iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
 
    // Get association maps linking BasicClusters to ClusterShape FIXME make this work in 2_1_0
    edm::Handle<reco::BasicClusterShapeAssociationCollection> barrelClShpHandle;
@@ -842,21 +839,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          }
 	 pxl::Particle* part = RecView->create<pxl::Particle>();
 
-//pxl::ParticleFilter recElectronList(recEvtView().getObjects(), kElectronName);
-	//for (pxl::ParticleFilterIterator iter(recElectronList); !iter.isDone(); iter.next()) {
-	//	pxl::ParticleWkPtr recPa = iter.wkPtr();
-	//	int id = recPa.get().findUserRecord<int>(kCandidateId, -1);
-		
-		//edm::RefToBase<pat::ElectronType> eleRef = ele->originalObjectRef();
-  		//const edm::Ptr<reco::Candidate> & eleRef = ele->originalObjectRef();
-		//reco::GenParticle* genEle = (*genMatch)[eleRef];
-		
-		//if (genEle.isNonnull() && genEle.isAvailable() ) {
-			//cout << "rec pt " << muoeleRef->pt() << " matched gen particle pt= " << genMuon->pt() << " key " << genMuon.key() << endl;
-			//part->set().setUserRecord<int>("MatchedKey", genEle.key());
-		//}
-		
-	//}
+
 
          part->setName("Ele");
          part->setCharge(ele->charge());
@@ -897,7 +880,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 	if (pxlgen != NULL) {
 	   		part->linkSoft(pxlgen, "pat-match");
 	  
-	    	/*//check stored matching info
+	    	//check stored matching info
 	    	//if (part->getSoftRelations().has(pxlgen)) {
 	  	//	cout << "Soft-Relation ele rec -> gen ok" << endl;
 	   	//}
@@ -935,9 +918,9 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 part->setUserRecord<double>("eSeed", SCRef->seed()->energy()); //used for CutBasedElectronID
 	 part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
 	 part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
-	 //store ID information
-	 //Cut based ID is stored as float in 2_1_0 hence it is converted to bool for backwards compability
 
+	 //store ID information
+	 //Cut based ID is stored as float in 2_1_0 hence it is converted to bool for backwards compatibility
 	 float IDfloat =  ele->leptonID("tight");
 	 bool IDbool = false ;
 	 if (IDfloat > 0.5) {IDbool = true;}
@@ -946,19 +929,13 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 IDbool = false;
 	 if (IDfloat > 0.5) {IDbool = true;}	
 	 part->setUserRecord<bool>("CutBasedIDRobust", IDbool);
+
 	 
          //save official isolation information
 	 double CaloIso = ele->caloIso();
 	 double TrkIso = ele->trackIso();
 	 part->setUserRecord<double>("CaloIso", CaloIso);
 	 part->setUserRecord<double>("TrackIso", TrkIso);
-
-         //save additional isolation information(not working for the PAT version corresponding to 2_0_9 I checked out) 
-	 //not working for > 2_0_7 anyway
-	 //in CMSSW_2_0_9 the data can be found in lepton.h
-	 //FIXME after moving to CMSSW_2_0_9 
-	 //part->setUserRecord<float>("egammaTkIso", ele->egammaTkIso());
-	 //part->setUserRecord<int>("egammaTkNumIso", ele->egammaTkNumIso());
 	 part->setUserRecord<double>("ECALIso", ele->ecalIso());
 	 part->setUserRecord<double>("HCALIso", ele->hcalIso());
  
@@ -1041,7 +1018,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
 	 	pxl::Particle* pxlgen = genjetmap[recogen];
 	 	if (pxlgen != NULL) {
 	    		part->linkSoft(pxlgen, "pat-match");
-	 	/*//check stored matching info
+	 	//check stored matching info
 	    	//if (part->getSoftRelations().has(pxlgen)) {
 	  	//	cout << "Soft-Relation jet rec -> gen ok" << endl;
 	    	//}
