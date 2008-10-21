@@ -70,6 +70,7 @@ private:
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
    virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
+   virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
    virtual void analyzeGenJets(const edm::Event&, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
    

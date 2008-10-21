@@ -5,12 +5,14 @@ using namespace pxl;
 
 // ------------ matching Method ------------
 
-void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView) {
+void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView, const std::string& _JetAlgo, const std::string& _METType) {
    // FIXME: Make code more generic! Generate a list of all Particle types
    std::vector<std::string> typeList;
-   typeList.push_back("Muon"); typeList.push_back("Ele"); typeList.push_back("Gamma"); typeList.push_back("KtJet"); 
-   typeList.push_back("ItCone5Jet"); typeList.push_back("L2L3JESic5Jet");
-   typeList.push_back("MET"); typeList.push_back("METCorr");
+   typeList.push_back("Muon"); 
+   typeList.push_back("Ele"); 
+   typeList.push_back("Gamma"); 
+   typeList.push_back(_JetAlgo); 
+   typeList.push_back(_METType);
 
    // containers to keep the filtered gen/rec particles
    vector<Particle*> gen_particles;
@@ -22,7 +24,7 @@ void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView) {
       ParticleNameCriterion crit(*partType);
       GenView->getObjectsOfType<Particle, PtComparator>(gen_particles, crit);
       RecView->getObjectsOfType<Particle, PtComparator>(rec_particles, crit);
-      makeMatching(gen_particles, rec_particles);
+      makeMatching(gen_particles, rec_particles, _METType);
    }   
 
 	cout << "NEW EVENT ----------------------------------" << endl; //temporary
@@ -30,7 +32,7 @@ void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView) {
 
 // ------------ implementation of the matching Gen <--> Rec ------------
 
-void ParticleMatcher::makeMatching(std::vector<Particle*>& gen_particles, std::vector<Particle*>& rec_particles) {
+void ParticleMatcher::makeMatching(std::vector<Particle*>& gen_particles, std::vector<Particle*>& rec_particles, const string& _METType) {
    // First set for Gen all Matches to -1 and reset bools:
    for (std::vector<Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
       (*gen_iter)->setUserRecord<int>("Match", -1);
@@ -74,7 +76,7 @@ void ParticleMatcher::makeMatching(std::vector<Particle*>& gen_particles, std::v
       //define value in dR which defines matching
       double DeltaRMatching = _DeltaR_Particles;
       particle = (gen_particles.front())->getName();
-      if (particle == "MET" || particle == "METCorr") DeltaRMatching = _DeltaR_MET;
+      if (particle == _METType) DeltaRMatching = _DeltaR_MET;
 
       // go through every row and pushback index of Rec with smallest Distance
       for (unsigned int irow = 0; irow < num_gen; irow++) {

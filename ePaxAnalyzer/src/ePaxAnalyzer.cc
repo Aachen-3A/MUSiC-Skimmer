@@ -57,6 +57,7 @@
 //for GenParticles
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/PdfInfo.h"
 
 //for TrackingVertex
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
@@ -196,71 +197,43 @@ ePaxAnalyzer::~ePaxAnalyzer()
 // ------------ method called to for each event  ------------
 
 void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  //cout<<"Event Number: "<<fNumEvt<<endl;
+
    // set event counter   
-   fNumEvt++;    // set this as setUserRecord ?
-   
-   // get the calorimeter geometry in order to navigate through it for HadOverEm calculation
-   //probably no longer needed and not available in this way in CMSSW 2.0.7 anyway
-   //iSetup.get<IdealGeometryRecord>().get(theCaloGeom);
+   fNumEvt++; 
    // Owner of all Pxl Objects 
    pxl::Event* event = new pxl::Event();
 
    // event-specific data
-   event->setUserRecord<bool>("MC", true);  //distinguish between MC and data; replace this dummy later
+   bool IsMC =  !iEvent.isRealData();
+   event->setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
    event->setUserRecord<int>("Run", iEvent.id().run());
    event->setUserRecord<int>("ID", iEvent.id().event());	
-   //cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << endl;  
-
+   if (fDebug > 0) {
+      cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << " is MC = " << !iEvent.isRealData() << endl;  
+   }
    // create two ePaxEventViews for Generator/Reconstructed Objects
    pxl::EventView* GenEvtView = event->createIndexed<pxl::EventView>("Gen");
    pxl::EventView* RecEvtView = event->createIndexed<pxl::EventView>("Rec");
    GenEvtView->setUserRecord<std::string>("Type", "Gen");
    RecEvtView->setUserRecord<std::string>("Type", "Rec");
    
-
-   double processID = 0.;
-   double pthat = 0.;
-   
-   // else use stuff inside AOD : can it be done in PAT?
-  
-      //edm::Handle< int > genProcessID;
-      //iEvent.getByLabel( "genEventProcID", genProcessID );
-      //processID = *genProcessID;
- 
-      //edm::Handle< double > genEventScale;
-      //iEvent.getByLabel( "genEventScale", genEventScale );
-      //pthat = *genEventScale;
-    
-
    //maps for matching
-	std::map<const Particle*, pxl::Particle*> genmap;
-	std::map<const Particle*, pxl::Particle*> genjetmap;
+   std::map<const Particle*, pxl::Particle*> genmap; 
+   std::map<const Particle*, pxl::Particle*> genjetmap;
 
    //set process name
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
    RecEvtView->setUserRecord<std::string>("Process", fProcess);
-   // store the ID in both event views? 
-   GenEvtView->setUserRecord<double>("pthat", pthat);
-   RecEvtView->setUserRecord<double>("pthat", pthat); 
-   
-   double weight = 1.;
-   //cout << "Weight = " << weight << endl;
-   //cout << "Process ID: " << processID << " and Event Scale (pthat): " << pthat << endl;
-   GenEvtView->setUserRecord<double>("Weight", weight);
-   RecEvtView->setUserRecord<double>("Weight", weight);
-   // store Process ID
-   GenEvtView->setUserRecord<double>("ProcID", processID);
-   RecEvtView->setUserRecord<double>("ProcID", processID);
+
    //create object for EcalClusterLazyTools
    EcalClusterLazyTools lazyTools( iEvent, iSetup, freducedBarrelRecHitCollection, freducedEndcapRecHitCollection);
    
    // Generator stuff
-   bool MC = event->findUserRecord<bool>("MC");
-   if (  MC == true) {
-   	analyzeGenInfo(iEvent, GenEvtView, genmap);
-   	analyzeGenJets(iEvent, GenEvtView, genjetmap);
-	analyzeGenMET(iEvent, GenEvtView);
+   if (IsMC) {
+      analyzeGenInfo(iEvent, GenEvtView, genmap);
+      analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
+      analyzeGenJets(iEvent, GenEvtView, genjetmap);
+      analyzeGenMET(iEvent, GenEvtView);
    }
    // store Rec Objects only if requested
    if (!fGenOnly) {
@@ -268,15 +241,18 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeTrigger(iEvent, RecEvtView);
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
-      analyzeRecMuons(iEvent, RecEvtView, MC, genmap);
-      analyzeRecElectrons(iEvent, RecEvtView, MC, lazyTools, genmap);
-      analyzeRecJets(iEvent, RecEvtView, MC, genjetmap);
+      analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
+      analyzeRecElectrons(iEvent, RecEvtView, IsMC, lazyTools, genmap);
+      analyzeRecJets(iEvent, RecEvtView, IsMC, genjetmap);
       analyzeRecMET(iEvent, RecEvtView);
-      analyzeRecGammas(iEvent, RecEvtView, MC, lazyTools, genmap);
+      analyzeRecGammas(iEvent, RecEvtView, IsMC, lazyTools, genmap);
    }
 
-   if(MC == true){
-	Matcher->matchObjects(GenEvtView, RecEvtView);
+   if (IsMC){
+      // FIXME: remove this hardcoded stuff
+      const string met_name = "MET";
+      const string jet_name = "ItCone5Jet";
+      Matcher->matchObjects(GenEvtView, RecEvtView, jet_name, met_name);
    }
 
    // set event class strings
@@ -298,21 +274,51 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            << setw(4) << RecEvtView->findUserRecord<int>("NumKtJet", 0) << "/"
            << RecEvtView->findUserRecord<int>("NumItCone5Jet", 0) 
            << setw(7) << RecEvtView->findUserRecord<int>("NumMET", 0) << endl;
-   }
-
-   if (fDebug > 0) { 
       cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
       cout << "Rec Event Type: " << RecEvtView->findUserRecord<string>("EventClass") << endl;
    }   
+
    fePaxFile.writeEvent(event, RecEvtView->findUserRecord<string>("EventClass"));
 }
 
+// ------------ reading Generator related Stuff ------------
 
-
+void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
+   // 
+   // this works at least for RECO. Need to check if this works on AOD or PAT-Ntuplee 
+  
+   // get and store EventScale aka pt_hat 
+   edm::Handle<double> genEventScale;
+   iEvent.getByLabel("genEventScale", genEventScale);
+   EvtView->setUserRecord<double>("pthat", *genEventScale);  // pt_hat
+  
+   // get and store EventWeigth
+   edm::Handle<double> genEventWeight;
+   iEvent.getByLabel("genEventWeight", genEventWeight);
+   EvtView->setUserRecord<double>("Weight", *genEventWeight);  
+  
+   // read and store PDF Info
+   edm::Handle<reco::PdfInfo> pdfstuff;
+   iEvent.getByLabel("genEventPdfInfo", pdfstuff);
+   EvtView->setUserRecord<float>("x1", pdfstuff->x1);
+   EvtView->setUserRecord<float>("x2", pdfstuff->x2);
+   EvtView->setUserRecord<float>("Q", pdfstuff->scalePDF);
+   EvtView->setUserRecord<int>("f1", pdfstuff->id1);
+   EvtView->setUserRecord<int>("f2", pdfstuff->id2);
+   
+   if (fDebug > 0) {
+      cout << "Event Scale (pthat): " << *genEventScale << ", EventWeight: " << *genEventWeight << endl;
+      cout << "PDFInfo: " << endl 
+           << "========" << endl;
+      cout << "Momentum of first incoming parton: (id/flavour = " << static_cast<int>(pdfstuff->id1) << ") " << pdfstuff->x1 << endl
+           << "Momentum of second incoming parton: (id/flavour = " << static_cast<int>(pdfstuff->id2) << ") " << pdfstuff->x2 << endl
+	   << "Scale = " << pdfstuff->scalePDF << endl;
+   }
+}
 
 // ------------ reading the Generator Stuff ------------
 
-void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Particle*, pxl::Particle*> & genmap ) {
+void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Particle*, pxl::Particle*>& genmap ) {
 
    //gen particles
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
@@ -366,7 +372,6 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    
    // loop over all particles
    for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++ pa ) {
-
       //cast iterator into GenParticleCandidate
       const GenParticle* p = (const GenParticle*) &(*pa);
       // fill Gen Muons passing some basic cuts
@@ -404,7 +409,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
          }
       }
 
- // fill Gen Electrons passing some basic cuts
+      // fill Gen Electrons passing some basic cuts
       if ( abs(p->pdgId()) == 11 && p->status() == 1) {
          if ( EleMC_cuts(p) ) { 
             pxl::Particle* part = EvtView->create<pxl::Particle>();
