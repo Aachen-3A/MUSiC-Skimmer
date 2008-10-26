@@ -633,7 +633,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    HLTVec.push_back("HLT_EM80");
    HLTVec.push_back("HLT_EM200");
    HLTVec.push_back("HLT_DoubleEle10_Z");
-   HLTVec.push_back("HLT_Mu15");
+   HLTVec.push_back("HLT_IsoMu15");
    HLTVec.push_back("HLT_IsoEle15_LW_L1I");
    HLTVec.push_back("HLT_DoubleIsoEle12_L1R");
    HLTVec.push_back("HLT_DoubleEle10_Z");
@@ -668,7 +668,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
 	
    		//save trigger path status
 		EvtView->setUserRecord<bool>(triggerName+"_wasrun",triggerResultsHandle_->wasrun(triggerIndex));
-		EvtView->setUserRecord<bool>(triggerName+"_accept",triggerResultsHandle_->accept(triggerIndex));
+		EvtView->setUserRecord<bool>(triggerName,triggerResultsHandle_->accept(triggerIndex));
 		EvtView->setUserRecord<bool>(triggerName+"_error",triggerResultsHandle_->error(triggerIndex));
    		/*//begin cout of saved information for debugging
    		cout << "triggerName: " << triggerName << "triggerIndex: " << triggerIndex << endl;
@@ -753,8 +753,8 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	    	//if (pxlgen->getSoftRelations().has(part)) {
 	   	//	cout << "Soft-Relation muon gen -> rec ok" << endl;
 	    	//}
-	    		cout << "pt of the matched rec-muon: " << part->getPt() << endl;
-	    		cout << "pt of the matched gen-muon: " << pxlgen->getPt() << endl;
+	    	//	cout << "pt of the matched rec-muon: " << part->getPt() << endl;
+	    	//	cout << "pt of the matched gen-muon: " << pxlgen->getPt() << endl;
 	    	//end check*/
 	 	}
 	 }
@@ -887,8 +887,8 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	   	//if (pxlgen->getSoftRelations().has(part)) {
 	  	//	cout << "Soft-Relation ele gen -> rec ok" << endl;
 	    	//}
-	   	cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	    	cout << "pt of the matched gen-electron: " << pxlgen->getPt() << endl;
+	   	//cout << "pt of the matched rec-electron: " << part->getPt() << endl;
+	    	//cout << "pt of the matched gen-electron: " << pxlgen->getPt() << endl;
 	    //end check*/
 	 	}
 	 }
@@ -924,11 +924,11 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 float IDfloat =  ele->leptonID("tight");
 	 bool IDbool = false ;
 	 if (IDfloat > 0.5) {IDbool = true;}
-	 part->setUserRecord<bool>("CutBasedIDTight", IDbool);
+	 part->setUserRecord<bool>("CutIDTight", IDbool);
 	 IDfloat = ele->leptonID("robust");
 	 IDbool = false;
 	 if (IDfloat > 0.5) {IDbool = true;}	
-	 part->setUserRecord<bool>("CutBasedIDRobust", IDbool);
+	 part->setUserRecord<bool>("CutIDRobust", IDbool);
 
 	 
          //save official isolation information
@@ -1025,8 +1025,8 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
 	    	//if (pxlgen->getSoftRelations().has(part)) {
 	  	//	cout << "Soft-Relation jet gen -> rec ok" << endl;
 	    	//}
-	    	cout << "pt of the matched rec-jet: " << part->getPt() << endl;
-	    	cout << "pt of the matched gen-jet: " << pxlgen->getPt() << endl; 
+	    	//cout << "pt of the matched rec-jet: " << part->getPt() << endl;
+	    	//cout << "pt of the matched gen-jet: " << pxlgen->getPt() << endl; 
 	    	//end check*/
 	 	}
 	 }
@@ -1147,8 +1147,8 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	  		//if (pxlgen->getSoftRelations().has(part)) {
 	  		//	cout << "Soft-Relation photon gen -> rec ok" << endl;
 	  		//}
-	  		cout << "pt of the matched rec-photon: " << part->getPt() << endl;
-	  		cout << "pt of the matched gen-photon: " << pxlgen->getPt() << endl;
+	  		//cout << "pt of the matched rec-photon: " << part->getPt() << endl;
+	  		//cout << "pt of the matched gen-photon: " << pxlgen->getPt() << endl;
 	  		//end check*/
 	  	}
 	  }
