@@ -2964,7 +2964,7 @@ public:
 	{
 		const pxl::Variant* value = findOrReturn(key);
 		if (!value)
-			throw std::runtime_error("pxl::UserRecord::find(...): key not found and no default item provided");
+			throw std::runtime_error("pxl::UserRecord::find(...): key " +key+ " not found and no default item provided");
 		return value->template get<datatype>();
 	}
 
