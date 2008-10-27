@@ -4,14 +4,10 @@ process = cms.Process("PAT")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-#process.MessageLogger.cerr.threshold = 'INFO'
-#process.MessageLogger.categories.append('PATLayer0Summary')
-#process.MessageLogger.cerr.INFO = cms.untracked.PSet(
-#    default          = cms.untracked.PSet( limit = cms.untracked.int32(0)  ),
-#    PATLayer0Summary = cms.untracked.PSet( limit = cms.untracked.int32(-1) )
-#)
 
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+#process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 
 # source
 process.source = cms.Source("PoolSource", 
@@ -44,16 +40,16 @@ process.source = cms.Source("PoolSource",
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/Z_ee_2_1_9_relval_6E6A6E2D-F485-DD11-B707-001617DBD472.root'
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/Z_mm_2_1_9_relval_0A249693-FC85-DD11-AE0A-000423D99896.root'
 #'/store/mc/Summer08/TauolaTTbar/GEN-SIM-RECO/IDEAL_V9_v1/0004/16AAC418-218A-DD11-AC33-001F2908F0E4.root'
+
 )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 process.load("Configuration.StandardSequences.Geometry_cff")
 
-#begin test for ClusterShape inspired by egamma hypernews
+# for ClusterShape inspired by egamma hypernews
 process.load("Geometry.CaloEventSetup.CaloGeometry_cfi")
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-#end test
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = cms.string('STARTUP_V4::All')
@@ -62,89 +58,71 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 # PAT Layer 0+1
 process.load("PhysicsTools.PatAlgos.patLayer0_cff")
 process.load("PhysicsTools.PatAlgos.patLayer1_cff")
-#process.content = cms.EDAnalyzer("EventContentAnalyzer")
-#process.p = cms.Path(
- #               process.patLayer0  
-                #+ process.content # uncomment to get a dump of the output after layer 0
-  #              + process.patLayer1  
-   #         )
+process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
-#process.p = cms.Path(
-#                process.patLayer0  
-                #+ process.content # uncomment to get a dump of the output after layer 0
-#                + process.patLayer1  
-#            )
+# Remove unneccessary stuff:
+process.patLayer1.remove(process.layer1Hemispheres)
 
 
+# this might be commented in in order to safe the edm root file containing the PAT Products
 # Output module configuration
 #process.out = cms.OutputModule("PoolOutputModule",
 #    fileName = cms.untracked.string('PATLayer1_Output.fromAOD_full.root'),
-    # save only events passing the full path
+#    # save only events passing the full path
 #    SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
 #    outputCommands = cms.untracked.vstring('drop *')
 #)
+#process.outpath = cms.EndPath(process.out)
+# save PAT Layer 1 output
+#process.load("PhysicsTools.PatAlgos.patLayer1_EventContent_cff")
+#process.out.outputCommands.extend(process.patLayer1EventContent.outputCommands)
+#process.out.outputCommands.extend(["keep *_selectedLayer1Jets*_*_*"])
 
 #insert following lines in order to get info about the HLT content (don't forget to include into path)
 #import HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi
 #process.hltAnalyzer = HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi.hltEventAnalyzerAOD.clone()
 
-
-
+# add some other jet Collection (default one is: itCone5)
+from PhysicsTools.PatAlgos.tools.jetTools import *
+# which cleaner to use?!?
+addJetCollection(process,'iterativeCone5CaloJets','IC5',
+                        runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='Icone5',doType1MET=True,doL1Counters=False)
+addJetCollection(process,'sisCone5CaloJets','SISC5',
+                        runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='Scone5',doType1MET=True,doL1Counters=False)
+addJetCollection(process,'sisCone7CaloJets','SISC7',
+                        runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='Scone7',doType1MET=True,doL1Counters=False)
+addJetCollection(process,'kt4CaloJets','KT4',
+                        runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='FKt4',doType1MET=True,doL1Counters=False)
+addJetCollection(process,'kt6CaloJets','KT6',
+                        runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='FKt6',doType1MET=True,doL1Counters=False)
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:
-         FileName =  cms.untracked.string("test_PAT_trig.pxlio"),
+         FileName =  cms.untracked.string("PAT_Zmumu.pxlio"),
          # Debugging: 0 = off, 1 = human readable, 2 = insane
          debug = cms.untracked.int32(0),
-         Process = cms.untracked.string("test_PAT_Zee"),
+         Process = cms.untracked.string("Zmumu"),
          # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
 	 GenOnly = cms.untracked.bool(False),
          #labels of source
-         #untracked string TruthVertexLabel = "trackingParticles"
          genParticleCandidatesLabel = cms.untracked.string("genParticles"),
-         #untracked string KtJetMCLabel = "fastjet6GenJetsNoNuBSM"
-         ItCone5JetMCLabel = cms.untracked.string("iterativeCone5GenJets"),
-         METMCLabel = cms.untracked.string("genMetNoNuBSM"),  #here muon included thus no muon-correction needed
-         #untracked string METMCLabel = "genMet"  
+         METMCLabel = cms.untracked.string("genMetNoNuBSM"),  # muon-correction needed?!??!
 	 #FIXME make sure that this is the correct Collection! (BS = with beam spot constraints?)
          VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
-         #untracked string SAMuonRecoLabel = "standAloneMuons"
-	 # name of MuonCollection has changed!
          MuonRecoLabel = cms.untracked.string("selectedLayer1Muons"),
          ElectronRecoLabel = cms.untracked.string("selectedLayer1Electrons"),
-         #untracked string PixelMatchElectronRecoLabel = "pixelMatchGsfElectrons"
-         #string ElectronIDAssocProducer = "electronId" #this one is TRACKED!
-         #string ElectronHcalIsolationProducer = "egammaTowerIsolation" #this one is TRACKED!
-         #string ElectronEcalIsolationProducer = "egammaEcalIsolation" #this one is TRACKED!
-         #string ElectronTrackIsolationProducer = "egammaElectronTkIsolation" #this one is TRACKED!
-         #string ElectronTrackNumProducer = "egammaElectronTkNumIsolation" #this one is TRACKED!
          GammaRecoLabel = cms.untracked.string("selectedLayer1Photons"),
-         #string GammaHcalIsolationProducer = "gammaTowerIsolation" #this one is TRACKED!
-         #string GammaEcalIsolationProducer = "gammaEcalIsolation" #this one is TRACKED!
-         #string GammaTrackIsolationProducer = "gammaPhotonTkIsolation" #this one is TRACKED!
-         #string GammaTrackNumProducer = "gammaPhotonTkNumIsolation" #this one is TRACKED!
-         #untracked string KtJetRecoLabel = "MCJetCorJetfastjet6"
-         ItCone5JetRecoLabel = cms.untracked.string("selectedLayer1Jets"),
-         #untracked string L2L3JESic5JetRecoLabel = "L3JetCorJetIcone5"
-	 #"allLayer1METs" are apparently not written to root file!
+         # Jet labels: used for Gen AND REC Jets
+	 JetMCLabels = cms.vstring("kt4GenJets","kt6GenJets","sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
+	 JetRecoLabels = cms.vstring("KT4", "KT6", "SISC5", "SISC7", "IC5"),
+         # MET
          METRecoLabel = cms.untracked.string("selectedLayer1METs"),
-         #untracked string METCorrRecoLabel = "corMetGlobalMuons" #save corrected MET as well
-         #InputTag barrelClusterShapeAssociation = hybridSuperClusters:hybridShapeAssoc
-         #InputTag endcapClusterShapeAssociation = islandBasicClusters:islandEndcapShapeAssoc
-	 #endcapClusterShapeAssociation = cms.InputTag("hybridSuperClusters:islandEndcapShapeAssoc"), 
-         #barrelClusterShapeAssociation = cms.InputTag("hybridSuperClusters:hybridShapeAssoc"),    
- 	 #endcapClusterShapeAssociation = cms.InputTag("hybridSuperClusters","islandEndcapShapeAssoc"), 
-         #barrelClusterShapeAssociation = cms.InputTag("hybridSuperClusters","hybridShapeAssoc")
 	 reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
     	 reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
      	 barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
     	 endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
-      	 #TriggerResults = cms.untracked.string("hltTriggerSummaryAOD")
-	 #untracked string fHBHELabel = "hbhereco"
-         #untracked string fHBHEInstanceName = ""
 	 triggerResults = cms.InputTag("TriggerResults","","HLT"),
          triggerEvent   = cms.InputTag("hltTriggerSummaryAOD","","HLT")
-
 
 )
 

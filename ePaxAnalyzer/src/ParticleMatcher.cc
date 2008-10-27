@@ -26,8 +26,6 @@ void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView, const
       RecView->getObjectsOfType<Particle, PtComparator>(rec_particles, crit);
       makeMatching(gen_particles, rec_particles, _METType);
    }   
-
-	cout << "NEW EVENT ----------------------------------" << endl; //temporary
 }
 
 // ------------ implementation of the matching Gen <--> Rec ------------

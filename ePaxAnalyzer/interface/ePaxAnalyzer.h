@@ -75,7 +75,6 @@ private:
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
    
    virtual void analyzeTrigger(const edm::Event&, pxl::EventView*); //not complete!
-   //virtual void saveHLTobjects(const edm::Event&, pxl::EventView*, string&);
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Particle*, pxl::Particle*>&);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Particle*, pxl::Particle*>&);
@@ -91,23 +90,12 @@ private:
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
    bool Muon_cuts(const pat::Muon& muon) const;
    bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
-   //bool Ele_cuts(SiStripElectronCollection::const_iterator ele) const;
-   //bool Ele_cuts(PixelMatchGsfElectronCollection::const_iterator ele) const;
    bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
    bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
    bool MET_cuts(const pxl::Particle* met) const;
    std::string getEventClass(pxl::EventView* EvtView);
-   // TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   //double IsoCalSum(const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed);
-   //double IsoTrkSum(const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed);
-   double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
 
-   //void catchParticlesWithStatus3Daughters(std::vector<const reco::Candidate*>& cand, const reco::Candidate* p);   
-   /*void matchObjects(pxl::EventView* GenView, pxl::EventView* RecView);
-   void makeMatching(pxl::ParticleFilter& GenFilter, pxl::ParticleFilter& RecFilter);
-   int SmallestColumnElement(TMatrixT<double>* matrix, int col);
-   int SmallestRowElement(TMatrixT<double>* matrix, int col);
-*/
+   double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
 
    // ----------member data ---------------------------
 
@@ -117,32 +105,22 @@ private:
    std::string fProcess;
    bool fGenOnly;
    // The labels used in cfg-file 
-   bool fIsCSASoup;
-   std::string fTruthVertexLabel;
+   // Generator 
    std::string fgenParticleCandidatesLabel;
-   std::string fKtJetMCLabel;
-   std::string fItCone5JetMCLabel; 
    std::string fMETMCLabel;
    std::string fVertexRecoLabel;
+   // Muon
    std::string fMuonRecoLabel;
-   std::string fSAMuonRecoLabel;
+   // Electron
    std::string fElectronRecoLabel;
-   std::string fPixelMatchElectronRecoLabel;
-   std::string fElectronIDAssocProducer;
-   std::string fElectronHcalIsolationProducer;
-   std::string fElectronEcalIsolationProducer;
-   std::string fElectronTrackIsolationProducer;
-   std::string fElectronTrackNumProducer;
+   // Photon
    std::string fGammaRecoLabel;
-   std::string fGammaHcalIsolationProducer;
-   std::string fGammaEcalIsolationProducer;
-   std::string fGammaTrackIsolationProducer;
-   std::string fGammaTrackNumProducer;
-   std::string fKtJetRecoLabel;
-   std::string fItCone5JetRecoLabel;
-   std::string fL2L3JESic5JetRecoLabel;
+   // Jets labels
+   std::vector<std::string> fJetRecoLabels;
+   std::vector<std::string> fJetMCLabels;
+   // MET labels
    std::string fMETRecoLabel;
-   std::string fMETCorrRecoLabel;
+   // Cluster
    edm::InputTag fBarrelClusterShapeAssocProducer;
    edm::InputTag fEndcapClusterShapeAssocProducer;
    std::string fHBHELabel;
@@ -151,15 +129,11 @@ private:
    edm::InputTag fendcapClusterCollection;
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;   
+   // Trigger
    edm::InputTag ftriggerResultsTag; 
    edm::InputTag ftriggerEventTag; 
 
-
-   //edm::ESHandle<CaloGeometry>  theCaloGeom;
-   
    ParticleMatcher* Matcher;
-
-  
    // to be used for ePax output 
    pxl::OutputFile fePaxFile;
 

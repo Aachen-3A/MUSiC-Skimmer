@@ -141,40 +141,23 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    // The labels used in cfg-file 
    //fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
-   //fKtJetMCLabel = iConfig.getUntrackedParameter<string>("KtJetMCLabel");
-   fItCone5JetMCLabel = iConfig.getUntrackedParameter<string>("ItCone5JetMCLabel");  
    fMETMCLabel = iConfig.getUntrackedParameter<string>("METMCLabel");
    fVertexRecoLabel = iConfig.getUntrackedParameter<string>("VertexRecoLabel");
-   //fSAMuonRecoLabel = iConfig.getUntrackedParameter<string>("SAMuonRecoLabel");
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
-   //fBarrelClusterShapeAssocProducer = iConfig.getParameter<edm::InputTag>("barrelClusterShapeAssociation");
-   //fEndcapClusterShapeAssocProducer = iConfig.getParameter<edm::InputTag>("endcapClusterShapeAssociation"); 
    fbarrelClusterCollection = iConfig.getParameter<edm::InputTag>("barrelClusterCollection");
    fendcapClusterCollection = iConfig.getParameter<edm::InputTag>("endcapClusterCollection");
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
    freducedEndcapRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedEndcapRecHitCollection");
-   //fPixelMatchElectronRecoLabel = iConfig.getUntrackedParameter<string>("PixelMatchElectronRecoLabel");
-   //fElectronIDAssocProducer = iConfig.getParameter<std::string>("ElectronIDAssocProducer");
-   //fElectronHcalIsolationProducer = iConfig.getParameter<std::string>("ElectronHcalIsolationProducer");
-   //fElectronEcalIsolationProducer = iConfig.getParameter<std::string>("ElectronEcalIsolationProducer");
-   //fElectronTrackIsolationProducer = iConfig.getParameter<std::string>("ElectronTrackIsolationProducer");
-   //fElectronTrackNumProducer = iConfig.getParameter<std::string>("ElectronTrackNumProducer");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
-   //fGammaHcalIsolationProducer = iConfig.getParameter<std::string>("GammaHcalIsolationProducer");
-   //fGammaEcalIsolationProducer = iConfig.getParameter<std::string>("GammaEcalIsolationProducer");
-   //fGammaTrackIsolationProducer = iConfig.getParameter<std::string>("GammaTrackIsolationProducer");
-   //fGammaTrackNumProducer = iConfig.getParameter<std::string>("GammaTrackNumProducer");
-   //fKtJetRecoLabel = iConfig.getUntrackedParameter<string>("KtJetRecoLabel");
-   fItCone5JetRecoLabel = iConfig.getUntrackedParameter<string>("ItCone5JetRecoLabel");
-   //fL2L3JESic5JetRecoLabel = iConfig.getUntrackedParameter<string>("L2L3JESic5JetRecoLabel");
+   // Jet labels - used for Gen and Rec
+   fJetMCLabels  = iConfig.getParameter<std::vector<std::string> >("JetMCLabels");
+   fJetRecoLabels = iConfig.getParameter<std::vector<std::string> >("JetRecoLabels");
+   // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
-   //fMETCorrRecoLabel = iConfig.getUntrackedParameter<string>("METCorrRecoLabel");
-   //fHBHELabel = iConfig.getUntrackedParameter<string>("fHBHELabel");
-   //fHBHEInstanceName = iConfig.getUntrackedParameter<string>("fHBHEInstanceName");
+
    ftriggerResultsTag =iConfig.getParameter<edm::InputTag>("triggerResults");
    ftriggerEventTag = iConfig.getParameter<edm::InputTag>("triggerEvent");
-
 
    
    Matcher = new ParticleMatcher();
@@ -260,20 +243,25 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    RecEvtView->setUserRecord<std::string>("EventClass", getEventClass(RecEvtView));
    
    if (fDebug > 0) {
-      cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma " << " KtJet " << "  MET  " << endl;
-      cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle", 0) 
-           << setw(7) << GenEvtView->findUserRecord<int>("NumMuon", 0)
-           << setw(7) << GenEvtView->findUserRecord<int>("NumGamma", 0) 
-           << setw(4) << GenEvtView->findUserRecord<int>("NumKtJet", 0) << "/" 
-           << GenEvtView->findUserRecord<int>("NumItCone5Jet", 0) << "/" 
-           << GenEvtView->findUserRecord<int>("NumMidCone5Jet", 0)
-           << setw(7) << GenEvtView->findUserRecord<int>("NumMET", 0) << endl;
-      cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle", 0)    
-           << setw(7) << RecEvtView->findUserRecord<int>("NumMuon", 0) 
-           << setw(7) << RecEvtView->findUserRecord<int>("NumGamma", 0)
-           << setw(4) << RecEvtView->findUserRecord<int>("NumKtJet", 0) << "/"
-           << RecEvtView->findUserRecord<int>("NumItCone5Jet", 0) 
-           << setw(7) << RecEvtView->findUserRecord<int>("NumMET", 0) << endl;
+      cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma " << " SISC5/SISC7/IC5/KT4/KT6 " << "  MET  " << endl;
+      cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
+           << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
+           << setw(7) << GenEvtView->findUserRecord<int>("NumGamma") 
+           << setw(4) << GenEvtView->findUserRecord<int>("NumSISC5Jet") << "/" 
+	   << GenEvtView->findUserRecord<int>("NumSISC7Jet") << "/" 
+           << GenEvtView->findUserRecord<int>("NumIC5Jet") << "/" 
+	   << GenEvtView->findUserRecord<int>("NumKT4Jet") << "/" 
+           << GenEvtView->findUserRecord<int>("NumKT6Jet")
+           << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
+      cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
+           << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
+           << setw(7) << RecEvtView->findUserRecord<int>("NumGamma")
+           << setw(4) << RecEvtView->findUserRecord<int>("NumSISC5Jet") << "/" 
+	   << RecEvtView->findUserRecord<int>("NumSISC7Jet") << "/" 
+           << RecEvtView->findUserRecord<int>("NumIC5Jet") << "/" 
+	   << RecEvtView->findUserRecord<int>("NumKT4Jet") << "/" 
+           << RecEvtView->findUserRecord<int>("NumKT6Jet")
+           << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
       cout << "Rec Event Type: " << RecEvtView->findUserRecord<string>("EventClass") << endl;
    }   
@@ -324,42 +312,32 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
    
-   //TrackingVertexCollection ONLY available in RECO, so need ugly catch workaround...
-/*
-   //try{
-     //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
-     edm::Handle<TrackingVertexCollection> TruthVertexContainer;
-     iEvent.getByLabel(fTruthVertexLabel, TruthVertexContainer);
+/*   //TrackingVertexCollection ONLY available in RECO - not even that ... in Tauola Sample not there
+   //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
+   edm::Handle<TrackingVertexCollection> TruthVertexContainer;
+   //iEvent.getByLabel("mergedtruth","MergedTrackTruth", TruthVertexContainer);
+   iEvent.getByType(TruthVertexContainer);
 
-     const TrackingVertexCollection* tVC = TruthVertexContainer.product();
+   // take only first vertex as this should correspond to generated primary vertex. Seems to be carbon-copy of HepMC-genVertex
+   // Question: What about pile-up/min-bias? Will there be additional primary vertices??? How do we find them (BX-id, event-id) and should we save them?
+   TrackingVertexCollection::const_iterator EventVertices = TruthVertexContainer->begin(); 
      
-     // take only first vertex as this should correspond to generated primary vertex. Seems to be carbon-copy of HepMC-genVertex
-     // Question: What about pile-up/min-bias? Will there be additional primary vertices??? How do we find them (BX-id, event-id) and should we save them?
-     TrackingVertexCollection::const_iterator EventVertices = tVC->begin(); 
-     
-     // Store primary Vertex:
-     pxl::VertexRef GenVtx = EvtView->create<pxl::Vertex>();
-     GenVtx.setName("PV");
-	
-     GenVtx.set().vector(pxl::set).setX(EventVertices->position().x());
-     GenVtx.set().vector(pxl::set).setY(EventVertices->position().y());
-     GenVtx.set().vector(pxl::set).setZ(EventVertices->position().z());
-     // we only have a single PV at Generator Level. Due to EventView Consistency .i.e. GenEvtView should look identical to RecEvtView
-     // this variable is explicetly set
-     EvtView->setUserRecord<int>("NumVertices", 1);               
-     // do we need this BX/event identification???
-     //GenVtx.setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
-     //GenVtx.setUserRecord<int>("Vtx_event", EventVertices->eventId().event());
-     
-   }catch(...){ //for AOD use daughter of first GenParticle, this should be equal to generated primary vertex...  
-	*/
-     const GenParticle* p = (const GenParticle*) &(*genParticleHandel->begin()); //this is the incoming proton
-     pxl::Vertex* GenVtx = EvtView->create<pxl::Vertex>();
-     GenVtx->setName("PV");
-     GenVtx->setXYZ(p->daughter(0)->vx(), p->daughter(0)->vy(), p->daughter(0)->vz()); //need daughter since first particle (proton) has position zero
-     EvtView->setUserRecord<int>("NumVertices", 1);  
-	     
-   //}
+   // Store primary Vertex:
+   pxl::Vertex* GenTrackingVtx = EvtView->create<pxl::Vertex>();
+   GenTrackingVtx->setName("PTV");
+   GenTrackingVtx->setXYZ(EventVertices->position().x(), EventVertices->position().y(), EventVertices->position().z());
+   // we only have a single PV at Generator Level. Due to EventView Consistency .i.e. GenEvtView should look identical to RecEvtView
+   // this variable is explicetly set
+   EvtView->setUserRecord<int>("NumPTVertices", 1);		
+   // do we need this BX/event identification???
+   //GenVtx.setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
+   //GenVtx.setUserRecord<int>("Vtx_event", EventVertices->eventId().event()); */
+   
+   const GenParticle* p = (const GenParticle*) &(*genParticleHandel->begin()); //this is the incoming proton
+   pxl::Vertex* GenVtx = EvtView->create<pxl::Vertex>();
+   GenVtx->setName("PV");
+   GenVtx->setXYZ(p->daughter(0)->vx(), p->daughter(0)->vy(), p->daughter(0)->vz()); //need daughter since first particle (proton) has position zero
+   EvtView->setUserRecord<int>("NumVertices", 1);  
   
    int numMuonMC = 0;
    int numEleMC = 0;
@@ -484,50 +462,49 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Particle*, pxl::Particle*> & genjetmap) {
 
-   //Get the GenJet collections
-   //edm::Handle<reco::GenJetCollection> Kt_GenJets;
-   edm::Handle<reco::GenJetCollection> ItCone5_GenJets;
-   //iEvent.getByLabel(fKtJetMCLabel, Kt_GenJets);
-   iEvent.getByLabel(fItCone5JetMCLabel, ItCone5_GenJets);
+   int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
+   // perform a loop over all desired jet collections:
+   for (std::vector<std::string>::const_iterator jet_label = fJetMCLabels.begin(); jet_label != fJetMCLabels.end(); ++jet_label) {
+      //Get the GenJet collections
+      edm::Handle<reco::GenJetCollection> GenJets;
+      iEvent.getByLabel(*jet_label, GenJets);
+      // counter 
+      int numJetMC = 0;
+      vector <const GenParticle*> genJetConstit; //genJet-constituents
+      int numGenJetConstit_withcuts = 0;
+      double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
    
-   //int numKtJetMC = 0;
-   int numItCone5JetMC = 0;
- 
-   vector <const GenParticle*> genJetConstit; //genJet-constituents
-   int numGenJetConstit_withcuts = 0;
-   double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
-   
-   
+      //Loop over GenJets
+      for (reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet) {
+         if (JetMC_cuts(genJet)) {
+            pxl::Particle* part = EvtView->create<pxl::Particle>();
 
-   //Loop over ItCone5GenJets
-   for (reco::GenJetCollection::const_iterator genJet = ItCone5_GenJets->begin(); genJet != ItCone5_GenJets->end(); ++genJet) {
-      if (JetMC_cuts(genJet)) {
-         pxl::Particle* part = EvtView->create<pxl::Particle>();
+	    //cast iterator into GenParticleCandidate
+            const GenParticle* p = (const GenParticle*) &(*genJet);
+	    genjetmap[p] = part;
+            part->setName(fJetRecoLabels[jetcoll_i]+"Jet");
+            part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
+	    //fill additional jet-related infos
+	    part->setUserRecord<double>("EmE", genJet->emEnergy());
+	    part->setUserRecord<double>("HadE", genJet->hadEnergy());
+	    part->setUserRecord<double>("InvE", genJet->invisibleEnergy());
+	    part->setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
+            numJetMC++;
 
-	 //cast iterator into GenParticleCandidate
-         const GenParticle* p = (const GenParticle*) &(*genJet);
-	 genjetmap[p] = part;
-         part->setName("ItCone5Jet");
-         part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
-	 //fill additional jet-related infos
-	 part->setUserRecord<double>("EmE", genJet->emEnergy());
-	 part->setUserRecord<double>("HadE", genJet->hadEnergy());
-	 part->setUserRecord<double>("InvE", genJet->invisibleEnergy());
-	 part->setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
-         numItCone5JetMC++;
-
-	 //save number of GenJet-constituents fulfilling some cuts
-	 numGenJetConstit_withcuts = 0; //reset variable
-	 genJetConstit = genJet->getGenConstituents();
-	 for (std::vector<const GenParticle*>::iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
-	    //raise counter if cut passed
-	    if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
-	 }
-	 part->setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
+	    //save number of GenJet-constituents fulfilling some cuts
+	    numGenJetConstit_withcuts = 0; //reset variable
+	    genJetConstit = genJet->getGenConstituents();
+	    for (std::vector<const GenParticle*>::iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
+	       //raise counter if cut passed
+	       if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
+	    }
+	    part->setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
+         }
       }
+      EvtView->setUserRecord<int>("Num"+fJetRecoLabels[jetcoll_i]+"Jet", numJetMC);
+      if (fDebug > 1) cout << "Found MC Jets:  "  << numJetMC << " of Type " << fJetRecoLabels[jetcoll_i] << endl;
+      ++jetcoll_i;
    }
-   EvtView->setUserRecord<int>("NumItCone5Jet", numItCone5JetMC);
-   if (fDebug > 1) cout << "Found MC Jets:  "  << numItCone5JetMC << " It5  " << endl;
 }
 
 // ------------ reading the Generator MET ------------
@@ -722,10 +699,6 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
    std::vector<pat::Muon> muons = *muonHandle;
 
-   //gen particles for PAT-matching
-   //edm::Handle<reco::GenParticleCollection> genParticleHandel;
-   //iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
-
    // count muons   
    int numMuonRec = 0;
    // loop over all pat::Muon's but only store GLOBAL MUONs
@@ -766,9 +739,14 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	 
 	 //save info about quality of track-fit for combined muon (muon system + tracker)
 	 reco::TrackRef muontrack = muon->globalTrack();
+	 reco::TrackRef trackerTrack = muon->innerTrack();
          part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2());
-         part->setUserRecord<int>("ValidHits", muontrack->numberOfValidHits());
-         part->setUserRecord<int>("LostHits", muontrack->numberOfLostHits());
+         part->setUserRecord<int>("VHits", muontrack->numberOfValidHits());
+         part->setUserRecord<int>("LHits", muontrack->numberOfLostHits());
+	 // Tracker Only
+	 part->setUserRecord<double>("NormChi2_TM", trackerTrack->normalizedChi2());
+         part->setUserRecord<int>("VHits_TM", trackerTrack->numberOfValidHits());
+         part->setUserRecord<int>("LHits_TM", trackerTrack->numberOfLostHits());	
 	 //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
 	 part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
 	 part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
@@ -823,7 +801,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
    edm::Handle<std::vector<pat::Electron> > electronHandle;
    iEvent.getByLabel(fElectronRecoLabel, electronHandle);
    const std::vector<pat::Electron> &electrons = *electronHandle;
-
 
    // Get association maps linking BasicClusters to ClusterShape FIXME make this work in 2_1_0
    edm::Handle<reco::BasicClusterShapeAssociationCollection> barrelClShpHandle;
@@ -935,7 +912,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 double CaloIso = ele->caloIso();
 	 double TrkIso = ele->trackIso();
 	 part->setUserRecord<double>("CaloIso", CaloIso);
-	 part->setUserRecord<double>("TrackIso", TrkIso);
+	 part->setUserRecord<double>("TrkIso", TrkIso);
 	 part->setUserRecord<double>("ECALIso", ele->ecalIso());
 	 part->setUserRecord<double>("HCALIso", ele->hcalIso());
  
@@ -956,89 +933,69 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 }
 
 // ------------ reading Reconstructed Jets ------------
-// by default for creating the allLayer0Jets the iterativeCone5CaloJets are used
-// discuss if we also need informations from other Jet-Collections
 
 void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, std::map<const Particle*, pxl::Particle*>& genjetmap) {
 
-   int numItCone5JetRec = 0;
+   int numJetRec = 0;
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
    if (RecView->findUserRecord<int>("NumVertices") > 0) {
       pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
       VertexZ = (*vtx_iter)->getZ();
    } 
+
+   int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
    
-   edm::Handle<std::vector<pat::Jet> > jetHandle;
-   iEvent.getByLabel(fItCone5JetRecoLabel, jetHandle);
-   std::vector<pat::Jet> jets = *jetHandle;
-   
-   //Get the GenJet collections for PAT matching
-   //edm::Handle<reco::GenJetCollection> Kt_GenJets;
-   //edm::Handle<reco::GenJetCollection> ItCone5_GenJets;
-   //iEvent.getByLabel(fKtJetMCLabel, Kt_GenJets);
-   //iEvent.getByLabel(fItCone5JetMCLabel, ItCone5_GenJets);
+   // perform a loop over all desired jet collections:
+   for (std::vector<std::string>::const_iterator jet_label = fJetRecoLabels.begin(); jet_label != fJetRecoLabels.end(); ++jet_label) {
+      // reset counter 
+      numJetRec = 0;
+      // get RecoJets
+      edm::Handle<std::vector<pat::Jet> > jetHandle;
+      iEvent.getByLabel("selectedLayer1Jets"+(*jet_label), jetHandle);
+      std::vector<pat::Jet> RecJets = *jetHandle;
+      //Get the GenJet collections for PAT matching
+      edm::Handle<reco::GenJetCollection> GenJets;
+      // FIXME: get generic matching Gen Collection!
+      iEvent.getByLabel(fJetMCLabels[jetcoll_i], GenJets);    
+      // loop over the jets
+      for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
+         if (Jet_cuts(jet)) {
+            pxl::Particle* part = RecView->create<pxl::Particle>();
+            part->setName((*jet_label)+"Jet"); 
+            part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
+	    part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+	    part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
+	    part->setUserRecord<int>("N90", jet->n90());
+	    part->setUserRecord<int>("N60", jet->n60());
+	    std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
+	    part->setUserRecord<int>("NCaloRefs", caloRefs.size());
+	    part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
+	    part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+ 	    part->setUserRecord<double>("TowersArea", jet->towersArea());
+	    part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
 
-   for (std::vector<pat::Jet>::const_iterator jet = jets.begin(); jet != jets.end(); ++jet) {
-      if (Jet_cuts(jet)) {
-         pxl::Particle* part = RecView->create<pxl::Particle>();
-         part->setName("ItCone5Jet"); 
-         part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
-	 part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
-	 part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-	 part->setUserRecord<int>("N90", jet->n90());
-	 part->setUserRecord<int>("N60", jet->n60());
-	 std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
-	 part->setUserRecord<int>("NCaloRefs", caloRefs.size());
-	 part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
-	 part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
- 	 part->setUserRecord<double>("TowersArea", jet->towersArea());
-	 part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
-
-	 
-         //store PAT matching info if MC
-	 if(MC){
-	 	const reco::Particle* recogen = jet->genJet();
-
-	//begin ugly workaround in order to deal with the genJet copies returned by genJet()
-	//Get the GenJet collections
-   	edm::Handle<reco::GenJetCollection> ItCone5_GenJets;
-   	iEvent.getByLabel(fItCone5JetMCLabel, ItCone5_GenJets);
-
-	for (reco::GenJetCollection::const_iterator genJetit = ItCone5_GenJets->begin(); genJetit != ItCone5_GenJets->end(); ++genJetit) {
-		if ( recogen != NULL && genJetit->pt() == recogen->pt()){
-	 		 recogen = (const GenParticle*) &(*genJetit);
-	 	break;
-		}
-	}
-	//end ugly workaround*/
-
-		//if (recogen != NULL) cout << "genJet returned a pointer: " << recogen << " with pt(): " << recogen->pt() << endl; //temporary
-
-	 	pxl::Particle* pxlgen = genjetmap[recogen];
-	 	if (pxlgen != NULL) {
-	    		part->linkSoft(pxlgen, "pat-match");
-	 	//check stored matching info
-	    	//if (part->getSoftRelations().has(pxlgen)) {
-	  	//	cout << "Soft-Relation jet rec -> gen ok" << endl;
-	    	//}
-	    	//if (pxlgen->getSoftRelations().has(part)) {
-	  	//	cout << "Soft-Relation jet gen -> rec ok" << endl;
-	    	//}
-	    	//cout << "pt of the matched rec-jet: " << part->getPt() << endl;
-	    	//cout << "pt of the matched gen-jet: " << pxlgen->getPt() << endl; 
-	    	//end check*/
-	 	}
-	 }
-
-
-
-         
-         numItCone5JetRec++;
+            //store PAT matching info if MC
+	    if (MC) {
+	       const reco::Particle* recogen = jet->genJet();
+               //begin ugly workaround in order to deal with the genJet copies returned by genJet()
+   	       for (reco::GenJetCollection::const_iterator genJetit = GenJets->begin(); genJetit != GenJets->end(); ++genJetit) {
+                  if (recogen != NULL && genJetit->pt() == recogen->pt()){
+	             recogen = (const GenParticle*) &(*genJetit);
+                     break;
+	          }
+	       }
+	       //end ugly workaround
+               pxl::Particle* pxlgen = genjetmap[recogen];
+               if (pxlgen != NULL) part->linkSoft(pxlgen, "pat-match");
+	    }
+            numJetRec++;
+         }
       }
+      RecView->setUserRecord<int>("Num"+(*jet_label)+"Jet", numJetRec);
+      if (fDebug > 1) cout << "Found Rec Jets:  " << numJetRec << " of Type " << *jet_label << endl;
+      jetcoll_i++;
    }
-   RecView->setUserRecord<int>("NumItCone5Jet", numItCone5JetRec);
-   if (fDebug > 1) cout << "Found Rec Jets:  " << numItCone5JetRec << " It5  " << endl;
 }
 
 // ------------ reading Reconstructed Gammas ------------
@@ -1098,8 +1055,8 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
  	 //save official isolation information
 	 part->setUserRecord<double>("HCALIso", photon->hcalIso());
 	 part->setUserRecord<double>("ECALIso", photon->ecalIso());
-	 part->setUserRecord<double>("TrackIso", photon->trackIso());
-	 part->setUserRecord<double>("CALIso", photon->caloIso());
+	 part->setUserRecord<double>("TrkIso", photon->trackIso());
+	 part->setUserRecord<double>("CaloIso", photon->caloIso());
 
 	 //FIXME This part does not work. Should this not be possible in an easy way with PAT?
 	 //edm::Ref<reco::PhotonCollection> gammaIsoRef(photons, numGammaAll);
@@ -1168,11 +1125,11 @@ std::string ePaxAnalyzer::getEventClass(pxl::EventView* EvtView) {
 
    ostringstream EventType;
    //set default values to 0 for Gen-only mode
-   EventType << EvtView->findUserRecord<int>("NumEle", 0) <<  "e"
-             << EvtView->findUserRecord<int>("NumMuon", 0) << "mu"
-             << EvtView->findUserRecord<int>("NumGamma", 0) << "gam"
-             << EvtView->findUserRecord<int>("NumKtJet", 0) << "kt"
-             << EvtView->findUserRecord<int>("NumMET", 0) << "met";
+   EventType << EvtView->findUserRecord<int>("NumEle") <<  "e"
+             << EvtView->findUserRecord<int>("NumMuon") << "mu"
+             << EvtView->findUserRecord<int>("NumGamma") << "gam"
+             << EvtView->findUserRecord<int>("NumSISC5Jet") << "jet"
+             << EvtView->findUserRecord<int>("NumMET") << "met";
    EventType.flush();
    return EventType.str();
 }
