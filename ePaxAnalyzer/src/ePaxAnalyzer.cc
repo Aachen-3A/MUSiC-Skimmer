@@ -232,17 +232,15 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
 
    if (IsMC){
-      // FIXME: remove this hardcoded stuff
       const string met_name = "MET";
-      const string jet_name = "ItCone5Jet";
-      Matcher->matchObjects(GenEvtView, RecEvtView, jet_name, met_name);
+      Matcher->matchObjects(GenEvtView, RecEvtView, fJetRecoLabels, met_name);
    }
 
    // set event class strings
    GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
    RecEvtView->setUserRecord<std::string>("EventClass", getEventClass(RecEvtView));
    
-   if (fDebug > 0) {
+  /* if (fDebug > 0) {  //FIXME make this generic for used JetCollections
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma " << " SISC5/SISC7/IC5/KT4/KT6 " << "  MET  " << endl;
       cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
            << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
@@ -264,7 +262,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
            << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
       cout << "Rec Event Type: " << RecEvtView->findUserRecord<string>("EventClass") << endl;
-   }   
+   }   */
 
    fePaxFile.writeEvent(event, RecEvtView->findUserRecord<string>("EventClass"));
 }
@@ -482,7 +480,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
 	    //cast iterator into GenParticleCandidate
             const GenParticle* p = (const GenParticle*) &(*genJet);
 	    genjetmap[p] = part;
-            part->setName(fJetRecoLabels[jetcoll_i]+"Jet");
+            part->setName(fJetRecoLabels[jetcoll_i]);
             part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
 	    //fill additional jet-related infos
 	    part->setUserRecord<double>("EmE", genJet->emEnergy());
@@ -501,7 +499,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
 	    part->setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
          }
       }
-      EvtView->setUserRecord<int>("Num"+fJetRecoLabels[jetcoll_i]+"Jet", numJetMC);
+      EvtView->setUserRecord<int>("Num"+fJetRecoLabels[jetcoll_i], numJetMC);
       if (fDebug > 1) cout << "Found MC Jets:  "  << numJetMC << " of Type " << fJetRecoLabels[jetcoll_i] << endl;
       ++jetcoll_i;
    }
@@ -962,7 +960,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
       for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
          if (Jet_cuts(jet)) {
             pxl::Particle* part = RecView->create<pxl::Particle>();
-            part->setName((*jet_label)+"Jet"); 
+            part->setName((*jet_label)); 
             part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
 	    part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
 	    part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
@@ -992,7 +990,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
             numJetRec++;
          }
       }
-      RecView->setUserRecord<int>("Num"+(*jet_label)+"Jet", numJetRec);
+      RecView->setUserRecord<int>("Num"+(*jet_label), numJetRec);
       if (fDebug > 1) cout << "Found Rec Jets:  " << numJetRec << " of Type " << *jet_label << endl;
       jetcoll_i++;
    }
@@ -1128,7 +1126,7 @@ std::string ePaxAnalyzer::getEventClass(pxl::EventView* EvtView) {
    EventType << EvtView->findUserRecord<int>("NumEle") <<  "e"
              << EvtView->findUserRecord<int>("NumMuon") << "mu"
              << EvtView->findUserRecord<int>("NumGamma") << "gam"
-             << EvtView->findUserRecord<int>("NumSISC5Jet") << "jet"
+             << EvtView->findUserRecord<int>("Num"+fJetRecoLabels[0]) << "jet"
              << EvtView->findUserRecord<int>("NumMET") << "met";
    EventType.flush();
    return EventType.str();

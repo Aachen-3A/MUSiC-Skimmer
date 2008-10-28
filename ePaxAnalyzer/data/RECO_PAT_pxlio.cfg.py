@@ -98,10 +98,10 @@ addJetCollection(process,'kt6CaloJets','KT6',
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:
-         FileName =  cms.untracked.string("PAT_Zmumu.pxlio"),
+         FileName =  cms.untracked.string("PAT_Zee.pxlio"),
          # Debugging: 0 = off, 1 = human readable, 2 = insane
          debug = cms.untracked.int32(0),
-         Process = cms.untracked.string("Zmumu"),
+         Process = cms.untracked.string("Zee"),
          # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
 	 GenOnly = cms.untracked.bool(False),
          #labels of source
@@ -112,9 +112,9 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          MuonRecoLabel = cms.untracked.string("selectedLayer1Muons"),
          ElectronRecoLabel = cms.untracked.string("selectedLayer1Electrons"),
          GammaRecoLabel = cms.untracked.string("selectedLayer1Photons"),
-         # Jet labels: used for Gen AND REC Jets
-	 JetMCLabels = cms.vstring("kt4GenJets","kt6GenJets","sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
-	 JetRecoLabels = cms.vstring("KT4", "KT6", "SISC5", "SISC7", "IC5"),
+         # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
+	 JetMCLabels = cms.vstring("sisCone5GenJets", "kt4GenJets","kt6GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
+	 JetRecoLabels = cms.vstring( "SISC5" ,"KT4", "KT6", "SISC7", "IC5"),
          # MET
          METRecoLabel = cms.untracked.string("selectedLayer1METs"),
 	 reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),

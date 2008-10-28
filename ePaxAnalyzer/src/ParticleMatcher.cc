@@ -5,14 +5,18 @@ using namespace pxl;
 
 // ------------ matching Method ------------
 
-void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView, const std::string& _JetAlgo, const std::string& _METType) {
+void ParticleMatcher::matchObjects(EventView* GenView, EventView* RecView, const std::vector<std::string>& _JetAlgos, const std::string& _METType) {
    // FIXME: Make code more generic! Generate a list of all Particle types
    std::vector<std::string> typeList;
    typeList.push_back("Muon"); 
    typeList.push_back("Ele"); 
    typeList.push_back("Gamma"); 
-   typeList.push_back(_JetAlgo); 
    typeList.push_back(_METType);
+   int count_label = 0;
+   for (std::vector<std::string>::const_iterator jet_label = _JetAlgos.begin(); jet_label != _JetAlgos.end(); ++jet_label) {
+      typeList.push_back(_JetAlgos[count_label]);
+      count_label++;
+   }
 
    // containers to keep the filtered gen/rec particles
    vector<Particle*> gen_particles;

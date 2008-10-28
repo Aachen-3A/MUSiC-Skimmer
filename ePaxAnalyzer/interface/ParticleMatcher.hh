@@ -12,6 +12,7 @@ declared to has no match. For unmatched particles Match UserRecord is set to -1.
 #include "ePaxPxl/ePax/interface/ePax.h"
 #include <iostream> 
 #include "TMatrixT.h"
+#include <vector>
 
 class ParticleMatcher {
 
@@ -22,7 +23,7 @@ class ParticleMatcher {
       // Destruktor
       ~ParticleMatcher() {;};
       // Match method
-      void matchObjects(pxl::EventView* GenView, pxl::EventView* RecView, const std::string& _JetAlgo, const std::string& _METType); 
+      void matchObjects(pxl::EventView* GenView, pxl::EventView* RecView, const std::vector<std::string>& _JetAlgos, const std::string& _METType); 
       void makeMatching(std::vector<pxl::Particle*>& gen_particles, std::vector<pxl::Particle*>& rec_particles, const std::string& _METType);
       
    private:
