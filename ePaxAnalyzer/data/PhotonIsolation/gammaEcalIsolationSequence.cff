@@ -1,6 +1,0 @@
-
-include "ePaxDemo/ePaxAnalyzer/data/PhotonIsolation/gammaSuperClusterMerger.cfi"
-include "ePaxDemo/ePaxAnalyzer/data/PhotonIsolation/gammaBasicClusterMerger.cfi"
-include "ePaxDemo/ePaxAnalyzer/data/PhotonIsolation/gammaEcalIsolation.cfi"
-
-sequence gammaEcalIsolationSequence = {gammaSuperClusterMerger , gammaBasicClusterMerger , gammaEcalIsolation }

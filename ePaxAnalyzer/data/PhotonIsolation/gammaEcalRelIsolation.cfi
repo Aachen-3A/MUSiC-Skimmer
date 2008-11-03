@@ -1,8 +1,0 @@
-module gammaEcalRelIsolation = EgammaEcalIsolationProducer {
-    InputTag emObjectProducer = correctedPhotons
-    InputTag superClusterProducer = gammaSuperClusterMerger
-    InputTag basicClusterProducer = gammaBasicClusterMerger
-    double etMin = 1.5
-    double extRadius = 0.3
-    bool absolut = false
-}

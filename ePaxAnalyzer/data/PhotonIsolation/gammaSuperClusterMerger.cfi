@@ -1,3 +1,0 @@
-module gammaSuperClusterMerger = SuperClusterMerger {
-VInputTag src = { islandSuperClusters:islandBarrelSuperClusters,correctedEndcapSuperClustersWithPreshower }	
-}

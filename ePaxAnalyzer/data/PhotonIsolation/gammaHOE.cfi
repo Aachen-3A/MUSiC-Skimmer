@@ -1,8 +1,0 @@
-module gammaHOE = EgammaHcalIsolationProducer {
-    InputTag emObjectProducer =  correctedPhotons
-    InputTag hcalRecHitProducer = hbhereco
-    double etMin = 1.5
-    double intRadius = 0.
-    double extRadius = 0.3
-    bool absolut = false
-}
