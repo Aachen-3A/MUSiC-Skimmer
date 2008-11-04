@@ -7,12 +7,13 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 #process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 # source
 process.source = cms.Source("PoolSource", 
+     skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'/store/relval/CMSSW_2_1_9/RelValZEE/GEN-SIM-DIGI-RAW-HLTDEBUG-RECO/STARTUP_V7_v2/0000/04419036-F385-DD11-B3A7-001617C3B6E8.root'
+#'/store/relval/CMSSW_2_1_9/RelValZEE/GEN-SIM-DIGI-RAW-HLTDEBUG-RECO/STARTUP_V7_v2/0000/04419036-F385-DD11-B3A7-001617C3B6E8.root'
 #'/store/relval/CMSSW_2_1_9/RelValZEE/GEN-SIM-DIGI-RAW-HLTDEBUG-RECO/STARTUP_V7_v2/0000/0A28F869-F285-DD11-AF3C-001617DBD5B2.root',
 #'/store/relval/CMSSW_2_1_9/RelValZEE/GEN-SIM-DIGI-RAW-HLTDEBUG-RECO/STARTUP_V7_v2/0000/162C4B5E-F585-DD11-872A-001617C3B64C.root',
 #'/store/relval/CMSSW_2_1_9/RelValZEE/GEN-SIM-DIGI-RAW-HLTDEBUG-RECO/STARTUP_V7_v2/0000/205E6CE3-F485-DD11-9D53-001617C3B76A.root',
@@ -40,20 +41,36 @@ process.source = cms.Source("PoolSource",
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/Z_ee_2_1_9_relval_6E6A6E2D-F485-DD11-B707-001617DBD472.root'
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/Z_mm_2_1_9_relval_0A249693-FC85-DD11-AE0A-000423D99896.root'
 #'/store/mc/Summer08/TauolaTTbar/GEN-SIM-RECO/IDEAL_V9_v1/0004/16AAC418-218A-DD11-AC33-001F2908F0E4.root'
-
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/006B0CC6-6488-DD11-98F7-001F290860A6.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/0203DFC1-6088-DD11-9EEB-001CC445D6D2.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/023AA0B4-3E88-DD11-ABE1-001F29078D4C.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/02892DA7-5188-DD11-AFE3-001CC4A60D5E.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/02A91ACA-3F88-DD11-BF5E-001CC4BD552A.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/02AFE43E-8C88-DD11-91FA-001F29078D4C.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/04098371-4188-DD11-A26B-001E0B470AC2.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/0418B0E6-4988-DD11-9CC9-001F29089F68.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/041D2A0D-4088-DD11-95EF-001F2908AECC.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/04342738-8D88-DD11-A5D5-001F290860A6.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/047CA129-3E88-DD11-AB0E-001F29078D4C.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/06BEAC49-5B88-DD11-B592-001F29082E76.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/082AF789-3F88-DD11-9872-001CC443F864.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/084ABAE3-3E88-DD11-87C8-001F2908AF72.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/0C20EB66-5688-DD11-ACC5-001CC4A63C82.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/0C229DBB-3E88-DD11-8F78-001E0B46C9A0.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/1049DC86-5988-DD11-BC32-001F29082E76.root',
+        '/store/mc/Summer08/Wmunu/GEN-SIM-RECO/IDEAL_V9_v1/0002/106D54D0-4B88-DD11-B9C9-001F29087EE8.root'
+	)
 )
-)
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
-process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
 # for ClusterShape inspired by egamma hypernews
 process.load("Geometry.CaloEventSetup.CaloGeometry_cfi")
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = cms.string('STARTUP_V4::All')
-process.load("Configuration.StandardSequences.MagneticField_cff")
+process.GlobalTag.globaltag = cms.string('IDEAL_V9::All')
+process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
 # PAT Layer 0+1
 process.load("PhysicsTools.PatAlgos.patLayer0_cff")
@@ -115,6 +132,8 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
 	 JetMCLabels = cms.vstring("sisCone5GenJets", "kt4GenJets","kt6GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
 	 JetRecoLabels = cms.vstring( "SISC5" ,"KT4", "KT6", "SISC7", "IC5"),
+	 L1GlobalTriggerReadoutRecord = cms.InputTag("hltGtDigis"),
+	 L1TriggerObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
          # MET
          METRecoLabel = cms.untracked.string("selectedLayer1METs"),
 	 reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
