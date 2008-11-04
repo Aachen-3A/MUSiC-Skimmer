@@ -34,25 +34,20 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h" 
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-//ok
 
 // necessary objects:
 #include "FWCore/Framework/interface/ESHandle.h"
-//ok
 
 // for electron shapes:
 #include "DataFormats/EgammaReco/interface/BasicClusterShapeAssociation.h"
 #include "DataFormats/EgammaReco/interface/BasicCluster.h"
-//ok
 
 // for ECAL enumerator
 #include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
-//ok
 
 // for HCAL navigation used in HadOverEm calculation
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "RecoCaloTools/Selectors/interface/CaloConeSelector.h"
-//ok
 
 //for GenParticles
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -74,14 +69,8 @@
 //Photon pi0 rejection
 #include "DataFormats/EgammaCandidates/interface/PhotonPi0DiscriminatorAssociation.h"
 
-//no longer available in CMSSW 2.0.7
-//#include "DataFormats/EgammaCandidates/interface/ConvertedPhoton.h"
-
 //for electron-isolation
 #include "DataFormats/Candidate/src/classes.h"
-//no longer there in CMSSW 2.0.7
-//#include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoNumCollection.h"
-//#include "DataFormats/EgammaCandidates/interface/PMGsfElectronIsoCollection.h"
 
 //for Trigger Bits
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -93,12 +82,8 @@
 //For L1 and Hlt objects
 #include "DataFormats/Common/interface/RefToBase.h"
 
-//no longer there in CMSSW 2.0.7
-//#include "DataFormats/HLTReco/interface/HLTFilterObject.h"
-
 #include "DataFormats/Candidate/interface/CandMatchMap.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
-//ok
 
 //math stuff from Physics tools
 #include "DataFormats/Math/interface/deltaR.h"
@@ -115,15 +100,15 @@
 
 //test for 2_1_0
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
-//#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
  
 //includes for trigger info in 2_1_9
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
-
-
+// L1 Trigger stuff
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
 
 using namespace std;
 
@@ -156,9 +141,51 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
 
+   fL1GlobalTriggerTag =  iConfig.getParameter<edm::InputTag>("L1GlobalTriggerReadoutRecord");
+   fL1TriggerObjectMapTag = iConfig.getParameter<edm::InputTag>("L1TriggerObjectMapTag");
    ftriggerResultsTag =iConfig.getParameter<edm::InputTag>("triggerResults");
    ftriggerEventTag = iConfig.getParameter<edm::InputTag>("triggerEvent");
+   
+   HLTConfigProvider hltConfig_;
+   hltConfig_.init("HLT");
 
+   // Electrons
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle15_L1I")] = "HLT_IsoEle15_L1I";
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle18_L1R")] = "HLT_IsoEle18_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle15_LW_L1I")] = "HLT_IsoEle15_LW_L1I";
+   fHLTMap[hltConfig_.triggerIndex("HLT_Ele15_SW_L1R")] = "HLT_Ele15_SW_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_Ele15_LW_L1R")] = "HLT_Ele15_LW_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_EM80")] = "HLT_EM80";
+   fHLTMap[hltConfig_.triggerIndex("HLT_EM200")] = "HLT_EM200";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoEle10_L1I")] = "HLT_DoubleIsoEle10_L1I";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoEle12_L1R")] = "HLT_DoubleIsoEle12_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoEle10_LW_L1I")] = "HLT_DoubleIsoEle10_LW_L1I";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoEle12_LW_L1R")] = "HLT_DoubleIsoEle12_LW_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleEle5_SW_L1R")] = "HLT_DoubleEle5_SW_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleEle10_LW_OnlyPixelM_L1R")] = "HLT_DoubleEle10_LW_OnlyPixelM_L1R";
+   // Photons
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoPhoton15_L1R")] = "HLT_IsoPhoton15_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_Photon15_L1R")] = "HLT_Photon15_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoPhoton20_L1R")] = "HLT_DoubleIsoPhoton20_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoPhoton20_L1I")] = "HLT_DoubleIsoPhoton20_L1I";      
+   // Muons
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoMu15")] = "HLT_IsoMu15";
+   fHLTMap[hltConfig_.triggerIndex("HLT_Mu15")] = "HLT_Mu15";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoMu3")] = "HLT_DoubleIsoMu3";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleMu3")] = "HLT_DoubleMu3";
+   // X-Triggers
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle8_IsoMu7")] = "HLT_IsoEle8_IsoMu7";
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle5_TripleJet30")] = "HLT_IsoEle5_TripleJet30";
+   fHLTMap[hltConfig_.triggerIndex("HLT_Mu5_TripleJet30")] = "HLT_Mu5_TripleJet30";
+   // L1 Trigger Bits:    
+   fL1Map[47] = "L1_SingleMu10";
+   fL1Map[51] = "L1_DoubleMu3";
+   fL1Map[11] = "L1_SingleIsoEG12";
+   fL1Map[17] = "L1_SingleEG10";
+   fL1Map[18] = "L1_SingleEG12";	  
+   fL1Map[19] = "L1_SingleEG15";
+   fL1Map[82] = "L1_DoubleIsoEG8";
+   fL1Map[102] = "L1_DoubleEG10";
    
    Matcher = new ParticleMatcher();
    fNumEvt=0;
@@ -240,29 +267,29 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
    RecEvtView->setUserRecord<std::string>("EventClass", getEventClass(RecEvtView));
    
-  /* if (fDebug > 0) {  //FIXME make this generic for used JetCollections
-      cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma " << " SISC5/SISC7/IC5/KT4/KT6 " << "  MET  " << endl;
+   if (fDebug > 0) {  
+      cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
+      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoLabels.begin(); jetAlgo != fJetRecoLabels.end(); ++jetAlgo) {
+         cout << (*jetAlgo) << " ";
+      }
+      cout << "  MET  " << endl;
       cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
            << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
-           << setw(7) << GenEvtView->findUserRecord<int>("NumGamma") 
-           << setw(4) << GenEvtView->findUserRecord<int>("NumSISC5Jet") << "/" 
-	   << GenEvtView->findUserRecord<int>("NumSISC7Jet") << "/" 
-           << GenEvtView->findUserRecord<int>("NumIC5Jet") << "/" 
-	   << GenEvtView->findUserRecord<int>("NumKT4Jet") << "/" 
-           << GenEvtView->findUserRecord<int>("NumKT6Jet")
-           << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
+           << setw(7) << GenEvtView->findUserRecord<int>("NumGamma");
+      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoLabels.begin(); jetAlgo != fJetRecoLabels.end(); ++jetAlgo) {
+         cout << setw(4) << GenEvtView->findUserRecord<int>("Num"+(*jetAlgo)) << " ";
+      } 
+      cout << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
            << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
-           << setw(7) << RecEvtView->findUserRecord<int>("NumGamma")
-           << setw(4) << RecEvtView->findUserRecord<int>("NumSISC5Jet") << "/" 
-	   << RecEvtView->findUserRecord<int>("NumSISC7Jet") << "/" 
-           << RecEvtView->findUserRecord<int>("NumIC5Jet") << "/" 
-	   << RecEvtView->findUserRecord<int>("NumKT4Jet") << "/" 
-           << RecEvtView->findUserRecord<int>("NumKT6Jet")
-           << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
+           << setw(7) << RecEvtView->findUserRecord<int>("NumGamma");
+      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoLabels.begin(); jetAlgo != fJetRecoLabels.end(); ++jetAlgo) {
+         cout << setw(4) << RecEvtView->findUserRecord<int>("Num"+(*jetAlgo)) << " ";
+      } 
+      cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
       cout << "Rec Event Type: " << RecEvtView->findUserRecord<string>("EventClass") << endl;
-   }   */
+   }   
 
    fePaxFile.writeEvent(event, RecEvtView->findUserRecord<string>("EventClass"));
 }
@@ -309,28 +336,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    //gen particles
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
-   
-/*   //TrackingVertexCollection ONLY available in RECO - not even that ... in Tauola Sample not there
-   //get primary vertex from TrackingVertex. First vertex should be equal to HepMC-info, but HepMC is depreciated in AOD...
-   edm::Handle<TrackingVertexCollection> TruthVertexContainer;
-   //iEvent.getByLabel("mergedtruth","MergedTrackTruth", TruthVertexContainer);
-   iEvent.getByType(TruthVertexContainer);
-
-   // take only first vertex as this should correspond to generated primary vertex. Seems to be carbon-copy of HepMC-genVertex
-   // Question: What about pile-up/min-bias? Will there be additional primary vertices??? How do we find them (BX-id, event-id) and should we save them?
-   TrackingVertexCollection::const_iterator EventVertices = TruthVertexContainer->begin(); 
-     
-   // Store primary Vertex:
-   pxl::Vertex* GenTrackingVtx = EvtView->create<pxl::Vertex>();
-   GenTrackingVtx->setName("PTV");
-   GenTrackingVtx->setXYZ(EventVertices->position().x(), EventVertices->position().y(), EventVertices->position().z());
-   // we only have a single PV at Generator Level. Due to EventView Consistency .i.e. GenEvtView should look identical to RecEvtView
-   // this variable is explicetly set
-   EvtView->setUserRecord<int>("NumPTVertices", 1);		
-   // do we need this BX/event identification???
-   //GenVtx.setUserRecord<int>("Vtx_BX", EventVertices->eventId().bunchCrossing());
-   //GenVtx.setUserRecord<int>("Vtx_event", EventVertices->eventId().event()); */
-   
+      
    const GenParticle* p = (const GenParticle*) &(*genParticleHandel->begin()); //this is the incoming proton
    pxl::Vertex* GenVtx = EvtView->create<pxl::Vertex>();
    GenVtx->setName("PV");
@@ -373,7 +379,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 	    if (p_mother != 0) {
 	       mother = p_mother->pdgId();
 	       //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-	       while( abs(mother) == 13 ){
+	       while (abs(mother) == 13){
 	         p_mother = p_mother->mother();
 	         mother = p_mother->pdgId();
 	       }	       
@@ -555,111 +561,66 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
    if (MET_cuts(part)) numMETRec++;
    EvtView->setUserRecord<int>("NumMET", numMETRec);
+   cout << "MET has " << met->nCorrections() << " corrections applied" << endl;
+   cout << " Fully Corrected MET    : " << met->pt() << " (x: " << met->px() << ", y: " << met->py() << ") " << endl
+        << " Uncorrected MET        : " << met->uncorrectedPt(pat::MET::uncorrALL) << "(x: " << met->corEx(pat::MET::uncorrALL) << ", y: " << met->corEy(pat::MET::uncorrALL) << ") " <<  endl
+	<< " Non-JES Corrected MET  : " << met->uncorrectedPt(pat::MET::uncorrJES) << "(x: " << met->corEx(pat::MET::uncorrJES) << ", y: " << met->corEy(pat::MET::uncorrJES) << ") " << endl
+	<< " Non-Muon Corrected MET : " << met->uncorrectedPt(pat::MET::uncorrMUON) << "(x: " << met->corEx(pat::MET::uncorrMUON) << ", y: " << met->corEy(pat::MET::uncorrMUON) << ") " << endl;
+   cout << " GenMET: " << met->genMET()->pt() << endl;   
 }
 
 // ------------ reading HLT and L1 Trigger Bits ------------
 
 void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   /*
-   //HLT trigger bits
-   edm::Handle<edm::TriggerResults> hltresults;
-   //HLT producer is called several times within production steps, thus need Input tag with label and process name here
-   edm::InputTag hlt = edm::InputTag("TriggerResults","","HLT");
-   try {iEvent.getByLabel(hlt, hltresults);} catch (...) { errMsg=errMsg + "  -- No HLTRESULTS";}
-   // trigger names
-   edm::TriggerNames triggerNames_;
-
-   //HLT: set to false as default
-   EvtView->setUserRecord<bool>("HLT1Electron", false);
-   EvtView->setUserRecord<bool>("HLT1ElectronRelaxed", false);
-   EvtView->setUserRecord<bool>("HLT2Electron", false);
-   EvtView->setUserRecord<bool>("HLT2ElectronRelaxed", false);
-   EvtView->setUserRecord<bool>("HLT1EMHighEt", false);
-   EvtView->setUserRecord<bool>("HLT1EMVeryHighEt", false);
-   EvtView->setUserRecord<bool>("HLT1MuonIso", false);
-   EvtView->setUserRecord<bool>("HLT1MuonNonIso", false);
-   EvtView->setUserRecord<bool>("CandHLT2MuonIso", false);
-   EvtView->setUserRecord<bool>("HLT2MuonNonIso", false);
-   EvtView->setUserRecord<bool>("HLTNMuonNonIso", false);
-   EvtView->setUserRecord<bool>("HLTXElectronMuon", false);
-   EvtView->setUserRecord<bool>("HLTXElectronMuonRelaxed", false);
-   EvtView->setUserRecord<bool>("HLTXElectron1Jet", false);
-   EvtView->setUserRecord<bool>("HLTXElectron2Jet", false);
-   EvtView->setUserRecord<bool>("HLTXElectron3Jet", false);
-   EvtView->setUserRecord<bool>("HLTXElectron4Jet", false);
-   EvtView->setUserRecord<bool>("HLTXMuonJets", false);
-   //L1: set to false as default (have all prescale = 1)
-   EvtView->setUserRecord<bool>("L1_SingleMu7", false);
-   EvtView->setUserRecord<bool>("L1_DoubleMu3", false);
-   EvtView->setUserRecord<bool>("L1_SingleIsoEG12", false);
-   EvtView->setUserRecord<bool>("L1_SingleEG15", false);
-   EvtView->setUserRecord<bool>("L1_DoubleIsoEG8", false);
-   EvtView->setUserRecord<bool>("L1_DoubleEG10", false);
-   */
 
    //reference for some of the following parts: CMSSW/HLTrigger/HLTcore/plugins/HLTEventAnalyzerAOD.cc
-
-   //define HLT Trigger vector FIXME:there might be a better place to define this
-   std::vector<string> HLTVec;
-   HLTVec.reserve(20); //preventing reallocation
-   HLTVec.push_back("HLT_IsoEle15_L1I");
-   HLTVec.push_back("HLT_Ele15_SW_L1R");
-   HLTVec.push_back("HLT_Ele15_LW_L1R");
-   HLTVec.push_back("HLT_EM80");
-   HLTVec.push_back("HLT_EM200");
-   HLTVec.push_back("HLT_DoubleEle10_Z");
-   HLTVec.push_back("HLT_IsoMu15");
-   HLTVec.push_back("HLT_IsoEle15_LW_L1I");
-   HLTVec.push_back("HLT_DoubleIsoEle12_L1R");
-   HLTVec.push_back("HLT_DoubleEle10_Z");
-   HLTVec.push_back("HLT_IsoPhoton30_L1I");
-   HLTVec.push_back("HLT_IsoPhoton40_L1R");
-   HLTVec.push_back("HLT_Photon25_L1R");
-   HLTVec.push_back("HLT_Mu15");
-   HLTVec.push_back("HLT_DoubleMu3");
-   HLTVec.push_back("HLT_DoubleIsoMu3");
-
    using namespace edm;
    using namespace trigger;
    edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
-   edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
+   //edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
 
-   HLTConfigProvider hltConfig_;
-   hltConfig_.init("HLT");
+   //HLTConfigProvider hltConfig_;
+   //hltConfig_.init("HLT");
 
    //cout << "Available TriggerNames are: " << endl;
    //hltConfig_.dump("Triggers"); //dump table of available HLT
  
-   iEvent.getByLabel( ftriggerResultsTag, triggerResultsHandle_); 
-   iEvent.getByLabel( ftriggerEventTag, triggerEventHandle_); 
-
-   //loop over selected trigger names
-   for(unsigned int i=0; i<HLTVec.size() ;++i){
-	const std::string triggerName = HLTVec[i];
-	const unsigned int triggerIndex(hltConfig_.triggerIndex(triggerName)); //returns size() if triggerName does not exist
-	const unsigned int n(hltConfig_.size()); //for checking availabilty of triggerName
-
-   	if(triggerIndex<n){  //makes sure that triggerName is defined for the event
-	
-   		//save trigger path status
-		EvtView->setUserRecord<bool>(triggerName+"_wasrun",triggerResultsHandle_->wasrun(triggerIndex));
-		EvtView->setUserRecord<bool>(triggerName,triggerResultsHandle_->accept(triggerIndex));
-		EvtView->setUserRecord<bool>(triggerName+"_error",triggerResultsHandle_->error(triggerIndex));
-   		/*//begin cout of saved information for debugging
-   		cout << "triggerName: " << triggerName << "triggerIndex: " << triggerIndex << endl;
-   		cout << " Trigger path status:"
-        		<< " WasRun=" << triggerResultsHandle_->wasrun(triggerIndex)
-        		<< " Accept=" << triggerResultsHandle_->accept(triggerIndex)
-        		<< " Error =" << triggerResultsHandle_->error(triggerIndex)
-        		<< endl;
-   		//end debugging output*/
-   	}
-   	else { cout << "triggerName not defined for this event!" << endl;}
-
+   iEvent.getByLabel(ftriggerResultsTag, triggerResultsHandle_); 
+   //iEvent.getByLabel(ftriggerEventTag, triggerEventHandle_); 
    
+   //const unsigned int TriggerMenuSize(hltConfig_.size()); //for checking availabilty of triggerName
+   //loop over selected trigger names
+   for (std::map<int, std::string>::const_iterator trig_map = fHLTMap.begin(); trig_map != fHLTMap.end(); trig_map++) {
+      //const unsigned int triggerIndex(hltConfig_.triggerIndex(*trig_name)); //returns size() if triggerName does not exist
+      //if (triggerIndex < TriggerMenuSize) {  //makes sure that triggerName is defined for the event
+         //save trigger path status
+	 if (triggerResultsHandle_->wasrun(trig_map->first) && !(triggerResultsHandle_->error(trig_map->first))) {
+	    EvtView->setUserRecord<bool>(trig_map->second, triggerResultsHandle_->accept(trig_map->first));
+	 } else {
+	    if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " was not executed!" << endl;
+	    if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << endl;
+	 }
+         //begin cout of saved information for debugging
+         //if (fDebug > 1) {
+	    cout << "triggerName: " << trig_map->second << "  triggerIndex: " << trig_map->first << endl;
+            cout << " Trigger path status:"
+                 << " WasRun=" << triggerResultsHandle_->wasrun(trig_map->first)
+                 << " Accept=" << triggerResultsHandle_->accept(trig_map->first)
+                 << " Error =" << triggerResultsHandle_->error(trig_map->first) << endl;
+	 //}
+      //} else  cout << "triggerName not defined for this event!" << endl;
    }
-
-
+   cout << "HLT done" << endl; 
+   // Store L1 Trigger Bits
+   edm::Handle<L1GlobalTriggerReadoutRecord> L1GlobalTrigger;
+   iEvent.getByLabel(fL1GlobalTriggerTag, L1GlobalTrigger);
+      // L1 Decission
+   DecisionWord gtDecisionWord = L1GlobalTrigger->decisionWord();    
+   for (std::map<int,std::string>::const_iterator itMap = fL1Map.begin(); itMap != fL1Map.end(); ++itMap) {
+      EvtView->setUserRecord<bool>(itMap->second, gtDecisionWord[itMap->first]);
+      // Get trigger names
+      /*if (fDebug > 1)*/ cout << "L1 TD: " << itMap->first << " " << itMap->second << " " << gtDecisionWord[itMap->first]<< endl;
+   }
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
@@ -690,8 +651,6 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 // ------------ reading Reconstructed Muons ------------
 
 void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map<const Particle*, pxl::Particle*> & genmap) {
-
-
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
@@ -706,6 +665,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setName("Muon");
          part->setCharge(muon->charge());
          part->setP4(muon->px(), muon->py(), muon->pz(), muon->energy());
+	 cout << "Found Muon: "; part->print(0); cout << endl;
          part->setUserRecord<double>("Vtx_X", muon->vx());
          part->setUserRecord<double>("Vtx_Y", muon->vy());
          part->setUserRecord<double>("Vtx_Z", muon->vz()); 
@@ -716,17 +676,6 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	 	pxl::Particle* pxlgen = genmap[recogen];
 	 	if (pxlgen != NULL) {
 	  		part->linkSoft(pxlgen, "pat-match");
-	  
-	    	//check stored matching info
-	    	//if (part->getSoftRelations().has(pxlgen)) {
-	   	//	cout << "Soft-Relation muon rec -> gen ok" << endl;
-	    	//}
-	    	//if (pxlgen->getSoftRelations().has(part)) {
-	   	//	cout << "Soft-Relation muon gen -> rec ok" << endl;
-	    	//}
-	    	//	cout << "pt of the matched rec-muon: " << part->getPt() << endl;
-	    	//	cout << "pt of the matched gen-muon: " << pxlgen->getPt() << endl;
-	    	//end check*/
 	 	}
 	 }
 	 
@@ -854,17 +803,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 	pxl::Particle* pxlgen = genmap[recogen];
 	 	if (pxlgen != NULL) {
 	   		part->linkSoft(pxlgen, "pat-match");
-	  
-	    	//check stored matching info
-	    	//if (part->getSoftRelations().has(pxlgen)) {
-	  	//	cout << "Soft-Relation ele rec -> gen ok" << endl;
-	   	//}
-	   	//if (pxlgen->getSoftRelations().has(part)) {
-	  	//	cout << "Soft-Relation ele gen -> rec ok" << endl;
-	    	//}
-	   	//cout << "pt of the matched rec-electron: " << part->getPt() << endl;
-	    	//cout << "pt of the matched gen-electron: " << pxlgen->getPt() << endl;
-	    //end check*/
 	 	}
 	 }
 
@@ -1021,17 +959,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	 part->setUserRecord<double>("rawEnergy",  SCRef->rawEnergy() );
  	 part->setUserRecord<double>("preshowerEnergy",  SCRef->preshowerEnergy() );
 
-	/*	 
-         DetId id = SCRef->seed()->getHitsByDetId()[0];
-         if (id.subdetId() == EcalBarrel) {
-		//cout << "ECALBarrel TRUE !!!!!" << endl;
-            //seedShpItr = barrelClShpHandle->find(SCRef->seed()); //FIXME 2_1_0
-         } else {
-		//cout << "NOT ECALBarrel TRUE !!!!" << endl;
-            //seedShpItr = endcapClShpHandle->find(SCRef->seed()); //FIXME 2_1_0
-         }
-	*/
-
          //use EcalClusterLazyTools to store ClusterShapeVariables
 	 part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
 	 part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
@@ -1093,18 +1020,8 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	  if(MC){
           const reco::Particle* recogen = photon->genPhoton();
 	  pxl::Particle* pxlgen = genmap[recogen];
-	  	if(pxlgen != NULL){
+	  	if (pxlgen != NULL){
 	  		part->linkSoft(pxlgen, "pat-match");
-	  		/*//check stored matching info
-	  		//if (part->getSoftRelations().has(pxlgen)) {
-	  		//	cout << "Soft-Relation photon rec -> gen ok" << endl;
-	  		//}
-	  		//if (pxlgen->getSoftRelations().has(part)) {
-	  		//	cout << "Soft-Relation photon gen -> rec ok" << endl;
-	  		//}
-	  		//cout << "pt of the matched rec-photon: " << part->getPt() << endl;
-	  		//cout << "pt of the matched gen-photon: " << pxlgen->getPt() << endl;
-	  		//end check*/
 	  	}
 	  }
 	 
@@ -1251,72 +1168,8 @@ bool ePaxAnalyzer::MET_cuts(const pxl::Particle* met) const {
    return true;
 }
 
-/*
-// TEMPORARY STUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//Stefan: no longer needed because of PAT
 //------------------------------------------------------------------------------
 
-double ePaxAnalyzer::IsoCalSum (const edm::Event& iEvent, double ParticleCalPt, double ParticleCalEta, double ParticleCalPhi, double iso_DR, double iso_Seed){
-// Computes the sum of Pt inside a cone of R=iso_DR
-// using 4-vectors stored in CaloTower objects
-
-  double sum = 0.;
-
-  edm::Handle<CaloTowerCollection> CaloTowerData ;
-  iEvent.getByLabel( "towerMaker", CaloTowerData );
-
-  for( CaloTowerCollection::const_iterator tower = CaloTowerData->begin(); 
-       tower != CaloTowerData->end(); ++tower ) {
-    double eta = tower->eta();
-    if ( (tower->energy() / cosh(eta)) > iso_Seed){
-      double phi = tower->phi();
-      double DR = deltaR(ParticleCalEta, ParticleCalPhi, eta, phi);
-      if (DR <= 0.) {DR = 0.001;}
-      if (DR < iso_DR){
-	double pt = tower->energy() / cosh(eta);
-	sum += pt;
-      }
-    }
-  }
-
-  sum -= ParticleCalPt;
-  
-  return sum;
-
-}
-
-//------------------------------------------------------------------------------
-
-double ePaxAnalyzer::IsoTrkSum (const edm::Event& iEvent, double ParticleTrkPt, double ParticleTrkEta, double ParticleTrkPhi, double iso_DR, double iso_Seed){
-// Computes the sum of Pt inside a cone of R=iso_DR
-// using 4-vectors stored in Track objects
-
-  double sum = 0.;
-
-  edm::Handle<TrackCollection> TrackData ;
-  iEvent.getByLabel( "ctfWithMaterialTracks", TrackData );
-
-  for( reco::TrackCollection::const_iterator track = TrackData->begin(); 
-         track != TrackData->end(); ++track ) {
-    if (track->pt() > iso_Seed){
-      double eta = track->eta();
-      double phi = track->phi();
-      double DR = deltaR(ParticleTrkEta, ParticleTrkPhi, eta, phi);
-      if (DR <= 0.) {DR = 0.001;}
-      if (DR < iso_DR){
-          sum += track->pt();
-      }
-    }
-  }
-  
-  sum -= ParticleTrkPt;
-
-  return sum;
-
-}
-
-//------------------------------------------------------------------------------
-*/
 //FIXME compare to PAT-isolation 
 double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed){
 // Computes the sum of Pt inside a cone of R=iso_DR
@@ -1355,8 +1208,6 @@ double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
   return sum;
 
 }
-
-
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(ePaxAnalyzer);

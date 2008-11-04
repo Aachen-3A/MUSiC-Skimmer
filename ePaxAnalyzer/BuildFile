@@ -25,6 +25,8 @@
 <use name=root>
 <use name=hepmc>
 <use name=HLTrigger/HLTcore>
+<use name=DataFormats/L1GlobalTrigger>
+<use name=lhapdf>
 <flags EDM_PLUGIN=1>
 <export>
   <use name=DataFormats/DetId>

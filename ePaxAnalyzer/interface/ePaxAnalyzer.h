@@ -132,7 +132,11 @@ private:
    // Trigger
    edm::InputTag ftriggerResultsTag; 
    edm::InputTag ftriggerEventTag; 
-
+   edm::InputTag fL1GlobalTriggerTag; 
+   edm::InputTag fL1TriggerObjectMapTag;
+   std::map<int, std::string> fHLTMap;
+   std::map<int, std::string> fL1Map;
+ 
    ParticleMatcher* Matcher;
    // to be used for ePax output 
    pxl::OutputFile fePaxFile;
