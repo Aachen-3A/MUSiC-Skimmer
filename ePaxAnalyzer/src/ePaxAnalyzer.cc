@@ -199,9 +199,8 @@ ePaxAnalyzer::~ePaxAnalyzer()
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
    
-   fePaxFile.close();
+   //fePaxFile.close(); file closed in endjob!
    delete Matcher;
-
 }
 
 // ------------ method called to for each event  ------------
@@ -318,6 +317,19 @@ void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
    EvtView->setUserRecord<float>("Q", pdfstuff->scalePDF);
    EvtView->setUserRecord<int>("f1", pdfstuff->id1);
    EvtView->setUserRecord<int>("f2", pdfstuff->id2);
+   EvtView->setUserRecord<float>("pdf1", pdfstuff->pdf1);
+   EvtView->setUserRecord<float>("pdf2", pdfstuff->pdf2);
+   //cout << "x1: " << pdfstuff->x1 << "   x2: " << pdfstuff->x2 << endl;
+   //cout << "pdf1: " << pdfstuff->pdf1 << "   pdf2: " << pdfstuff->pdf2 << endl;
+   //cout << "x1*pdf1: " << pdfstuff->x1*pdfstuff->pdf1 << "    x2*pdf2: " << pdfstuff->x2*pdfstuff->pdf2 << endl;
+   // store also in the fpdf_vec 
+   PDFInf pdf;
+   pdf.x1 = pdfstuff->x1;
+   pdf.x2 = pdfstuff->x2;
+   pdf.f1 = pdfstuff->id1;
+   pdf.f2 = pdfstuff->id2;
+   pdf.Q = pdfstuff->scalePDF;
+   fpdf_vec.push_back(pdf);
    
    if (fDebug > 0) {
       cout << "Event Scale (pthat): " << *genEventScale << ", EventWeight: " << *genEventWeight << endl;
@@ -561,12 +573,12 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
    if (MET_cuts(part)) numMETRec++;
    EvtView->setUserRecord<int>("NumMET", numMETRec);
-   cout << "MET has " << met->nCorrections() << " corrections applied" << endl;
+   /*cout << "MET has " << met->nCorrections() << " corrections applied" << endl;
    cout << " Fully Corrected MET    : " << met->pt() << " (x: " << met->px() << ", y: " << met->py() << ") " << endl
         << " Uncorrected MET        : " << met->uncorrectedPt(pat::MET::uncorrALL) << "(x: " << met->corEx(pat::MET::uncorrALL) << ", y: " << met->corEy(pat::MET::uncorrALL) << ") " <<  endl
 	<< " Non-JES Corrected MET  : " << met->uncorrectedPt(pat::MET::uncorrJES) << "(x: " << met->corEx(pat::MET::uncorrJES) << ", y: " << met->corEy(pat::MET::uncorrJES) << ") " << endl
 	<< " Non-Muon Corrected MET : " << met->uncorrectedPt(pat::MET::uncorrMUON) << "(x: " << met->corEx(pat::MET::uncorrMUON) << ", y: " << met->corEy(pat::MET::uncorrMUON) << ") " << endl;
-   cout << " GenMET: " << met->genMET()->pt() << endl;   
+   cout << " GenMET: " << met->genMET()->pt() << endl;  */ 
 }
 
 // ------------ reading HLT and L1 Trigger Bits ------------
@@ -591,26 +603,22 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    //const unsigned int TriggerMenuSize(hltConfig_.size()); //for checking availabilty of triggerName
    //loop over selected trigger names
    for (std::map<int, std::string>::const_iterator trig_map = fHLTMap.begin(); trig_map != fHLTMap.end(); trig_map++) {
-      //const unsigned int triggerIndex(hltConfig_.triggerIndex(*trig_name)); //returns size() if triggerName does not exist
-      //if (triggerIndex < TriggerMenuSize) {  //makes sure that triggerName is defined for the event
-         //save trigger path status
-	 if (triggerResultsHandle_->wasrun(trig_map->first) && !(triggerResultsHandle_->error(trig_map->first))) {
-	    EvtView->setUserRecord<bool>(trig_map->second, triggerResultsHandle_->accept(trig_map->first));
-	 } else {
-	    if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " was not executed!" << endl;
-	    if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << endl;
-	 }
-         //begin cout of saved information for debugging
-         //if (fDebug > 1) {
-	    cout << "triggerName: " << trig_map->second << "  triggerIndex: " << trig_map->first << endl;
-            cout << " Trigger path status:"
-                 << " WasRun=" << triggerResultsHandle_->wasrun(trig_map->first)
-                 << " Accept=" << triggerResultsHandle_->accept(trig_map->first)
-                 << " Error =" << triggerResultsHandle_->error(trig_map->first) << endl;
-	 //}
-      //} else  cout << "triggerName not defined for this event!" << endl;
+      //save trigger path status
+      if (triggerResultsHandle_->wasrun(trig_map->first) && !(triggerResultsHandle_->error(trig_map->first))) {
+     	 EvtView->setUserRecord<bool>(trig_map->second, triggerResultsHandle_->accept(trig_map->first));
+      } else {
+     	 if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " was not executed!" << endl;
+     	 if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << endl;
+      }
+      //begin cout of saved information for debugging
+      if (fDebug > 1) {
+     	 cout << "triggerName: " << trig_map->second << "  triggerIndex: " << trig_map->first << endl;
+   	 cout << " Trigger path status:"
+   	      << " WasRun=" << triggerResultsHandle_->wasrun(trig_map->first)
+   	      << " Accept=" << triggerResultsHandle_->accept(trig_map->first)
+   	      << " Error =" << triggerResultsHandle_->error(trig_map->first) << endl;
+      }
    }
-   cout << "HLT done" << endl; 
    // Store L1 Trigger Bits
    edm::Handle<L1GlobalTriggerReadoutRecord> L1GlobalTrigger;
    iEvent.getByLabel(fL1GlobalTriggerTag, L1GlobalTrigger);
@@ -618,8 +626,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    DecisionWord gtDecisionWord = L1GlobalTrigger->decisionWord();    
    for (std::map<int,std::string>::const_iterator itMap = fL1Map.begin(); itMap != fL1Map.end(); ++itMap) {
       EvtView->setUserRecord<bool>(itMap->second, gtDecisionWord[itMap->first]);
-      // Get trigger names
-      /*if (fDebug > 1)*/ cout << "L1 TD: " << itMap->first << " " << itMap->second << " " << gtDecisionWord[itMap->first]<< endl;
+      if (fDebug > 1) cout << "L1 TD: " << itMap->first << " " << itMap->second << " " << gtDecisionWord[itMap->first]<< endl;
    }
 }
 
@@ -665,7 +672,6 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setName("Muon");
          part->setCharge(muon->charge());
          part->setP4(muon->px(), muon->py(), muon->pz(), muon->energy());
-	 cout << "Found Muon: "; part->print(0); cout << endl;
          part->setUserRecord<double>("Vtx_X", muon->vx());
          part->setUserRecord<double>("Vtx_Y", muon->vy());
          part->setUserRecord<double>("Vtx_Z", muon->vz()); 
@@ -1060,7 +1066,77 @@ void ePaxAnalyzer::endJob() {
 
    cout << "++++++++++++++++++++++++++++++++++++++" << endl;
    cout << "analyzed " << fNumEvt << " events " << endl;
+   // close output file:
+   fePaxFile.close();
+
+   // evaluate PDF Info
+   if (fpdf_vec.size() > 0) {
+      vector<float> best_fit;
+      vector<vector<float> > weights;
+      // create for each event an empty vector
+      for (unsigned int i = 0; i < fpdf_vec.size(); ++i) weights.push_back(vector<float>());
+      const char *lhaPDFPath = getenv("LHAPATH");
+      string pdfSet(lhaPDFPath);
+      string::size_type loc = pdfSet.find( ":", 0 );
+      if (loc != string::npos) pdfSet = pdfSet.substr(0,loc); 
+      pdfSet.append("/cteq61.LHgrid");
+      cout << "PDF set - " << pdfSet.data() << endl;
+      initpdfset_((char *)pdfSet.data(), pdfSet.size());
+      // loop over all subpdf's
+      for (int subpdf = 0; subpdf < 41; subpdf++) {
+         initpdf_(subpdf);
+	 //cout << "Initialized sub PDF " << subpdf << endl;
+         if (subpdf == 0) {
+	    // loop over all PDFInf's
+	    for (vector<PDFInf>::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf) {
+ 	       best_fit.push_back(xfx(pdf->x1, pdf->Q, pdf->f1) * xfx(pdf->x2, pdf->Q, pdf->f2));
+	       //cout << "xfx1: " <<  xfx(pdf->x1, pdf->Q, pdf->f1) << "   xfx1: " << xfx(pdf->x2, pdf->Q, pdf->f2) << endl;
+	    }
+	 } else {
+	    vector<float>::const_iterator best_fit_iter = best_fit.begin();
+	    vector<vector<float> >::iterator weights_iter = weights.begin();
+	    // loop over all PDFInf's
+	    for (vector<PDFInf>::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf) {
+	       weights_iter->push_back(xfx( pdf->x1, pdf->Q, pdf->f1) * xfx( pdf->x2, pdf->Q, pdf->f2) / (*best_fit_iter));
+	       ++weights_iter;
+	       ++best_fit_iter;
+	    }
+	 }
+      }
    
+      // ReRead the pxlio file and store PDFInfo
+      pxl::InputFile Input(fFileName);
+      pxl::OutputFile tmpFile("Tmp"+fFileName);
+      vector<vector<float> >::const_iterator weights_iter = weights.begin();
+      int count = 1;
+      // run event loop:
+      while (Input.next()) {
+         //pxl::Objects event;
+         pxl::Event event;
+         // read event from disk
+         Input.readEvent(&event);
+	 //cout << "Event " << count << endl;
+         // get all stored EventViews
+         //pxl::EventView* GenEvtView = event.getObjectOwner().findObject<pxl::EventView>("Gen");
+         pxl::EventView* RecEvtView = event.getObjectOwner().findObject<pxl::EventView>("Rec");
+	 string EC_string = RecEvtView->findUserRecord<std::string>("EventClass");
+	 unsigned int i = 1;
+	 for (vector<float>::const_iterator weight = (*weights_iter).begin(); weight != (*weights_iter).end(); ++weight) {
+	    //cout << "weight w" << i << "  " << *weight << endl;
+	    //GenEvtView->setUserRecord<float>("w"+i, *weight);
+	    RecEvtView->setUserRecord<float>("w"+i, *weight);
+	    i++;
+	 }
+	 //string EC_string = RecEvtView->findUserRecord<std::string>("EventClass");
+         tmpFile.writeEvent(&event, EC_string);
+	 ++weights_iter;
+	 ++count;
+      }
+      Input.close();
+      tmpFile.close();
+      // rename tmporary file
+      system(("mv Tmp" + fFileName + " " + fFileName).c_str());      
+   }
 }
 
 

@@ -1,8 +1,22 @@
 #ifndef ePaxAnalyzer_H
 #define ePaxAnalyzer_H
-//
-// class decleration
-//
+
+// LHAPDF stuff
+extern "C" {
+  void initpdfset_ (char *, int len);
+  void initpdfsetm_(int &, char *);
+  void initpdf_(int &);
+  void evolvepdf_(double &, double &, double *);
+  void numberpdf_(int &);
+}
+
+struct PDFInf {
+   char   f1; 
+   char   f2; 
+   double  x1;
+   double  x2;
+   double  Q; 
+};
 
 // CMSSW includes
 #include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
@@ -140,6 +154,12 @@ private:
    ParticleMatcher* Matcher;
    // to be used for ePax output 
    pxl::OutputFile fePaxFile;
+   std::vector<PDFInf> fpdf_vec;
+   double xfx(const double &x, const double &Q, int fl) {  
+     double f[13], mx = x, mQ = Q;
+     evolvepdf_(mx, mQ, f);
+     return f[fl+6];
+   };
 
 };
 #endif
