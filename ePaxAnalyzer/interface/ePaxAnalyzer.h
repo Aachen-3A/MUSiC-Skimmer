@@ -145,9 +145,9 @@ private:
    edm::InputTag freducedEndcapRecHitCollection;   
    // Trigger
    edm::InputTag ftriggerResultsTag; 
-   edm::InputTag ftriggerEventTag; 
    edm::InputTag fL1GlobalTriggerTag; 
    edm::InputTag fL1TriggerObjectMapTag;
+   edm::InputTag fTriggerEvent;
    std::map<int, std::string> fHLTMap;
    std::map<int, std::string> fL1Map;
  

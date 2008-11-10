@@ -143,11 +143,13 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    fL1GlobalTriggerTag =  iConfig.getParameter<edm::InputTag>("L1GlobalTriggerReadoutRecord");
    fL1TriggerObjectMapTag = iConfig.getParameter<edm::InputTag>("L1TriggerObjectMapTag");
-   ftriggerResultsTag =iConfig.getParameter<edm::InputTag>("triggerResults");
-   ftriggerEventTag = iConfig.getParameter<edm::InputTag>("triggerEvent");
+   ftriggerResultsTag = iConfig.getParameter<edm::InputTag>("triggerResults");
+   fTriggerEvent = iConfig.getParameter<edm::InputTag>("triggerEvent");
    
    HLTConfigProvider hltConfig_;
    hltConfig_.init("HLT");
+   //cout << "Available TriggerNames are: " << endl;
+   //hltConfig_.dump("Triggers"); //dump table of available HLT
 
    // Electrons
    fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle15_L1I")] = "HLT_IsoEle15_L1I";
@@ -198,8 +200,6 @@ ePaxAnalyzer::~ePaxAnalyzer()
  
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
-   
-   //fePaxFile.close(); file closed in endjob!
    delete Matcher;
 }
 
@@ -213,7 +213,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    pxl::Event* event = new pxl::Event();
 
    // event-specific data
-   bool IsMC =  !iEvent.isRealData();
+   bool IsMC =  true;//!iEvent.isRealData();
    event->setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
    event->setUserRecord<int>("Run", iEvent.id().run());
    event->setUserRecord<int>("ID", iEvent.id().event());	
@@ -589,23 +589,27 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    using namespace edm;
    using namespace trigger;
    edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
-   //edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
-
-   //HLTConfigProvider hltConfig_;
-   //hltConfig_.init("HLT");
-
-   //cout << "Available TriggerNames are: " << endl;
-   //hltConfig_.dump("Triggers"); //dump table of available HLT
- 
    iEvent.getByLabel(ftriggerResultsTag, triggerResultsHandle_); 
-   //iEvent.getByLabel(ftriggerEventTag, triggerEventHandle_); 
+   edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
+   iEvent.getByLabel(fTriggerEvent, triggerEventHandle_);
    
-   //const unsigned int TriggerMenuSize(hltConfig_.size()); //for checking availabilty of triggerName
+   HLTConfigProvider hltConfig_;
+   hltConfig_.init("HLT");
+   // Dump all triggers which have fired:
+   //const unsigned int n(hltConfig_.size());
+   //for (unsigned int i=0; i!=n; ++i) {
+   //   const std::string& name = hltConfig_.triggerName(i);
+   //   const unsigned int triggerIndex = hltConfig_.triggerIndex(name);
+   //   if (triggerResultsHandle_->accept(triggerIndex)) cout << name << " fired ";
+      //if (triggerResultsHandle_->wasrun(triggerIndex)) cout << name << " ran ";
+   //}
+   
    //loop over selected trigger names
    for (std::map<int, std::string>::const_iterator trig_map = fHLTMap.begin(); trig_map != fHLTMap.end(); trig_map++) {
       //save trigger path status
       if (triggerResultsHandle_->wasrun(trig_map->first) && !(triggerResultsHandle_->error(trig_map->first))) {
      	 EvtView->setUserRecord<bool>(trig_map->second, triggerResultsHandle_->accept(trig_map->first));
+	 if (fDebug > 0 && triggerResultsHandle_->accept(trig_map->first)) cout << endl << "Trigger: " << trig_map->second << " fired" << endl;
       } else {
      	 if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " was not executed!" << endl;
      	 if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << endl;
@@ -618,6 +622,46 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    	      << " Accept=" << triggerResultsHandle_->accept(trig_map->first)
    	      << " Error =" << triggerResultsHandle_->error(trig_map->first) << endl;
       }
+      const vector<string>& moduleLabels(hltConfig_.moduleLabels(trig_map->first));
+      //const unsigned int m(hltConfig_.size(trig_map->first));
+      const unsigned int moduleIndex(triggerResultsHandle_->index(trig_map->first));
+      //cout << " Last active module - label/type: "
+      // << moduleLabels[moduleIndex] << "/" << hltConfig_.moduleType(moduleLabels[moduleIndex])
+      // << " [" << moduleIndex << " out of 0-" << (m-1) << " on this path]"
+      // << endl;
+      //assert (moduleIndex<m);
+
+      // Results from TriggerEvent product - Attention: must look only for
+      // modules actually run in this path for this event!
+      // Analyze and store the objects which have fired the trigger
+      for (unsigned int j = 0; j <= moduleIndex; ++j) {
+         const string& moduleLabel = moduleLabels[j];
+         const string  moduleType = hltConfig_.moduleType(moduleLabel);
+         // check whether the module is packed up in TriggerEvent product
+         const unsigned int filterIndex = triggerEventHandle_->filterIndex(InputTag(moduleLabel, "", "HLT"));
+	 //cout << "FilterIndex: " << filterIndex << " for module " << moduleLabel << "/" << moduleType << endl;
+         if (filterIndex < triggerEventHandle_->sizeFilters()) {
+            //cout << "Trigger " << trig_map->second << ": 'L3' filter in slot " << j << " - label/type " << moduleLabel << "/" << moduleType << endl;
+            const Vids& VIDS (triggerEventHandle_->filterIds(filterIndex));
+            const Keys& KEYS(triggerEventHandle_->filterKeys(filterIndex));
+            const size_type nI(VIDS.size());
+            const size_type nK(KEYS.size());
+            assert(nI==nK);
+            const size_type n(max(nI,nK));
+            //cout << "   " << n  << " accepted 'L3' objects found: " << endl;
+            const TriggerObjectCollection& TOC = triggerEventHandle_->getObjects();
+	    for (size_type i=0; i!=n; ++i) {
+	       const TriggerObject& TO = TOC[KEYS[i]];
+               pxl::Particle* part = EvtView->create<pxl::Particle>();
+               part->setName(moduleLabel);
+               part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
+               part->setUserRecord<double>("ID", TO.id());
+	       if (fDebug > 0) cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+	                            << " id: " << TO.id() << " pt: " << TO.pt() << " eta: " << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass()
+	                            << endl;
+            }
+         }
+      } 
    }
    // Store L1 Trigger Bits
    edm::Handle<L1GlobalTriggerReadoutRecord> L1GlobalTrigger;
@@ -645,10 +689,17 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
          pxl::Vertex* vtx = EvtView->create<pxl::Vertex>();
          vtx->setName("PV");
          vtx->setXYZ(vertex->x(), vertex->y(), vertex->z());
+	 // errors
+	 vtx->setUserRecord<double>("xErr", vertex->xError());
+	 vtx->setUserRecord<double>("yErr", vertex->yError());
+	 vtx->setUserRecord<double>("zErr", vertex->zError());	  
 	 // chi2 of vertex-fit
-         vtx->setUserRecord<double>("NormChi2", vertex->normalizedChi2() );        
+         vtx->setUserRecord<double>("NormChi2", vertex->normalizedChi2());        
          // number of tracks with origin in that vertex???
 	 vtx->setUserRecord<int>("NumTracks", vertex->tracksSize());
+	 // is valid?
+	 vtx->setUserRecord<bool>("IsValid", vertex->isValid());
+	 vtx->setUserRecord<bool>("IsFake", vertex->isFake());
          numVertices++;
       }
    }
@@ -768,9 +819,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	         << "  Momentum corrected: " << ele->isMomentumCorrected() << endl;
          }
 	 pxl::Particle* part = RecView->create<pxl::Particle>();
-
-
-
          part->setName("Ele");
          part->setCharge(ele->charge());
          part->setP4(ele->px(), ele->py(),ele->pz(), ele->energy());
@@ -797,7 +845,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          //part->setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2()); //why was this left out?
          part->setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits()); //ok
 	 part->setUserRecord<int>("Class", ele->classification()); //ok
-
 	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
 	 part->setUserRecord<double>("DSZ", ele->gsfTrack()->dsz()); //ok
 	 //part->setUserRecord<double>("DZ", ele->gsfTrack()->dz()); //not needed since vz()==dz()
@@ -819,8 +866,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 // therefore only the first element of the vector should be available!
 	 const SuperClusterRef SCRef = ele->superCluster();
 	 const BasicClusterRef& SCSeed = SCRef->seed(); 
-         // Find the entry in the map corresponding to the seed BasicCluster of the SuperCluster
-
          //use EcalClusterLazyTools to store ClusterShapeVariables
 	 part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
 	 part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
@@ -828,37 +873,27 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 part->setUserRecord<double>("EtaEta", covariances[0] ); //used for CutBasedElectronID
 	 part->setUserRecord<double>("EtaPhi", covariances[1] );
 	 part->setUserRecord<double>("PhiPhi", covariances[2] );
-
 	 //save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/Photon-Candidates (in final selection)
 	 part->setUserRecord<double>("seedphi", SCRef->seed()->phi());
 	 part->setUserRecord<double>("seedeta", SCRef->seed()->eta());
-	 //part->setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
-	 //additional data used for cutBasedElectronId in CMSSW 2_0_7
+	 part->setUserRecord<unsigned int>("seedId", lazyTools.getMaximum(*SCSeed).first.rawId()); 
+	 //additional data used for cutBasedElectronId in CMSSW 2_0_X
 	 part->setUserRecord<double>("eSeed", SCRef->seed()->energy()); //used for CutBasedElectronID
 	 part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
 	 part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
-
-	 //store ID information
-	 //Cut based ID is stored as float in 2_1_0 hence it is converted to bool for backwards compatibility
-	 float IDfloat =  ele->leptonID("tight");
-	 bool IDbool = false ;
-	 if (IDfloat > 0.5) {IDbool = true;}
-	 part->setUserRecord<bool>("CutIDTight", IDbool);
-	 IDfloat = ele->leptonID("robust");
-	 IDbool = false;
-	 if (IDfloat > 0.5) {IDbool = true;}	
-	 part->setUserRecord<bool>("CutIDRobust", IDbool);
-
-	 
+	 //store ID information                    
+	 part->setUserRecord<bool>("IsRobust", ele->leptonID("robust") > 0.5);
+	 part->setUserRecord<bool>("IsLoose", ele->leptonID("loose") > 0.5);
+	 part->setUserRecord<bool>("IsTight", ele->leptonID("tight") > 0.5);
+	 part->setUserRecord<float>("Likeli", ele->leptonID("likelihood"));
          //save official isolation information
-	 double CaloIso = ele->caloIso();
-	 double TrkIso = ele->trackIso();
-	 part->setUserRecord<double>("CaloIso", CaloIso);
-	 part->setUserRecord<double>("TrkIso", TrkIso);
+	 part->setUserRecord<double>("CaloIso", ele->caloIso());
+	 part->setUserRecord<double>("TrkIso", ele->trackIso());
 	 part->setUserRecord<double>("ECALIso", ele->ecalIso());
 	 part->setUserRecord<double>("HCALIso", ele->hcalIso());
  
          //FIXME this should somehow be accessible after moving to CMSSW_2_0_9
+	 // no I don't see an easy way how to do that (CH) Do we really need it?
          // Get the association vector for track number
          //edm::Handle<reco::PMGsfElectronIsoNumCollection> trackNumHandle;
          //iEvent.getByLabel(fElectronTrackNumProducer, trackNumHandle);
@@ -898,7 +933,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
       std::vector<pat::Jet> RecJets = *jetHandle;
       //Get the GenJet collections for PAT matching
       edm::Handle<reco::GenJetCollection> GenJets;
-      // FIXME: get generic matching Gen Collection!
+      // get matching Gen Collection
       iEvent.getByLabel(fJetMCLabels[jetcoll_i], GenJets);    
       // loop over the jets
       for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
@@ -916,13 +951,26 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
 	    part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
  	    part->setUserRecord<double>("TowersArea", jet->towersArea());
 	    part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
-
+            // store b-tag discriminator values:
+	    part->setUserRecord<float>("cSVtx", jet->bDiscriminator("combinedSecondaryVertexBJetTags"));
+	    part->setUserRecord<float>("cSVtxMVA", jet->bDiscriminator("combinedSecondaryVertexMVABJetTags"));
+	    part->setUserRecord<float>("BProb", jet->bDiscriminator("jetBProbabilityBJetTags"));
+	    part->setUserRecord<float>("Prob", jet->bDiscriminator("jetProbabilityBJetTags"));
+	    // to be compared with Generator Flavor:
+	    part->setUserRecord<int>("Flavour", jet->partonFlavour());
+            if (fDebug > 1) {
+	       const std::vector<std::pair<std::string, float> > & bTags = jet->getPairDiscri();
+	       part->print(0);
+	       for (vector<pair<string, float> >::const_iterator btag = bTags.begin(); btag != bTags.end(); ++btag) {
+	          cout << "Name: " << btag->first << "   value: " << btag->second << endl;
+	       }
+	    }
             //store PAT matching info if MC
 	    if (MC) {
 	       const reco::Particle* recogen = jet->genJet();
                //begin ugly workaround in order to deal with the genJet copies returned by genJet()
    	       for (reco::GenJetCollection::const_iterator genJetit = GenJets->begin(); genJetit != GenJets->end(); ++genJetit) {
-                  if (recogen != NULL && genJetit->pt() == recogen->pt()){
+                  if (recogen != NULL && abs(genJetit->pt() - recogen->pt()) < 0.1 ){
 	             recogen = (const GenParticle*) &(*genJetit);
                      break;
 	          }
@@ -964,7 +1012,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          const BasicClusterRef& SCSeed = SCRef->seed();
 	 part->setUserRecord<double>("rawEnergy",  SCRef->rawEnergy() );
  	 part->setUserRecord<double>("preshowerEnergy",  SCRef->preshowerEnergy() );
-
          //use EcalClusterLazyTools to store ClusterShapeVariables
 	 part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
 	 part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
@@ -974,13 +1021,12 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	 part->setUserRecord<double>("PhiPhi", covariances[2] );
 	 part->setUserRecord<double>("Emax",  lazyTools.eMax(*SCSeed)  );
 	 part->setUserRecord<double>("r9", ( lazyTools.e3x3(*SCSeed) )/( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
+	 // part->setUserRecord<double>("r9", photon->r9()); <== different computation of r9 here :-(
 	 part->setUserRecord<double>("r19",  (lazyTools.eMax(*SCSeed) / lazyTools.e3x3(*SCSeed)) );
-
 	 //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection) adn to reject converted photons
 	 part->setUserRecord<double>("seedphi", SCRef->seed()->phi());
 	 part->setUserRecord<double>("seedeta", SCRef->seed()->eta());
-	 //part->setUserRecord<int>("seedId", seedShapeRef->eMaxId().rawId());
-	 
+	 part->setUserRecord<unsigned int>("seedId", lazyTools.getMaximum(*SCSeed).first.rawId()); 
 	 //set hadronic over electromagnetic energy fraction
 	 part->setUserRecord<float>("HoEm", photon->hadronicOverEm());
  	 //save official isolation information
@@ -988,50 +1034,36 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	 part->setUserRecord<double>("ECALIso", photon->ecalIso());
 	 part->setUserRecord<double>("TrkIso", photon->trackIso());
 	 part->setUserRecord<double>("CaloIso", photon->caloIso());
-
-	 //FIXME This part does not work. Should this not be possible in an easy way with PAT?
-	 //edm::Ref<reco::PhotonCollection> gammaIsoRef(photons, numGammaAll);
-	 //reco::CandidateBaseRef candRef(gammaIsoRef);
-	 // Get the association vector for track number
-	 //edm::Handle<reco::CandViewIntAssociations> trackNumHandle;
-	 //iEvent.getByLabel(fGammaTrackNumProducer, trackNumHandle);
-	 //direct access (by object). We have candidate already from HCAL-isolation
-	 //int numVal = (*trackNumHandle)[ candRef ];
-	 //part->setUserRecord<int>("TrackNum", numVal);
-
+         // Number of Tracks in Solid Cone DR = 0.4
+	 part->setUserRecord<int>("TrackNum", photon->nTrkSolidCone());
 	 //store information about converted state
 	 part->setUserRecord<bool>("IsConverted", photon->isConvertedPhoton());  
-	 //no way to get this?
-	 //part->setUserRecord<int>("ConvertedNtrk", Ntrk_conv);  
-
-	 //FIXME store photon-Id, make sure this is what we want!
-	 part->setUserRecord<float>("photonIDTight", photon->isTightPhoton());
+	 // store photon-Id
+	 part->setUserRecord<bool>("IsLooseEM", photon->isLooseEM());
+	 part->setUserRecord<bool>("IsLoose", photon->isLoosePhoton());
+	 part->setUserRecord<bool>("IsTight", photon->isTightPhoton());
+	 // is near a gap ! isEEGap == always false not yet implemented ... CMSSW_2_1_9 
+	 part->setUserRecord<bool>("Gap", photon->isEBGap() || photon->isEEGap() || photon->isEBEEGap());
 	 // store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged 
 	 //get primary vertex (hopefully correct one) for physics eta THIS NEEDS TO BE CHECKED !!!
          math::XYZPoint vtx(0., 0., 0.);
-//FIXME: setIndex fr Primary Vertex for fast access!
          if (RecView->findUserRecord<int>("NumVertices") > 0) {
             pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
             vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
          } 
 	 /////  Set event vertex
 	 pat::Photon localPho(*photon);
-	 //localPho.setVertex(vtx);  //FIXME this line does not work (missing Cluster Shape info)
-	 part->setUserRecord<double>("PhysicsEta", localPho.p4().eta());
-	 part->setUserRecord<double>("PhysicsPhi", localPho.p4().phi());
-	 part->setUserRecord<double>("PhysicsPt", localPho.p4().pt());
-
-
-	  //store PAT matching info
-	  if(MC){
-          const reco::Particle* recogen = photon->genPhoton();
-	  pxl::Particle* pxlgen = genmap[recogen];
-	  	if (pxlgen != NULL){
-	  		part->linkSoft(pxlgen, "pat-match");
-	  	}
-	  }
-	 
-	 //FIXME Pi0 stuff still missing
+	 localPho.setVertex(vtx);  //FIXME this line does not work (missing Cluster Shape info)
+	 part->setUserRecord<double>("PhysEta", localPho.p4().eta());
+	 part->setUserRecord<double>("PhysPhi", localPho.p4().phi());
+	 part->setUserRecord<double>("PhysPt", localPho.p4().pt());
+         //store PAT matching info
+         if (MC) {
+            const reco::Particle* recogen = photon->genPhoton();
+            pxl::Particle* pxlgen = genmap[recogen];
+            if (pxlgen != NULL) part->linkSoft(pxlgen, "pat-match");
+         }
+	 //FIXME Pi0 stuff still missing --> seems not be working in CMSSW_2_1_X
          numGammaRec++;
       }	 
       numGammaAll++;
