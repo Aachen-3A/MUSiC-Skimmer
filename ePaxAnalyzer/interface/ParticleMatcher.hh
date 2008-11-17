@@ -18,7 +18,7 @@ class ParticleMatcher {
 
    public: 
       // Konstruktor
-      ParticleMatcher(double DeltaR_Particles = 0.2, double DeltaR_MET = 0.5, double DeltaPtoPt = 0.5, double DeltaCharge = 0.0, int fDebug = 0) : 
+      ParticleMatcher(double DeltaR_Particles = 0.2, double DeltaR_MET = 0.5, double DeltaPtoPt = 1000000.0, double DeltaCharge = 10.0, int fDebug = 0) : 
             _DeltaR_Particles(DeltaR_Particles), _DeltaR_MET(DeltaR_MET), _DeltaPtoPt(DeltaPtoPt), _DeltaCharge(DeltaCharge), _fDebug(fDebug) {};
       // Destruktor
       ~ParticleMatcher() {;};
