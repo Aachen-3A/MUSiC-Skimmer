@@ -7,7 +7,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 #process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # source
 process.source = cms.Source("PoolSource", 
@@ -102,21 +102,6 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = cms.string('IDEAL_V9::All')
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
-# Redo HLT
-### process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
-### process.load("HLTrigger.Configuration.HLT_2E30_cff")
-### process.schedule = process.HLTSchedule
-### 
-### process.hltL1gtTrigReport = cms.EDAnalyzer( "L1GtTrigReport",
-###     UseL1GlobalTriggerRecord = cms.bool( False ),
-###     L1GtRecordInputTag = cms.InputTag( "hltGtDigis" )
-### )
-### process.hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
-###     HLTriggerResults = cms.InputTag( 'TriggerResults','','PAT' )
-### )
-### process.HLTAnalyzerEndpath = cms.EndPath( process.hltL1gtTrigReport + process.hltTrigReport )
-### process.schedule.append(process.HLTAnalyzerEndpath)
-
 # PAT Layer 0+1
 process.load("PhysicsTools.PatAlgos.patLayer0_cff")
 process.load("PhysicsTools.PatAlgos.patLayer1_cff")
@@ -179,8 +164,8 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
 	 JetMCLabels = cms.vstring("sisCone5GenJets", "kt4GenJets","kt6GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
 	 JetRecoLabels = cms.vstring( "SISC5" ,"KT4", "KT6", "SISC7", "IC5"),
-	 #L1GlobalTriggerReadoutRecord = cms.InputTag("hltGtDigis"),
-	 L1GlobalTriggerReadoutRecord = cms.InputTag("gtDigis"),
+	 L1GlobalTriggerReadoutRecord = cms.InputTag("hltGtDigis"),
+	 #L1GlobalTriggerReadoutRecord = cms.InputTag("gtDigis"),
 	 L1TriggerObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
          # MET
          METRecoLabel = cms.untracked.string("selectedLayer1METs"),
