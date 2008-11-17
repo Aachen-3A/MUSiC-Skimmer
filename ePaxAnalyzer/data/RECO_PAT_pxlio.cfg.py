@@ -67,27 +67,27 @@ process.source = cms.Source("PoolSource",
 #       '/store/mc/Summer08/TTJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v2/0002/046A072B-31A9-DD11-A931-00E08140EAB7.root',
 #       '/store/mc/Summer08/TTJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v2/0002/047CBBF6-D2A7-DD11-963F-001F29085CF2.root',
 #       '/store/mc/Summer08/TTJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v2/0002/04C24166-9FA9-DD11-9682-001CC4A64C3E.root'
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/004F2FD6-4D88-DD11-91E3-001CC47BCDA6.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/009C43A2-4D88-DD11-91D6-001F29083E34.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/02864897-5388-DD11-9A8C-001E0B46B96C.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/02D7119B-4E88-DD11-A549-001CC47BF010.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0419AADF-5088-DD11-B208-001CC47D2F90.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/065D091F-4E88-DD11-96B1-001F2908AF72.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/06CA4B7A-4D88-DD11-817B-001F290860A6.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0A5B852D-4E88-DD11-A049-001E0B469C96.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0A606F24-5E88-DD11-B988-001F2907ECC8.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0AAF9A5A-4E88-DD11-BFCE-001CC4A6AD50.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0C36ACF0-4F88-DD11-80FB-001CC47DFC00.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0C67546D-9588-DD11-A8ED-001CC47C7092.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0E0734FC-9388-DD11-ABE1-001F2908EC96.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0EC58745-8E88-DD11-86B4-001E0BED0560.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/16356E5E-4E88-DD11-BEA4-001F2908AF72.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/16624B1D-4E88-DD11-8549-001E0B4715E4.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/185F994D-4E88-DD11-9D5F-001F29082E8C.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/1A336E6B-8A88-DD11-9065-001E0B46B96C.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/1E1BC697-9288-DD11-979F-001CC4C0B0DC.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/1E3334B9-4F88-DD11-96CE-001CC47D8FBA.root',
-        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/22437CD0-4F88-DD11-A1D4-001CC47BCE82.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/004F2FD6-4D88-DD11-91E3-001CC47BCDA6.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/009C43A2-4D88-DD11-91D6-001F29083E34.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/02864897-5388-DD11-9A8C-001E0B46B96C.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/02D7119B-4E88-DD11-A549-001CC47BF010.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0419AADF-5088-DD11-B208-001CC47D2F90.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/065D091F-4E88-DD11-96B1-001F2908AF72.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/06CA4B7A-4D88-DD11-817B-001F290860A6.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0A5B852D-4E88-DD11-A049-001E0B469C96.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0A606F24-5E88-DD11-B988-001F2907ECC8.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0AAF9A5A-4E88-DD11-BFCE-001CC4A6AD50.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0C36ACF0-4F88-DD11-80FB-001CC47DFC00.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0C67546D-9588-DD11-A8ED-001CC47C7092.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0E0734FC-9388-DD11-ABE1-001F2908EC96.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/0EC58745-8E88-DD11-86B4-001E0BED0560.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/16356E5E-4E88-DD11-BEA4-001F2908AF72.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/16624B1D-4E88-DD11-8549-001E0B4715E4.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/185F994D-4E88-DD11-9D5F-001F29082E8C.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/1A336E6B-8A88-DD11-9065-001E0B46B96C.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/1E1BC697-9288-DD11-979F-001CC4C0B0DC.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/1E3334B9-4F88-DD11-96CE-001CC47D8FBA.root',
+#        '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/22437CD0-4F88-DD11-A1D4-001CC47BCE82.root',
         '/store/mc/Summer08/Wenu/GEN-SIM-RECO/IDEAL_V9_v1/0004/2279D584-4D88-DD11-90FD-001CC4A7C0D6.root'
 	)
 )
@@ -121,6 +121,8 @@ process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 process.load("PhysicsTools.PatAlgos.patLayer0_cff")
 process.load("PhysicsTools.PatAlgos.patLayer1_cff")
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
+
+process.load("ePaxDemo.ePaxAnalyzer.configurePAT_cff")
 
 # Remove unneccessary stuff:
 process.patLayer1.remove(process.layer1Hemispheres)

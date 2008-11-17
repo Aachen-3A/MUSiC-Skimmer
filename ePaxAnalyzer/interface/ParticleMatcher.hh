@@ -5,8 +5,8 @@
 Class which perform the matching between generator level particle with
 reconstructed particles. The matching is based on a delta R algo. Each gen
 particle points to the best matching rec particle and vice versa. If the best
-matching particle has a distance large than deltaR > 0.2 ( > 0.5 for MET) the particle is
-declared to has no match. For unmatched particles Match UserRecord is set to -1.
+matching particle has a distance large than the given limits for DeltaR, DeltaPtoPt or DeltaCharge the particle is
+declared to have no match. For unmatched particles Match UserRecord is set to -1.
 */
 
 #include "ePaxPxl/ePax/interface/ePax.h"
@@ -18,8 +18,8 @@ class ParticleMatcher {
 
    public: 
       // Konstruktor
-      ParticleMatcher(double DeltaR_Particles = 0.2, double DeltaR_MET = 0.5) : 
-            _DeltaR_Particles(DeltaR_Particles), _DeltaR_MET(DeltaR_MET), _fDebug(0) {};
+      ParticleMatcher(double DeltaR_Particles = 0.2, double DeltaR_MET = 0.5, double DeltaPtoPt = 0.5, double DeltaCharge = 0.0, int fDebug = 0) : 
+            _DeltaR_Particles(DeltaR_Particles), _DeltaR_MET(DeltaR_MET), _DeltaPtoPt(DeltaPtoPt), _DeltaCharge(DeltaCharge), _fDebug(fDebug) {};
       // Destruktor
       ~ParticleMatcher() {;};
       // Match method
@@ -28,11 +28,13 @@ class ParticleMatcher {
       
    private:
       // Some helper methods
-      int SmallestRowElement(TMatrixT<double>* matrix, const unsigned int& row, const double& DeltaRMatching);   
-      int SmallestColumnElement(TMatrixT<double>* matrix, const unsigned int& col, const double& DeltaRMatching);
+      int SmallestRowElement(TMatrixT<double>* matrixDR, TMatrixT<double>* matrixDp, TMatrixT<double>* matrixDC, const unsigned int& row, const double& DeltaRMatching, const double& DeltaChargeMatching, const double& DeltaPtoPtMatching);   
+      int SmallestColumnElement(TMatrixT<double>* matrixDR, TMatrixT<double>* matrixDp,  TMatrixT<double>* matrixDC, const unsigned int& col, const double& DeltaRMatching, const double& DeltaChargeMatching, const double& DeltaPtoPtMatching);
       //variable to define dR which decides matching
-      double _DeltaR_Particles;
-      double _DeltaR_MET;
+	double _DeltaR_Particles;
+	double _DeltaR_MET;
+      	double _DeltaPtoPt;
+	double _DeltaCharge;
       int _fDebug; 
 };
 #endif
