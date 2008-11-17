@@ -107,8 +107,6 @@ process.load("PhysicsTools.PatAlgos.patLayer0_cff")
 process.load("PhysicsTools.PatAlgos.patLayer1_cff")
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
-process.load("ePaxDemo.ePaxAnalyzer.configurePAT_cff")
-
 # Remove unneccessary stuff:
 process.patLayer1.remove(process.layer1Hemispheres)
 
@@ -144,6 +142,11 @@ addJetCollection(process,'kt4CaloJets','KT4',
                         runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='FKt4',doType1MET=True,doL1Counters=False)
 addJetCollection(process,'kt6CaloJets','KT6',
                         runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel='FKt6',doType1MET=True,doL1Counters=False)
+
+
+import os
+cmsbase = os.environ.get('CMSSW_BASE')
+execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:

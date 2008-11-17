@@ -213,7 +213,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    pxl::Event* event = new pxl::Event();
 
    // event-specific data
-   bool IsMC =  true;//!iEvent.isRealData();
+   bool IsMC =  !iEvent.isRealData();
    event->setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
    event->setUserRecord<int>("Run", iEvent.id().run());
    event->setUserRecord<int>("ID", iEvent.id().event());	
