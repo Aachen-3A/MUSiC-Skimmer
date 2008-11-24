@@ -210,19 +210,20 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // set event counter   
    fNumEvt++; 
    // Owner of all Pxl Objects 
-   pxl::Event* event = new pxl::Event();
+   pxl::Event event;
 
    // event-specific data
    bool IsMC =  !iEvent.isRealData();
-   event->setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
-   event->setUserRecord<int>("Run", iEvent.id().run());
-   event->setUserRecord<int>("ID", iEvent.id().event());	
+   event.setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
+   event.setUserRecord<int>("Run", iEvent.id().run());
+   event.setUserRecord<int>("ID", iEvent.id().event());	
    if (fDebug > 0) {
       cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << " is MC = " << !iEvent.isRealData() << endl;  
    }
    // create two ePaxEventViews for Generator/Reconstructed Objects
-   pxl::EventView* GenEvtView = event->createIndexed<pxl::EventView>("Gen");
-   pxl::EventView* RecEvtView = event->createIndexed<pxl::EventView>("Rec");
+   pxl::EventView* GenEvtView = event.createIndexed<pxl::EventView>("Gen");
+   pxl::EventView* RecEvtView = event.createIndexed<pxl::EventView>("Rec");
+   GenEvtView->setName("Gen"); RecEvtView->setName("Rec");
    GenEvtView->setUserRecord<std::string>("Type", "Gen");
    RecEvtView->setUserRecord<std::string>("Type", "Rec");
    
@@ -289,8 +290,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
       cout << "Rec Event Type: " << RecEvtView->findUserRecord<string>("EventClass") << endl;
    }   
-
-   fePaxFile.writeEvent(event, RecEvtView->findUserRecord<string>("EventClass"));
+   fePaxFile.writeEvent(&event, RecEvtView->findUserRecord<string>("EventClass"));
 }
 
 // ------------ reading Generator related Stuff ------------
@@ -647,7 +647,11 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
             const size_type nI(VIDS.size());
             const size_type nK(KEYS.size());
             assert(nI==nK);
-            const size_type n(max(nI,nK));
+            size_type n(max(nI,nK));
+	    if (n > 5) {
+	       cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << moduleType << endl;
+	       n = 5;
+	    }
             //cout << "   " << n  << " accepted 'L3' objects found: " << endl;
             const TriggerObjectCollection& TOC = triggerEventHandle_->getObjects();
 	    for (size_type i=0; i!=n; ++i) {
@@ -1122,7 +1126,7 @@ void ePaxAnalyzer::endJob() {
 	    // loop over all PDFInf's
 	    for (vector<PDFInf>::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf) {
  	       best_fit.push_back(xfx(pdf->x1, pdf->Q, pdf->f1) * xfx(pdf->x2, pdf->Q, pdf->f2));
-	       //cout << "xfx1: " <<  xfx(pdf->x1, pdf->Q, pdf->f1) << "   xfx1: " << xfx(pdf->x2, pdf->Q, pdf->f2) << endl;
+               //cout << "xfx1: " <<  xfx(pdf->x1, pdf->Q, pdf->f1) << "   xfx1: " << xfx(pdf->x2, pdf->Q, pdf->f2) << endl;
 	    }
 	 } else {
 	    vector<float>::const_iterator best_fit_iter = best_fit.begin();
@@ -1135,7 +1139,6 @@ void ePaxAnalyzer::endJob() {
 	    }
 	 }
       }
-   
       // ReRead the pxlio file and store PDFInfo
       pxl::InputFile Input(fFileName);
       pxl::OutputFile tmpFile("Tmp"+fFileName);
@@ -1147,7 +1150,6 @@ void ePaxAnalyzer::endJob() {
          pxl::Event event;
          // read event from disk
          Input.readEvent(&event);
-	 //cout << "Event " << count << endl;
          // get all stored EventViews
          //pxl::EventView* GenEvtView = event.getObjectOwner().findObject<pxl::EventView>("Gen");
          pxl::EventView* RecEvtView = event.getObjectOwner().findObject<pxl::EventView>("Rec");
@@ -1164,10 +1166,10 @@ void ePaxAnalyzer::endJob() {
 	 ++weights_iter;
 	 ++count;
       }
-      Input.close();
       tmpFile.close();
+      Input.close();
       // rename tmporary file
-      system(("mv Tmp" + fFileName + " " + fFileName).c_str());      
+      system(("mv Tmp" + fFileName + " " + fFileName).c_str());     
    }
 }
 

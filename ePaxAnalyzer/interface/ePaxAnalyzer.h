@@ -11,8 +11,8 @@ extern "C" {
 }
 
 struct PDFInf {
-   char   f1; 
-   char   f2; 
+   int   f1; 
+   int   f2; 
    double  x1;
    double  x2;
    double  Q; 
