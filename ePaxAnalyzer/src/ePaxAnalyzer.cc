@@ -148,8 +148,8 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    
    HLTConfigProvider hltConfig_;
    hltConfig_.init("HLT");
-   //cout << "Available TriggerNames are: " << endl;
-   //hltConfig_.dump("Triggers"); //dump table of available HLT
+   cout << "Available TriggerNames are: " << endl;
+   hltConfig_.dump("Triggers"); //dump table of available HLT
 
    // Electrons
    fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle15_L1I")] = "HLT_IsoEle15_L1I";
@@ -886,10 +886,12 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
 	 part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
 	 //store ID information                    
-	 part->setUserRecord<bool>("IsRobust", ele->leptonID("robust") > 0.5);
-	 part->setUserRecord<bool>("IsLoose", ele->leptonID("loose") > 0.5);
-	 part->setUserRecord<bool>("IsTight", ele->leptonID("tight") > 0.5);
-	 part->setUserRecord<float>("Likeli", ele->leptonID("likelihood"));
+         part->setUserRecord<bool>("IsRobustHighE", ele->electronID("eidRobustHighEnergy") > 0.5);
+         part->setUserRecord<bool>("IsRobustLoose", ele->electronID("eidRobustLoose") > 0.5);
+         part->setUserRecord<bool>("IsRobustTight", ele->electronID("eidRobustTight") > 0.5);
+	 part->setUserRecord<bool>("IsLoose", ele->electronID("eidLoose") > 0.5);
+	 part->setUserRecord<bool>("IsTight", ele->electronID("eidTight") > 0.5);
+	 //part->setUserRecord<float>("Likeli", ele->electronID("likelihood"));
          //save official isolation information
 	 part->setUserRecord<double>("CaloIso", ele->caloIso());
 	 part->setUserRecord<double>("TrkIso", ele->trackIso());
