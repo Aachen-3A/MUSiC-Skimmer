@@ -264,7 +264,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
 
    // set event class strings
-   GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
+   //GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
    RecEvtView->setUserRecord<std::string>("EventClass", getEventClass(RecEvtView));
    
    if (fDebug > 0) {  
@@ -348,10 +348,12 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    //gen particles
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
-      
+
+     
    const GenParticle* p = (const GenParticle*) &(*genParticleHandel->begin()); //this is the incoming proton
    pxl::Vertex* GenVtx = EvtView->create<pxl::Vertex>();
    GenVtx->setName("PV");
+   //mind that clearly the following line crashes in case of ParticleGun RelVal like single photon
    GenVtx->setXYZ(p->daughter(0)->vx(), p->daughter(0)->vy(), p->daughter(0)->vz()); //need daughter since first particle (proton) has position zero
    EvtView->setUserRecord<int>("NumVertices", 1);  
   
@@ -368,6 +370,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++ pa ) {
       //cast iterator into GenParticleCandidate
       const GenParticle* p = (const GenParticle*) &(*pa);
+
       // fill Gen Muons passing some basic cuts
       if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
          if ( MuonMC_cuts(p) ) { 
@@ -466,6 +469,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
       }
 
       GenId++;
+
    } //end of loop over generated particles
 
    if (fDebug > 1)  cout << "MC Found:  " << numMuonMC <<  " mu  " << numEleMC << " e  " << numGammaMC << " gamma" << endl;
@@ -1043,7 +1047,9 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          // Number of Tracks in Solid Cone DR = 0.4
 	 part->setUserRecord<int>("TrackNum", photon->nTrkSolidCone());
 	 //store information about converted state
-	 part->setUserRecord<bool>("IsConverted", photon->isConvertedPhoton());  
+	 part->setUserRecord<bool>("IsConverted", photon->isConverted());
+	 part->setUserRecord<bool>("IsAlsoEle", photon->isAlsoElectron()); 
+	 //if (photon->isConvertedPhoton() == true) {cout << "is Converted!" << endl;}
 	 // store photon-Id
 	 part->setUserRecord<bool>("IsLooseEM", photon->isLooseEM());
 	 part->setUserRecord<bool>("IsLoose", photon->isLoosePhoton());
