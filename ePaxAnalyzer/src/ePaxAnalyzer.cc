@@ -264,7 +264,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
 
    // set event class strings
-   //GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
+   GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
    RecEvtView->setUserRecord<std::string>("EventClass", getEventClass(RecEvtView));
    
    if (fDebug > 0) {  
