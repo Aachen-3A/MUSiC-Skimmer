@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("singlephoton")
+process = cms.Process("PAT")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -78,16 +78,16 @@ addJetCollection(process,'kt4CaloJets','KT4',
 addJetCollection(process,'kt6CaloJets','KT6',
                         runCleaner="CaloJet",doJTA=True,doBTagging=True,jetCorrLabel=('KT6','Calo'),doType1MET=True,doL1Counters=False)
 
-process.load("PhysicsTools.HepMCCandAlgos.genEventKTValue_cfi")
+#process.load("PhysicsTools.HepMCCandAlgos.genEventKTValue_cfi")
 
 import os
 cmsbase = os.environ.get('CMSSW_BASE')
 execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 
-process.pTHat = cms.EDFilter("PtHatFilter",
-         pt_hat_lower_bound = cms.double(200.),
-         pt_hat_upper_bound = cms.double(500.)
-)
+#process.pTHat = cms.EDFilter("PtHatFilter",
+#         pt_hat_lower_bound = cms.double(200.),
+#         pt_hat_upper_bound = cms.double(500.)
+#)
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:

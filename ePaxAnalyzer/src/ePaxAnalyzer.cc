@@ -148,8 +148,8 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    
    HLTConfigProvider hltConfig_;
    hltConfig_.init("HLT");
-   cout << "Available TriggerNames are: " << endl;
-   hltConfig_.dump("Triggers"); //dump table of available HLT
+   //cout << "Available TriggerNames are: " << endl;
+   //hltConfig_.dump("Triggers"); //dump table of available HLT
 
    // Electrons
    fHLTMap[hltConfig_.triggerIndex("HLT_IsoEle15_L1I")] = "HLT_IsoEle15_L1I";
@@ -308,7 +308,11 @@ void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
    edm::Handle<double> genEventWeight;
    iEvent.getByLabel("genEventWeight", genEventWeight);
    EvtView->setUserRecord<double>("Weight", *genEventWeight);  
-  
+
+//   edm::Handle<double> ktValue; 
+//   iEvent.getByLabel("genEventKTValue", ktValue);
+//   cout << "the KT = " << *ktValue << std::endl;
+
    // read and store PDF Info
    edm::Handle<reco::PdfInfo> pdfstuff;
    iEvent.getByLabel("genEventPdfInfo", pdfstuff);
@@ -1154,21 +1158,23 @@ void ePaxAnalyzer::endJob() {
       int count = 1;
       // run event loop:
       while (Input.next()) {
-         //pxl::Objects event;
          pxl::Event event;
          // read event from disk
          Input.readEvent(&event);
          // get all stored EventViews
-         //pxl::EventView* GenEvtView = event.getObjectOwner().findObject<pxl::EventView>("Gen");
+         pxl::EventView* GenEvtView = event.getObjectOwner().findObject<pxl::EventView>("Gen");
          pxl::EventView* RecEvtView = event.getObjectOwner().findObject<pxl::EventView>("Rec");
 	 string EC_string = RecEvtView->findUserRecord<std::string>("EventClass");
 	 unsigned int i = 1;
 	 for (vector<float>::const_iterator weight = (*weights_iter).begin(); weight != (*weights_iter).end(); ++weight) {
-	    //cout << "weight w" << i << "  " << *weight << endl;
-	    //GenEvtView->setUserRecord<float>("w"+i, *weight);
-	    RecEvtView->setUserRecord<float>("w"+i, *weight);
-	    i++;
-	 }
+            //cout << "weight w" << i << "  " << *weight << endl;
+            ostringstream aStream;
+            aStream << "w" << i;
+            string str_i = aStream.str();
+            GenEvtView->setUserRecord<float>(str_i, *weight);
+            RecEvtView->setUserRecord<float>(str_i, *weight);
+            i++;
+         }
 	 //string EC_string = RecEvtView->findUserRecord<std::string>("EventClass");
          tmpFile.writeEvent(&event, EC_string);
 	 ++weights_iter;
