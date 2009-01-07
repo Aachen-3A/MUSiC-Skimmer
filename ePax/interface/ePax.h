@@ -3273,7 +3273,7 @@ private:
 
 
 
-#define iotl__iStreamer__lengthUnzipBuffer 65536
+#define iotl__iStreamer__lengthUnzipBuffer 655360
 
 namespace pxl
 {
