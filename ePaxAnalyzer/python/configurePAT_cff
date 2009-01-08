@@ -1,3 +1,16 @@
+# use Type1 MET corrections from SisCone5:
+process.corMetType1Icone5.corrector = "L2L3JetCorrectorSC5Calo"
+process.corMetType1Icone5.inputUncorJetsLabel = "sisCone5CaloJets"
+
+# switch of Trigger Matching
+process.allLayer1Electrons.addTrigMatch = False
+process.allLayer1Muons.addTrigMatch     = False
+process.allLayer1Jets.addTrigMatch      = False
+process.allLayer1METs.addTrigMatch      = False
+process.allLayer1Photons.addTrigMatch   = False
+process.allLayer1Taus.addTrigMatch      = False
+
+
 #configure PAT matching
 process.electronMatch.checkCharge = cms.bool(False)
 process.electronMatch.resolveByMatchQuality = cms.bool(True)
