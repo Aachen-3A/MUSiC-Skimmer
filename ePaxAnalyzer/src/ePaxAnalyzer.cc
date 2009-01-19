@@ -551,10 +551,27 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
    part->setUserRecord<double>("EmE", genmet.emEnergy());
    part->setUserRecord<double>("HadE", genmet.hadEnergy());
    part->setUserRecord<double>("InvE", genmet.invisibleEnergy());
-  
+
+
+   if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part->getPt() << endl;
+   // Perform Muon Corrections!
+   // loop over muons and subtract them
+   if (EvtView->findUserRecord<int>("NumMuon") > 0) { 
+      vector<pxl::Particle*> GenMuons;
+      EvtView->getObjectsOfType<pxl::Particle, pxl::PtComparator>(GenMuons, pxl::ParticleNameCriterion("Muon"));   
+      for (vector<pxl::Particle*>::const_iterator muon = GenMuons.begin(); muon != GenMuons.end(); ++muon) {
+         if (fDebug > 1) cout << "Correcting with " << (*muon)->getName() << " px = " << (*muon)->getPx() 
+                              << " Py = " << (*muon)->getPy() << endl;
+         *part -= **muon;
+      }
+      //reset eta-info after muon corrections
+      //part->setP4(part->getPx(), part->getPy(), 0., sqrt(part->getPx()*part->getPx()+part->getPy()*part->getPy()));  
+      if (fDebug > 1) cout << "GenMET after muon corr: Px = " << part->getPx() << "   Py = " << part->getPy() << "   Pt = " << part->getPt() << endl;     
+   }
    if (METMC_cuts(part)) numMETMC++; 
    EvtView->setUserRecord<int>("NumMET", numMETMC);
    if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
+   //cout << " Our GenMET: " << part->getPt() << endl;
 }
 
 // ------------ reading the Reconstructed MET ------------
@@ -586,7 +603,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
         << " Uncorrected MET        : " << met->uncorrectedPt(pat::MET::uncorrALL) << "(x: " << met->corEx(pat::MET::uncorrALL) << ", y: " << met->corEy(pat::MET::uncorrALL) << ") " <<  endl
 	<< " Non-JES Corrected MET  : " << met->uncorrectedPt(pat::MET::uncorrJES) << "(x: " << met->corEx(pat::MET::uncorrJES) << ", y: " << met->corEy(pat::MET::uncorrJES) << ") " << endl
 	<< " Non-Muon Corrected MET : " << met->uncorrectedPt(pat::MET::uncorrMUON) << "(x: " << met->corEx(pat::MET::uncorrMUON) << ", y: " << met->corEy(pat::MET::uncorrMUON) << ") " << endl;
-   cout << " GenMET: " << met->genMET()->pt() << endl;  */ 
+   */
 }
 
 // ------------ reading HLT and L1 Trigger Bits ------------
@@ -1192,7 +1209,7 @@ void ePaxAnalyzer::endJob() {
 
 bool ePaxAnalyzer::MuonMC_cuts(const GenParticle* MCmuon) const {
    //
-   if (MCmuon->pt() < 15.) return false;
+   if (MCmuon->pt() < 10.) return false;
    if (fabs(MCmuon->eta()) > 3.) return false;
    return true;
 }
@@ -1203,7 +1220,7 @@ bool ePaxAnalyzer::MuonMC_cuts(const GenParticle* MCmuon) const {
 
 bool ePaxAnalyzer::EleMC_cuts(const GenParticle* MCele) const {
    //
-   if (MCele->pt() < 15.) return false;
+   if (MCele->pt() < 10.) return false;
    if (fabs(MCele->eta()) > 3.) return false;
    return true;
 }
@@ -1212,7 +1229,7 @@ bool ePaxAnalyzer::EleMC_cuts(const GenParticle* MCele) const {
 
 bool ePaxAnalyzer::GammaMC_cuts(const GenParticle* MCgamma) const {
    //
-   if (MCgamma->pt() < 15.) return false;
+   if (MCgamma->pt() < 10.) return false;
    if (fabs(MCgamma->eta()) > 3.) return false;
    return true;
 }
@@ -1250,7 +1267,7 @@ bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) co
 bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
    // basic preselection cuts
    if (!muon.isGlobalMuon()) return false;
-   if (muon.pt() < 15.)  return false;
+   if (muon.pt() < 10.)  return false;
    if (fabs(muon.eta()) > 3.) return false;
    return true;
 }
@@ -1259,7 +1276,7 @@ bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
 // ------------ method to define ELECTRON-cuts
 
 bool ePaxAnalyzer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
-   if (ele->pt() < 15.) return false;
+   if (ele->pt() < 10.) return false;
    if (fabs(ele->eta()) > 3.) return false;
    return true;
 }
@@ -1278,7 +1295,7 @@ bool ePaxAnalyzer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
 
 bool ePaxAnalyzer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
    //
-   if (photon->pt() < 15.) return false;
+   if (photon->pt() < 10.) return false;
    if (fabs(photon->eta()) > 3.) return false;
    return true;
 }

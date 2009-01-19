@@ -16,7 +16,15 @@ process.source = cms.Source("PoolSource",
             #'/store/mc/Summer08/SUSY_LM4-sftsht/GEN-SIM-RECO/IDEAL_V9_v1/0000/FC0544C8-C9B1-DD11-B996-001CC47C90A6.root',
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/single_gamma_2_2_2_relval_1D08E7DEE-B4B9-DD11-B49E-001617E30D00.root'
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/Z_ee_2_1_9_relval_04419036-F385-DD11-B3A7-001617C3B6E8_2.root'
-'/store/mc/Summer08/HerwigQCDPt300/GEN-SIM-RECO/IDEAL_V9_v1/0006/04189352-BFA5-DD11-A8A5-00D0680BF8C3.root'
+#'/store/mc/Summer08/HerwigQCDPt300/GEN-SIM-RECO/IDEAL_V9_v1/0006/04189352-BFA5-DD11-A8A5-00D0680BF8C3.root'
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/02FB229C-F9C9-DD11-98BB-001EC9AA92FC.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/04003EE7-04CA-DD11-8817-001C23C0B772.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/042187C8-04CA-DD11-A45E-001EC9AA9FE5.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/045527D4-33CA-DD11-9591-00304833457A.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/04BBF420-FFC9-DD11-B262-001D091C6771.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/061EC9A2-07CA-DD11-9860-0019B9D96FC5.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/064DE523-FFC9-DD11-B1C3-001EC9AA9FF4.root',
+        '/store/mc/Fall08/WJets-madgraph/GEN-SIM-RECO/IDEAL_V9_v1/0013/069222C9-04CA-DD11-AFF8-001EC9AAA058.root'
 	)
 )
 
@@ -99,7 +107,7 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
 	 GenOnly = cms.untracked.bool(False),
          #labels of source
          genParticleCandidatesLabel = cms.untracked.string("genParticles"),
-         METMCLabel = cms.untracked.string("genMetNoNuBSM"),  # muon-correction needed?!??! ---> no!
+         METMCLabel = cms.untracked.string("genMet"),  # muon-correction needed ---> yes!
 	 #FIXME make sure that this is the correct Collection! (BS = with beam spot constraints?)
          VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
          MuonRecoLabel = cms.untracked.string("selectedLayer1Muons"),
