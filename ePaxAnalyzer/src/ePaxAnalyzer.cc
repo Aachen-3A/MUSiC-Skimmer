@@ -695,12 +695,14 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    // Store L1 Trigger Bits
    edm::Handle<L1GlobalTriggerReadoutRecord> L1GlobalTrigger;
    iEvent.getByLabel(fL1GlobalTriggerTag, L1GlobalTrigger);
-      // L1 Decission
-   DecisionWord gtDecisionWord = L1GlobalTrigger->decisionWord();    
-   for (std::map<int,std::string>::const_iterator itMap = fL1Map.begin(); itMap != fL1Map.end(); ++itMap) {
-      EvtView->setUserRecord<bool>(itMap->second, gtDecisionWord[itMap->first]);
-      if (fDebug > 1) cout << "L1 TD: " << itMap->first << " " << itMap->second << " " << gtDecisionWord[itMap->first]<< endl;
-   }
+   // L1 Decission
+   if (!L1GlobalTrigger.failedToGet()) {
+      DecisionWord gtDecisionWord = L1GlobalTrigger->decisionWord();    
+      for (std::map<int,std::string>::const_iterator itMap = fL1Map.begin(); itMap != fL1Map.end(); ++itMap) {
+         EvtView->setUserRecord<bool>(itMap->second, gtDecisionWord[itMap->first]);
+         if (fDebug > 1) cout << "L1 TD: " << itMap->first << " " << itMap->second << " " << gtDecisionWord[itMap->first]<< endl;
+      }
+   } else cout << "l1GlobalTrigger Product not available!" << endl;
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
