@@ -25,6 +25,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <algorithm>
 // include Message Logger for Debug
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "TLorentzVector.h"
@@ -110,7 +111,15 @@
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
 
+// special stuff for sim truth of converted photons
+#include "SimDataFormats/Track/interface/SimTrack.h"
+#include "SimDataFormats/Track/interface/SimTrackContainer.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
+#include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
+
+
 using namespace std;
+using namespace edm;
 
 //
 // constructors and destructor
@@ -123,6 +132,8 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fGenOnly = iConfig.getUntrackedParameter<bool>("GenOnly");
    // Debugging
    fDebug = iConfig.getUntrackedParameter<int>("debug");
+   // Use SIM info
+   fUseSIM = iConfig.getUntrackedParameter<bool>("UseSIM");
    // The labels used in cfg-file 
    //fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
@@ -244,6 +255,9 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
       analyzeGenJets(iEvent, GenEvtView, genjetmap);
       analyzeGenMET(iEvent, GenEvtView);
+      if (fUseSIM){
+         analyzeSIM(iEvent, GenEvtView);
+      }
    }
    // store Rec Objects only if requested
    if (!fGenOnly) {
@@ -450,6 +464,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
             part->setName("Gamma");
             part->setCharge(0);
 	    part->setP4(p->px(), p->py(), p->pz(), p->energy());
+
             part->setUserRecord<int>("GenId", GenId);
 	    // TEMPORARY: calculate isolation ourselves
 	    double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5); //0. since gamma not charged!
@@ -573,6 +588,59 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
    if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
    //cout << " Our GenMET: " << part->getPt() << endl;
 }
+
+
+//----------------- SIM -------------------
+void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
+
+   Handle<SimVertexContainer> simVtcs;
+   iEvent.getByLabel("g4SimHits" , simVtcs);
+   SimVertexContainer::const_iterator simVertex; 
+
+   Handle<SimTrackContainer> simTracks;
+   iEvent.getByLabel("g4SimHits",simTracks);
+   SimTrackContainer::const_iterator simTrack;
+   SimTrackContainer::const_iterator simTrack2;
+
+   vector<unsigned int> ParentVec;
+
+   for (simTrack = simTracks->begin(); simTrack != simTracks->end(); ++simTrack){
+      //int TrackID         = simTrack->trackId();
+      //cout << "TrackID: " << TrackID << endl;
+      int TrackType = simTrack->type();
+      if ( (TrackType == 11) || (TrackType == -11) ){
+         //double TrackPt = sqrt(simTrack->momentum().perp2());
+         //cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
+         int VtxIndex = simTrack->vertIndex();
+         unsigned int ParentTrack = (*simVtcs)[VtxIndex].parentIndex();
+         vector<unsigned int>::iterator where = find(ParentVec.begin(), ParentVec.end(), ParentTrack);
+         if (where == ParentVec.end()){ 
+            ParentVec.push_back(ParentTrack);
+            //cout << "ParentTrack " << ParentTrack << endl;
+            for ( simTrack2 = simTracks->begin(); simTrack2 != simTracks->end(); ++simTrack2){
+               if ( simTrack2->trackId() == ParentTrack && (simTrack2->type() == 22) && (sqrt(simTrack2->momentum().perp2()) > 15.0) ){
+                  //int ParentType = simTrack2->type();
+                  //double ParentPt = sqrt(simTrack2->momentum().perp2());
+                  //cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
+                  //cout << "ParentTrack " << ParentTrack << endl;
+                  //cout << "found conversion: " << ParentType << " with pt: " << ParentPt << endl;
+                  pxl::Particle* part = EvtView->create<pxl::Particle>();
+                  part->setName("SIMConvGamma");
+                  part->setP4(simTrack2->momentum().px(), simTrack2->momentum().py(),simTrack2->momentum().pz(), simTrack2->momentum().energy() );
+                  part->setUserRecord<unsigned int>("TrackId", ParentTrack);
+                  //cout << "found conversion with energy: " << simTrack2->momentum().energy() << " pt: " << part->getPt() << " eta: " << part->getEta() << " phi: " << part->getPhi() << endl;
+                  //cout << "------------------" << endl;
+
+               }
+            }
+         }
+      }
+
+   }
+
+//cout << "---------NEW EVENT ---------" << endl;
+}
+
 
 // ------------ reading the Reconstructed MET ------------
 //the stored information should already contain the muon corrections plus several other corrections

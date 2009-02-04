@@ -87,6 +87,8 @@ private:
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
    virtual void analyzeGenJets(const edm::Event&, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
+
+   virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
    virtual void analyzeTrigger(const edm::Event&, pxl::EventView*); //not complete!
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
@@ -118,6 +120,7 @@ private:
    std::string fFileName; 
    std::string fProcess;
    bool fGenOnly;
+   bool fUseSIM;
    // The labels used in cfg-file 
    // Generator 
    std::string fgenParticleCandidatesLabel;
