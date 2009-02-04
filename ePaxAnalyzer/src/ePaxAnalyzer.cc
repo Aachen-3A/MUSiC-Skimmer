@@ -884,6 +884,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	 part->setUserRecord<double>("HCALDeposit", muon->calEnergy().had);
 	 // check good muon method
 	 part->setUserRecord<bool>("isGood", muon->isGood(reco::Muon::GlobalMuonPromptTight));
+         part->setUserRecord<bool>("lastStationTight", muon->isGood(reco::Muon::TMLastStationTight)); 
          part->setUserRecord<float>("SegComp", muon->segmentCompatibility());
          numMuonRec++;
       }
