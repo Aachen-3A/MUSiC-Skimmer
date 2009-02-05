@@ -619,18 +619,20 @@ void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView)
             //cout << "ParentTrack " << ParentTrack << endl;
             for ( simTrack2 = simTracks->begin(); simTrack2 != simTracks->end(); ++simTrack2){
                if ( simTrack2->trackId() == ParentTrack && (simTrack2->type() == 22) && (sqrt(simTrack2->momentum().perp2()) > 15.0) ){
-                  //int ParentType = simTrack2->type();
-                  //double ParentPt = sqrt(simTrack2->momentum().perp2());
-                  //cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
-                  //cout << "ParentTrack " << ParentTrack << endl;
-                  //cout << "found conversion: " << ParentType << " with pt: " << ParentPt << endl;
-                  pxl::Particle* part = EvtView->create<pxl::Particle>();
-                  part->setName("SIMConvGamma");
-                  part->setP4(simTrack2->momentum().px(), simTrack2->momentum().py(),simTrack2->momentum().pz(), simTrack2->momentum().energy() );
-                  part->setUserRecord<unsigned int>("TrackId", ParentTrack);
-                  //cout << "found conversion with energy: " << simTrack2->momentum().energy() << " pt: " << part->getPt() << " eta: " << part->getEta() << " phi: " << part->getPhi() << endl;
-                  //cout << "------------------" << endl;
-
+                  //do not save photons without corresponding gen particle
+                  if(!(simTrack2->noGenpart())) {                 
+                     //int ParentType = simTrack2->type();
+                     //double ParentPt = sqrt(simTrack2->momentum().perp2());
+                     //cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
+                     //cout << "ParentTrack " << ParentTrack << endl;
+                     //cout << "found conversion: " << ParentType << " with pt: " << ParentPt << endl;
+                     pxl::Particle* part = EvtView->create<pxl::Particle>();
+                     part->setName("SIMConvGamma");
+                     part->setP4(simTrack2->momentum().px(), simTrack2->momentum().py(),simTrack2->momentum().pz(), simTrack2->momentum().energy() );
+                     part->setUserRecord<unsigned int>("TrackId", ParentTrack);
+                     //cout << "found conversion with energy: " << simTrack2->momentum().energy() << " pt: " << part->getPt() << " eta: " << part->getEta() << " phi: " << part->getPhi() << endl;
+                     //cout << "------------------" << endl;
+                  }
                }
             }
          }
