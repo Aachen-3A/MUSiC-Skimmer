@@ -99,10 +99,10 @@ execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 #)
 
 # cut on the factorization scale e.g. suitable for cuts on inv. mass of resonances in Pythia!
-process.FacScale = cms.EDFilter("FacScaleFilter",
-         fac_scale_lower_bound = cms.double(200.),
-         fac_scale_upper_bound = cms.double(500.)
-)
+#process.FacScale = cms.EDFilter("FacScaleFilter",
+#         fac_scale_lower_bound = cms.double(200.),
+#         fac_scale_upper_bound = cms.double(500.)
+#)
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:
@@ -139,7 +139,7 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
 
 )
 
-process.p = cms.Path(process.patLayer0 + process.patLayer1 + process.FacScale + process.ePaxAnalysis)
+process.p = cms.Path(process.patLayer0 + process.patLayer1 + process.ePaxAnalysis)
 
 ## Necessary fixes to run 2.2.X on 2.1.X data
 from PhysicsTools.PatAlgos.tools.cmsswVersionTools import run22XonSummer08AODSIM
