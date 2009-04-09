@@ -2,28 +2,28 @@ runOnData = False
 
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("Phythia8Photon35")
+process = cms.Process("PAT")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 # source
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root',
-'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/photon_jets_B89E5A6F-CFBC-DD11-888C-00E0814002A9.root'
-	)
+#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root',
+#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/photon_jets_B89E5A6F-CFBC-DD11-888C-00E0814002A9.root'
+        'file:/tmp/Exotica_Zee_M200.root'	)
 )
 
 process.AdaptorConfig = cms.Service("AdaptorConfig",
     stats = cms.untracked.bool(True),
     enable = cms.untracked.bool(True),
-    tempDir = cms.untracked.string(""),
+    tempDir = cms.untracked.string("."),
     cacheHint = cms.untracked.string("lazy-download"),
     readHint = cms.untracked.string("auto-detect"))
 
@@ -98,6 +98,12 @@ execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 #         pt_hat_upper_bound = cms.double(500.)
 #)
 
+# cut on the factorization scale e.g. suitable for cuts on inv. mass of resonances in Pythia!
+process.FacScale = cms.EDFilter("FacScaleFilter",
+         fac_scale_lower_bound = cms.double(200.),
+         fac_scale_upper_bound = cms.double(500.)
+)
+
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:
          FileName =  cms.untracked.string("testSIMphoton_temp.pxlio"),
@@ -133,7 +139,7 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
 
 )
 
-process.p = cms.Path(process.patLayer0 + process.patLayer1 + process.ePaxAnalysis)
+process.p = cms.Path(process.patLayer0 + process.patLayer1 + process.FacScale + process.ePaxAnalysis)
 
 ## Necessary fixes to run 2.2.X on 2.1.X data
 from PhysicsTools.PatAlgos.tools.cmsswVersionTools import run22XonSummer08AODSIM
