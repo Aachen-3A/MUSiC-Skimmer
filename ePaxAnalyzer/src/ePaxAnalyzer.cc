@@ -374,7 +374,9 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    pxl::Vertex* GenVtx = EvtView->create<pxl::Vertex>();
    GenVtx->setName("PV");
    //mind that clearly the following line crashes in case of ParticleGun RelVal like single photon
-   GenVtx->setXYZ(p->daughter(0)->vx(), p->daughter(0)->vy(), p->daughter(0)->vz()); //need daughter since first particle (proton) has position zero
+   // therefore add a protection :-) C.H. 20.04.09
+   if (p->daughter(0) != 0) GenVtx->setXYZ(p->daughter(0)->vx(), p->daughter(0)->vy(), p->daughter(0)->vz()); //need daughter since first particle (proton) has position zero
+   else GenVtx->setXYZ(p->vx(), p->vy(), p->vz());  // if we do not have pp collisions
    EvtView->setUserRecord<int>("NumVertices", 1);  
   
    int numMuonMC = 0;
@@ -857,8 +859,16 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 	 //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
 	 part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
 	 part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
-	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
-	 part->setUserRecord<double>("DSZ", muontrack->dsz());
+         // Save distance to the primary vertex in z and xy plane i.e. impact parameter
+         //get primary vertex (hopefully correct one) for physics eta THIS NEEDS TO BE CHECKED !!
+         // units given in cm!!! Use nominal beam spot of Summer/Fall08 if no vertex available
+         math::XYZPoint vtx(0.0322, 0., 0.);
+         if (RecView->findUserRecord<int>("NumVertices") > 0) {
+            pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
+            vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
+         } 
+	 part->setUserRecord<double>("Dsz", muontrack->dsz(vtx));
+         part->setUserRecord<double>("Dxy", muontrack->dxy(vtx));
        
 	 //official CaloIso and TrkIso
 	 //Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
@@ -949,10 +959,17 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          //part->setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2()); //why was this left out?
          part->setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits()); //ok
 	 part->setUserRecord<int>("Class", ele->classification()); //ok
-	 //save sz-distance to (0,0,0) for checking compability with primary vertex (need dsz or dz???)
-	 part->setUserRecord<double>("DSZ", ele->gsfTrack()->dsz()); //ok
-	 //part->setUserRecord<double>("DZ", ele->gsfTrack()->dz()); //not needed since vz()==dz()
-         
+
+         // Save distance to the primary vertex in z and xy plane i.e. impact parameter
+         //get primary vertex (hopefully correct one)
+         // units given in cm!!! Use nominal beam spot of Summer/Fall08 if no vertex available
+         math::XYZPoint vtx(0.0322, 0., 0.);
+         if (RecView->findUserRecord<int>("NumVertices") > 0) {
+            pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
+            vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
+         } 
+	 part->setUserRecord<double>("Dsz", ele->gsfTrack()->dsz(vtx));
+         part->setUserRecord<double>("Dxy", ele->gsfTrack()->dxy(vtx));
 
 	 //store PAT matching info if MC
 	 if (MC) {
@@ -986,11 +1003,11 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 	 part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
 	 part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
 	 //store ID information                    
-         part->setUserRecord<bool>("IsRobustHighE", ele->electronID("eidRobustHighEnergy") > 0.5);
-         part->setUserRecord<bool>("IsRobustLoose", ele->electronID("eidRobustLoose") > 0.5);
-         part->setUserRecord<bool>("IsRobustTight", ele->electronID("eidRobustTight") > 0.5);
-	 part->setUserRecord<bool>("IsLoose", ele->electronID("eidLoose") > 0.5);
-	 part->setUserRecord<bool>("IsTight", ele->electronID("eidTight") > 0.5);
+         part->setUserRecord<bool>("RobustHighE", ele->electronID("eidRobustHighEnergy") > 0.5);
+         part->setUserRecord<bool>("RobustLoose", ele->electronID("eidRobustLoose") > 0.5);
+         part->setUserRecord<bool>("RobustTight", ele->electronID("eidRobustTight") > 0.5);
+	 part->setUserRecord<bool>("Loose", ele->electronID("eidLoose") > 0.5);
+	 part->setUserRecord<bool>("Tight", ele->electronID("eidTight") > 0.5);
 	 //part->setUserRecord<float>("Likeli", ele->electronID("likelihood"));
          //save official isolation information
 	 part->setUserRecord<double>("CaloIso", ele->caloIso());
@@ -1104,7 +1121,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
    std::vector<pat::Photon> photons = *photonHandle;
    
    int numGammaRec = 0;
-   int numGammaAll = 0; //need counter for ID ???
    for (std::vector<pat::Photon>::const_iterator photon = photons.begin(); photon != photons.end(); ++photon) {  
       if ( Gamma_cuts(photon) ) { 
          pxl::Particle* part = RecView->create<pxl::Particle>();
@@ -1143,18 +1159,18 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          // Number of Tracks in Solid Cone DR = 0.4
 	 part->setUserRecord<int>("TrackNum", photon->nTrkSolidCone());
 	 //store information about converted state
-	 part->setUserRecord<bool>("IsConverted", photon->isConverted());
-	 part->setUserRecord<bool>("IsAlsoEle", photon->isAlsoElectron()); 
+	 part->setUserRecord<bool>("Converted", photon->isConverted());
+	 part->setUserRecord<bool>("AlsoEle", photon->isAlsoElectron()); 
 	 //if (photon->isConvertedPhoton() == true) {cout << "is Converted!" << endl;}
 	 // store photon-Id
-	 part->setUserRecord<bool>("IsLooseEM", photon->isLooseEM());
-	 part->setUserRecord<bool>("IsLoose", photon->isLoosePhoton());
-	 part->setUserRecord<bool>("IsTight", photon->isTightPhoton());
+	 part->setUserRecord<bool>("LooseEM", photon->isLooseEM());
+	 part->setUserRecord<bool>("Loose", photon->isLoosePhoton());
+	 part->setUserRecord<bool>("Tight", photon->isTightPhoton());
 	 // is near a gap ! isEEGap == always false not yet implemented ... CMSSW_2_1_9 
 	 part->setUserRecord<bool>("Gap", photon->isEBGap() || photon->isEEGap() || photon->isEBEEGap());
 	 // store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged 
 	 //get primary vertex (hopefully correct one) for physics eta THIS NEEDS TO BE CHECKED !!!
-         math::XYZPoint vtx(0., 0., 0.);
+         math::XYZPoint vtx(0.0322, 0., 0.);
          if (RecView->findUserRecord<int>("NumVertices") > 0) {
             pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
             vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
@@ -1174,7 +1190,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	 //FIXME Pi0 stuff still missing --> seems not be working in CMSSW_2_1_X
          numGammaRec++;
       }	 
-      numGammaAll++;
    }
    RecView->setUserRecord<int>("NumGamma", numGammaRec);
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
@@ -1332,7 +1347,7 @@ bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) co
   //
   //check compatibility of vertex with beam spot
   double zV = vertex->z();
-  double rV = sqrt( vertex->x()*vertex->x() + vertex->y()*vertex->y() );
+  double rV = sqrt( (0.0322-vertex->x())*(0.0322-vertex->x()) + vertex->y() * vertex->y() );
   if (fabs(zV)>20. || rV>1. ) return false;
   return true;
 }
