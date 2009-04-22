@@ -15,9 +15,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root',
-#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/dcms/staschmitz/test/photon_jets_B89E5A6F-CFBC-DD11-888C-00E0814002A9.root'
-        'file:/tmp/Exotica_Zee_M200.root'	)
+'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root',
+'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_B89E5A6F-CFBC-DD11-888C-00E0814002A9.root'
+       	)
 )
 
 process.AdaptorConfig = cms.Service("AdaptorConfig",
@@ -29,6 +29,8 @@ process.AdaptorConfig = cms.Service("AdaptorConfig",
 
 process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
+# rerun photon ID
+process.load("RecoEgamma.PhotonIdentification.photonId_cff")
 # for ClusterShape inspired by egamma hypernews
 process.load("Geometry.CaloEventSetup.CaloGeometry_cfi")
 process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
@@ -139,7 +141,7 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
 
 )
 
-process.p = cms.Path(process.patLayer0 + process.patLayer1 + process.ePaxAnalysis)
+process.p = cms.Path(process.photonIDSequence + process.patLayer0 + process.patLayer1 + process.ePaxAnalysis)
 
 ## Necessary fixes to run 2.2.X on 2.1.X data
 from PhysicsTools.PatAlgos.tools.cmsswVersionTools import run22XonSummer08AODSIM
