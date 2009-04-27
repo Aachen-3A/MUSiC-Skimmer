@@ -156,6 +156,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fL1TriggerObjectMapTag = iConfig.getParameter<edm::InputTag>("L1TriggerObjectMapTag");
    ftriggerResultsTag = iConfig.getParameter<edm::InputTag>("triggerResults");
    fTriggerEvent = iConfig.getParameter<edm::InputTag>("triggerEvent");
+   fStoreL3Objects = iConfig.getUntrackedParameter<bool>("StoreL3Objects");
    
    HLTConfigProvider hltConfig_;
    hltConfig_.init("HLT");
@@ -176,11 +177,16 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoEle12_LW_L1R")] = "HLT_DoubleIsoEle12_LW_L1R";
    fHLTMap[hltConfig_.triggerIndex("HLT_DoubleEle5_SW_L1R")] = "HLT_DoubleEle5_SW_L1R";
    fHLTMap[hltConfig_.triggerIndex("HLT_DoubleEle10_LW_OnlyPixelM_L1R")] = "HLT_DoubleEle10_LW_OnlyPixelM_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoubleEle6_Exclusive")] = "HLT_DoubleEle6_Exclusive";
+   
    // Photons
    fHLTMap[hltConfig_.triggerIndex("HLT_IsoPhoton15_L1R")] = "HLT_IsoPhoton15_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_IsoPhoton20_L1R")] = "HLT_IsoPhoton20_L1R";
    fHLTMap[hltConfig_.triggerIndex("HLT_Photon15_L1R")] = "HLT_Photon15_L1R";
+   fHLTMap[hltConfig_.triggerIndex("HLT_Photon25_L1R")] = "HLT_Photon25_L1R";
    fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoPhoton20_L1R")] = "HLT_DoubleIsoPhoton20_L1R";
    fHLTMap[hltConfig_.triggerIndex("HLT_DoubleIsoPhoton20_L1I")] = "HLT_DoubleIsoPhoton20_L1I";      
+   fHLTMap[hltConfig_.triggerIndex("HLT_DoublePhoton10_Exclusive")] = "HLT_DoublePhoton10_Exclusive";      
    // Muons
    fHLTMap[hltConfig_.triggerIndex("HLT_IsoMu15")] = "HLT_IsoMu15";
    fHLTMap[hltConfig_.triggerIndex("HLT_Mu15")] = "HLT_Mu15";
@@ -656,7 +662,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
    edm::Handle<std::vector<pat::MET> > METHandle;
    iEvent.getByLabel(fMETRecoLabel, METHandle);
-   std::vector<pat::MET> METs = *METHandle;
+   const std::vector<pat::MET>& METs = *METHandle;
    std::vector<pat::MET>::const_iterator met = METs.begin();
 
    int numMETRec = 0;
@@ -721,49 +727,51 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    	      << " Accept=" << triggerResultsHandle_->accept(trig_map->first)
    	      << " Error =" << triggerResultsHandle_->error(trig_map->first) << endl;
       }
-      const vector<string>& moduleLabels(hltConfig_.moduleLabels(trig_map->first));
-      //const unsigned int m(hltConfig_.size(trig_map->first));
-      const unsigned int moduleIndex(triggerResultsHandle_->index(trig_map->first));
-      //cout << " Last active module - label/type: "
-      // << moduleLabels[moduleIndex] << "/" << hltConfig_.moduleType(moduleLabels[moduleIndex])
-      // << " [" << moduleIndex << " out of 0-" << (m-1) << " on this path]"
-      // << endl;
-      //assert (moduleIndex<m);
+      if (fStoreL3Objects) {
+         const vector<string>& moduleLabels(hltConfig_.moduleLabels(trig_map->first));
+         //const unsigned int m(hltConfig_.size(trig_map->first));
+         const unsigned int moduleIndex(triggerResultsHandle_->index(trig_map->first));
+         //cout << " Last active module - label/type: "
+         // << moduleLabels[moduleIndex] << "/" << hltConfig_.moduleType(moduleLabels[moduleIndex])
+         // << " [" << moduleIndex << " out of 0-" << (m-1) << " on this path]"
+         // << endl;
+         //assert (moduleIndex<m);
 
-      // Results from TriggerEvent product - Attention: must look only for
-      // modules actually run in this path for this event!
-      // Analyze and store the objects which have fired the trigger
-      for (unsigned int j = 0; j <= moduleIndex; ++j) {
-         const string& moduleLabel = moduleLabels[j];
-         const string  moduleType = hltConfig_.moduleType(moduleLabel);
-         // check whether the module is packed up in TriggerEvent product
-         const unsigned int filterIndex = triggerEventHandle_->filterIndex(InputTag(moduleLabel, "", "HLT"));
-	 //cout << "FilterIndex: " << filterIndex << " for module " << moduleLabel << "/" << moduleType << endl;
-         if (filterIndex < triggerEventHandle_->sizeFilters()) {
-            //cout << "Trigger " << trig_map->second << ": 'L3' filter in slot " << j << " - label/type " << moduleLabel << "/" << moduleType << endl;
-            const Vids& VIDS (triggerEventHandle_->filterIds(filterIndex));
-            const Keys& KEYS(triggerEventHandle_->filterKeys(filterIndex));
-            const size_type nI(VIDS.size());
-            const size_type nK(KEYS.size());
-            assert(nI==nK);
-            size_type n(max(nI,nK));
-	    if (n > 5) {
-	       cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << moduleType << endl;
-	       n = 5;
-	    }
-            //cout << "   " << n  << " accepted 'L3' objects found: " << endl;
-            const TriggerObjectCollection& TOC = triggerEventHandle_->getObjects();
-	    for (size_type i=0; i!=n; ++i) {
-	       const TriggerObject& TO = TOC[KEYS[i]];
-               pxl::Particle* part = EvtView->create<pxl::Particle>();
-               part->setName(moduleLabel);
-               part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
-               part->setUserRecord<double>("ID", TO.id());
-	       if (fDebug > 0) cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-	                            << " id: " << TO.id() << " pt: " << TO.pt() << " eta: " << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass()
-	                            << endl;
+         // Results from TriggerEvent product - Attention: must look only for
+         // modules actually run in this path for this event!
+         // Analyze and store the objects which have fired the trigger
+         for (unsigned int j = 0; j <= moduleIndex; ++j) {
+            const string& moduleLabel = moduleLabels[j];
+            const string  moduleType = hltConfig_.moduleType(moduleLabel);
+            // check whether the module is packed up in TriggerEvent product
+            const unsigned int filterIndex = triggerEventHandle_->filterIndex(InputTag(moduleLabel, "", "HLT"));
+	    //cout << "FilterIndex: " << filterIndex << " for module " << moduleLabel << "/" << moduleType << endl;
+            if (filterIndex < triggerEventHandle_->sizeFilters()) {
+               //cout << "Trigger " << trig_map->second << ": 'L3' filter in slot " << j << " - label/type " << moduleLabel << "/" << moduleType << endl;
+               const Vids& VIDS (triggerEventHandle_->filterIds(filterIndex));
+               const Keys& KEYS(triggerEventHandle_->filterKeys(filterIndex));
+               const size_type nI(VIDS.size());
+               const size_type nK(KEYS.size());
+               assert(nI==nK);
+               size_type n(max(nI,nK));
+	       if (n > 5) {
+	          cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << moduleType << endl;
+	          n = 5;
+	       }
+               //cout << "   " << n  << " accepted 'L3' objects found: " << endl;
+               const TriggerObjectCollection& TOC = triggerEventHandle_->getObjects();
+	       for (size_type i=0; i!=n; ++i) {
+	          const TriggerObject& TO = TOC[KEYS[i]];
+                  pxl::Particle* part = EvtView->create<pxl::Particle>();
+                  part->setName(moduleLabel);
+                  part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
+                  part->setUserRecord<double>("ID", TO.id());
+	          if (fDebug > 0) cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+	                               << " id: " << TO.id() << " pt: " << TO.pt() << " eta: " << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass()
+	                               << endl;
+               }
             }
-         }
+	 }
       } 
    }
    // Store L1 Trigger Bits
@@ -817,7 +825,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
-   std::vector<pat::Muon> muons = *muonHandle;
+   const std::vector<pat::Muon>& muons = *muonHandle;
 
    // count muons   
    int numMuonRec = 0;
@@ -1053,7 +1061,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
       // get RecoJets
       edm::Handle<std::vector<pat::Jet> > jetHandle;
       iEvent.getByLabel("selectedLayer1Jets"+(*jet_label), jetHandle);
-      std::vector<pat::Jet> RecJets = *jetHandle;
+      const std::vector<pat::Jet>& RecJets = *jetHandle;
       //Get the GenJet collections for PAT matching
       edm::Handle<reco::GenJetCollection> GenJets;
       // get matching Gen Collection
@@ -1118,7 +1126,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
    // get Photon Collection     
    edm::Handle<std::vector<pat::Photon> > photonHandle;
    iEvent.getByLabel(fGammaRecoLabel, photonHandle);
-   std::vector<pat::Photon> photons = *photonHandle;
+   const std::vector<pat::Photon>& photons = *photonHandle;
    
    int numGammaRec = 0;
    for (std::vector<pat::Photon>::const_iterator photon = photons.begin(); photon != photons.end(); ++photon) {  
@@ -1152,12 +1160,16 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 	 //set hadronic over electromagnetic energy fraction
 	 part->setUserRecord<float>("HoEm", photon->hadronicOverEm());
  	 //save official isolation information
-	 part->setUserRecord<double>("HCALIso", photon->hcalIso());
-	 part->setUserRecord<double>("ECALIso", photon->ecalIso());
-	 part->setUserRecord<double>("TrkIso", photon->trackIso());
-	 part->setUserRecord<double>("CaloIso", photon->caloIso());
-         // Number of Tracks in Solid Cone DR = 0.4
+	 // this is the BAD PAT isolation!!!
+	 part->setUserRecord<float>("HCALIso", photon->hcalIso());
+	 part->setUserRecord<float>("ECALIso", photon->ecalIso());
+	 part->setUserRecord<float>("TrkIso", photon->trackIso());
+	 part->setUserRecord<float>("CaloIso", photon->caloIso());
 	 part->setUserRecord<int>("TrackNum", photon->nTrkSolidCone());
+	 // use egamma isolation based on RecHits:
+	 part->setUserRecord<float>("ID_HCALIso", photon->isolationHcalRecHit());
+	 part->setUserRecord<float>("ID_ECALIso", photon->isolationEcalRecHit());
+	 part->setUserRecord<float>("ID_TrkIso", photon->isolationHollowTrkCone());	  
 	 //store information about converted state
 	 part->setUserRecord<bool>("Converted", photon->isConverted());
 	 part->setUserRecord<bool>("AlsoEle", photon->isAlsoElectron()); 

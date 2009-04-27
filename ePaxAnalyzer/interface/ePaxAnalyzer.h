@@ -153,6 +153,7 @@ private:
    edm::InputTag fTriggerEvent;
    std::map<int, std::string> fHLTMap;
    std::map<int, std::string> fL1Map;
+   bool fStoreL3Objects;
  
    ParticleMatcher* Matcher;
    // to be used for ePax output 

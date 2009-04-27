@@ -9,14 +9,16 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 # source
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root',
-'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_B89E5A6F-CFBC-DD11-888C-00E0814002A9.root'
+#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root',
+#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_B89E5A6F-CFBC-DD11-888C-00E0814002A9.root'
+'/store/mc/Fall08/PhotonJets200toInf-madgraph/GEN-SIM-RECO/IDEAL_V9_reco-v1/0026/0033A31F-C9FC-DD11-8989-001E8CCCE114.root',
+'/store/mc/Fall08/PhotonJets200toInf-madgraph/GEN-SIM-RECO/IDEAL_V9_reco-v1/0026/00462FCA-C5FC-DD11-9B76-001A9227D3D1.root'
        	)
 )
 
@@ -108,10 +110,10 @@ execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 
 process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          # label of file:
-         FileName =  cms.untracked.string("testSIMphoton_temp.pxlio"),
+         FileName =  cms.untracked.string("PhotonJets200toInf-madgraph_NEWID.pxlio"),
          # Debugging: 0 = off, 1 = human readable, 2 = insane
          debug = cms.untracked.int32(0),
-         Process = cms.untracked.string("Phythia8Photon35"),
+         Process = cms.untracked.string("PhotonJets200toInf-madgraph"),
          # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
 	 GenOnly = cms.untracked.bool(False),
          # UseSIM true means to use SIM info for finding converted photons
@@ -137,8 +139,8 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
      	 barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
     	 endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
 	 triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
-	 triggerEvent = cms.InputTag("hltTriggerSummaryAOD", "", "HLT")
-
+	 triggerEvent = cms.InputTag("hltTriggerSummaryAOD", "", "HLT"),
+         StoreL3Objects = cms.untracked.bool(False)
 )
 
 process.p = cms.Path(process.photonIDSequence + process.patLayer0 + process.patLayer1 + process.ePaxAnalysis)
