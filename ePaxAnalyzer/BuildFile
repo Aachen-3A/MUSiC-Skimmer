@@ -13,10 +13,8 @@
 <use name=FWCore/MessageLogger>
 <use name=FWCore/ParameterSet>
 <use name=Geometry/CaloGeometry>
-<use name=Geometry/CaloEventSetup>
 <use name=RecoCaloTools/Selectors>
 <use name=RecoCaloTools/MetaCollections>
-<use name=SimDataFormats/HepMCProduct>
 <use name=SimDataFormats/TrackingAnalysis>
 <use name=DataFormats/L1Trigger>
 <use name=DataFormats/PatCandidates>
@@ -42,10 +40,8 @@
   <use name=DataFormats/VertexReco>
   <use name=FWCore/Framework>
   <use name=Geometry/CaloGeometry>
-  <use name=Geometry/CaloEventSetup>
   <use name=RecoCaloTools/Selectors>
   <use name=RecoCaloTools/MetaCollections>
-  <use name=SimDataFormats/HepMCProduct>
   <use name=SimDataFormats/TrackingAnalysis>
   <use name=DataFormats/L1Trigger>
   <use name=ePaxPxl/ePax>

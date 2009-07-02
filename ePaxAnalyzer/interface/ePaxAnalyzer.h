@@ -3,11 +3,11 @@
 
 // LHAPDF stuff
 extern "C" {
-  void initpdfset_ (char *, int len);
-  void initpdfsetm_(int &, char *);
-  void initpdf_(int &);
-  void evolvepdf_(double &, double &, double *);
-  void numberpdf_(int &);
+   void initpdfset_ (char *, int len);
+   void initpdfsetm_(int &, char *);
+   void initpdf_(int &);
+   void evolvepdf_(double &, double &, double *);
+   void numberpdf_(int &);
 }
 
 struct PDFInf {
@@ -19,12 +19,11 @@ struct PDFInf {
 };
 
 // CMSSW includes
-#include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-#include "SimDataFormats/HepMCProduct/interface/HepMCProduct.h"
+#include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
@@ -35,7 +34,7 @@ struct PDFInf {
 #include "DataFormats/METReco/interface/METCollection.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/EgammaCandidates/interface/Electron.h"
-#include "DataFormats/EgammaReco/interface/ElectronPixelSeed.h"
+#include "DataFormats/EgammaReco/interface/ElectronSeed.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/EgammaCandidates/interface/PhotonFwd.h"
 #include "DataFormats/EgammaCandidates/interface/Photon.h"
@@ -71,32 +70,32 @@ struct PDFInf {
 
 
 class ePaxAnalyzer : public edm::EDAnalyzer {
-public:
+ public:
 
    // why explicit?
    explicit ePaxAnalyzer(const edm::ParameterSet&);
    ~ePaxAnalyzer();
   
 
-private:
+ private:
 
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
-   virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
+   virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
-   virtual void analyzeGenJets(const edm::Event&, pxl::EventView*, std::map<const Particle*, pxl::Particle*>&);
+   virtual void analyzeGenJets(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
    virtual void analyzeTrigger(const edm::Event&, pxl::EventView*); //not complete!
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
-   virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Particle*, pxl::Particle*>&);
-   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Particle*, pxl::Particle*>&);
-   virtual void analyzeRecJets(const edm::Event&, pxl::EventView*, bool&, std::map<const Particle*, pxl::Particle*>&);
+   virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeRecJets(const edm::Event&, pxl::EventView*, bool&, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*);
-   virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Particle*, pxl::Particle*>&);
+   virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
 
    bool MuonMC_cuts(const GenParticle* MCmuon) const;
    bool EleMC_cuts(const GenParticle* MCele) const;
@@ -152,7 +151,11 @@ private:
    edm::InputTag fL1TriggerObjectMapTag;
    edm::InputTag fTriggerEvent;
    std::map<int, std::string> fHLTMap;
-   std::map<int, std::string> fL1Map;
+
+   std::vector< std::string > L1Names;
+   std::vector< int > L1Bits;  //must be same order as L1Names
+   bool cacheL1Bits;  //build bit to name association only in the first event
+   bool L1BitsCached; //bit to name association has been build and cached
    bool fStoreL3Objects;
  
    ParticleMatcher* Matcher;
@@ -160,9 +163,9 @@ private:
    pxl::OutputFile fePaxFile;
    std::vector<PDFInf> fpdf_vec;
    double xfx(const double &x, const double &Q, int fl) {  
-     double f[13], mx = x, mQ = Q;
-     evolvepdf_(mx, mQ, f);
-     return f[fl+6];
+      double f[13], mx = x, mQ = Q;
+      evolvepdf_(mx, mQ, f);
+      return f[fl+6];
    };
 
 };

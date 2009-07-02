@@ -1,14 +1,12 @@
 # use Type1 MET corrections from SisCone5:
-process.corMetType1Icone5.corrector = "L2L3JetCorrectorSC5Calo"
-process.corMetType1Icone5.inputUncorJetsLabel = "sisCone5CaloJets"
-
-# switch of Trigger Matching
-process.allLayer1Electrons.addTrigMatch = False
-process.allLayer1Muons.addTrigMatch     = False
-process.allLayer1Jets.addTrigMatch      = False
-process.allLayer1METs.addTrigMatch      = False
-process.allLayer1Photons.addTrigMatch   = False
-process.allLayer1Taus.addTrigMatch      = False
+import PhysicsTools.PatAlgos.tools.jetTools
+PhysicsTools.PatAlgos.tools.jetTools.switchJetCollection(process, 
+	cms.InputTag('sisCone5CaloJets'),  # Jet collection; must be already in the event when patDefaultSequence is executed
+	doJTA=True,            # Run Jet-Track association & JetCharge
+	doBTagging=True,       # Run b-tagging
+	jetCorrLabel=('SC5','Calo'), # example jet correction name; set to None for no JEC
+	doType1MET=True,       # recompute Type1 MET using these jets
+	genJetCollection=cms.InputTag("sisCone5GenJets"))
 
 
 #configure PAT matching
