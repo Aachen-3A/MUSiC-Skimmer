@@ -599,7 +599,6 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
    //cout << " Our GenMET: " << part->getPt() << endl;
 }
 
-
 //----------------- SIM -------------------
 void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
 
@@ -1060,7 +1059,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
       numJetRec = 0;
       // get RecoJets
       edm::Handle<std::vector<pat::Jet> > jetHandle;
-      iEvent.getByLabel("selectedLayer1Jets"+(*jet_label), jetHandle);
+      iEvent.getByLabel("cleanLayer1Jets"+(*jet_label), jetHandle);
       const std::vector<pat::Jet>& RecJets = *jetHandle;
       //Get the GenJet collections for PAT matching
       edm::Handle<reco::GenJetCollection> GenJets;
