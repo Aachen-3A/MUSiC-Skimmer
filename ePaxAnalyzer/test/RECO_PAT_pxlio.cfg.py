@@ -48,6 +48,14 @@ process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 # PAT Layer 0+1
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
+#fix missing PAT cleaning
+process.patDefaultSequence = cms.Sequence(
+    process.beforeLayer1Objects *
+    process.allLayer1Objects *
+    process.selectedLayer1Objects *
+    process.cleanLayer1Objects
+    )
+
 
 # Remove unneccessary stuff:
 if runOnData:
