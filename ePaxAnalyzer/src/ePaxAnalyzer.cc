@@ -127,7 +127,6 @@ using namespace edm;
 // constructors and destructor
 //
 ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig.getUntrackedParameter<string>("FileName")), fePaxFile(fFileName) {
-   cout << "Constructor" << endl;
    //now do what ever initialization is needed
    // Get Physics process
    fProcess = iConfig.getUntrackedParameter<string>("Process");
@@ -163,13 +162,19 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    
    HLTConfigProvider hltConfig_;
    hltConfig_.init("HLT");
+   unsigned int numTriggers = hltConfig_.size();
    //cout << "Available TriggerNames are: " << endl;
    //hltConfig_.dump("Triggers"); //dump table of available HLT
 
    //get list of HLT names and store them with their bits
    vector<string> HLTriggers = iConfig.getParameter<std::vector<std::string> >("HLTriggers");
    for( vector<string>::const_iterator trigger = HLTriggers.begin(); trigger != HLTriggers.end(); ++trigger ){
-      fHLTMap[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
+      unsigned int index = hltConfig_.triggerIndex( *trigger );
+      if( index < numTriggers ){
+         fHLTMap[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
+      } else {
+         cout << "WARNING: Trigger " << *trigger << " not found in HLT config, not added to trigger map (so not used)." << endl;
+      }
    }
 
    L1Names = iConfig.getParameter<std::vector<std::string> >( "L1Triggers" );
@@ -185,7 +190,6 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
 ePaxAnalyzer::~ePaxAnalyzer()
 {
-   cout << "Destructor" << endl;
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
    delete Matcher;
@@ -194,7 +198,6 @@ ePaxAnalyzer::~ePaxAnalyzer()
 // ------------ method called to for each event  ------------
 
 void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-   cout << "analyze" << endl;
    // set event counter   
    fNumEvt++; 
    // Owner of all Pxl Objects 
@@ -289,7 +292,6 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 // ------------ reading Generator related Stuff ------------
 
 void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   cout << "analyseGenRelatedInfo" << endl;
    // this works at least for RECO. Need to check if this works on AOD or PAT-Ntuplee 
   
    // get and store EventScale aka pt_hat 
@@ -341,7 +343,6 @@ void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
 // ------------ reading the Generator Stuff ------------
 
 void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*>& genmap ) {
-   cout << "analyzeGenInfo" << endl;
    //gen particles
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
@@ -481,7 +482,6 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 // ------------ reading the Generator Jets ------------
 
 void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*> & genjetmap) {
-   cout << "analyzeGenJets" << endl;
    int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
    // perform a loop over all desired jet collections:
    for (std::vector<std::string>::const_iterator jet_label = fJetMCLabels.begin(); jet_label != fJetMCLabels.end(); ++jet_label) {
@@ -530,7 +530,6 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
 // ------------ reading the Generator MET ------------
 
 void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   cout << "anaylzeGenMET" << endl;
    edm::Handle<reco::GenMETCollection> GenMet;
    iEvent.getByLabel(fMETMCLabel, GenMet);
    const GenMETCollection *genmetcol = GenMet.product();
@@ -572,7 +571,6 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
 //----------------- SIM -------------------
 void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   cout << "analyzeSIM" << endl;
    Handle<SimVertexContainer> simVtcs;
    iEvent.getByLabel("g4SimHits" , simVtcs);
    SimVertexContainer::const_iterator simVertex; 
@@ -629,7 +627,6 @@ void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView)
 //it will have certainly corrections in the future as there are certain functions for uncorrection planned
 
 void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   cout << "analyzeRecMET" << endl;
    edm::Handle<std::vector<pat::MET> > METHandle;
    iEvent.getByLabel(fMETRecoLabel, METHandle);
    const std::vector<pat::MET>& METs = *METHandle;
@@ -659,12 +656,9 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 // ------------ reading HLT and L1 Trigger Bits ------------
 
 void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   cout << "analyseTrigger" << endl;
    //reference for some of the following parts: CMSSW/HLTrigger/HLTcore/plugins/HLTEventAnalyzerAOD.cc
    using namespace edm;
    using namespace trigger;
-
-   cout << "HLT" << endl;
 
    edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
    iEvent.getByLabel(ftriggerResultsTag, triggerResultsHandle_); 
@@ -749,8 +743,6 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    }
 
 
-   cout << "L1" << endl;
-
    // Store L1 Trigger Bits
    edm::Handle< L1GlobalTriggerReadoutRecord > L1GlobalTrigger;
    iEvent.getByLabel( fL1GlobalTriggerTag, L1GlobalTrigger );
@@ -802,7 +794,6 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
 // ------------ reading Reconstructed Primary Vertices ------------
 
 void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* EvtView) {
-   cout << "analyzeRecVertices" << endl;
    edm::Handle<reco::VertexCollection> vertices;
    iEvent.getByLabel(fVertexRecoLabel, vertices);
    
@@ -834,7 +825,6 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 // ------------ reading Reconstructed Muons ------------
 
 void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map<const Candidate*, pxl::Particle*> & genmap) {
-   cout << "analyzeRecMuons" << endl;
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
@@ -931,7 +921,6 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 // ------------ reading Reconstructed Electrons ------------
 
 void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap) {
-   cout << "analyzeRecElectrons" << endl;
    int numEleRec = 0;   
    int numEleAll = 0;   // for matching
 
@@ -1015,13 +1004,11 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord<double>("eSeed", SCRef->seed()->energy()); //used for CutBasedElectronID
          part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
          part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
-         //store ID information                    
-         part->setUserRecord<bool>("RobustHighE", ele->electronID("eidRobustHighEnergy") > 0.5);
-         part->setUserRecord<bool>("RobustLoose", ele->electronID("eidRobustLoose") > 0.5);
-         part->setUserRecord<bool>("RobustTight", ele->electronID("eidRobustTight") > 0.5);
-         part->setUserRecord<bool>("Loose", ele->electronID("eidLoose") > 0.5);
-         part->setUserRecord<bool>("Tight", ele->electronID("eidTight") > 0.5);
-         //part->setUserRecord<float>("Likeli", ele->electronID("likelihood"));
+         //store ID information
+         const vector< pair< string, float > > &electronIDs = ele->electronIDs();
+         for( vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID ){
+            part->setUserRecord<bool>( electronID->first, electronID->second > 0.5 );
+         }
          //save official isolation information
          part->setUserRecord<double>("CaloIso", ele->caloIso());
          part->setUserRecord<double>("TrkIso", ele->trackIso());
@@ -1048,7 +1035,6 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 // ------------ reading Reconstructed Jets ------------
 
 void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, std::map<const Candidate*, pxl::Particle*>& genjetmap) {
-   cout << "analyzeRecJets" << endl;
    int numJetRec = 0;
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
@@ -1127,7 +1113,6 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
 // ------------ reading Reconstructed Gammas ------------
 
 void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap){
-   cout << "analyzeRecGammas" << endl;
    // get Photon Collection     
    edm::Handle<std::vector<pat::Photon> > photonHandle;
    iEvent.getByLabel(fGammaRecoLabel, photonHandle);
@@ -1179,8 +1164,10 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<bool>("Converted", photon->hasConversionTracks());
          //if (photon->isConvertedPhoton() == true) {cout << "is Converted!" << endl;}
          // store photon-Id
-         part->setUserRecord<bool>("Loose", photon->photonID("PhotonCutBasedIDLoose"));
-         part->setUserRecord<bool>("Tight", photon->photonID("PhotonCutBasedIDTight"));
+         const vector< pair< string, bool > > &photonIDs = photon->photonIDs();
+         for( vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID ){
+            part->setUserRecord<bool>( photonID->first, photonID->second );
+         }
          // is near a gap ! isEEGap == always false not yet implemented ... CMSSW_2_1_9 
          part->setUserRecord<bool>("Gap", photon->isEBGap() || photon->isEEGap() || photon->isEBEEGap());
          // store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged 
@@ -1213,7 +1200,6 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 // ------------ method returning the EventClassType ------------
 
 std::string ePaxAnalyzer::getEventClass(pxl::EventView* EvtView) {
-   cout << "getEventClass" << endl;
    ostringstream EventType;
    //set default values to 0 for Gen-only mode
    EventType << EvtView->findUserRecord<int>("NumEle") <<  "e"
@@ -1228,13 +1214,11 @@ std::string ePaxAnalyzer::getEventClass(pxl::EventView* EvtView) {
 // ------------ method called once each job just before starting event loop  ------------
 
 void ePaxAnalyzer::beginJob(const edm::EventSetup&) {
-   cout << "beginJob" << endl;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 
 void ePaxAnalyzer::endJob() {
-   cout << "endJob" << endl;
    cout << "++++++++++++++++++++++++++++++++++++++" << endl;
    cout << "analyzed " << fNumEvt << " events " << endl;
    // close output file:
@@ -1314,7 +1298,6 @@ void ePaxAnalyzer::endJob() {
 // ------------ method to define MC-MUON-cuts
 
 bool ePaxAnalyzer::MuonMC_cuts(const GenParticle* MCmuon) const {
-   cout << "MuonMC_cuts" << endl;
    if (MCmuon->pt() < 10.) return false;
    if (fabs(MCmuon->eta()) > 3.) return false;
    return true;
@@ -1325,7 +1308,6 @@ bool ePaxAnalyzer::MuonMC_cuts(const GenParticle* MCmuon) const {
 // ------------ method to define MC-Electron-cuts
 
 bool ePaxAnalyzer::EleMC_cuts(const GenParticle* MCele) const {
-   cout << "EleMC_cuts" << endl;
    if (MCele->pt() < 10.) return false;
    if (fabs(MCele->eta()) > 3.) return false;
    return true;
@@ -1334,7 +1316,6 @@ bool ePaxAnalyzer::EleMC_cuts(const GenParticle* MCele) const {
 // ------------ method to define MC-Gamma-cuts
 
 bool ePaxAnalyzer::GammaMC_cuts(const GenParticle* MCgamma) const {
-   cout << "GammaMC_cuts" << endl;
    if (MCgamma->pt() < 10.) return false;
    if (fabs(MCgamma->eta()) > 3.) return false;
    return true;
@@ -1343,7 +1324,6 @@ bool ePaxAnalyzer::GammaMC_cuts(const GenParticle* MCgamma) const {
 // ------------ method to define MC-Jet-cuts
 
 bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
-   cout << "JetMC_cuts" << endl;
    if (MCjet->pt() < 30.) return false;
    if (fabs(MCjet->eta()) > 3.) return false;
    return true;
@@ -1352,7 +1332,6 @@ bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) cons
 // ------------ method to define MC-MET-cuts
 
 bool ePaxAnalyzer::METMC_cuts(const pxl::Particle* MCmet) const {
-   cout << "METMC_cuts" << endl;
    if (MCmet->getPt() < 30.) return false;
    return true; 
 }
@@ -1360,7 +1339,6 @@ bool ePaxAnalyzer::METMC_cuts(const pxl::Particle* MCmet) const {
 // ------------ method to define RecVertex-cuts
 
 bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
-   cout << "Vertex_cuts" << endl;
    //check compatibility of vertex with beam spot
    double zV = vertex->z();
    double rV = sqrt( (0.0322-vertex->x())*(0.0322-vertex->x()) + vertex->y() * vertex->y() );
@@ -1371,7 +1349,6 @@ bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) co
 // ------------ method to define MUON-cuts
 
 bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
-   cout << "Muon_cuts" << endl;
    // basic preselection cuts
    if (!muon.isGlobalMuon()) return false;
    if (muon.pt() < 10.)  return false;
@@ -1383,7 +1360,6 @@ bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
 // ------------ method to define ELECTRON-cuts
 
 bool ePaxAnalyzer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
-   cout << "Ele_cuts" << endl;
    if (ele->pt() < 10.) return false;
    if (fabs(ele->eta()) > 3.) return false;
    return true;
@@ -1392,7 +1368,6 @@ bool ePaxAnalyzer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) cons
 // ------------ method to define JET-cuts
 
 bool ePaxAnalyzer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
-   cout << "Jet_cuts" << endl;
    if (jet->pt() < 30.) return false;
    if (fabs(jet->eta()) > 3.) return false;
    return true;
@@ -1402,7 +1377,6 @@ bool ePaxAnalyzer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
 // ------------ method to define GAMMA-cuts
 
 bool ePaxAnalyzer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
-   cout << "Gamma_cuts" << endl;
    if (photon->pt() < 10.) return false;
    if (fabs(photon->eta()) > 3.) return false;
    return true;
@@ -1412,7 +1386,6 @@ bool ePaxAnalyzer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) c
 // ------------ method to define MET-cuts
 
 bool ePaxAnalyzer::MET_cuts(const pxl::Particle* met) const {
-   cout << "MET_cuts" << endl;
    if (met->getPt() < 30.) return false;
    return true;
 }
@@ -1421,7 +1394,6 @@ bool ePaxAnalyzer::MET_cuts(const pxl::Particle* met) const {
 
 //FIXME compare to PAT-isolation 
 double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed){
-   cout << "IsoGenSum" << endl;
    // Computes the sum of Pt inside a cone of R=iso_DR
    // using 4-vectors stored in GenParticle objects
 
