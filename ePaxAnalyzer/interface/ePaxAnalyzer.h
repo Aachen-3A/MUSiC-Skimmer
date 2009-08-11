@@ -89,7 +89,18 @@ class ePaxAnalyzer : public edm::EDAnalyzer {
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
-   virtual void analyzeTrigger(const edm::Event&, pxl::EventView*); //not complete!
+   virtual void analyzeTrigger( const edm::Event &iEvent,
+                                pxl::EventView *EvtView,
+                                const std::string &processName,
+                                const edm::InputTag &L1Global,
+                                const edm::InputTag &L1Objects,
+                                const std::vector< std::string > &L1Names,
+                                std::vector< int > &L1Bits,
+                                bool &L1BitsCached,
+                                const edm::InputTag &HLTResults,
+                                const edm::InputTag &L3Objets,
+                                const std::map<int, std::string> &HLT_bit_to_name
+                                );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
@@ -145,17 +156,30 @@ class ePaxAnalyzer : public edm::EDAnalyzer {
    edm::InputTag fendcapClusterCollection;
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;   
+
    // Trigger
+   std::string   triggerProcess;
    edm::InputTag ftriggerResultsTag; 
    edm::InputTag fL1GlobalTriggerTag; 
    edm::InputTag fL1TriggerObjectMapTag;
    edm::InputTag fTriggerEvent;
-   std::map<int, std::string> fHLTMap;
-
    std::vector< std::string > L1Names;
    std::vector< int > L1Bits;  //must be same order as L1Names
-   bool cacheL1Bits;  //build bit to name association only in the first event
    bool L1BitsCached; //bit to name association has been build and cached
+   std::map<int, std::string> fHLTMap;
+
+   // Second trigger
+   std::string   triggerProcess2;
+   edm::InputTag ftriggerResultsTag2;
+   edm::InputTag fL1GlobalTriggerTag2;
+   edm::InputTag fL1TriggerObjectMapTag2;
+   edm::InputTag fTriggerEvent2;
+   std::vector< std::string > L1Names2;
+   std::vector< int > L1Bits2;  //must be same order as L1Names
+   bool L1BitsCached2; //bit to name association has been build and cached
+   std::map<int, std::string> fHLTMap2;
+
+   bool cacheL1Bits;  //build bit to name association only in the first event
    bool fStoreL3Objects;
  
    ParticleMatcher* Matcher;

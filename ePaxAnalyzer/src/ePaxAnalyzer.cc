@@ -154,32 +154,68 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
 
-   fL1GlobalTriggerTag =  iConfig.getParameter<edm::InputTag>("L1GlobalTriggerReadoutRecord");
-   fL1TriggerObjectMapTag = iConfig.getParameter<edm::InputTag>("L1TriggerObjectMapTag");
-   ftriggerResultsTag = iConfig.getParameter<edm::InputTag>("triggerResults");
-   fTriggerEvent = iConfig.getParameter<edm::InputTag>("triggerEvent");
-   fStoreL3Objects = iConfig.getUntrackedParameter<bool>("StoreL3Objects");
-   
-   HLTConfigProvider hltConfig_;
-   hltConfig_.init("HLT");
-   unsigned int numTriggers = hltConfig_.size();
-   //cout << "Available TriggerNames are: " << endl;
-   //hltConfig_.dump("Triggers"); //dump table of available HLT
 
-   //get list of HLT names and store them with their bits
-   vector<string> HLTriggers = iConfig.getParameter<std::vector<std::string> >("HLTriggers");
-   for( vector<string>::const_iterator trigger = HLTriggers.begin(); trigger != HLTriggers.end(); ++trigger ){
-      unsigned int index = hltConfig_.triggerIndex( *trigger );
-      if( index < numTriggers ){
-         fHLTMap[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
-      } else {
-         cout << "WARNING: Trigger " << *trigger << " not found in HLT config, not added to trigger map (so not used)." << endl;
+
+   //first trigger menu
+   triggerProcess         = iConfig.getParameter< std::string   >( "triggerProcess" );
+   fL1GlobalTriggerTag    = iConfig.getParameter< edm::InputTag >( "L1GlobalTriggerReadoutRecord" );
+   fL1TriggerObjectMapTag = iConfig.getParameter< edm::InputTag >( "L1TriggerObjectMapTag" );
+   ftriggerResultsTag     = iConfig.getParameter< edm::InputTag >( "triggerResults" );
+   fTriggerEvent          = iConfig.getParameter< edm::InputTag >( "triggerEvent" );
+   L1Names                = iConfig.getParameter< std::vector< std::string > >( "L1Triggers" );
+
+   {
+      HLTConfigProvider hltConfig_;
+      hltConfig_.init( triggerProcess );
+      unsigned int numTriggers = hltConfig_.size();
+      //cout << "Available TriggerNames are: " << endl;
+      //hltConfig_.dump("Triggers"); //dump table of available HLT
+      
+      //get list of HLT names and store them with their bits
+      vector<string> HLTriggers = iConfig.getParameter<std::vector<std::string> >("HLTriggers");
+      for( vector<string>::const_iterator trigger = HLTriggers.begin(); trigger != HLTriggers.end(); ++trigger ){
+         unsigned int index = hltConfig_.triggerIndex( *trigger );
+         if( index < numTriggers ){
+            fHLTMap[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
+         } else {
+            cout << "WARNING: Trigger " << *trigger << " not found in HLT config, not added to trigger map (so not used)." << endl;
+         }
       }
    }
 
-   L1Names = iConfig.getParameter<std::vector<std::string> >( "L1Triggers" );
+
+   //second trigger menu
+   triggerProcess2         = iConfig.getParameter< std::string   >( "triggerProcess2" );
+   fL1GlobalTriggerTag2    = iConfig.getParameter< edm::InputTag >( "L1GlobalTriggerReadoutRecord2" );
+   fL1TriggerObjectMapTag2 = iConfig.getParameter< edm::InputTag >( "L1TriggerObjectMapTag2" );
+   ftriggerResultsTag2     = iConfig.getParameter< edm::InputTag >( "triggerResults2" );
+   fTriggerEvent2          = iConfig.getParameter< edm::InputTag >( "triggerEvent2" );
+   L1Names2                = iConfig.getParameter< std::vector< std::string > >( "L1Triggers2" );
+
+   {
+      HLTConfigProvider hltConfig_;
+      hltConfig_.init( triggerProcess2 );
+      unsigned int numTriggers = hltConfig_.size();
+      //cout << "Available TriggerNames are: " << endl;                                                                                                                                                             
+      //hltConfig_.dump("Triggers"); //dump table of available HLT                                                                                                                                                  
+
+      //get list of HLT names and store them with their bits                                                                                                                                                        
+      vector<string> HLTriggers = iConfig.getParameter<std::vector<std::string> >("HLTriggers2");
+      for( vector<string>::const_iterator trigger = HLTriggers.begin(); trigger != HLTriggers.end(); ++trigger ){
+         unsigned int index = hltConfig_.triggerIndex( *trigger );
+         if( index < numTriggers ){
+            fHLTMap2[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
+         } else {
+            cout << "WARNING: Trigger " << *trigger << " not found in HLT config, not added to trigger map (so not used)." << endl;
+         }
+      }
+   }
+
+   fStoreL3Objects = iConfig.getUntrackedParameter<bool>("StoreL3Objects");
+
    cacheL1Bits = iConfig.getParameter< bool >("CacheL1TriggerBits");
    L1BitsCached = false;
+   L1BitsCached2 = false;
    
 
    Matcher = new ParticleMatcher();
@@ -242,7 +278,8 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // store Rec Objects only if requested
    if (!fGenOnly) {
       //Trigger bits
-      analyzeTrigger(iEvent, RecEvtView);
+      analyzeTrigger( iEvent, RecEvtView, triggerProcess,  fL1GlobalTriggerTag,  fL1TriggerObjectMapTag,  L1Names,  L1Bits,  L1BitsCached,  ftriggerResultsTag,  fTriggerEvent,  fHLTMap  );
+      analyzeTrigger( iEvent, RecEvtView, triggerProcess2, fL1GlobalTriggerTag2, fL1TriggerObjectMapTag2, L1Names2, L1Bits2, L1BitsCached2, ftriggerResultsTag2, fTriggerEvent2, fHLTMap2 );
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
@@ -655,18 +692,29 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
 // ------------ reading HLT and L1 Trigger Bits ------------
 
-void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void ePaxAnalyzer::analyzeTrigger( const edm::Event &iEvent,
+                                   pxl::EventView* EvtView,
+                                   const std::string &processName,
+                                   const edm::InputTag &L1Global,
+                                   const edm::InputTag &L1Objects,
+                                   const std::vector< std::string > &L1Names,
+                                   std::vector< int > &L1Bits,
+                                   bool &L1BitsCached,
+                                   const edm::InputTag &HLTResults,
+                                   const edm::InputTag &L3Objets,
+                                   const std::map<int, std::string> &HLT_bit_to_name
+                                   ){
    //reference for some of the following parts: CMSSW/HLTrigger/HLTcore/plugins/HLTEventAnalyzerAOD.cc
    using namespace edm;
    using namespace trigger;
 
    edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
-   iEvent.getByLabel(ftriggerResultsTag, triggerResultsHandle_); 
+   iEvent.getByLabel( HLTResults, triggerResultsHandle_ );
    edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
-   iEvent.getByLabel(fTriggerEvent, triggerEventHandle_);
+   iEvent.getByLabel( L3Objets, triggerEventHandle_ );
    
    HLTConfigProvider hltConfig_;
-   hltConfig_.init("HLT");
+   hltConfig_.init( processName );
    // Dump all triggers which have fired:
    //const unsigned int n(hltConfig_.size());
    //for (unsigned int i=0; i!=n; ++i) {
@@ -677,14 +725,14 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
    //}
    
    //loop over selected trigger names
-   for (std::map<int, std::string>::const_iterator trig_map = fHLTMap.begin(); trig_map != fHLTMap.end(); trig_map++) {
+   for (std::map<int, std::string>::const_iterator trig_map = HLT_bit_to_name.begin(); trig_map != HLT_bit_to_name.end(); trig_map++) {
       //save trigger path status
       if (triggerResultsHandle_->wasrun(trig_map->first) && !(triggerResultsHandle_->error(trig_map->first))) {
-         EvtView->setUserRecord<bool>(trig_map->second, triggerResultsHandle_->accept(trig_map->first));
-         if (fDebug > 0 && triggerResultsHandle_->accept(trig_map->first)) cout << endl << "Trigger: " << trig_map->second << " fired" << endl;
+         EvtView->setUserRecord< bool >( triggerProcess+"_"+trig_map->second, triggerResultsHandle_->accept(trig_map->first));
+         if (fDebug > 0 && triggerResultsHandle_->accept(trig_map->first)) cout << endl << "Trigger: " << trig_map->second << " in menu " << triggerProcess << " fired" << endl;
       } else {
-         if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " was not executed!" << endl;
-         if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << endl;
+         if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " in menu " << triggerProcess << " was not executed!" << endl;
+         if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << " in menu " << triggerProcess << endl;
       }
       //begin cout of saved information for debugging
       if (fDebug > 1) {
@@ -711,7 +759,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
             const string& moduleLabel = moduleLabels[j];
             const string  moduleType = hltConfig_.moduleType(moduleLabel);
             // check whether the module is packed up in TriggerEvent product
-            const unsigned int filterIndex = triggerEventHandle_->filterIndex(InputTag(moduleLabel, "", "HLT"));
+            const unsigned int filterIndex = triggerEventHandle_->filterIndex(InputTag(moduleLabel, "", processName ));
             //cout << "FilterIndex: " << filterIndex << " for module " << moduleLabel << "/" << moduleType << endl;
             if (filterIndex < triggerEventHandle_->sizeFilters()) {
                //cout << "Trigger " << trig_map->second << ": 'L3' filter in slot " << j << " - label/type " << moduleLabel << "/" << moduleType << endl;
@@ -745,7 +793,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
 
    // Store L1 Trigger Bits
    edm::Handle< L1GlobalTriggerReadoutRecord > L1GlobalTrigger;
-   iEvent.getByLabel( fL1GlobalTriggerTag, L1GlobalTrigger );
+   iEvent.getByLabel( L1Global, L1GlobalTrigger );
 
    // L1 Decision
    if (!L1GlobalTrigger.failedToGet()) {
@@ -754,7 +802,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
          vector< string >::const_iterator triggerName = L1Names.begin();
          vector< int >::const_iterator triggerBit = L1Bits.begin();
          while( triggerName != L1Names.end() && triggerBit != L1Bits.end() ){
-            EvtView->setUserRecord<bool>( *triggerName, gtDecisionWord[ *triggerBit ] );
+            EvtView->setUserRecord< bool >( processName+"_"+(*triggerName), gtDecisionWord[ *triggerBit ] );
             if (fDebug > 1) cout << "L1 TD: " << *triggerName << " " << *triggerBit << " " << gtDecisionWord[ *triggerBit ] << endl;
             ++triggerName; ++triggerBit;
          }
@@ -765,7 +813,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
             L1Bits.reserve( L1Names.size() );
          }
          edm::Handle< L1GlobalTriggerObjectMapRecord > L1GlobalTriggerMap;
-         iEvent.getByLabel( fL1TriggerObjectMapTag, L1GlobalTriggerMap );
+         iEvent.getByLabel( L1Objects, L1GlobalTriggerMap );
          const vector< L1GlobalTriggerObjectMap > &L1GTObjVec = (*L1GlobalTriggerMap).gtObjectMap();
          for( vector< string >::const_iterator triggerName = L1Names.begin(); triggerName != L1Names.end(); ++triggerName ){
             bool found = false;
@@ -774,7 +822,7 @@ void ePaxAnalyzer::analyzeTrigger(const edm::Event& iEvent, pxl::EventView* EvtV
                if( name == *triggerName ){
                   found = true;
                   int bit = L1GTObj->algoBitNumber();
-                  EvtView->setUserRecord<bool>( name, gtDecisionWord[ bit ] );
+                  EvtView->setUserRecord< bool >( processName+"_"+name, gtDecisionWord[ bit ] );
                   if( cacheL1Bits && cacheValid){
                      L1Bits.push_back( bit );
                   }

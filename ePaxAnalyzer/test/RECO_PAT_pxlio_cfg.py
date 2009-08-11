@@ -108,30 +108,50 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
                                       MuonRecoLabel = cms.untracked.string("cleanLayer1Muons"),
                                       ElectronRecoLabel = cms.untracked.string("cleanLayer1Electrons"),
                                       GammaRecoLabel = cms.untracked.string("cleanLayer1Photons"),
-                                      # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
-                                      JetMCLabels = cms.vstring("sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
-                                      JetRecoLabels = cms.vstring( "SISC5", "SISC7", "IC5"),
-                                      L1GlobalTriggerReadoutRecord = cms.InputTag("gtDigis"),
-                                      #L1GlobalTriggerReadoutRecord = cms.InputTag("gtDigis"),
-                                      L1TriggerObjectMapTag = cms.InputTag("hltL1GtObjectMap"),
-                                      # MET
-                                      METRecoLabel = cms.untracked.string("layer1METs"),
                                       reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
                                       reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
                                       barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
                                       endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
-                                      triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
-                                      triggerEvent = cms.InputTag("hltTriggerSummaryAOD", "", "HLT"),
+                                      # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
+                                      JetMCLabels = cms.vstring("sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
+                                      JetRecoLabels = cms.vstring( "SISC5", "SISC7", "IC5"),
+                                      # MET
+                                      METRecoLabel = cms.untracked.string("layer1METs"),
+
+                                      #trigger menu: 1E31
+                                      triggerProcess = cms.string( 'HLT' ),
+                                      L1GlobalTriggerReadoutRecord = cms.InputTag("gtDigis", "", "HLT"),
+                                      L1TriggerObjectMapTag = cms.InputTag("hltL1GtObjectMap", "", "HLT"),
                                       L1Triggers = cms.vstring( 'L1_SingleMu7', 'L1_DoubleMuOpen',
                                                                 'L1_SingleEG8', 'L1_DoubleEG5',
                                                                 'L1_SingleMu14', 'L1_SingleEG10', 'L1_Mu3QE8_EG5'
                                                                 ),
-                                      CacheL1TriggerBits = cms.bool( True ),
+                                      triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
+                                      triggerEvent = cms.InputTag("hltTriggerSummaryAOD", "", "HLT"),
                                       HLTriggers = cms.vstring( 'HLT_Mu9', 'HLT_DoubleMu0',
-                                                                'HLT_Ele15_SW_LooseTrackIso_L1R', 'HLT_Ele15_SW_EleId_L1R', 'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
+                                                                'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
                                                                 'HLT_Photon25_L1R', 'HLT_DoublePhoton15_L1R',
                                                                 'HLT_L1Mu14_L1SingleEG10', 'HLT_L2Mu5_Photon9_L1R'
                                                                 ),
+
+                                      #trigger menu: 8E29
+                                      triggerProcess2 = cms.string( 'HLT8E29' ),
+                                      L1GlobalTriggerReadoutRecord2 = cms.InputTag("gtDigis", "", "HLT8E29"),
+                                      L1TriggerObjectMapTag2 = cms.InputTag("hltL1GtObjectMap", "", "HLT8E29"),
+                                      L1Triggers2 = cms.vstring( 'L1_SingleMuOpen', 'L1_SingleMu0', 'L1_SingleMu3', 'L1_DoubleMuOpen',
+                                                                 'L1_SingleEG5', 'L1_SingleEG8', 'L1_DoubleEG5',
+                                                                 'L1_SingleMu14', 'L1_SingleEG10', 'L1_Mu3QE8_EG5'
+                                                                 ),
+                                      triggerResults2 = cms.InputTag("TriggerResults", "", "HLT8E29"),
+                                      triggerEvent2 = cms.InputTag("hltTriggerSummaryAOD", "", "HLT8E29"),
+                                      HLTriggers2 = cms.vstring( 'HLT_Mu3', 'HLT_DoubleMu0',
+                                                                 'HLT_Ele10_LW_L1R', 'HLT_DoubleEle5_SW_L1R',
+                                                                 'HLT_Photon15_L1R', 'HLT_DoublePhoton10_L1R'
+                                                                 #no usefull cross-channel trigger in this menu
+                                                                 ),
+                                      
+                                      
+                                      CacheL1TriggerBits = cms.bool( True ),
                                       StoreL3Objects = cms.untracked.bool(False)
                                       )
 
