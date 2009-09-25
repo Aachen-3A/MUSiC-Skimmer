@@ -77,7 +77,7 @@ if runOnData:
 
 import os
 cmsbase = os.environ.get('CMSSW_BASE')
-execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
+execfile(cmsbase + "/src/MUSiCProject/Skimming/python/configurePAT_cff")
 
 #process.pTHat = cms.EDFilter("PtHatFilter",
 #         pt_hat_lower_bound = cms.double(200.),
@@ -90,7 +90,7 @@ execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 #         fac_scale_upper_bound = cms.double(500.)
 #)
 
-process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
+process.Skimmer = cms.EDAnalyzer("MUSiCSkimmer",
                                       # label of file:
                                       FileName =  cms.untracked.string("test_run.pxlio"),
                                       # Debugging: 0 = off, 1 = human readable, 2 = insane
@@ -155,4 +155,4 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
                                       StoreL3Objects = cms.untracked.bool(False)
                                       )
 
-process.p = cms.Path(process.genEventScale + process.genEventWeight + process.genEventPdfInfo + process.photonIDSequence + process.patDefaultSequence + process.ePaxAnalysis)
+process.p = cms.Path(process.genEventScale + process.genEventWeight + process.genEventPdfInfo + process.photonIDSequence + process.patDefaultSequence + process.Skimmer)

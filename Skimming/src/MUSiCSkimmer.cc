@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    ePaxAnalyzer
-// Class:      ePaxAnalyzer
+// Package:    MUSiCSkimmer
+// Class:      MUSiCSkimmer
 // 
-/**\class ePaxAnalyzer ePaxAnalyzer.cc PaxDemo/ePaxAnalyzer/src/ePaxAnalyzer.cc
+/**\class MUSiCSkimmer MUSiCSkimmer.cc PaxDemo/MUSiCSkimmer/src/MUSiCSkimmer.cc
 
 Description: <one line class summary>
 
@@ -17,7 +17,7 @@ Implementation:
 //
 //
 // own header file
-#include "ePaxDemo/ePaxAnalyzer/interface/ePaxAnalyzer.h"
+#include "MUSiCProject/Skimming/interface/MUSiCSkimmer.h"
 
 // system include files
 #include <memory>
@@ -126,7 +126,7 @@ using namespace edm;
 //
 // constructors and destructor
 //
-ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig.getUntrackedParameter<string>("FileName")), fePaxFile(fFileName) {
+MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig.getUntrackedParameter<string>("FileName")), fePaxFile(fFileName) {
    //now do what ever initialization is needed
    // Get Physics process
    fProcess = iConfig.getUntrackedParameter<string>("Process");
@@ -224,7 +224,7 @@ ePaxAnalyzer::ePaxAnalyzer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
 // ------------ MIS Destructor  ------------
 
-ePaxAnalyzer::~ePaxAnalyzer()
+MUSiCSkimmer::~MUSiCSkimmer()
 {
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
@@ -233,7 +233,7 @@ ePaxAnalyzer::~ePaxAnalyzer()
 
 // ------------ method called to for each event  ------------
 
-void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
    // set event counter   
    fNumEvt++; 
    // Owner of all Pxl Objects 
@@ -328,7 +328,7 @@ void ePaxAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 // ------------ reading Generator related Stuff ------------
 
-void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
    // this works at least for RECO. Need to check if this works on AOD or PAT-Ntuplee 
   
    // get and store EventScale aka pt_hat 
@@ -379,7 +379,7 @@ void ePaxAnalyzer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
 
 // ------------ reading the Generator Stuff ------------
 
-void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*>& genmap ) {
+void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*>& genmap ) {
    //gen particles
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
@@ -518,7 +518,7 @@ void ePaxAnalyzer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator Jets ------------
 
-void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*> & genjetmap) {
+void MUSiCSkimmer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*> & genjetmap) {
    int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
    // perform a loop over all desired jet collections:
    for (std::vector<std::string>::const_iterator jet_label = fJetMCLabels.begin(); jet_label != fJetMCLabels.end(); ++jet_label) {
@@ -566,7 +566,7 @@ void ePaxAnalyzer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator MET ------------
 
-void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
    edm::Handle<reco::GenMETCollection> GenMet;
    iEvent.getByLabel(fMETMCLabel, GenMet);
    const GenMETCollection *genmetcol = GenMet.product();
@@ -607,7 +607,7 @@ void ePaxAnalyzer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 }
 
 //----------------- SIM -------------------
-void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
    Handle<SimVertexContainer> simVtcs;
    iEvent.getByLabel("g4SimHits" , simVtcs);
    SimVertexContainer::const_iterator simVertex; 
@@ -663,7 +663,7 @@ void ePaxAnalyzer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView)
 //the stored information should already contain the muon corrections plus several other corrections
 //it will have certainly corrections in the future as there are certain functions for uncorrection planned
 
-void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
    edm::Handle<std::vector<pat::MET> > METHandle;
    iEvent.getByLabel(fMETRecoLabel, METHandle);
    const std::vector<pat::MET>& METs = *METHandle;
@@ -692,7 +692,7 @@ void ePaxAnalyzer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
 // ------------ reading HLT and L1 Trigger Bits ------------
 
-void ePaxAnalyzer::analyzeTrigger( const edm::Event &iEvent,
+void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                                    pxl::EventView* EvtView,
                                    const std::string &processName,
                                    const edm::InputTag &L1Global,
@@ -841,7 +841,7 @@ void ePaxAnalyzer::analyzeTrigger( const edm::Event &iEvent,
 
 // ------------ reading Reconstructed Primary Vertices ------------
 
-void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* EvtView) {
    edm::Handle<reco::VertexCollection> vertices;
    iEvent.getByLabel(fVertexRecoLabel, vertices);
    
@@ -872,7 +872,7 @@ void ePaxAnalyzer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 
 // ------------ reading Reconstructed Muons ------------
 
-void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map<const Candidate*, pxl::Particle*> & genmap) {
+void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map<const Candidate*, pxl::Particle*> & genmap) {
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
@@ -968,7 +968,7 @@ void ePaxAnalyzer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
 // ------------ reading Reconstructed Electrons ------------
 
-void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap) {
+void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap) {
    int numEleRec = 0;   
    int numEleAll = 0;   // for matching
 
@@ -1082,7 +1082,7 @@ void ePaxAnalyzer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 
 // ------------ reading Reconstructed Jets ------------
 
-void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, std::map<const Candidate*, pxl::Particle*>& genjetmap) {
+void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, std::map<const Candidate*, pxl::Particle*>& genjetmap) {
    int numJetRec = 0;
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
@@ -1160,7 +1160,7 @@ void ePaxAnalyzer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
 
 // ------------ reading Reconstructed Gammas ------------
 
-void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap){
+void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap){
    // get Photon Collection     
    edm::Handle<std::vector<pat::Photon> > photonHandle;
    iEvent.getByLabel(fGammaRecoLabel, photonHandle);
@@ -1247,7 +1247,7 @@ void ePaxAnalyzer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 
 // ------------ method returning the EventClassType ------------
 
-std::string ePaxAnalyzer::getEventClass(pxl::EventView* EvtView) {
+std::string MUSiCSkimmer::getEventClass(pxl::EventView* EvtView) {
    ostringstream EventType;
    //set default values to 0 for Gen-only mode
    EventType << EvtView->findUserRecord<int>("NumEle") <<  "e"
@@ -1261,12 +1261,12 @@ std::string ePaxAnalyzer::getEventClass(pxl::EventView* EvtView) {
 
 // ------------ method called once each job just before starting event loop  ------------
 
-void ePaxAnalyzer::beginJob(const edm::EventSetup&) {
+void MUSiCSkimmer::beginJob(const edm::EventSetup&) {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 
-void ePaxAnalyzer::endJob() {
+void MUSiCSkimmer::endJob() {
    cout << "++++++++++++++++++++++++++++++++++++++" << endl;
    cout << "analyzed " << fNumEvt << " events " << endl;
    // close output file:
@@ -1345,7 +1345,7 @@ void ePaxAnalyzer::endJob() {
 
 // ------------ method to define MC-MUON-cuts
 
-bool ePaxAnalyzer::MuonMC_cuts(const GenParticle* MCmuon) const {
+bool MUSiCSkimmer::MuonMC_cuts(const GenParticle* MCmuon) const {
    if (MCmuon->pt() < 10.) return false;
    if (fabs(MCmuon->eta()) > 3.) return false;
    return true;
@@ -1355,7 +1355,7 @@ bool ePaxAnalyzer::MuonMC_cuts(const GenParticle* MCmuon) const {
 
 // ------------ method to define MC-Electron-cuts
 
-bool ePaxAnalyzer::EleMC_cuts(const GenParticle* MCele) const {
+bool MUSiCSkimmer::EleMC_cuts(const GenParticle* MCele) const {
    if (MCele->pt() < 10.) return false;
    if (fabs(MCele->eta()) > 3.) return false;
    return true;
@@ -1363,7 +1363,7 @@ bool ePaxAnalyzer::EleMC_cuts(const GenParticle* MCele) const {
 
 // ------------ method to define MC-Gamma-cuts
 
-bool ePaxAnalyzer::GammaMC_cuts(const GenParticle* MCgamma) const {
+bool MUSiCSkimmer::GammaMC_cuts(const GenParticle* MCgamma) const {
    if (MCgamma->pt() < 10.) return false;
    if (fabs(MCgamma->eta()) > 3.) return false;
    return true;
@@ -1371,7 +1371,7 @@ bool ePaxAnalyzer::GammaMC_cuts(const GenParticle* MCgamma) const {
 
 // ------------ method to define MC-Jet-cuts
 
-bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
+bool MUSiCSkimmer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
    if (MCjet->pt() < 30.) return false;
    if (fabs(MCjet->eta()) > 3.) return false;
    return true;
@@ -1379,14 +1379,14 @@ bool ePaxAnalyzer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) cons
 
 // ------------ method to define MC-MET-cuts
 
-bool ePaxAnalyzer::METMC_cuts(const pxl::Particle* MCmet) const {
+bool MUSiCSkimmer::METMC_cuts(const pxl::Particle* MCmet) const {
    if (MCmet->getPt() < 30.) return false;
    return true; 
 }
 
 // ------------ method to define RecVertex-cuts
 
-bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
+bool MUSiCSkimmer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
    //check compatibility of vertex with beam spot
    double zV = vertex->z();
    double rV = sqrt( (0.0322-vertex->x())*(0.0322-vertex->x()) + vertex->y() * vertex->y() );
@@ -1396,7 +1396,7 @@ bool ePaxAnalyzer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) co
 
 // ------------ method to define MUON-cuts
 
-bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
+bool MUSiCSkimmer::Muon_cuts(const pat::Muon& muon) const {
    // basic preselection cuts
    if (!muon.isGlobalMuon()) return false;
    if (muon.pt() < 10.)  return false;
@@ -1407,7 +1407,7 @@ bool ePaxAnalyzer::Muon_cuts(const pat::Muon& muon) const {
 
 // ------------ method to define ELECTRON-cuts
 
-bool ePaxAnalyzer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
+bool MUSiCSkimmer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
    if (ele->pt() < 10.) return false;
    if (fabs(ele->eta()) > 3.) return false;
    return true;
@@ -1415,7 +1415,7 @@ bool ePaxAnalyzer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) cons
 
 // ------------ method to define JET-cuts
 
-bool ePaxAnalyzer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
+bool MUSiCSkimmer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
    if (jet->pt() < 30.) return false;
    if (fabs(jet->eta()) > 3.) return false;
    return true;
@@ -1424,7 +1424,7 @@ bool ePaxAnalyzer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
 
 // ------------ method to define GAMMA-cuts
 
-bool ePaxAnalyzer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
+bool MUSiCSkimmer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
    if (photon->pt() < 10.) return false;
    if (fabs(photon->eta()) > 3.) return false;
    return true;
@@ -1433,7 +1433,7 @@ bool ePaxAnalyzer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) c
 
 // ------------ method to define MET-cuts
 
-bool ePaxAnalyzer::MET_cuts(const pxl::Particle* met) const {
+bool MUSiCSkimmer::MET_cuts(const pxl::Particle* met) const {
    if (met->getPt() < 30.) return false;
    return true;
 }
@@ -1441,7 +1441,7 @@ bool ePaxAnalyzer::MET_cuts(const pxl::Particle* met) const {
 //------------------------------------------------------------------------------
 
 //FIXME compare to PAT-isolation 
-double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed){
+double MUSiCSkimmer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed){
    // Computes the sum of Pt inside a cone of R=iso_DR
    // using 4-vectors stored in GenParticle objects
 
@@ -1480,4 +1480,4 @@ double ePaxAnalyzer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(ePaxAnalyzer);
+DEFINE_FWK_MODULE(MUSiCSkimmer);
