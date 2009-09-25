@@ -95,7 +95,7 @@ addJetCollection(process,'kt6CaloJets','KT6',
 
 import os
 cmsbase = os.environ.get('CMSSW_BASE')
-execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
+execfile(cmsbase + "/src/MUSiCProject/Skimming/python/configurePAT_cff")
 
 #process.pTHat = cms.EDFilter("PtHatFilter",
 #         pt_hat_lower_bound = cms.double(200.),
@@ -108,7 +108,7 @@ execfile(cmsbase + "/src/ePaxDemo/ePaxAnalyzer/python/configurePAT_cff")
 #         fac_scale_upper_bound = cms.double(500.)
 #)
 
-process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
+process.Skimmer = cms.EDAnalyzer("MUSiCSkimmer",
          # label of file:
          FileName =  cms.untracked.string("PhotonJets200toInf-madgraph_NEWID.pxlio"),
          # Debugging: 0 = off, 1 = human readable, 2 = insane
@@ -143,7 +143,7 @@ process.ePaxAnalysis = cms.EDAnalyzer("ePaxAnalyzer",
          StoreL3Objects = cms.untracked.bool(False)
 )
 
-process.p = cms.Path(process.photonIDSequence + process.patLayer0 + process.patLayer1 + process.ePaxAnalysis)
+process.p = cms.Path(process.photonIDSequence + process.patLayer0 + process.patLayer1 + process.Skimmer)
 
 ## Necessary fixes to run 2.2.X on 2.1.X data
 from PhysicsTools.PatAlgos.tools.cmsswVersionTools import run22XonSummer08AODSIM

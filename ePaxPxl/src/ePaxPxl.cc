@@ -6,7 +6,7 @@
 // Contact: pxl-users@lists.sourceforge.net -
 //-------------------------------------------
 
-#include "ePaxPxl/ePax/interface/ePax.h"
+#include "MUSiCProject/ePaxPxl/interface/ePaxPxl.h"
 
 namespace pxl
 {

@@ -1,5 +1,5 @@
-#ifndef ePaxAnalyzer_H
-#define ePaxAnalyzer_H
+#ifndef MUSiCSkimmer_H
+#define MUSiCSkimmer_H
 
 // LHAPDF stuff
 extern "C" {
@@ -66,16 +66,16 @@ struct PDFInf {
 // Has to be included as the last header otherwise there will be a warning concerning the 
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
 // but ePax can deal with both of them
-#include "ePaxPxl/ePax/interface/ePax.h"
-#include "ePaxDemo/ePaxAnalyzer/interface/ParticleMatcher.hh"
+#include "MUSiCProject/ePaxPxl/interface/ePaxPxl.h"
+#include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
 
 
-class ePaxAnalyzer : public edm::EDAnalyzer {
+class MUSiCSkimmer : public edm::EDAnalyzer {
 public:
 
    // why explicit?
-   explicit ePaxAnalyzer(const edm::ParameterSet&);
-   ~ePaxAnalyzer();
+   explicit MUSiCSkimmer(const edm::ParameterSet&);
+   ~MUSiCSkimmer();
   
 
 private:
