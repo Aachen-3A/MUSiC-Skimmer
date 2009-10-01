@@ -75,8 +75,6 @@ Implementation:
 //for Trigger Bits
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Framework/interface/TriggerNames.h"
-#include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
-#include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
 //ok
 
 //For L1 and Hlt objects
@@ -158,11 +156,8 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    //first trigger menu
    triggerProcess         = iConfig.getParameter< std::string   >( "triggerProcess" );
-   fL1GlobalTriggerTag    = iConfig.getParameter< edm::InputTag >( "L1GlobalTriggerReadoutRecord" );
-   fL1TriggerObjectMapTag = iConfig.getParameter< edm::InputTag >( "L1TriggerObjectMapTag" );
    ftriggerResultsTag     = iConfig.getParameter< edm::InputTag >( "triggerResults" );
    fTriggerEvent          = iConfig.getParameter< edm::InputTag >( "triggerEvent" );
-   L1Names                = iConfig.getParameter< std::vector< std::string > >( "L1Triggers" );
 
    {
       HLTConfigProvider hltConfig_;
@@ -186,11 +181,8 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    //second trigger menu
    triggerProcess2         = iConfig.getParameter< std::string   >( "triggerProcess2" );
-   fL1GlobalTriggerTag2    = iConfig.getParameter< edm::InputTag >( "L1GlobalTriggerReadoutRecord2" );
-   fL1TriggerObjectMapTag2 = iConfig.getParameter< edm::InputTag >( "L1TriggerObjectMapTag2" );
    ftriggerResultsTag2     = iConfig.getParameter< edm::InputTag >( "triggerResults2" );
    fTriggerEvent2          = iConfig.getParameter< edm::InputTag >( "triggerEvent2" );
-   L1Names2                = iConfig.getParameter< std::vector< std::string > >( "L1Triggers2" );
 
    {
       HLTConfigProvider hltConfig_;
@@ -213,9 +205,6 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    fStoreL3Objects = iConfig.getUntrackedParameter<bool>("StoreL3Objects");
 
-   cacheL1Bits = iConfig.getParameter< bool >("CacheL1TriggerBits");
-   L1BitsCached = false;
-   L1BitsCached2 = false;
    
 
    Matcher = new ParticleMatcher();
@@ -278,8 +267,8 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // store Rec Objects only if requested
    if (!fGenOnly) {
       //Trigger bits
-      analyzeTrigger( iEvent, RecEvtView, triggerProcess,  fL1GlobalTriggerTag,  fL1TriggerObjectMapTag,  L1Names,  L1Bits,  L1BitsCached,  ftriggerResultsTag,  fTriggerEvent,  fHLTMap  );
-      analyzeTrigger( iEvent, RecEvtView, triggerProcess2, fL1GlobalTriggerTag2, fL1TriggerObjectMapTag2, L1Names2, L1Bits2, L1BitsCached2, ftriggerResultsTag2, fTriggerEvent2, fHLTMap2 );
+      analyzeTrigger( iEvent, RecEvtView, triggerProcess,  ftriggerResultsTag,  fTriggerEvent,  fHLTMap  );
+      analyzeTrigger( iEvent, RecEvtView, triggerProcess2, ftriggerResultsTag2, fTriggerEvent2, fHLTMap2 );
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
@@ -695,11 +684,6 @@ void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                                    pxl::EventView* EvtView,
                                    const std::string &processName,
-                                   const edm::InputTag &L1Global,
-                                   const edm::InputTag &L1Objects,
-                                   const std::vector< std::string > &L1Names,
-                                   std::vector< int > &L1Bits,
-                                   bool &L1BitsCached,
                                    const edm::InputTag &HLTResults,
                                    const edm::InputTag &L3Objets,
                                    const std::map<int, std::string> &HLT_bit_to_name
@@ -789,54 +773,6 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
          }
       } 
    }
-
-
-   // Store L1 Trigger Bits
-   edm::Handle< L1GlobalTriggerReadoutRecord > L1GlobalTrigger;
-   iEvent.getByLabel( L1Global, L1GlobalTrigger );
-
-   // L1 Decision
-   if (!L1GlobalTrigger.failedToGet()) {
-      DecisionWord gtDecisionWord = L1GlobalTrigger->decisionWord();
-      if( cacheL1Bits && L1BitsCached ){ //L1Bits should be and actually are cached
-         vector< string >::const_iterator triggerName = L1Names.begin();
-         vector< int >::const_iterator triggerBit = L1Bits.begin();
-         while( triggerName != L1Names.end() && triggerBit != L1Bits.end() ){
-            EvtView->setUserRecord< bool >( processName+"_"+(*triggerName), gtDecisionWord[ *triggerBit ] );
-            if (fDebug > 1) cout << "L1 TD: " << *triggerName << " " << *triggerBit << " " << gtDecisionWord[ *triggerBit ] << endl;
-            ++triggerName; ++triggerBit;
-         }
-      } else {
-         bool cacheValid = true;
-         if( cacheL1Bits ){
-            L1Bits.clear();
-            L1Bits.reserve( L1Names.size() );
-         }
-         edm::Handle< L1GlobalTriggerObjectMapRecord > L1GlobalTriggerMap;
-         iEvent.getByLabel( L1Objects, L1GlobalTriggerMap );
-         const vector< L1GlobalTriggerObjectMap > &L1GTObjVec = (*L1GlobalTriggerMap).gtObjectMap();
-         for( vector< string >::const_iterator triggerName = L1Names.begin(); triggerName != L1Names.end(); ++triggerName ){
-            bool found = false;
-            for( vector< L1GlobalTriggerObjectMap >::const_iterator L1GTObj = L1GTObjVec.begin(); L1GTObj != L1GTObjVec.end(); ++L1GTObj ){
-               string name = L1GTObj->algoName();
-               if( name == *triggerName ){
-                  found = true;
-                  int bit = L1GTObj->algoBitNumber();
-                  EvtView->setUserRecord< bool >( processName+"_"+name, gtDecisionWord[ bit ] );
-                  if( cacheL1Bits && cacheValid){
-                     L1Bits.push_back( bit );
-                  }
-                  break;
-               }
-            }
-            if( !found ){
-               cacheValid = false;
-               cout << "Trigger " << *triggerName << " not found, hence not writen to event and cache invalidated." << endl;
-            }
-         }
-         L1BitsCached = cacheValid;
-      }
-   } else cout << "l1GlobalTrigger Product not available!" << endl;
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------

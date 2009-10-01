@@ -16,9 +16,8 @@ process.source = cms.Source("PoolSource",
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
 #'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root'
-#'/store/user/pieta/test_311/test_1.root'
-#'/store/mc/Fall08/PhotonJets200toInf-madgraph/GEN-SIM-RECO/IDEAL_V9_reco-v1/0026/00462FCA-C5FC-DD11-9B76-001A9227D3D1.root'
-'file:/opt/scratch/608D435D-7B70-DE11-B093-001CC4782AF8.root'
+'/store/mc/Summer09/TTbar/GEN-SIM-RECO/MC_31X_V3_test_production-v1/0000/962E4ECF-077C-DE11-871F-001F2907AF5C.root'
+#'file:/opt/scratch/608D435D-7B70-DE11-B093-001CC4782AF8.root'
 	)
 )
 
@@ -120,12 +119,6 @@ process.Skimmer = cms.EDAnalyzer("MUSiCSkimmer",
 
                                       #trigger menu: 1E31
                                       triggerProcess = cms.string( 'HLT' ),
-                                      L1GlobalTriggerReadoutRecord = cms.InputTag("gtDigis", "", "HLT"),
-                                      L1TriggerObjectMapTag = cms.InputTag("hltL1GtObjectMap", "", "HLT"),
-                                      L1Triggers = cms.vstring( 'L1_SingleMu7', 'L1_DoubleMuOpen',
-                                                                'L1_SingleEG8', 'L1_DoubleEG5',
-                                                                'L1_SingleMu14', 'L1_SingleEG10', 'L1_Mu3QE8_EG5'
-                                                                ),
                                       triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
                                       triggerEvent = cms.InputTag("hltTriggerSummaryAOD", "", "HLT"),
                                       HLTriggers = cms.vstring( 'HLT_Mu9', 'HLT_DoubleMu0',
@@ -136,12 +129,6 @@ process.Skimmer = cms.EDAnalyzer("MUSiCSkimmer",
 
                                       #trigger menu: 8E29
                                       triggerProcess2 = cms.string( 'HLT8E29' ),
-                                      L1GlobalTriggerReadoutRecord2 = cms.InputTag("gtDigis", "", "HLT8E29"),
-                                      L1TriggerObjectMapTag2 = cms.InputTag("hltL1GtObjectMap", "", "HLT8E29"),
-                                      L1Triggers2 = cms.vstring( 'L1_SingleMuOpen', 'L1_SingleMu0', 'L1_SingleMu3', 'L1_DoubleMuOpen',
-                                                                 'L1_SingleEG5', 'L1_SingleEG8', 'L1_DoubleEG5',
-                                                                 'L1_SingleMu14', 'L1_SingleEG10', 'L1_Mu3QE8_EG5'
-                                                                 ),
                                       triggerResults2 = cms.InputTag("TriggerResults", "", "HLT8E29"),
                                       triggerEvent2 = cms.InputTag("hltTriggerSummaryAOD", "", "HLT8E29"),
                                       HLTriggers2 = cms.vstring( 'HLT_Mu3', 'HLT_DoubleMu0',
@@ -151,7 +138,6 @@ process.Skimmer = cms.EDAnalyzer("MUSiCSkimmer",
                                                                  ),
                                       
                                       
-                                      CacheL1TriggerBits = cms.bool( True ),
                                       StoreL3Objects = cms.untracked.bool(False)
                                       )
 
