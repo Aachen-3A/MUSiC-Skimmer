@@ -116,8 +116,9 @@ process.Skimmer = cms.EDAnalyzer(
     barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
     endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
     # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
-    JetMCLabels = cms.vstring("sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
-    JetRecoLabels = cms.vstring( "SISC5", "SISC7", "IC5"),
+    JetMCLabels = cms.vstring( "antikt5GenJets" ),
+    JetRecoLabels = cms.vstring( "cleanLayer1Jets"),
+    JetRecoNames = cms.vstring( "AK5"),
     # MET
     METRecoLabel = cms.untracked.string("layer1METs"),
     

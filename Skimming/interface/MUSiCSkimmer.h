@@ -145,6 +145,7 @@ public:
    std::string fGammaRecoLabel;
    // Jets labels
    std::vector<std::string> fJetRecoLabels;
+   std::vector<std::string> fJetRecoNames;
    std::vector<std::string> fJetMCLabels;
    // MET labels
    std::string fMETRecoLabel;

@@ -1,18 +1,12 @@
-# change default jet collection to SC5 and that for Type1 MET corrections, too
+# change default jet collection to AK5 and that for Type1 MET corrections, too
 import PhysicsTools.PatAlgos.tools.jetTools
 PhysicsTools.PatAlgos.tools.jetTools.switchJetCollection(process, 
-	cms.InputTag('sisCone5CaloJets'),  # Jet collection; must be already in the event when patDefaultSequence is executed
+	cms.InputTag('antikt5CaloJets'),  # Jet collection; must be already in the event when patDefaultSequence is executed
 	doJTA=True,            # Run Jet-Track association & JetCharge
 	doBTagging=True,       # Run b-tagging
-	jetCorrLabel=('SC5','Calo'), # example jet correction name; set to None for no JEC
+	jetCorrLabel=('AK5','Calo'), # example jet correction name; set to None for no JEC
 	doType1MET=True,       # recompute Type1 MET using these jets
-	genJetCollection=cms.InputTag("sisCone5GenJets"))
-
-#add some more jet collections (also add SC5 again to keep things consistent
-PhysicsTools.PatAlgos.tools.jetTools.addJetCollection(process,cms.InputTag( "iterativeCone5CaloJets"), 'IC5', doBTagging=True, jetCorrLabel=('IC5','Calo') )
-PhysicsTools.PatAlgos.tools.jetTools.addJetCollection(process,cms.InputTag( "sisCone5CaloJets"), 'SISC5', doBTagging=True, jetCorrLabel=('SC5','Calo') )
-PhysicsTools.PatAlgos.tools.jetTools.addJetCollection(process,cms.InputTag( "sisCone7CaloJets"), 'SISC7', doBTagging=True, jetCorrLabel=('SC7','Calo') )
-
+	genJetCollection=cms.InputTag("antikt5GenJets"))
 
 
 process.allLayer1Photons.addPhotonID = True
@@ -42,32 +36,8 @@ process.jetPartonMatch.checkCharge = cms.bool(False)
 process.jetPartonMatch.resolveByMatchQuality = cms.bool(True)
 process.jetPartonMatch.maxDeltaR = cms.double(0.4)
 process.jetPartonMatch.maxDPtRel = cms.double(1000000.0)
-process.jetPartonMatchIC5.checkCharge = cms.bool(False)
-process.jetPartonMatchIC5.resolveByMatchQuality = cms.bool(True)
-process.jetPartonMatchIC5.maxDeltaR = cms.double(0.4)
-process.jetPartonMatchIC5.maxDPtRel = cms.double(1000000.0)
-process.jetPartonMatchSISC5.checkCharge = cms.bool(False)
-process.jetPartonMatchSISC5.resolveByMatchQuality = cms.bool(True)
-process.jetPartonMatchSISC5.maxDeltaR = cms.double(0.4)
-process.jetPartonMatchSISC5.maxDPtRel = cms.double(1000000.0)
-process.jetPartonMatchSISC7.checkCharge = cms.bool(False)
-process.jetPartonMatchSISC7.resolveByMatchQuality = cms.bool(True)
-process.jetPartonMatchSISC7.maxDeltaR = cms.double(0.4)
-process.jetPartonMatchSISC7.maxDPtRel = cms.double(1000000.0)
 
 process.jetGenJetMatch.checkCharge = cms.bool(False)
 process.jetGenJetMatch.resolveByMatchQuality = cms.bool(True)
 process.jetGenJetMatch.maxDeltaR = cms.double(0.4)
 process.jetGenJetMatch.maxDPtRel = cms.double(1000000.0)
-process.jetGenJetMatchIC5.checkCharge = cms.bool(False)
-process.jetGenJetMatchIC5.resolveByMatchQuality = cms.bool(True)
-process.jetGenJetMatchIC5.maxDeltaR = cms.double(0.4)
-process.jetGenJetMatchIC5.maxDPtRel = cms.double(1000000.0)
-process.jetGenJetMatchSISC5.checkCharge = cms.bool(False)
-process.jetGenJetMatchSISC5.resolveByMatchQuality = cms.bool(True)
-process.jetGenJetMatchSISC5.maxDeltaR = cms.double(0.4)
-process.jetGenJetMatchSISC5.maxDPtRel = cms.double(1000000.0)
-process.jetGenJetMatchSISC7.checkCharge = cms.bool(False)
-process.jetGenJetMatchSISC7.resolveByMatchQuality = cms.bool(True)
-process.jetGenJetMatchSISC7.maxDeltaR = cms.double(0.4)
-process.jetGenJetMatchSISC7.maxDPtRel = cms.double(1000000.0)

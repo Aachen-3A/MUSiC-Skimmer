@@ -149,6 +149,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    // Jet labels - used for Gen and Rec
    fJetMCLabels  = iConfig.getParameter<std::vector<std::string> >("JetMCLabels");
    fJetRecoLabels = iConfig.getParameter<std::vector<std::string> >("JetRecoLabels");
+   fJetRecoNames = iConfig.getParameter<std::vector<std::string> >("JetRecoNames");
    // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
 
@@ -267,7 +268,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    if (IsMC){
       const string met_name = "MET";
-      Matcher->matchObjects(GenEvtView, RecEvtView, fJetRecoLabels, met_name);
+      Matcher->matchObjects(GenEvtView, RecEvtView, fJetRecoNames, met_name);
    }
 
    // set event class strings
@@ -278,21 +279,21 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    
    if (fDebug > 0) {  
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
-      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoLabels.begin(); jetAlgo != fJetRecoLabels.end(); ++jetAlgo) {
+      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoNames.begin(); jetAlgo != fJetRecoNames.end(); ++jetAlgo) {
          cout << (*jetAlgo) << " ";
       }
       cout << "  MET  " << endl;
       cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
            << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
            << setw(7) << GenEvtView->findUserRecord<int>("NumGamma");
-      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoLabels.begin(); jetAlgo != fJetRecoLabels.end(); ++jetAlgo) {
+      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoNames.begin(); jetAlgo != fJetRecoNames.end(); ++jetAlgo) {
          cout << setw(4) << GenEvtView->findUserRecord<int>("Num"+(*jetAlgo)) << " ";
       } 
       cout << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
            << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
            << setw(7) << RecEvtView->findUserRecord<int>("NumGamma");
-      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoLabels.begin(); jetAlgo != fJetRecoLabels.end(); ++jetAlgo) {
+      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoNames.begin(); jetAlgo != fJetRecoNames.end(); ++jetAlgo) {
          cout << setw(4) << RecEvtView->findUserRecord<int>("Num"+(*jetAlgo)) << " ";
       } 
       cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
@@ -515,7 +516,7 @@ void MUSiCSkimmer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
             //cast iterator into GenParticleCandidate
             const GenParticle* p = (const GenParticle*) &(*genJet);
             genjetmap[p] = part;
-            part->setName(fJetRecoLabels[jetcoll_i]);
+            part->setName(fJetRecoNames[jetcoll_i]);
             part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
             //fill additional jet-related infos
             part->setUserRecord<double>("EmE", genJet->emEnergy());
@@ -534,8 +535,8 @@ void MUSiCSkimmer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtV
             part->setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
          }
       }
-      EvtView->setUserRecord<int>("Num"+fJetRecoLabels[jetcoll_i], numJetMC);
-      if (fDebug > 1) cout << "Found MC Jets:  "  << numJetMC << " of Type " << fJetRecoLabels[jetcoll_i] << endl;
+      EvtView->setUserRecord<int>("Num"+fJetRecoNames[jetcoll_i], numJetMC);
+      if (fDebug > 1) cout << "Found MC Jets:  "  << numJetMC << " of Type " << fJetRecoNames[jetcoll_i] << endl;
       ++jetcoll_i;
    }
 }
@@ -997,12 +998,12 @@ void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
    int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
    
    // perform a loop over all desired jet collections:
-   for (std::vector<std::string>::const_iterator jet_label = fJetRecoLabels.begin(); jet_label != fJetRecoLabels.end(); ++jet_label) {
+   for (std::vector<std::string>::const_iterator jet_label = fJetRecoLabels.begin(), jet_name = fJetRecoNames.begin(); jet_label != fJetRecoLabels.end() && jet_name != fJetRecoNames.end(); ++jet_label, ++jet_name) {
       // reset counter 
       numJetRec = 0;
       // get RecoJets
       edm::Handle<std::vector<pat::Jet> > jetHandle;
-      iEvent.getByLabel("cleanLayer1Jets"+(*jet_label), jetHandle);
+      iEvent.getByLabel( *jet_label, jetHandle);
       const std::vector<pat::Jet>& RecJets = *jetHandle;
       //Get the GenJet collections for PAT matching
       edm::Handle<reco::GenJetCollection> GenJets;
@@ -1012,7 +1013,7 @@ void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
       for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
          if (Jet_cuts(jet)) {
             pxl::Particle* part = RecView->create<pxl::Particle>();
-            part->setName((*jet_label)); 
+            part->setName((*jet_name)); 
             part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
             part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
             part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
@@ -1055,8 +1056,8 @@ void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
             numJetRec++;
          }
       }
-      RecView->setUserRecord<int>("Num"+(*jet_label), numJetRec);
-      if (fDebug > 1) cout << "Found Rec Jets:  " << numJetRec << " of Type " << *jet_label << endl;
+      RecView->setUserRecord<int>("Num"+(*jet_name), numJetRec);
+      if (fDebug > 1) cout << "Found Rec Jets:  " << numJetRec << " of Type " << *jet_name << endl;
       jetcoll_i++;
    }
 }
@@ -1156,7 +1157,7 @@ std::string MUSiCSkimmer::getEventClass(pxl::EventView* EvtView) {
    EventType << EvtView->findUserRecord<int>("NumEle") <<  "e"
              << EvtView->findUserRecord<int>("NumMuon") << "mu"
              << EvtView->findUserRecord<int>("NumGamma") << "gam"
-             << EvtView->findUserRecord<int>("Num"+fJetRecoLabels[0]) << "jet"
+             << EvtView->findUserRecord<int>("Num"+fJetRecoNames[0]) << "jet"
              << EvtView->findUserRecord<int>("NumMET") << "met";
    EventType.flush();
    return EventType.str();
