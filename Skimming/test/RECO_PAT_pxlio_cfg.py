@@ -7,7 +7,10 @@ process = cms.Process("PAT")
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+process.options   = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(False),
+    fileMode = cms.untracked.string( 'NOMERGE' )
+    )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
