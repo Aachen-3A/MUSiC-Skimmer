@@ -92,56 +92,64 @@ execfile(cmsbase + "/src/MUSiCProject/Skimming/python/configurePAT_cff")
 #         fac_scale_upper_bound = cms.double(500.)
 #)
 
-process.Skimmer = cms.EDAnalyzer("MUSiCSkimmer",
-                                      # label of file:
-                                      FileName =  cms.untracked.string("test_run.pxlio"),
-                                      # Debugging: 0 = off, 1 = human readable, 2 = insane
-                                      debug = cms.untracked.int32(0),
-                                      Process = cms.untracked.string("test_run"),
-                                      # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
-                                      GenOnly = cms.untracked.bool(False),
-                                      # UseSIM true means to use SIM info for finding converted photons
-                                      UseSIM = cms.untracked.bool(True),
-                                      #labels of source
-                                      genParticleCandidatesLabel = cms.untracked.string("genParticles"),
-                                      METMCLabel = cms.untracked.string("genMetCalo"),  # muon-correction needed ---> yes!
-                                      #FIXME make sure that this is the correct Collection! (BS = with beam spot constraints?)
-                                      VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
-                                      MuonRecoLabel = cms.untracked.string("cleanLayer1Muons"),
-                                      ElectronRecoLabel = cms.untracked.string("cleanLayer1Electrons"),
-                                      GammaRecoLabel = cms.untracked.string("cleanLayer1Photons"),
-                                      reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
-                                      reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
-                                      barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
-                                      endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
-                                      # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
-                                      JetMCLabels = cms.vstring("sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
-                                      JetRecoLabels = cms.vstring( "SISC5", "SISC7", "IC5"),
-                                      # MET
-                                      METRecoLabel = cms.untracked.string("layer1METs"),
-
-                                      #trigger menu: 1E31
-                                      triggerProcess = cms.string( 'HLT' ),
-                                      triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
-                                      triggerEvent = cms.InputTag("hltTriggerSummaryAOD", "", "HLT"),
-                                      HLTriggers = cms.vstring( 'HLT_Mu9', 'HLT_DoubleMu0',
-                                                                'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
-                                                                'HLT_Photon25_L1R', 'HLT_DoublePhoton15_L1R',
-                                                                'HLT_L1Mu14_L1SingleEG10', 'HLT_L2Mu5_Photon9_L1R'
-                                                                ),
-
-                                      #trigger menu: 8E29
-                                      triggerProcess2 = cms.string( 'HLT8E29' ),
-                                      triggerResults2 = cms.InputTag("TriggerResults", "", "HLT8E29"),
-                                      triggerEvent2 = cms.InputTag("hltTriggerSummaryAOD", "", "HLT8E29"),
-                                      HLTriggers2 = cms.vstring( 'HLT_Mu3', 'HLT_DoubleMu0',
-                                                                 'HLT_Ele10_LW_L1R', 'HLT_DoubleEle5_SW_L1R',
-                                                                 'HLT_Photon15_L1R', 'HLT_DoublePhoton10_L1R'
-                                                                 #no usefull cross-channel trigger in this menu
-                                                                 ),
-                                      
-                                      
-                                      StoreL3Objects = cms.untracked.bool(False)
-                                      )
+process.Skimmer = cms.EDAnalyzer(
+    "MUSiCSkimmer",
+    # label of file
+    FileName =  cms.untracked.string("test_run.pxlio"),
+    # Debugging: 0 = off, 1 = human readable, 2 = insane
+    debug = cms.untracked.int32(0),
+    Process = cms.untracked.string("test_run"),
+    # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
+    GenOnly = cms.untracked.bool(False),
+    # UseSIM true means to use SIM info for finding converted photons
+    UseSIM = cms.untracked.bool(True),
+    #labels of source
+    genParticleCandidatesLabel = cms.untracked.string("genParticles"),
+    METMCLabel = cms.untracked.string("genMetCalo"),  # muon-correction needed ---> yes!
+    #FIXME make sure that this is the correct Collection! (BS = with beam spot constraints?)
+    VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
+    MuonRecoLabel = cms.untracked.string("cleanLayer1Muons"),
+    ElectronRecoLabel = cms.untracked.string("cleanLayer1Electrons"),
+    GammaRecoLabel = cms.untracked.string("cleanLayer1Photons"),
+    reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
+    reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
+    barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
+    endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
+    # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
+    JetMCLabels = cms.vstring("sisCone5GenJets", "sisCone7GenJets", "iterativeCone5GenJets"),
+    JetRecoLabels = cms.vstring( "SISC5", "SISC7", "IC5"),
+    # MET
+    METRecoLabel = cms.untracked.string("layer1METs"),
+    
+    triggers = cms.PSet(
+        #REMARK: The names of the following PSets will be used as the trigger identifier in the PXL output
+        # Trigger menu: 1e31
+        HLT1E31 = cms.PSet(
+            process = cms.string('HLT'),
+            results = cms.string('TriggerResults'),
+            event   = cms.string('hltTriggerSummaryAOD'),
+            HLTriggers = cms.vstring(
+                'HLT_Mu9', 'HLT_DoubleMu0',
+                'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
+                'HLT_Photon25_L1R', 'HLT_DoublePhoton15_L1R',
+                'HLT_L1Mu14_L1SingleEG10', 'HLT_L2Mu5_Photon9_L1R'
+                ),
+            ),
+        # Trigger menu: 8e29
+        HLT8E29 = cms.PSet(
+            process = cms.string('HLT8E29'),
+            results = cms.string('TriggerResults'),
+            event   = cms.string('hltTriggerSummaryAOD'),
+            HLTriggers = cms.vstring(
+                'HLT_Mu3', 'HLT_DoubleMu0',
+                'HLT_Ele10_LW_L1R', 'HLT_DoubleEle5_SW_L1R',
+                'HLT_Photon15_L1R', 'HLT_DoublePhoton10_L1R'
+                #no usefull cross-channel trigger in this menu
+                ),
+            ),
+        ),
+    
+    StoreL3Objects = cms.untracked.bool(False)
+    )
 
 process.p = cms.Path(process.genEventScale + process.genEventWeight + process.genEventPdfInfo + process.photonIDSequence + process.patDefaultSequence + process.Skimmer)

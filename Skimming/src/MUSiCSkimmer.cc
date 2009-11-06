@@ -153,55 +153,41 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
 
 
+   //get the PSet that contains all trigger PSets
+   ParameterSet trigger_pset = iConfig.getParameter< ParameterSet >( "triggers" );
 
-   //first trigger menu
-   triggerProcess         = iConfig.getParameter< std::string   >( "triggerProcess" );
-   ftriggerResultsTag     = iConfig.getParameter< edm::InputTag >( "triggerResults" );
-   fTriggerEvent          = iConfig.getParameter< edm::InputTag >( "triggerEvent" );
+   vector< string > trigger_processes;
+   trigger_pset.getParameterSetNames( trigger_processes );
 
-   {
-      HLTConfigProvider hltConfig_;
-      hltConfig_.init( triggerProcess );
-      unsigned int numTriggers = hltConfig_.size();
-      //cout << "Available TriggerNames are: " << endl;
-      //hltConfig_.dump("Triggers"); //dump table of available HLT
+   HLTConfigProvider hltConfig;
+
+   //loop over the names of the trigger PSets
+   for( vector< string >::const_iterator trg_proc = trigger_processes.begin(); trg_proc != trigger_processes.end(); ++trg_proc ){
+      trigger_def trigger;
+      trigger.name = *trg_proc;
       
-      //get list of HLT names and store them with their bits
-      vector<string> HLTriggers = iConfig.getParameter<std::vector<std::string> >("HLTriggers");
-      for( vector<string>::const_iterator trigger = HLTriggers.begin(); trigger != HLTriggers.end(); ++trigger ){
-         unsigned int index = hltConfig_.triggerIndex( *trigger );
+      ParameterSet one_trigger = trigger_pset.getParameter< ParameterSet >( trigger.name );
+      trigger.process = one_trigger.getParameter< string >( "process" );
+
+      trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
+      trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
+      
+      //fill the map that connects trigger name to trigger index
+      hltConfig.init( trigger.process );
+      unsigned int numTriggers = hltConfig.size();
+      vector<string> HLTriggers = one_trigger.getParameter< vector< string > >("HLTriggers");
+      for( vector<string>::const_iterator trg_name = HLTriggers.begin(); trg_name != HLTriggers.end(); ++trg_name ){
+         unsigned int index = hltConfig.triggerIndex( *trg_name );
          if( index < numTriggers ){
-            fHLTMap[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
+            trigger.HLTMap[ hltConfig.triggerIndex( *trg_name ) ] = *trg_name;
          } else {
-            cout << "WARNING: Trigger " << *trigger << " not found in HLT config, not added to trigger map (so not used)." << endl;
+            cout << "WARNING: Trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
          }
       }
+
+      triggers.push_back( trigger );
    }
 
-
-   //second trigger menu
-   triggerProcess2         = iConfig.getParameter< std::string   >( "triggerProcess2" );
-   ftriggerResultsTag2     = iConfig.getParameter< edm::InputTag >( "triggerResults2" );
-   fTriggerEvent2          = iConfig.getParameter< edm::InputTag >( "triggerEvent2" );
-
-   {
-      HLTConfigProvider hltConfig_;
-      hltConfig_.init( triggerProcess2 );
-      unsigned int numTriggers = hltConfig_.size();
-      //cout << "Available TriggerNames are: " << endl;                                                                                                                                                             
-      //hltConfig_.dump("Triggers"); //dump table of available HLT                                                                                                                                                  
-
-      //get list of HLT names and store them with their bits                                                                                                                                                        
-      vector<string> HLTriggers = iConfig.getParameter<std::vector<std::string> >("HLTriggers2");
-      for( vector<string>::const_iterator trigger = HLTriggers.begin(); trigger != HLTriggers.end(); ++trigger ){
-         unsigned int index = hltConfig_.triggerIndex( *trigger );
-         if( index < numTriggers ){
-            fHLTMap2[ hltConfig_.triggerIndex( *trigger ) ] = *trigger;
-         } else {
-            cout << "WARNING: Trigger " << *trigger << " not found in HLT config, not added to trigger map (so not used)." << endl;
-         }
-      }
-   }
 
    fStoreL3Objects = iConfig.getUntrackedParameter<bool>("StoreL3Objects");
 
@@ -267,8 +253,9 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // store Rec Objects only if requested
    if (!fGenOnly) {
       //Trigger bits
-      analyzeTrigger( iEvent, RecEvtView, triggerProcess,  ftriggerResultsTag,  fTriggerEvent,  fHLTMap  );
-      analyzeTrigger( iEvent, RecEvtView, triggerProcess2, ftriggerResultsTag2, fTriggerEvent2, fHLTMap2 );
+      for( vector< trigger_def >::const_iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
+         analyzeTrigger( iEvent, RecEvtView, *trg );
+      }
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
@@ -683,91 +670,71 @@ void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                                    pxl::EventView* EvtView,
-                                   const std::string &processName,
-                                   const edm::InputTag &HLTResults,
-                                   const edm::InputTag &L3Objets,
-                                   const std::map<int, std::string> &HLT_bit_to_name
+                                   const trigger_def &trigger
                                    ){
    //reference for some of the following parts: CMSSW/HLTrigger/HLTcore/plugins/HLTEventAnalyzerAOD.cc
-   using namespace edm;
-   using namespace trigger;
 
-   edm::Handle<edm::TriggerResults>   triggerResultsHandle_;
-   iEvent.getByLabel( HLTResults, triggerResultsHandle_ );
-   edm::Handle<trigger::TriggerEvent> triggerEventHandle_;
-   iEvent.getByLabel( L3Objets, triggerEventHandle_ );
+   edm::Handle<edm::TriggerResults>   triggerResultsHandle;
+   iEvent.getByLabel( trigger.results, triggerResultsHandle );
+   edm::Handle<trigger::TriggerEvent> triggerEventHandle;
+   iEvent.getByLabel( trigger.event, triggerEventHandle );
    
-   HLTConfigProvider hltConfig_;
-   hltConfig_.init( processName );
-   // Dump all triggers which have fired:
-   //const unsigned int n(hltConfig_.size());
-   //for (unsigned int i=0; i!=n; ++i) {
-   //   const std::string& name = hltConfig_.triggerName(i);
-   //   const unsigned int triggerIndex = hltConfig_.triggerIndex(name);
-   //   if (triggerResultsHandle_->accept(triggerIndex)) cout << name << " fired ";
-   //if (triggerResultsHandle_->wasrun(triggerIndex)) cout << name << " ran ";
-   //}
+   HLTConfigProvider hltConfig;
+   if( fStoreL3Objects ) hltConfig.init( trigger.process );
    
    //loop over selected trigger names
-   for (std::map<int, std::string>::const_iterator trig_map = HLT_bit_to_name.begin(); trig_map != HLT_bit_to_name.end(); trig_map++) {
+   for( std::map<int, std::string>::const_iterator trig = trigger.HLTMap.begin(); trig != trigger.HLTMap.end(); ++trig ){
       //save trigger path status
-      if (triggerResultsHandle_->wasrun(trig_map->first) && !(triggerResultsHandle_->error(trig_map->first))) {
-         EvtView->setUserRecord< bool >( triggerProcess+"_"+trig_map->second, triggerResultsHandle_->accept(trig_map->first));
-         if (fDebug > 0 && triggerResultsHandle_->accept(trig_map->first)) cout << endl << "Trigger: " << trig_map->second << " in menu " << triggerProcess << " fired" << endl;
+      if( triggerResultsHandle->wasrun( trig->first ) && ! ( triggerResultsHandle->error( trig->first ) ) ){
+         EvtView->setUserRecord< bool >( trigger.name+"_"+trig->second, triggerResultsHandle->accept( trig->first ) );
+         if( fDebug > 0 && triggerResultsHandle->accept( trig->first ) )
+            cout << endl << "Trigger: " << trig->second << " in menu " << trigger.process << " fired" << endl;
       } else {
-         if (!triggerResultsHandle_->wasrun(trig_map->first)) cout << "Trigger: " << trig_map->second << " in menu " << triggerProcess << " was not executed!" << endl;
-         if (triggerResultsHandle_->error(trig_map->first)) cout << "An error occured during execution of Trigger: " << trig_map->second << " in menu " << triggerProcess << endl;
+         if( !triggerResultsHandle->wasrun( trig->first ) ) cout << "Trigger: " << trig->second << " in menu " << trigger.process << " was not executed!" << endl;
+         if( triggerResultsHandle->error( trig->first ) ) cout << "An error occured during execution of Trigger: " << trig->second << " in menu " << trigger.process << endl;
       }
       //begin cout of saved information for debugging
-      if (fDebug > 1) {
-         cout << "triggerName: " << trig_map->second << "  triggerIndex: " << trig_map->first << endl;
+      if( fDebug > 1 ){
+         cout << "triggerName: " << trig->second << "  triggerIndex: " << trig->first << endl;
          cout << " Trigger path status:"
-              << " WasRun=" << triggerResultsHandle_->wasrun(trig_map->first)
-              << " Accept=" << triggerResultsHandle_->accept(trig_map->first)
-              << " Error =" << triggerResultsHandle_->error(trig_map->first) << endl;
+              << " WasRun=" << triggerResultsHandle->wasrun( trig->first )
+              << " Accept=" << triggerResultsHandle->accept( trig->first )
+              << " Error =" << triggerResultsHandle->error(  trig->first ) << endl;
       }
-      if (fStoreL3Objects) {
-         const vector<string>& moduleLabels(hltConfig_.moduleLabels(trig_map->first));
-         //const unsigned int m(hltConfig_.size(trig_map->first));
-         const unsigned int moduleIndex(triggerResultsHandle_->index(trig_map->first));
-         //cout << " Last active module - label/type: "
-         // << moduleLabels[moduleIndex] << "/" << hltConfig_.moduleType(moduleLabels[moduleIndex])
-         // << " [" << moduleIndex << " out of 0-" << (m-1) << " on this path]"
-         // << endl;
-         //assert (moduleIndex<m);
+      if( fStoreL3Objects ){
+         const vector<string> &moduleLabels( hltConfig.moduleLabels( trig->first ) );
+         const unsigned int moduleIndex( triggerResultsHandle->index( trig->first) );
 
          // Results from TriggerEvent product - Attention: must look only for
          // modules actually run in this path for this event!
          // Analyze and store the objects which have fired the trigger
-         for (unsigned int j = 0; j <= moduleIndex; ++j) {
-            const string& moduleLabel = moduleLabels[j];
-            const string  moduleType = hltConfig_.moduleType(moduleLabel);
+         for( unsigned int j = 0; j <= moduleIndex; ++j ){
+            const string &moduleLabel = moduleLabels[j];
             // check whether the module is packed up in TriggerEvent product
-            const unsigned int filterIndex = triggerEventHandle_->filterIndex(InputTag(moduleLabel, "", processName ));
-            //cout << "FilterIndex: " << filterIndex << " for module " << moduleLabel << "/" << moduleType << endl;
-            if (filterIndex < triggerEventHandle_->sizeFilters()) {
-               //cout << "Trigger " << trig_map->second << ": 'L3' filter in slot " << j << " - label/type " << moduleLabel << "/" << moduleType << endl;
-               const Vids& VIDS (triggerEventHandle_->filterIds(filterIndex));
-               const Keys& KEYS(triggerEventHandle_->filterKeys(filterIndex));
-               const size_type nI(VIDS.size());
-               const size_type nK(KEYS.size());
-               assert(nI==nK);
-               size_type n(max(nI,nK));
-               if (n > 5) {
-                  cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << moduleType << endl;
+            const unsigned int filterIndex = triggerEventHandle->filterIndex( InputTag( moduleLabel, "", trigger.process ) );
+            if( filterIndex < triggerEventHandle->sizeFilters() ){
+               const trigger::Vids &VIDS( triggerEventHandle->filterIds(  filterIndex ) );
+               const trigger::Keys &KEYS( triggerEventHandle->filterKeys( filterIndex ) );
+               const size_t nI( VIDS.size() );
+               const size_t nK( KEYS.size() );
+               assert( nI==nK );
+               size_t n( max( nI,nK ) );
+               if( n > 5 ){
+                  cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << hltConfig.moduleType( moduleLabel ) << endl;
                   n = 5;
                }
-               //cout << "   " << n  << " accepted 'L3' objects found: " << endl;
-               const TriggerObjectCollection& TOC = triggerEventHandle_->getObjects();
-               for (size_type i=0; i!=n; ++i) {
-                  const TriggerObject& TO = TOC[KEYS[i]];
-                  pxl::Particle* part = EvtView->create<pxl::Particle>();
-                  part->setName(moduleLabel);
-                  part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
-                  part->setUserRecord<double>("ID", TO.id());
-                  if (fDebug > 0) cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-                                       << " id: " << TO.id() << " pt: " << TO.pt() << " eta: " << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass()
-                                       << endl;
+               const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
+               for( size_t i = 0; i != n; ++i ){
+                  const trigger::TriggerObject &TO = TOC[KEYS[i]];
+                  pxl::Particle *part = EvtView->create< pxl::Particle >();
+                  part->setName( moduleLabel );
+                  part->setP4( TO.px(), TO.py(), TO.pz(), TO.energy() );
+                  part->setUserRecord< double >( "ID", TO.id() );
+                  if( fDebug > 0 )
+                     cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+                          << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
+                          << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass()
+                          << endl;
                }
             }
          }

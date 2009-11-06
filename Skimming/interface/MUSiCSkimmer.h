@@ -78,6 +78,15 @@ public:
   
 
  private:
+   //defines everything used to analyze one trigger
+   struct trigger_def{
+      std::string   name;
+      std::string   process;
+      edm::InputTag results;
+      edm::InputTag event;
+      std::map<int, std::string> HLTMap;
+   };
+
 
    virtual void beginJob(const edm::EventSetup&);
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
@@ -91,10 +100,7 @@ public:
    
    virtual void analyzeTrigger( const edm::Event &iEvent,
                                 pxl::EventView *EvtView,
-                                const std::string &processName,
-                                const edm::InputTag &HLTResults,
-                                const edm::InputTag &L3Objets,
-                                const std::map<int, std::string> &HLT_bit_to_name
+                                const trigger_def &trigger
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
@@ -152,17 +158,8 @@ public:
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;   
 
-   // Trigger
-   std::string   triggerProcess;
-   edm::InputTag ftriggerResultsTag; 
-   edm::InputTag fTriggerEvent;
-   std::map<int, std::string> fHLTMap;
-
-   // Second trigger
-   std::string   triggerProcess2;
-   edm::InputTag ftriggerResultsTag2;
-   edm::InputTag fTriggerEvent2;
-   std::map<int, std::string> fHLTMap2;
+   //all triggers
+   std::vector< trigger_def > triggers;
 
    bool fStoreL3Objects;
  
