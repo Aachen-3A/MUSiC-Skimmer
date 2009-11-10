@@ -797,10 +797,9 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
          //store PAT matching info if MC
          if (MC){
-         	const reco::Candidate* recogen = muon->genLepton();
-            pxl::Particle* pxlgen = genmap[recogen];
-            if (pxlgen != NULL) {
-               part->linkSoft(pxlgen, "pat-match");
+            std::map< const Candidate*, pxl::Particle* >::const_iterator it = genmap.find( muon->genLepton() );
+            if( it != genmap.end() ){
+               part->linkSoft( it->second, "pat-match" );
             }
          }
 	 
@@ -926,11 +925,10 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord<double>("Dxy", ele->gsfTrack()->dxy(vtx));
 
          //store PAT matching info if MC
-         if (MC) {
-         	const reco::Candidate* recogen = ele->genLepton();
-            pxl::Particle* pxlgen = genmap[recogen];
-            if (pxlgen != NULL) {
-               part->linkSoft(pxlgen, "pat-match");
+         if( MC ){
+            std::map<const Candidate*, pxl::Particle*>::const_iterator it = genmap.find( ele->genLepton() );
+            if( it != genmap.end() ){
+               part->linkSoft( it->second, "pat-match" );
             }
          }
 
@@ -1005,10 +1003,7 @@ void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
       edm::Handle<std::vector<pat::Jet> > jetHandle;
       iEvent.getByLabel( *jet_label, jetHandle);
       const std::vector<pat::Jet>& RecJets = *jetHandle;
-      //Get the GenJet collections for PAT matching
-      edm::Handle<reco::GenJetCollection> GenJets;
-      // get matching Gen Collection
-      iEvent.getByLabel(fJetMCLabels[jetcoll_i], GenJets);    
+
       // loop over the jets
       for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
          if (Jet_cuts(jet)) {
@@ -1041,17 +1036,10 @@ void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecV
             }
             //store PAT matching info if MC
             if (MC) {
-               const reco::Candidate* recogen = jet->genJet();
-               //begin ugly workaround in order to deal with the genJet copies returned by genJet()
-               for (reco::GenJetCollection::const_iterator genJetit = GenJets->begin(); genJetit != GenJets->end(); ++genJetit) {
-                  if (recogen != NULL && abs(genJetit->pt() - recogen->pt()) < 0.1 ){
-                     recogen = (const GenParticle*) &(*genJetit);
-                     break;
-                  }
+               std::map< const Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
+               if( it != genjetmap.end() ){
+                  part->linkSoft( it->second, "pat-match" );
                }
-               //end ugly workaround
-               pxl::Particle* pxlgen = genjetmap[recogen];
-               if (pxlgen != NULL) part->linkSoft(pxlgen, "pat-match");
             }
             numJetRec++;
          }
@@ -1137,9 +1125,10 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<double>("PhysPt", localPho.p4().pt());
          //store PAT matching info
          if (MC) {
-            const reco::Candidate* recogen = photon->genPhoton();
-            pxl::Particle* pxlgen = genmap[recogen];
-            if (pxlgen != NULL) part->linkSoft(pxlgen, "pat-match");
+            std::map< const Candidate*, pxl::Particle* >::const_iterator it = genmap.find( photon->genPhoton() );
+            if( it != genmap.end() ){
+               part->linkSoft( it->second, "pat-match" );
+            }
          }
          //FIXME Pi0 stuff still missing --> seems not be working in CMSSW_2_1_X
          numGammaRec++;

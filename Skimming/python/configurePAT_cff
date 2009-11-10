@@ -41,3 +41,12 @@ process.jetGenJetMatch.checkCharge = cms.bool(False)
 process.jetGenJetMatch.resolveByMatchQuality = cms.bool(True)
 process.jetGenJetMatch.maxDeltaR = cms.double(0.4)
 process.jetGenJetMatch.maxDPtRel = cms.double(1000000.0)
+
+# save a reference to the gen-object instead of a copy.
+# this of course only works if the gen collection is still in the event
+# if we run PAT ourself on GEN-SIM-RECO, it is, so everything is fine
+process.allLayer1Electrons.embedGenMatch = False
+process.allLayer1Muons.embedGenMatch = False
+process.allLayer1Photons.embedGenMatch = False
+process.allLayer1Jets.embedGenJetMatch = False
+process.allLayer1Jets.embedGenPartonMatch = False
