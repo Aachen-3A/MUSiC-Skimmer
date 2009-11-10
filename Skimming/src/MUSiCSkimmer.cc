@@ -146,10 +146,24 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
    freducedEndcapRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedEndcapRecHitCollection");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
-   // Jet labels - used for Gen and Rec
-   fJetMCLabels  = iConfig.getParameter<std::vector<std::string> >("JetMCLabels");
-   fJetRecoLabels = iConfig.getParameter<std::vector<std::string> >("JetRecoLabels");
-   fJetRecoNames = iConfig.getParameter<std::vector<std::string> >("JetRecoNames");
+
+   //get the PSet that contains all jet PSets
+   ParameterSet jets_pset = iConfig.getParameter< ParameterSet >( "jets" );
+   //get the names of all sub-PSets
+   vector< string > jet_names;
+   jets_pset.getParameterSetNames( jet_names );
+   //loop over the names of the jet PSets
+   for( vector< string >::const_iterator jet_name = jet_names.begin(); jet_name != jet_names.end(); ++jet_name ){
+      jet_def jet;
+      jet.name = *jet_name;
+
+      ParameterSet one_jet = jets_pset.getParameter< ParameterSet >( jet.name );
+      jet.MCLabel   = one_jet.getParameter< InputTag >( "MCLabel" );
+      jet.RecoLabel = one_jet.getParameter< InputTag >( "RecoLabel" );
+
+      jet_infos.push_back( jet );
+   }
+
    // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
 
@@ -245,7 +259,9 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
       analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
-      analyzeGenJets(iEvent, GenEvtView, genjetmap);
+      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+         analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
+      }
       analyzeGenMET(iEvent, GenEvtView);
       if (fUseSIM){
          analyzeSIM(iEvent, GenEvtView);
@@ -261,14 +277,16 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
       analyzeRecElectrons(iEvent, RecEvtView, IsMC, lazyTools, genmap);
-      analyzeRecJets(iEvent, RecEvtView, IsMC, genjetmap);
+      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+         analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
+      }
       analyzeRecMET(iEvent, RecEvtView);
       analyzeRecGammas(iEvent, RecEvtView, IsMC, lazyTools, genmap);
    }
 
    if (IsMC){
       const string met_name = "MET";
-      Matcher->matchObjects(GenEvtView, RecEvtView, fJetRecoNames, met_name);
+      Matcher->matchObjects(GenEvtView, RecEvtView, jet_infos, met_name);
    }
 
    // set event class strings
@@ -279,22 +297,22 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    
    if (fDebug > 0) {  
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
-      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoNames.begin(); jetAlgo != fJetRecoNames.end(); ++jetAlgo) {
-         cout << (*jetAlgo) << " ";
+      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+         cout << jet_info->name << " ";
       }
       cout << "  MET  " << endl;
       cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
            << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
            << setw(7) << GenEvtView->findUserRecord<int>("NumGamma");
-      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoNames.begin(); jetAlgo != fJetRecoNames.end(); ++jetAlgo) {
-         cout << setw(4) << GenEvtView->findUserRecord<int>("Num"+(*jetAlgo)) << " ";
+      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+         cout << setw(4) << GenEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
            << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
            << setw(7) << RecEvtView->findUserRecord<int>("NumGamma");
-      for (std::vector<std::string>::const_iterator jetAlgo = fJetRecoNames.begin(); jetAlgo != fJetRecoNames.end(); ++jetAlgo) {
-         cout << setw(4) << RecEvtView->findUserRecord<int>("Num"+(*jetAlgo)) << " ";
+      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+         cout << setw(4) << RecEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
@@ -495,50 +513,43 @@ void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator Jets ------------
 
-void MUSiCSkimmer::analyzeGenJets(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*> & genjetmap) {
-   int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
-   // perform a loop over all desired jet collections:
-   for (std::vector<std::string>::const_iterator jet_label = fJetMCLabels.begin(); jet_label != fJetMCLabels.end(); ++jet_label) {
-      //Get the GenJet collections
-      edm::Handle<reco::GenJetCollection> GenJets;
-      iEvent.getByLabel(*jet_label, GenJets);
-      // counter 
-      int numJetMC = 0;
-      vector <const GenParticle*> genJetConstit; //genJet-constituents
-      int numGenJetConstit_withcuts = 0;
-      double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
+void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ) {
+   //Get the GenJet collections
+   edm::Handle<reco::GenJetCollection> GenJets;
+   iEvent.getByLabel( jet_info.MCLabel, GenJets );
+   // counter 
+   int numJetMC = 0;
+   double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
    
-      //Loop over GenJets
-      for (reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet) {
-         if (JetMC_cuts(genJet)) {
-            pxl::Particle* part = EvtView->create<pxl::Particle>();
-
-            //cast iterator into GenParticleCandidate
-            const GenParticle* p = (const GenParticle*) &(*genJet);
-            genjetmap[p] = part;
-            part->setName(fJetRecoNames[jetcoll_i]);
-            part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
-            //fill additional jet-related infos
-            part->setUserRecord<double>("EmE", genJet->emEnergy());
-            part->setUserRecord<double>("HadE", genJet->hadEnergy());
-            part->setUserRecord<double>("InvE", genJet->invisibleEnergy());
-            part->setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
-            numJetMC++;
-
-            //save number of GenJet-constituents fulfilling some cuts
-            numGenJetConstit_withcuts = 0; //reset variable
-            genJetConstit = genJet->getGenConstituents();
-            for (std::vector<const GenParticle*>::iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
-               //raise counter if cut passed
-               if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
-            }
-            part->setUserRecord<int>("GenJetConstit", numGenJetConstit_withcuts);
+   //Loop over GenJets
+   for (reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet) {
+      if( JetMC_cuts( genJet ) ){
+         pxl::Particle *part = EvtView->create< pxl::Particle >();
+         
+         //cast iterator into GenParticleCandidate
+         const GenParticle *p = dynamic_cast< const GenParticle* >( &(*genJet) );
+         genjetmap[p] = part;
+         part->setName( jet_info.name );
+         part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
+         //fill additional jet-related infos
+         part->setUserRecord<double>("EmE", genJet->emEnergy());
+         part->setUserRecord<double>("HadE", genJet->hadEnergy());
+         part->setUserRecord<double>("InvE", genJet->invisibleEnergy());
+         part->setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
+         numJetMC++;
+         
+         //save number of GenJet-constituents fulfilling some cuts
+         int numGenJetConstit_withcuts = 0;
+         const vector< const GenParticle* > &genJetConstit = genJet->getGenConstituents();
+         for( std::vector< const GenParticle* >::const_iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
+            //raise counter if cut passed
+            if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
          }
+         part->setUserRecord< int >( "GenJetConstit", numGenJetConstit_withcuts );
       }
-      EvtView->setUserRecord<int>("Num"+fJetRecoNames[jetcoll_i], numJetMC);
-      if (fDebug > 1) cout << "Found MC Jets:  "  << numJetMC << " of Type " << fJetRecoNames[jetcoll_i] << endl;
-      ++jetcoll_i;
    }
+   EvtView->setUserRecord< int >( "Num"+jet_info.name, numJetMC );
+   if( fDebug > 1 ) cout << "Found MC Jets:  "  << numJetMC << " of Type " << jet_info.name << endl;
 }
 
 // ------------ reading the Generator MET ------------
@@ -984,70 +995,62 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 
 // ------------ reading Reconstructed Jets ------------
 
-void MUSiCSkimmer::analyzeRecJets(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, std::map<const Candidate*, pxl::Particle*>& genjetmap) {
-   int numJetRec = 0;
+void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info){
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
    if (RecView->findUserRecord<int>("NumVertices") > 0) {
       pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
       VertexZ = (*vtx_iter)->getZ();
    } 
-
-   int jetcoll_i = 0;  // counter for jet collection - needed for Rec --> Gen collection association
    
-   // perform a loop over all desired jet collections:
-   for (std::vector<std::string>::const_iterator jet_label = fJetRecoLabels.begin(), jet_name = fJetRecoNames.begin(); jet_label != fJetRecoLabels.end() && jet_name != fJetRecoNames.end(); ++jet_label, ++jet_name) {
-      // reset counter 
-      numJetRec = 0;
-      // get RecoJets
-      edm::Handle<std::vector<pat::Jet> > jetHandle;
-      iEvent.getByLabel( *jet_label, jetHandle);
-      const std::vector<pat::Jet>& RecJets = *jetHandle;
+   int numJetRec = 0;
+   // get RecoJets
+   edm::Handle< std::vector< pat::Jet > > jetHandle;
+   iEvent.getByLabel( jet_info.RecoLabel, jetHandle );
+   const std::vector< pat::Jet > &RecJets = *jetHandle;
 
-      // loop over the jets
-      for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
-         if (Jet_cuts(jet)) {
-            pxl::Particle* part = RecView->create<pxl::Particle>();
-            part->setName((*jet_name)); 
-            part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
-            part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
-            part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-            part->setUserRecord<int>("N90", jet->n90());
-            part->setUserRecord<int>("N60", jet->n60());
-            std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
-            part->setUserRecord<int>("NCaloRefs", caloRefs.size());
-            part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
-            part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
-            part->setUserRecord<double>("TowersArea", jet->towersArea());
-            part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
-            // store b-tag discriminator values:
-            part->setUserRecord<float>("cSVtx", jet->bDiscriminator("combinedSecondaryVertexBJetTags"));
-            part->setUserRecord<float>("cSVtxMVA", jet->bDiscriminator("combinedSecondaryVertexMVABJetTags"));
-            part->setUserRecord<float>("BProb", jet->bDiscriminator("jetBProbabilityBJetTags"));
-            part->setUserRecord<float>("Prob", jet->bDiscriminator("jetProbabilityBJetTags"));
-            // to be compared with Generator Flavor:
-            part->setUserRecord<int>("Flavour", jet->partonFlavour());
-            if (fDebug > 1) {
-               const std::vector<std::pair<std::string, float> > & bTags = jet->getPairDiscri();
-               part->print(0);
-               for (vector<pair<string, float> >::const_iterator btag = bTags.begin(); btag != bTags.end(); ++btag) {
-                  cout << "Name: " << btag->first << "   value: " << btag->second << endl;
-               }
+   // loop over the jets
+   for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
+      if (Jet_cuts(jet)) {
+         pxl::Particle* part = RecView->create<pxl::Particle>();
+         part->setName( jet_info.name );
+         part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
+         part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+         part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
+         part->setUserRecord<int>("N90", jet->n90());
+         part->setUserRecord<int>("N60", jet->n60());
+         std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
+         part->setUserRecord<int>("NCaloRefs", caloRefs.size());
+         part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
+         part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+         part->setUserRecord<double>("TowersArea", jet->towersArea());
+         part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
+         // store b-tag discriminator values:
+         part->setUserRecord<float>("cSVtx", jet->bDiscriminator("combinedSecondaryVertexBJetTags"));
+         part->setUserRecord<float>("cSVtxMVA", jet->bDiscriminator("combinedSecondaryVertexMVABJetTags"));
+         part->setUserRecord<float>("BProb", jet->bDiscriminator("jetBProbabilityBJetTags"));
+         part->setUserRecord<float>("Prob", jet->bDiscriminator("jetProbabilityBJetTags"));
+         // to be compared with Generator Flavor:
+         part->setUserRecord<int>("Flavour", jet->partonFlavour());
+         if (fDebug > 1) {
+            const std::vector<std::pair<std::string, float> > & bTags = jet->getPairDiscri();
+            part->print(0);
+            for (vector<pair<string, float> >::const_iterator btag = bTags.begin(); btag != bTags.end(); ++btag) {
+               cout << "Name: " << btag->first << "   value: " << btag->second << endl;
             }
-            //store PAT matching info if MC
-            if (MC) {
-               std::map< const Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
-               if( it != genjetmap.end() ){
-                  part->linkSoft( it->second, "pat-match" );
-               }
-            }
-            numJetRec++;
          }
+         //store PAT matching info if MC
+         if (MC) {
+            std::map< const Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
+            if( it != genjetmap.end() ){
+               part->linkSoft( it->second, "pat-match" );
+            }
+         }
+         numJetRec++;
       }
-      RecView->setUserRecord<int>("Num"+(*jet_name), numJetRec);
-      if (fDebug > 1) cout << "Found Rec Jets:  " << numJetRec << " of Type " << *jet_name << endl;
-      jetcoll_i++;
    }
+   RecView->setUserRecord< int >( "Num"+jet_info.name, numJetRec );
+   if( fDebug > 1 ) cout << "Found Rec Jets:  " << numJetRec << " of Type " << jet_info.name << endl;
 }
 
 // ------------ reading Reconstructed Gammas ------------
@@ -1146,7 +1149,7 @@ std::string MUSiCSkimmer::getEventClass(pxl::EventView* EvtView) {
    EventType << EvtView->findUserRecord<int>("NumEle") <<  "e"
              << EvtView->findUserRecord<int>("NumMuon") << "mu"
              << EvtView->findUserRecord<int>("NumGamma") << "gam"
-             << EvtView->findUserRecord<int>("Num"+fJetRecoNames[0]) << "jet"
+             << EvtView->findUserRecord<int>("Num"+jet_infos[0].name) << "jet"
              << EvtView->findUserRecord<int>("NumMET") << "met";
    EventType.flush();
    return EventType.str();

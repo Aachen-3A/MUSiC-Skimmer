@@ -115,10 +115,14 @@ process.Skimmer = cms.EDAnalyzer(
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
     barrelClusterCollection = cms.InputTag("correctedHybridSuperClusters","electronPixelSeeds"),
     endcapClusterCollection = cms.InputTag("correctedMulti5x5SuperClustersWithPreshower","electronPixelSeeds"),
-    # Jet labels: used for Gen AND REC Jets , order of used algorithms must be identical , first entry is used for matching
-    JetMCLabels = cms.vstring( "antikt5GenJets" ),
-    JetRecoLabels = cms.vstring( "cleanLayer1Jets"),
-    JetRecoNames = cms.vstring( "AK5"),
+
+    jets = cms.PSet(
+        # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
+        AK5 = cms.PSet(
+            MCLabel = cms.InputTag( "antikt5GenJets" ),
+            RecoLabel = cms.InputTag( "cleanLayer1Jets" )
+            )
+        ),
     # MET
     METRecoLabel = cms.untracked.string("layer1METs"),
     

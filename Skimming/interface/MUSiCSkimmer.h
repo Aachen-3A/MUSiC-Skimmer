@@ -67,6 +67,7 @@ struct PDFInf {
 // but ePax can deal with both of them
 #include "MUSiCProject/ePaxPxl/interface/ePaxPxl.h"
 #include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
+#include "MUSiCProject/Skimming/interface/jet_def.h"
 
 
 class MUSiCSkimmer : public edm::EDAnalyzer {
@@ -93,7 +94,7 @@ public:
    virtual void endJob();
    virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
-   virtual void analyzeGenJets(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
@@ -105,7 +106,7 @@ public:
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
-   virtual void analyzeRecJets(const edm::Event&, pxl::EventView*, bool&, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
 
@@ -143,10 +144,8 @@ public:
    std::string fElectronRecoLabel;
    // Photon
    std::string fGammaRecoLabel;
-   // Jets labels
-   std::vector<std::string> fJetRecoLabels;
-   std::vector<std::string> fJetRecoNames;
-   std::vector<std::string> fJetMCLabels;
+   // Jets
+   std::vector< jet_def > jet_infos;
    // MET labels
    std::string fMETRecoLabel;
    // Cluster

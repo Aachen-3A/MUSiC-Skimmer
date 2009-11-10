@@ -10,6 +10,7 @@ declared to have no match. For unmatched particles Match UserRecord is set to -1
 */
 
 #include "MUSiCProject/ePaxPxl/interface/ePaxPxl.h"
+#include "MUSiCProject/Skimming/interface/jet_def.h"
 #include <iostream> 
 #include "TMatrixT.h"
 #include <vector>
@@ -23,7 +24,7 @@ class ParticleMatcher {
       // Destruktor
       ~ParticleMatcher() {;};
       // Match method
-      void matchObjects(pxl::EventView* GenView, pxl::EventView* RecView, const std::vector<std::string>& _JetAlgos, const std::string& _METType); 
+      void matchObjects( pxl::EventView *GenView, pxl::EventView *RecView, const std::vector< jet_def > &jet_infos, const std::string &_METType); 
       void makeMatching(std::vector<pxl::Particle*>& gen_particles, std::vector<pxl::Particle*>& rec_particles, const std::string& _METType);
       
    private:
