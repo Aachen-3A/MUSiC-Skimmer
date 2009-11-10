@@ -289,12 +289,6 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       Matcher->matchObjects(GenEvtView, RecEvtView, jet_infos, met_name);
    }
 
-   // set event class strings
-   if( IsMC ){
-      GenEvtView->setUserRecord<std::string>("EventClass", getEventClass(GenEvtView));
-   }
-   RecEvtView->setUserRecord<std::string>("EventClass", getEventClass(RecEvtView));
-   
    if (fDebug > 0) {  
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
       for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
@@ -315,10 +309,8 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          cout << setw(4) << RecEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
-      cout << "Gen Event Type: " << GenEvtView->findUserRecord<string>("EventClass") << endl;
-      cout << "Rec Event Type: " << RecEvtView->findUserRecord<string>("EventClass") << endl;
    }   
-   fePaxFile.writeEvent(&event, RecEvtView->findUserRecord<string>("EventClass"));
+   fePaxFile.writeEvent(&event);
 }
 
 // ------------ reading Generator related Stuff ------------
@@ -1215,7 +1207,6 @@ void MUSiCSkimmer::endJob() {
          // get all stored EventViews
          pxl::EventView* GenEvtView = event.getObjectOwner().findObject<pxl::EventView>("Gen");
          pxl::EventView* RecEvtView = event.getObjectOwner().findObject<pxl::EventView>("Rec");
-         string EC_string = RecEvtView->findUserRecord<std::string>("EventClass");
          unsigned int i = 1;
          for (vector<float>::const_iterator weight = (*weights_iter).begin(); weight != (*weights_iter).end(); ++weight) {
             //cout << "weight w" << i << "  " << *weight << endl;
@@ -1226,8 +1217,7 @@ void MUSiCSkimmer::endJob() {
             RecEvtView->setUserRecord<float>(str_i, *weight);
             i++;
          }
-         //string EC_string = RecEvtView->findUserRecord<std::string>("EventClass");
-         tmpFile.writeEvent(&event, EC_string);
+         tmpFile.writeEvent(&event);
          ++weights_iter;
          ++count;
       }
