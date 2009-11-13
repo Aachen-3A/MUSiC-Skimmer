@@ -1,20 +1,11 @@
-# change default jet collection to AK5 and that for Type1 MET corrections, too
-import PhysicsTools.PatAlgos.tools.jetTools
-PhysicsTools.PatAlgos.tools.jetTools.switchJetCollection(process, 
-	cms.InputTag('antikt5CaloJets'),  # Jet collection; must be already in the event when patDefaultSequence is executed
-	doJTA=True,            # Run Jet-Track association & JetCharge
-	doBTagging=True,       # Run b-tagging
-	jetCorrLabel=('AK5','Calo'), # example jet correction name; set to None for no JEC
-	doType1MET=True,       # recompute Type1 MET using these jets
-	genJetCollection=cms.InputTag("antikt5GenJets"))
+#in 33x, anti-kt jets are called ak*, however in the 31x they are called antikt*.
+#the following function call will fix this
+import PhysicsTools.PatAlgos.tools.cmsswVersionTools
+PhysicsTools.PatAlgos.tools.cmsswVersionTools.run33xOn31xMC( process )
 
 
-process.allLayer1Photons.addPhotonID = True
-del process.allLayer1Photons.photonIDSource
-process.allLayer1Photons.photonIDSources = cms.PSet(
-	PhotonCutBasedIDLoose = cms.InputTag('PhotonIDProd', 'PhotonCutBasedIDLoose'),
-	PhotonCutBasedIDTight = cms.InputTag('PhotonIDProd', 'PhotonCutBasedIDTight')
-	)
+#use 7 TeV JEC
+process.jetCorrFactors.corrSample = 'Summer09_7TeV'
 
 #configure PAT matching
 process.electronMatch.checkCharge = cms.bool(False)
@@ -41,6 +32,7 @@ process.jetGenJetMatch.checkCharge = cms.bool(False)
 process.jetGenJetMatch.resolveByMatchQuality = cms.bool(True)
 process.jetGenJetMatch.maxDeltaR = cms.double(0.4)
 process.jetGenJetMatch.maxDPtRel = cms.double(1000000.0)
+
 
 # save a reference to the gen-object instead of a copy.
 # this of course only works if the gen collection is still in the event
