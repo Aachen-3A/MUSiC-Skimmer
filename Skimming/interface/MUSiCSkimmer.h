@@ -10,13 +10,6 @@ extern "C" {
    void numberpdf_(int &);
 }
 
-struct PDFInf {
-   int   f1; 
-   int   f2; 
-   double  x1;
-   double  x2;
-   double  Q; 
-};
 
 // CMSSW includes
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -43,6 +36,7 @@ struct PDFInf {
 #include "RecoCaloTools/MetaCollections/interface/CaloRecHitMetaCollections.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "SimDataFormats/GeneratorProducts/interface/PdfInfo.h"
 
  
 // ROOT stuff
@@ -166,7 +160,7 @@ public:
    ParticleMatcher* Matcher;
    // to be used for ePax output 
    pxl::OutputFile fePaxFile;
-   std::vector<PDFInf> fpdf_vec;
+   std::vector<gen::PdfInfo> fpdf_vec;
    double xfx(const double &x, const double &Q, int fl) {  
       double f[13], mx = x, mQ = Q;
       evolvepdf_(mx, mQ, f);

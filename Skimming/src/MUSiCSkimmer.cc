@@ -52,7 +52,7 @@ Implementation:
 //for GenParticles
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "DataFormats/HepMCCandidate/interface/PdfInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
 //for TrackingVertex
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
@@ -318,49 +318,41 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
    // this works at least for RECO. Need to check if this works on AOD or PAT-Ntuplee 
   
-   // get and store EventScale aka pt_hat 
-   edm::Handle<double> genEventScale;
-   iEvent.getByLabel("genEventScale", genEventScale);
-   EvtView->setUserRecord<double>("pthat", *genEventScale);  // pt_hat
+   edm::Handle< GenEventInfoProduct > genEvtInfo;
+   iEvent.getByLabel( "generator", genEvtInfo );
+
+   //if the sample is binned, there should be a binning value. so save it, otherwise just save a 0
+   EvtView->setUserRecord< double >( "binScale", genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0 );
+
+   EvtView->setUserRecord< double >( "Weight", genEvtInfo->weight() );
   
-   // get and store EventWeigth
-   edm::Handle<double> genEventWeight;
-   iEvent.getByLabel("genEventWeight", genEventWeight);
-   EvtView->setUserRecord<double>("Weight", *genEventWeight);  
+   if( genEvtInfo->hasPDF() ){
+      const gen::PdfInfo *pdf = genEvtInfo->pdf();
 
-   //   edm::Handle<double> ktValue; 
-   //   iEvent.getByLabel("genEventKTValue", ktValue);
-   //   cout << "the KT = " << *ktValue << std::endl;
+      EvtView->setUserRecord<float>("x1", pdf->x.first);
+      EvtView->setUserRecord<float>("x2", pdf->x.second);
+      EvtView->setUserRecord<float>("Q", pdf->scalePDF);
+      EvtView->setUserRecord<int>("f1", pdf->id.first);
+      EvtView->setUserRecord<int>("f2", pdf->id.second);
+      EvtView->setUserRecord<float>("pdf1", pdf->xPDF.first);
+      EvtView->setUserRecord<float>("pdf2", pdf->xPDF.second);
 
-   // read and store PDF Info
-   edm::Handle<reco::PdfInfo> pdfstuff;
-   iEvent.getByLabel("genEventPdfInfo", pdfstuff);
-   EvtView->setUserRecord<float>("x1", pdfstuff->x1);
-   EvtView->setUserRecord<float>("x2", pdfstuff->x2);
-   EvtView->setUserRecord<float>("Q", pdfstuff->scalePDF);
-   EvtView->setUserRecord<int>("f1", pdfstuff->id1);
-   EvtView->setUserRecord<int>("f2", pdfstuff->id2);
-   EvtView->setUserRecord<float>("pdf1", pdfstuff->pdf1);
-   EvtView->setUserRecord<float>("pdf2", pdfstuff->pdf2);
-   //cout << "x1: " << pdfstuff->x1 << "   x2: " << pdfstuff->x2 << endl;
-   //cout << "pdf1: " << pdfstuff->pdf1 << "   pdf2: " << pdfstuff->pdf2 << endl;
-   //cout << "x1*pdf1: " << pdfstuff->x1*pdfstuff->pdf1 << "    x2*pdf2: " << pdfstuff->x2*pdfstuff->pdf2 << endl;
-   // store also in the fpdf_vec 
-   PDFInf pdf;
-   pdf.x1 = pdfstuff->x1;
-   pdf.x2 = pdfstuff->x2;
-   pdf.f1 = pdfstuff->id1;
-   pdf.f2 = pdfstuff->id2;
-   pdf.Q = pdfstuff->scalePDF;
-   fpdf_vec.push_back(pdf);
+      fpdf_vec.push_back( *pdf );
+   }
    
    if (fDebug > 0) {
-      cout << "Event Scale (pthat): " << *genEventScale << ", EventWeight: " << *genEventWeight << endl;
-      cout << "PDFInfo: " << endl 
-           << "========" << endl;
-      cout << "Momentum of first incoming parton: (id/flavour = " << static_cast<int>(pdfstuff->id1) << ") " << pdfstuff->x1 << endl
-           << "Momentum of second incoming parton: (id/flavour = " << static_cast<int>(pdfstuff->id2) << ") " << pdfstuff->x2 << endl
-           << "Scale = " << pdfstuff->scalePDF << endl;
+      cout << "Event Scale (i.e. pthat): " << (genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0) << ", EventWeight: " << genEvtInfo->weight() << endl;
+      if( genEvtInfo->hasPDF() ){
+         cout << "PDFInfo: " << endl 
+              << "========" << endl;
+         cout << "Momentum of first incoming parton: (id/flavour = "  << genEvtInfo->pdf()->id.first  << ") "
+              << genEvtInfo->pdf()->x.first  << endl
+              << "Momentum of second incoming parton: (id/flavour = " << genEvtInfo->pdf()->id.second << ") "
+              << genEvtInfo->pdf()->x.second << endl
+              << "Scale = " << genEvtInfo->pdf()->scalePDF << endl;
+      } else {
+         cout << "No PDFInfo in this event." << endl;
+      }
    }
 }
 
@@ -1179,16 +1171,16 @@ void MUSiCSkimmer::endJob() {
          //cout << "Initialized sub PDF " << subpdf << endl;
          if (subpdf == 0) {
             // loop over all PDFInf's
-            for (vector<PDFInf>::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf) {
-               best_fit.push_back(xfx(pdf->x1, pdf->Q, pdf->f1) * xfx(pdf->x2, pdf->Q, pdf->f2));
+            for( vector< gen::PdfInfo >::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf ){
+               best_fit.push_back( xfx( pdf->x.first, pdf->scalePDF, pdf->id.first ) * xfx( pdf->x.second, pdf->scalePDF, pdf->id.second ) );
                //cout << "xfx1: " <<  xfx(pdf->x1, pdf->Q, pdf->f1) << "   xfx1: " << xfx(pdf->x2, pdf->Q, pdf->f2) << endl;
             }
          } else {
             vector<float>::const_iterator best_fit_iter = best_fit.begin();
             vector<vector<float> >::iterator weights_iter = weights.begin();
             // loop over all PDFInf's
-            for (vector<PDFInf>::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf) {
-               weights_iter->push_back(xfx( pdf->x1, pdf->Q, pdf->f1) * xfx( pdf->x2, pdf->Q, pdf->f2) / (*best_fit_iter));
+            for( vector< gen::PdfInfo >::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf ){
+               weights_iter->push_back( xfx( pdf->x.first, pdf->scalePDF, pdf->id.first) * xfx( pdf->x.second, pdf->scalePDF, pdf->id.second ) / (*best_fit_iter));
                ++weights_iter;
                ++best_fit_iter;
             }

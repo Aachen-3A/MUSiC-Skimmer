@@ -27,10 +27,6 @@ process.source = cms.Source("PoolSource",
 
 process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
-process.load('PhysicsTools.HepMCCandAlgos.genEventScale_cfi')
-process.load('PhysicsTools.HepMCCandAlgos.genEventWeight_cfi')
-process.load('PhysicsTools.HepMCCandAlgos.genEventPdfInfo_cfi')
-
 # rerun photon ID
 process.load("RecoEgamma.PhotonIdentification.photonId_cff")
 # for ClusterShape inspired by egamma hypernews
@@ -157,4 +153,4 @@ process.Skimmer = cms.EDAnalyzer(
     StoreL3Objects = cms.untracked.bool(False)
     )
 
-process.p = cms.Path(process.genEventScale + process.genEventWeight + process.genEventPdfInfo + process.photonIDSequence + process.patDefaultSequence + process.Skimmer)
+process.p = cms.Path( process.photonIDSequence + process.patDefaultSequence + process.Skimmer )
