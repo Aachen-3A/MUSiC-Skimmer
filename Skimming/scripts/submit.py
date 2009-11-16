@@ -63,6 +63,7 @@ for line in open( samples ):
             'user_remote_dir = '+outname+name+'\n'+
             '[GRID]\n'+
             'rb = CERN\n'+
+            'group = dcms\n'+
             'se_black_list = T0,T1\n'+
             '[CONDORG]\n'
             )
