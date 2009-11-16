@@ -9,7 +9,7 @@ matching particle has a distance large than the given limits for DeltaR, DeltaPt
 declared to have no match. For unmatched particles Match UserRecord is set to -1.
 */
 
-#include "MUSiCProject/ePaxPxl/interface/ePaxPxl.h"
+#include "MUSiCProject/Pxl/interface/Pxl.h"
 #include "MUSiCProject/Skimming/interface/jet_def.h"
 #include <iostream> 
 #include "TMatrixT.h"

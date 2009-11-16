@@ -22,7 +22,7 @@
 <use name=RecoCaloTools/MetaCollections>
 <use name=RecoEcal/EgammaCoreTools>
 <use name=HLTrigger/HLTcore>
-<use name=MUSiCProject/ePaxPxl>
+<use name=MUSiCProject/Pxl>
 <use name=root>
 <use name=hepmc>
 <use name=lhapdf>
@@ -45,7 +45,7 @@
   <use name=RecoCaloTools/MetaCollections>
   <use name=SimDataFormats/TrackingAnalysis>
   <use name=DataFormats/L1Trigger>
-  <use name=MUSiCProject/ePaxPxl>
+  <use name=MUSiCProject/Pxl>
   <use name=DataFormats/PatCandidates>
   <use name=RecoEcal/EgammaCoreTools>
   <use name=root>

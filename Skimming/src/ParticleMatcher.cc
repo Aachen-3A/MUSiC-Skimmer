@@ -24,9 +24,9 @@ void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, cons
       // Choose name filter criterion
       gen_particles.clear();
       rec_particles.clear();
-      ParticleNameCriterion crit(*partType);
-      GenView->getObjectsOfType<Particle, PtComparator>(gen_particles, crit);
-      RecView->getObjectsOfType<Particle, PtComparator>(rec_particles, crit);
+      ParticlePtEtaNameCriterion crit(*partType);
+      ParticleFilter::apply(GenView->getObjectOwner(), gen_particles, crit);
+      ParticleFilter::apply(RecView->getObjectOwner(), rec_particles, crit);
       makeMatching(gen_particles, rec_particles, _METType);
    }
    

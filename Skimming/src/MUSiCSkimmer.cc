@@ -562,7 +562,7 @@ void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
    // loop over muons and subtract them
    if (EvtView->findUserRecord<int>("NumMuon") > 0) { 
       vector<pxl::Particle*> GenMuons;
-      EvtView->getObjectsOfType<pxl::Particle, pxl::PtComparator>(GenMuons, pxl::ParticleNameCriterion("Muon"));   
+      pxl::ParticleFilter::apply( EvtView->getObjectOwner(), GenMuons, pxl::ParticlePtEtaNameCriterion("Muon") );
       for (vector<pxl::Particle*>::const_iterator muon = GenMuons.begin(); muon != GenMuons.end(); ++muon) {
          if (fDebug > 1) cout << "Correcting with " << (*muon)->getName() << " px = " << (*muon)->getPx() 
                               << " Py = " << (*muon)->getPy() << endl;
@@ -821,7 +821,7 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          // units given in cm!!! Use nominal beam spot of Summer/Fall08 if no vertex available
          math::XYZPoint vtx(0.0322, 0., 0.);
          if (RecView->findUserRecord<int>("NumVertices") > 0) {
-            pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
+            pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
             vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
          } 
          part->setUserRecord<double>("Dsz", muontrack->dsz(vtx));
@@ -913,7 +913,7 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          // units given in cm!!! Use nominal beam spot of Summer/Fall08 if no vertex available
          math::XYZPoint vtx(0.0322, 0., 0.);
          if (RecView->findUserRecord<int>("NumVertices") > 0) {
-            pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
+            pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
             vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
          } 
          part->setUserRecord<double>("Dsz", ele->gsfTrack()->dsz(vtx));
@@ -983,7 +983,7 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
    if (RecView->findUserRecord<int>("NumVertices") > 0) {
-      pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
+      pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
       VertexZ = (*vtx_iter)->getZ();
    } 
    
@@ -1101,7 +1101,7 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          //get primary vertex (hopefully correct one) for physics eta THIS NEEDS TO BE CHECKED !!!
          math::XYZPoint vtx(0.0322, 0., 0.);
          if (RecView->findUserRecord<int>("NumVertices") > 0) {
-            pxl::ObjectOwner::TypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
+            pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
             vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
          } 
          /////  Set event vertex
@@ -1192,7 +1192,7 @@ void MUSiCSkimmer::endJob() {
       vector<vector<float> >::const_iterator weights_iter = weights.begin();
       int count = 1;
       // run event loop:
-      while (Input.next()) {
+      while (Input.nextEvent()) {
          pxl::Event event;
          // read event from disk
          Input.readEvent(&event);
