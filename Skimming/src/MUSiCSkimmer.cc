@@ -203,7 +203,21 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    fStoreL3Objects = trigger_pset.getUntrackedParameter<bool>("StoreL3Objects");
 
-   
+
+
+   //cuts
+   ParameterSet cut_pset = iConfig.getParameter< ParameterSet >( "cuts" );
+   min_muon_pt   = cut_pset.getParameter< double >( "min_muon_pt" );
+   min_ele_pt    = cut_pset.getParameter< double >( "min_ele_pt" );
+   min_gamma_pt  = cut_pset.getParameter< double >( "min_gamma_pt" );
+   min_jet_pt    = cut_pset.getParameter< double >( "min_jet_pt" );
+   min_met       = cut_pset.getParameter< double >( "min_met" );
+   max_eta       = cut_pset.getParameter< double >( "max_eta" );
+   max_vertex_z  = cut_pset.getParameter< double >( "max_vertex_z" );
+   max_vertex_r  = cut_pset.getParameter< double >( "max_vertex_r" );
+   vertex_offset = cut_pset.getParameter< double >( "vertex_offset" );
+
+
 
    Matcher = new ParticleMatcher();
    fNumEvt=0;
@@ -1221,8 +1235,8 @@ void MUSiCSkimmer::endJob() {
 // ------------ method to define MC-MUON-cuts
 
 bool MUSiCSkimmer::MuonMC_cuts(const GenParticle* MCmuon) const {
-   if (MCmuon->pt() < 10.) return false;
-   if (fabs(MCmuon->eta()) > 3.) return false;
+   if( MCmuon->pt() < min_muon_pt ) return false;
+   if( fabs( MCmuon->eta() ) > max_eta ) return false;
    return true;
 }
  
@@ -1231,31 +1245,31 @@ bool MUSiCSkimmer::MuonMC_cuts(const GenParticle* MCmuon) const {
 // ------------ method to define MC-Electron-cuts
 
 bool MUSiCSkimmer::EleMC_cuts(const GenParticle* MCele) const {
-   if (MCele->pt() < 10.) return false;
-   if (fabs(MCele->eta()) > 3.) return false;
+   if( MCele->pt() < min_ele_pt ) return false;
+   if( fabs( MCele->eta() ) > max_eta ) return false;
    return true;
 }
 
 // ------------ method to define MC-Gamma-cuts
 
 bool MUSiCSkimmer::GammaMC_cuts(const GenParticle* MCgamma) const {
-   if (MCgamma->pt() < 10.) return false;
-   if (fabs(MCgamma->eta()) > 3.) return false;
+   if( MCgamma->pt() < min_gamma_pt) return false;
+   if( fabs(MCgamma->eta() ) > max_eta ) return false;
    return true;
 }
 
 // ------------ method to define MC-Jet-cuts
 
 bool MUSiCSkimmer::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
-   if (MCjet->pt() < 30.) return false;
-   if (fabs(MCjet->eta()) > 3.) return false;
+   if( MCjet->pt() < min_jet_pt ) return false;
+   if( fabs( MCjet->eta() ) > max_eta ) return false;
    return true;
 }
 
 // ------------ method to define MC-MET-cuts
 
 bool MUSiCSkimmer::METMC_cuts(const pxl::Particle* MCmet) const {
-   if (MCmet->getPt() < 30.) return false;
+   if( MCmet->getPt() < min_met ) return false;
    return true; 
 }
 
@@ -1264,8 +1278,8 @@ bool MUSiCSkimmer::METMC_cuts(const pxl::Particle* MCmet) const {
 bool MUSiCSkimmer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
    //check compatibility of vertex with beam spot
    double zV = vertex->z();
-   double rV = sqrt( (0.0322-vertex->x())*(0.0322-vertex->x()) + vertex->y() * vertex->y() );
-   if (fabs(zV)>20. || rV>1. ) return false;
+   double rV = sqrt( ( vertex->x()-vertex_offset ) * ( vertex->x()-vertex_offset ) + vertex->y() * vertex->y() );
+   if( fabs( zV ) > max_vertex_z || rV > max_vertex_r ) return false;
    return true;
 }
 
@@ -1273,9 +1287,9 @@ bool MUSiCSkimmer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) co
 
 bool MUSiCSkimmer::Muon_cuts(const pat::Muon& muon) const {
    // basic preselection cuts
-   if (!muon.isGlobalMuon()) return false;
-   if (muon.pt() < 10.)  return false;
-   if (fabs(muon.eta()) > 3.) return false;
+   if( !muon.isGlobalMuon() ) return false;
+   if( muon.pt() < min_muon_pt )  return false;
+   if( fabs( muon.eta() ) > max_eta ) return false;
    return true;
 }
 
@@ -1283,16 +1297,16 @@ bool MUSiCSkimmer::Muon_cuts(const pat::Muon& muon) const {
 // ------------ method to define ELECTRON-cuts
 
 bool MUSiCSkimmer::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
-   if (ele->pt() < 10.) return false;
-   if (fabs(ele->eta()) > 3.) return false;
+   if( ele->pt() < min_ele_pt ) return false;
+   if( fabs( ele->eta() ) > max_eta ) return false;
    return true;
 }
 
 // ------------ method to define JET-cuts
 
 bool MUSiCSkimmer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
-   if (jet->pt() < 30.) return false;
-   if (fabs(jet->eta()) > 3.) return false;
+   if( jet->pt() < min_jet_pt ) return false;
+   if( fabs( jet->eta()) > max_eta ) return false;
    return true;
 }
 
@@ -1300,8 +1314,8 @@ bool MUSiCSkimmer::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
 // ------------ method to define GAMMA-cuts
 
 bool MUSiCSkimmer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
-   if (photon->pt() < 10.) return false;
-   if (fabs(photon->eta()) > 3.) return false;
+   if( photon->pt() < min_gamma_pt ) return false;
+   if( fabs( photon->eta() ) > max_eta ) return false;
    return true;
 }
 
@@ -1309,7 +1323,7 @@ bool MUSiCSkimmer::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) c
 // ------------ method to define MET-cuts
 
 bool MUSiCSkimmer::MET_cuts(const pxl::Particle* met) const {
-   if (met->getPt() < 30.) return false;
+   if( met->getPt() < min_met ) return false;
    return true;
 }
 

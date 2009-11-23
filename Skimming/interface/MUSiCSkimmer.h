@@ -161,5 +161,15 @@ public:
       return f[fl+6];
    };
 
+   //cuts
+   double min_muon_pt,
+      min_ele_pt,
+      min_gamma_pt,
+      min_jet_pt,
+      min_met,
+      max_eta,
+      max_vertex_z,
+      max_vertex_r,
+      vertex_offset;
 };
 #endif

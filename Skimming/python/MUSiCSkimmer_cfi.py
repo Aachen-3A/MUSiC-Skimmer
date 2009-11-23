@@ -62,4 +62,16 @@ Skimmer = cms.EDAnalyzer(
             ),
         StoreL3Objects = cms.untracked.bool(False)
         ),
+
+    cuts = cms.PSet(
+        min_muon_pt = cms.double( 10 ),
+        min_ele_pt = cms.double( 10 ),
+        min_gamma_pt = cms.double( 10 ),
+        min_jet_pt = cms.double( 30 ),
+        min_met = cms.double( 30 ),
+        max_eta = cms.double( 3 ),
+        max_vertex_z = cms.double( 20 ),
+        max_vertex_r = cms.double( 1 ),
+        vertex_offset = cms.double( 0.0322 ),
+        )
     )
