@@ -141,8 +141,6 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fVertexRecoLabel = iConfig.getUntrackedParameter<string>("VertexRecoLabel");
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
-   fbarrelClusterCollection = iConfig.getParameter<edm::InputTag>("barrelClusterCollection");
-   fendcapClusterCollection = iConfig.getParameter<edm::InputTag>("endcapClusterCollection");
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
    freducedEndcapRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedEndcapRecHitCollection");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
@@ -203,8 +201,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       triggers.push_back( trigger );
    }
 
-
-   fStoreL3Objects = iConfig.getUntrackedParameter<bool>("StoreL3Objects");
+   fStoreL3Objects = trigger_pset.getUntrackedParameter<bool>("StoreL3Objects");
 
    
 

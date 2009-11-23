@@ -143,12 +143,6 @@ public:
    // MET labels
    std::string fMETRecoLabel;
    // Cluster
-   edm::InputTag fBarrelClusterShapeAssocProducer;
-   edm::InputTag fEndcapClusterShapeAssocProducer;
-   std::string fHBHELabel;
-   std::string fHBHEInstanceName;
-   edm::InputTag fbarrelClusterCollection; 
-   edm::InputTag fendcapClusterCollection;
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;   
 
