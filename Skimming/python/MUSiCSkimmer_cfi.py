@@ -31,7 +31,10 @@ Skimmer = cms.EDAnalyzer(
         AK5 = cms.PSet(
             MCLabel = cms.InputTag( "antikt5GenJets" ),
             RecoLabel = cms.InputTag( "cleanLayer1Jets" )
-            )
+            ),
+        # the following vector must hold the names of the IDs in the same sequence
+        # as the qualities in PhysicsTools/PatUtils/interface/JetIDSelectionFunctor.h
+        IDs = cms.vstring( 'minimal', 'loose_aod', 'loose', 'tight' )
         ),
     
     triggers = cms.PSet(

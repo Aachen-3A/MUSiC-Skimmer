@@ -162,6 +162,26 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       jet_infos.push_back( jet );
    }
 
+   //JetIDs
+   vector< string > id_names = jets_pset.getParameter< vector< string > >( "IDs" );
+   unsigned int num_IDs = JetIDSelectionFunctor::N_QUALITY;
+   if( num_IDs < id_names.size() ){
+      cout << "Less JetIDs available than requested, using only available." << endl;
+   } else if( num_IDs > id_names.size() ){
+      cout << "More JetIDs available than requested, using only requested." << endl;
+      num_IDs = id_names.size();
+   }
+   //ATTENTION: The following is REALLY ugly
+   //Looping over enums is apparentlt not forseen in C++
+   //Seems to be the only way to make the JetIDs configurable
+   for( JetIDSelectionFunctor::Quality_t q = JetIDSelectionFunctor::Quality_t(0);
+        q < JetIDSelectionFunctor::N_QUALITY;
+        q = JetIDSelectionFunctor::Quality_t( q+1 ) ){
+      pair< std::string, JetIDSelectionFunctor > ID( id_names[q], JetIDSelectionFunctor( JetIDSelectionFunctor::CRAFT08, q ) );
+      jet_ids.push_back( ID );
+   }
+   
+
    // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
 
@@ -1027,6 +1047,11 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          part->setUserRecord<float>("Prob", jet->bDiscriminator("jetProbabilityBJetTags"));
          // to be compared with Generator Flavor:
          part->setUserRecord<int>("Flavour", jet->partonFlavour());
+         //jet IDs
+         for( jet_id_list::iterator ID = jet_ids.begin(); ID != jet_ids.end(); ++ID ){
+            strbitset ret = ID->second.getBitTemplate();
+            part->setUserRecord< bool >( ID->first, ID->second( *jet, ret ) );
+         }
          if (fDebug > 1) {
             const std::vector<std::pair<std::string, float> > & bTags = jet->getPairDiscri();
             part->print(0);

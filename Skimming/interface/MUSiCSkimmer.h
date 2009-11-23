@@ -52,6 +52,9 @@ extern "C" {
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 
+//JetID
+#include "PhysicsTools/PatUtils/interface/JetIDSelectionFunctor.h"
+
 //for ClusterShape variables
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 
@@ -140,6 +143,9 @@ public:
    std::string fGammaRecoLabel;
    // Jets
    std::vector< jet_def > jet_infos;
+   //JetIDs
+   typedef std::vector< std::pair< std::string, JetIDSelectionFunctor > > jet_id_list;
+   jet_id_list jet_ids;
    // MET labels
    std::string fMETRecoLabel;
    // Cluster
