@@ -42,16 +42,8 @@ process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 
-# Remove unneccessary stuff:
-if runOnData:
-    process.patHighLevelReco_withoutPFTau.remove( process.patJetFlavourId )
-    process.patDefaultSequence_withoutTrigMatch.remove( process.patMCTruth )
-    process.allLayer1Muons.addGenMatch        = False
-    process.allLayer1Jets.addGenPartonMatch   = False
-    process.allLayer1Jets.addGenJetMatch      = False
-    process.allLayer1Jets.getJetMCFlavour     = False
-    process.allLayer1METs.addGenMET           = False
-
+import MUSiCProject.Skimming.Tools
+MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
 
 
 # this might be commented in in order to safe the edm root file containing the PAT Products
@@ -72,10 +64,6 @@ if runOnData:
 # import HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi
 # process.hltAnalyzer = HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi.hltEventAnalyzerAOD.clone()
 
-
-import os
-cmsbase = os.environ.get('CMSSW_BASE')
-execfile(cmsbase + "/src/MUSiCProject/Skimming/python/configurePAT_cff")
 
 #process.pTHat = cms.EDFilter("PtHatFilter",
 #         pt_hat_lower_bound = cms.double(200.),
