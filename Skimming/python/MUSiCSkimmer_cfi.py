@@ -58,11 +58,11 @@ Skimmer = cms.EDAnalyzer(
         ),
 
     cuts = cms.PSet(
-        min_muon_pt = cms.double( 10 ),
-        min_ele_pt = cms.double( 10 ),
-        min_gamma_pt = cms.double( 10 ),
-        min_jet_pt = cms.double( 30 ),
-        min_met = cms.double( 30 ),
+        min_muon_pt = cms.double( 5 ),
+        min_ele_pt = cms.double( 5 ),
+        min_gamma_pt = cms.double( 5 ),
+        min_jet_pt = cms.double( 20 ),
+        min_met = cms.double( 20 ),
         max_eta = cms.double( 3 ),
         vertex_minNDOF = cms.double( 3 ),
         vertex_maxZ = cms.double( 20 ),
