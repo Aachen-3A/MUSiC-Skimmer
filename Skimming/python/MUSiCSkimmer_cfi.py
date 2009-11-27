@@ -25,6 +25,8 @@ Skimmer = cms.EDAnalyzer(
     #ECAL RecHits for supercluster information
     reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
+    #HCAL noise
+    HCALNoiseInfo = cms.InputTag( 'hcalnoise' ),
     
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets

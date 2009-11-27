@@ -42,12 +42,8 @@ Implementation:
 // for electron shapes:
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
 
-// for ECAL enumerator
-#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
-
-// for HCAL navigation used in HadOverEm calculation
-#include "Geometry/Records/interface/IdealGeometryRecord.h"
-#include "RecoCaloTools/Selectors/interface/CaloConeSelector.h"
+//HCAL Noise
+#include "DataFormats/METReco/interface/HcalNoiseSummary.h"
 
 //for GenParticles
 #include "DataFormats/Candidate/interface/Candidate.h"
@@ -184,6 +180,9 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    // MET label
    fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
+
+   //HCAL noise
+   hcal_noise_label = iConfig.getParameter< InputTag >( "HCALNoiseInfo" );
 
 
    //get the PSet that contains all trigger PSets
@@ -667,6 +666,13 @@ void MUSiCSkimmer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView)
 //it will have certainly corrections in the future as there are certain functions for uncorrection planned
 
 void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
+   //save HCAL noise infos
+   edm::Handle< HcalNoiseSummary > hcal_noise;
+   iEvent.getByLabel( hcal_noise_label, hcal_noise );
+   EvtView->setUserRecord< bool >( "HCALNoiseLoose", hcal_noise->passLooseNoiseFilter() );
+   EvtView->setUserRecord< bool >( "HCALNoiseTight", hcal_noise->passTightNoiseFilter() );
+   EvtView->setUserRecord< bool >( "HCALNoiseHighLevel", hcal_noise->passHighLevelNoiseFilter() );
+
    edm::Handle<std::vector<pat::MET> > METHandle;
    iEvent.getByLabel(fMETRecoLabel, METHandle);
    const std::vector<pat::MET>& METs = *METHandle;

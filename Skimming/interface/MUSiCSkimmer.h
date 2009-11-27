@@ -150,7 +150,9 @@ public:
    std::string fMETRecoLabel;
    // Cluster
    edm::InputTag freducedBarrelRecHitCollection;
-   edm::InputTag freducedEndcapRecHitCollection;   
+   edm::InputTag freducedEndcapRecHitCollection;
+   //HCAL noise
+   edm::InputTag hcal_noise_label;
 
    //all triggers
    std::vector< trigger_def > triggers;
