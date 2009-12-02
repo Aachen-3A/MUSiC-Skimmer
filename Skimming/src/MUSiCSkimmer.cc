@@ -1047,10 +1047,10 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          part->setUserRecord<double>("TowersArea", jet->towersArea());
          part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
          // store b-tag discriminator values:
-         part->setUserRecord<float>("cSVtx", jet->bDiscriminator("combinedSecondaryVertexBJetTags"));
-         part->setUserRecord<float>("cSVtxMVA", jet->bDiscriminator("combinedSecondaryVertexMVABJetTags"));
-         part->setUserRecord<float>("BProb", jet->bDiscriminator("jetBProbabilityBJetTags"));
-         part->setUserRecord<float>("Prob", jet->bDiscriminator("jetProbabilityBJetTags"));
+         const vector< pair< string, float > > &btags = jet->getPairDiscri();
+         for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
+            part->setUserRecord< float >( btag->first, btag->second );
+         }
          // to be compared with Generator Flavor:
          part->setUserRecord<int>("Flavour", jet->partonFlavour());
          //jet IDs
