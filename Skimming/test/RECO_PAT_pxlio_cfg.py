@@ -46,6 +46,9 @@ import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
 
 
+process.p = cms.Path( process.photonIDSequence + process.patDefaultSequence )
+
+
 # this might be commented in in order to safe the edm root file containing the PAT Products
 # Output module configuration
 # process.out = cms.OutputModule("PoolOutputModule",
@@ -80,4 +83,7 @@ MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 
-process.p = cms.Path( process.photonIDSequence + process.patDefaultSequence + process.Skimmer )
+if not runOnData:
+    MUSiCProject.Skimming.Tools.addFlavourMatching( process, process.Skimmer, process.p )
+
+process.p += process.Skimmer

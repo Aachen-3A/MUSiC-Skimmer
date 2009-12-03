@@ -113,6 +113,9 @@ Implementation:
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
 
+//Jet Flavour
+#include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
+
 
 using namespace std;
 using namespace edm;
@@ -531,13 +534,24 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
    //Get the GenJet collections
    edm::Handle<reco::GenJetCollection> GenJets;
    iEvent.getByLabel( jet_info.MCLabel, GenJets );
-   // counter 
+
+   //get the flavours
+   edm::Handle< reco::JetFlavourMatchingCollection > algoFlavour, physicsFlavour;
+   iEvent.getByLabel( jet_info.name+"GenJetFlavourAlgo", algoFlavour );
+   iEvent.getByLabel( jet_info.name+"GenJetFlavourPhysics", physicsFlavour );
+
+
+   // counter
+   size_t jet_index = 0;
    int numJetMC = 0;
    double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
    
    //Loop over GenJets
-   for (reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet) {
+   for( reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet, jet_index++ ){
       if( JetMC_cuts( genJet ) ){
+         //get the reference
+         RefToBase< reco::Jet > jetRef( RefToBaseProd< reco::Jet >( GenJets ), jet_index );
+
          pxl::Particle *part = EvtView->create< pxl::Particle >();
          
          //cast iterator into GenParticleCandidate
@@ -560,6 +574,9 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
             if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
          }
          part->setUserRecord< int >( "GenJetConstit", numGenJetConstit_withcuts );
+
+         part->setUserRecord< int >( "algoFlavour",    (*algoFlavour)   [ jetRef ].getFlavour() );
+         part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
       }
    }
    EvtView->setUserRecord< int >( "Num"+jet_info.name, numJetMC );
@@ -1030,8 +1047,16 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
    iEvent.getByLabel( jet_info.RecoLabel, jetHandle );
    const std::vector< pat::Jet > &RecJets = *jetHandle;
 
+   //generator flavour matching only available in MC. Surprise!
+   edm::Handle< reco::JetFlavourMatchingCollection > physicsFlavour;
+   if( MC ){
+      iEvent.getByLabel( jet_info.name+"RecoJetFlavourPhysics", physicsFlavour );
+   }
+
+
    // loop over the jets
-   for (std::vector<pat::Jet>::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet) {
+   size_t jet_index = 0;
+   for( std::vector< pat::Jet >::const_iterator jet = RecJets.begin(); jet != RecJets.end(); ++jet, ++jet_index ){
       if (Jet_cuts(jet)) {
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName( jet_info.name );
@@ -1051,8 +1076,6 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
             part->setUserRecord< float >( btag->first, btag->second );
          }
-         // to be compared with Generator Flavor:
-         part->setUserRecord<int>("Flavour", jet->partonFlavour());
          //jet IDs
          for( jet_id_list::iterator ID = jet_ids.begin(); ID != jet_ids.end(); ++ID ){
             strbitset ret = ID->second.getBitTemplate();
@@ -1067,6 +1090,12 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          }
          //store PAT matching info if MC
          if (MC) {
+            // to be compared with Generator Flavor:
+            part->setUserRecord< int >( "algoFlavour", jet->partonFlavour() );
+            //make a ref, then get the flavour
+            RefToBase< reco::Jet > jetRef( RefToBaseProd< reco::Jet >( jetHandle ), jet_index );
+            part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
+
             std::map< const Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
             if( it != genjetmap.end() ){
                part->linkSoft( it->second, "pat-match" );

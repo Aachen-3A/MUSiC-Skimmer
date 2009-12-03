@@ -1,3 +1,5 @@
+import FWCore.ParameterSet.Config as cms
+
 def configurePAT( process, runOnData ):
     if runOnData:
         import PhysicsTools.PatAlgos.tools.coreTools
@@ -47,3 +49,56 @@ def configurePAT( process, runOnData ):
         process.allLayer1Photons.embedGenMatch = False
         process.allLayer1Jets.embedGenJetMatch = False
         process.allLayer1Jets.embedGenPartonMatch = False
+
+
+
+#adds flavour information for all Gen and Rec-Jets used in skimmer
+def addFlavourMatching( process, skimmer, path):
+    for jet_name,jet_def in skimmer.jets.parameters_().items():
+        if isinstance( jet_def, cms.PSet ):
+            setattr( process,
+                     jet_name+'GenJetPartonAssociation',
+                     cms.EDFilter( 'JetPartonMatcher',
+                                   jets = jet_def.MCLabel,
+                                   partons = cms.InputTag( 'jetPartons' ),
+                                   coneSizeToAssociate = cms.double( 0.3 )
+                                   )
+                     )
+            path += getattr( process, jet_name+'GenJetPartonAssociation' )
+
+            setattr( process,
+                     jet_name+'GenJetFlavourAlgo',
+                     cms.EDFilter( 'JetFlavourIdentifier',
+                                   srcByReference = cms.InputTag( jet_name+'GenJetPartonAssociation' ),
+                                   physicsDefinition = cms.bool( False )
+                                   )
+                     )
+            path += getattr( process, jet_name+'GenJetFlavourAlgo' )
+
+            setattr( process,
+                     jet_name+'GenJetFlavourPhysics',
+                     cms.EDFilter( 'JetFlavourIdentifier',
+                                   srcByReference = cms.InputTag( jet_name+'GenJetPartonAssociation' ),
+                                   physicsDefinition = cms.bool( True )
+                                   )
+                     )
+            path += getattr( process, jet_name+'GenJetFlavourPhysics' )
+
+            setattr( process,
+                     jet_name+'RecoJetPartonAssociation',
+                     cms.EDFilter( 'JetPartonMatcher',
+                                   jets = jet_def.RecoLabel,
+                                   partons = cms.InputTag( 'jetPartons' ),
+                                   coneSizeToAssociate = cms.double( 0.3 )
+                                   )
+                     )
+            path += getattr( process, jet_name+'RecoJetPartonAssociation' )
+
+            setattr( process,
+                     jet_name+'RecoJetFlavourPhysics',
+                     cms.EDFilter( 'JetFlavourIdentifier',
+                                   srcByReference = cms.InputTag( jet_name+'RecoJetPartonAssociation' ),
+                                   physicsDefinition = cms.bool( True )
+                                   )
+                     )
+            path += getattr( process, jet_name+'RecoJetFlavourPhysics' )
