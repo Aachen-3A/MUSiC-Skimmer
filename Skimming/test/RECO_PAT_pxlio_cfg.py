@@ -1,4 +1,14 @@
 runOnData = True
+#run on ReReco'ed data or Summer09 MC
+runOnReReco = False
+#run on NOT ReReco'ed Summer09
+runOnSummer09 = False
+
+if runOnReReco and runOnSummer09:
+    print "runOnReReco and runOnSummer09 can't be true at the same time!"
+    import sys
+    sys.exit(1)
+
 
 import FWCore.ParameterSet.Config as cms
 
@@ -31,7 +41,17 @@ process.source = cms.Source("PoolSource",
 process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = cms.string('MC_31X_V3::All')
+if runOnData:
+    if runOnReReco:
+        process.GlobalTag.globaltag = cms.string('GR_R_35X_V7::All')
+    else:
+        process.GlobalTag.globaltag = cms.string('GR10_P_V5::All')
+else:
+    if runOnReReco:
+        process.GlobalTag.globaltag = cms.string('START3X_V26::All')
+    else:
+        process.GlobalTag.globaltag = cms.string('MC_3XY_V26::All')
+
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
 # PAT Layer 0+1
@@ -40,8 +60,7 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 
 import MUSiCProject.Skimming.Tools
-MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
-
+MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
 
 
 #filter on right BX in case of data
@@ -110,6 +129,9 @@ else:
 
 
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
+#anti-kt 5 jets are called antikt5 in 3.1.X, but ak5 in later releases
+if runOnSummer09:
+    process.Skimmer.jets.AK5.MCLabel = 'antikt5GenJets'
 
 
 if not runOnData:

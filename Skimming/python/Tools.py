@@ -1,18 +1,26 @@
 import FWCore.ParameterSet.Config as cms
 
-def configurePAT( process, runOnData ):
+def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
+    import PhysicsTools.PatAlgos.tools.jetTools
+    #stay consistent wth older samples
+    if runOnSummer09:
+        PhysicsTools.PatAlgos.tools.jetTools.switchJECSet( process, "Summer09_7TeV" )
+    else:
+        PhysicsTools.PatAlgos.tools.jetTools.switchJECSet( process, "Summer09_7TeV_ReReco332" )
+
     if runOnData:
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
     else:
-        #in 33x, anti-kt jets are called ak*, however in the 31x they are called antikt*.
-        #the following function call will fix this
-        import PhysicsTools.PatAlgos.tools.cmsswVersionTools
-        PhysicsTools.PatAlgos.tools.cmsswVersionTools.run33xOn31xMC( process )
-        
-        
-        #use 7 TeV JEC
-        process.jetCorrFactors.corrSample = 'Summer09_7TeV'
+        if runOnSummer09:
+            #in 33x, anti-kt jets are called ak*, however in the 31x they are called antikt*.
+            import PhysicsTools.PatAlgos.tools.cmsswVersionTools
+            PhysicsTools.PatAlgos.tools.cmsswVersionTools.run33xOn31xMC( process )
+        elif runOnReReco:
+            #in ReReco of Summer09 there are no ak5GenJets, so add them
+            import PhysicsTools.PatAlgos.tools.cmsswVersionTools
+            PhysicsTools.PatAlgos.tools.cmsswVersionTools.run33xOnReRecoMC( process )
+
 
         #configure PAT matching
         process.electronMatch.checkCharge = False
