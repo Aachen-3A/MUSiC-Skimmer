@@ -35,6 +35,7 @@ Implementation:
 #include "FWCore/Framework/interface/Frameworkfwd.h" 
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/Exception.h"
 
 // necessary objects:
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -358,8 +359,12 @@ void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
    EvtView->setUserRecord< double >( "binScale", genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0 );
 
    EvtView->setUserRecord< double >( "Weight", genEvtInfo->weight() );
-  
-   if( genEvtInfo->hasPDF() ){
+
+   unsigned int ID = genEvtInfo->signalProcessID();
+   EvtView->setUserRecord< unsigned int >( "processID", ID );
+
+   //don't save PDF infos for processes without partons
+   if( genEvtInfo->hasPDF() && !( 91 <= ID && ID <= 95 ) ){
       const gen::PdfInfo *pdf = genEvtInfo->pdf();
 
       EvtView->setUserRecord<float>("x1", pdf->x.first);
@@ -371,8 +376,24 @@ void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
       EvtView->setUserRecord<float>("pdf2", pdf->xPDF.second);
 
       fpdf_vec.push_back( *pdf );
+
+      if( abs( pdf->id.first ) > 6 || abs( pdf->id.second ) > 6 ){
+         throw cms::Exception( "PDF error" ) << "PDF information corrupted in a non-diffractive event." << endl
+                                             << "Process ID " << genEvtInfo->signalProcessID() << " is not in list of diffractive processes (91 <= ID <= 95)." << endl
+                                             << "Scale: " << pdf->scalePDF << endl
+                                             << "x1 = " << pdf->x.first << "; x2 = " << pdf->x.second << endl
+                                             << "ID 1: " << pdf->id.first << endl
+                                             << "ID 2: " << pdf->id.second << endl;
+      }
+   } else {
+      gen::PdfInfo pdf;
+      pdf.scalePDF = 0;
+
+      fpdf_vec.push_back( pdf );
    }
+
    
+
    if (fDebug > 0) {
       cout << "Event Scale (i.e. pthat): " << (genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0) << ", EventWeight: " << genEvtInfo->weight() << endl;
       if( genEvtInfo->hasPDF() ){
@@ -1236,25 +1257,45 @@ void MUSiCSkimmer::endJob() {
       pdfSet.append("/cteq61.LHgrid");
       cout << "PDF set - " << pdfSet.data() << endl;
       initpdfset_((char *)pdfSet.data(), pdfSet.size());
-      // loop over all subpdf's
-      for (int subpdf = 0; subpdf < 41; subpdf++) {
-         initpdf_(subpdf);
-         //cout << "Initialized sub PDF " << subpdf << endl;
-         if (subpdf == 0) {
-            // loop over all PDFInf's
-            for( vector< gen::PdfInfo >::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf ){
+
+      //load the best fit PDF
+      int first_pdf = 0; //stupid c++
+      initpdf_( first_pdf );
+      for( vector< gen::PdfInfo >::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf ){
+         if( pdf->scalePDF != 0 ){
+            if( abs( pdf->id.first ) <= 6 && abs( pdf->id.second ) <= 6 ){
                best_fit.push_back( xfx( pdf->x.first, pdf->scalePDF, pdf->id.first ) * xfx( pdf->x.second, pdf->scalePDF, pdf->id.second ) );
-               //cout << "xfx1: " <<  xfx(pdf->x1, pdf->Q, pdf->f1) << "   xfx1: " << xfx(pdf->x2, pdf->Q, pdf->f2) << endl;
+            } else {
+               best_fit.push_back( 1 );
+               throw cms::Exception( "PDF error" ) << "Found an event with weird partons!" << endl
+                                                   << "This should not happen! (Error should have been caught before!)" << endl
+                                                   << "Details:" << endl
+                                                   << "x1: " << pdf->x.first << endl
+                                                   << "x2: " << pdf->x.second << endl
+                                                   << "Scale: " << pdf->scalePDF << endl
+                                                   << "ID 1: " << pdf->id.first << endl
+                                                   << "ID 1: " << pdf->id.second << endl;
             }
          } else {
-            vector<float>::const_iterator best_fit_iter = best_fit.begin();
-            vector<vector<float> >::iterator weights_iter = weights.begin();
-            // loop over all PDFInf's
-            for( vector< gen::PdfInfo >::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf ){
+            best_fit.push_back( 1 );
+         }
+      }
+
+      //loop over all error PDFs
+      for( int subpdf = 1; subpdf < 41; subpdf++ ){
+         initpdf_(subpdf);
+         //cout << "Initialized sub PDF " << subpdf << endl;
+         vector<float>::const_iterator best_fit_iter = best_fit.begin();
+         vector<vector<float> >::iterator weights_iter = weights.begin();
+         // loop over all PDFInf's
+         for( vector< gen::PdfInfo >::const_iterator pdf = fpdf_vec.begin(); pdf != fpdf_vec.end(); ++pdf ){
+            if( pdf->scalePDF != 0 && abs( pdf->id.first ) <= 6 && abs( pdf->id.second ) <= 6 ){
                weights_iter->push_back( xfx( pdf->x.first, pdf->scalePDF, pdf->id.first) * xfx( pdf->x.second, pdf->scalePDF, pdf->id.second ) / (*best_fit_iter));
-               ++weights_iter;
-               ++best_fit_iter;
+            } else {
+               weights_iter->push_back( 1 );
             }
+            ++weights_iter;
+            ++best_fit_iter;
          }
       }
       // ReRead the pxlio file and store PDFInfo
