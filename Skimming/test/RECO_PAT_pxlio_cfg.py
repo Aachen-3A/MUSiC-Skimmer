@@ -7,9 +7,13 @@ process = cms.Process("PAT")
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
+import FWCore.Framework.test.cmsExceptionsFatalOption_cff
 process.options   = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(False),
-    fileMode = cms.untracked.string( 'NOMERGE' )
+    #open file in NOMERGE mode to avoid a memory leak
+    fileMode = cms.untracked.string( 'NOMERGE' ),
+    #stop processing on each and every thrown exception
+    Rethrow = FWCore.Framework.test.cmsExceptionsFatalOption_cff.Rethrow
     )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -18,9 +22,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-#'dcap://grid-dcache.physik.rwth-aachen.de/pnfs/physik.rwth-aachen.de/cms/store/user/antonius/test/photon_jets_48878A79-CCBC-DD11-85F3-0022199A2E95.root'
 '/store/mc/Summer09/TTbar/GEN-SIM-RECO/MC_31X_V3_test_production-v1/0000/962E4ECF-077C-DE11-871F-001F2907AF5C.root'
-#'file:/opt/scratch/608D435D-7B70-DE11-B093-001CC4782AF8.root'
 	)
 )
 
