@@ -10,6 +10,7 @@ import datetime
 
 parser = optparse.OptionParser( description='Submit MUSiCSkimmer jobs, using CMSSW config CFG_FILE, on all samples listed in DATASET_FILE',  usage='usage: %prog [options] CFG_FILE DATASET_FILE' )
 parser.add_option( '-n', '--name', metavar='NAME', help='Output will be written in store/user/{your_name}/NAME/{short_dataset_name} [default: MUSiC/{current_date}]' )
+parser.add_option( '-r', '--runs', metavar='RUNS', help='Only analyze the given runs' )
 
 (options, args ) = parser.parse_args()
 
@@ -30,6 +31,11 @@ if options.name:
 else:
     outname = 'MUSiC/'+datetime.date.today().isoformat()
 outname += '/'
+
+if options.runs:
+    run_line = 'runselection = '+options.runs+'\n'
+else:
+    run_line = ''
 
 
 print 'Reading config', pset
@@ -55,6 +61,7 @@ for line in open( samples ):
             'pset = '+name+'_cfg.py\n'+
             'total_number_of_events=-1\n'+
             'events_per_job = 50000\n'+
+            run_line+
             'output_file = '+name+'.pxlio\n'+
             '[USER]\n'+
             'return_data = 0\n'+
