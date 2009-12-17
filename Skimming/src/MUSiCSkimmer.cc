@@ -266,8 +266,12 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // event-specific data
    bool IsMC =  !iEvent.isRealData();
    event.setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
-   event.setUserRecord<int>("Run", iEvent.id().run());
-   event.setUserRecord<int>("ID", iEvent.id().event());	
+   event.setUserRecord< unsigned int >( "Run", iEvent.run() );
+   event.setUserRecord< unsigned int >( "LumiSection", iEvent.luminosityBlock());
+   event.setUserRecord< unsigned int >( "EventNum", iEvent.id().event() );
+   event.setUserRecord< unsigned int >( "BX", iEvent.bunchCrossing() );
+   event.setUserRecord< unsigned int >( "Orbit", iEvent.orbitNumber() );
+
    if (fDebug > 0) {
       cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << " is MC = " << !iEvent.isRealData() << endl;  
    }
