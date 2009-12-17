@@ -1,4 +1,4 @@
-runOnData = False
+runOnData = True
 
 import FWCore.ParameterSet.Config as cms
 
@@ -43,7 +43,39 @@ import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
 
 
-process.p = cms.Path( process.patDefaultSequence )
+
+#filter on right BX in case of data
+if runOnData:
+    process.primaryVertexFilter = cms.EDFilter( "VertexSelector",
+                                                src = cms.InputTag( "offlinePrimaryVertices" ),
+                                                cut = cms.string( "!isFake && ndof > 4 && abs(z) <= 15 && position.Rho <= 2" ),
+                                                filter = cms.bool( True ), # otherwise it won't filter the events, just produce an empty vertex collection.
+                                                )                            
+
+    process.scrapingFilter = cms.EDFilter( "FilterOutScraping",
+                                           applyfilter = cms.untracked.bool( True ),
+                                           debugOn = cms.untracked.bool( False ),
+                                           numtrack = cms.untracked.uint32( 10 ),
+                                           thresh = cms.untracked.double( 0.25 )
+                                           )
+
+
+    process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
+    process.load('HLTrigger/HLTfilters/hltLevel1GTSeed_cfi')
+    process.technicals = process.hltLevel1GTSeed.clone()
+    process.technicals.L1TechTriggerSeeding = cms.bool(True)
+    process.technicals.L1SeedsLogicalExpression = cms.string('0 AND (40 OR 41) AND NOT (36 OR 37 OR 38 OR 39) AND NOT ( (42 AND NOT 43) OR (43 AND NOT 42) )')
+
+    process.incompleteECALFilter = cms.EDFilter( "recHitFilter" )
+
+    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.technicals * process.incompleteECALFilter )
+
+
+#add PAT to path
+if runOnData:
+    process.p += process.patDefaultSequence
+else:
+    process.p = cms.Path( process.patDefaultSequence )
 
 
 # this might be commented in in order to safe the edm root file containing the PAT Products
