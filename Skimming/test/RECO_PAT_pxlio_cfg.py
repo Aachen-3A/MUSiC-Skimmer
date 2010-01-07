@@ -29,12 +29,6 @@ process.source = cms.Source("PoolSource",
 
 process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
-# rerun photon ID
-process.load("RecoEgamma.PhotonIdentification.photonId_cff")
-# for ClusterShape inspired by egamma hypernews
-process.load("Geometry.CaloEventSetup.CaloGeometry_cfi")
-process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
-
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = cms.string('MC_31X_V3::All')
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
@@ -48,7 +42,7 @@ import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
 
 
-process.p = cms.Path( process.photonIDSequence + process.patDefaultSequence )
+process.p = cms.Path( process.patDefaultSequence )
 
 
 # this might be commented in in order to safe the edm root file containing the PAT Products
