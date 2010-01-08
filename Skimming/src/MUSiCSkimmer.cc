@@ -1235,11 +1235,6 @@ std::string MUSiCSkimmer::getEventClass(pxl::EventView* EvtView) {
    return EventType.str();
 }
 
-// ------------ method called once each job just before starting event loop  ------------
-
-void MUSiCSkimmer::beginJob(const edm::EventSetup&) {
-}
-
 // ------------ method called once each job just after ending the event loop  ------------
 
 void MUSiCSkimmer::endJob() {
