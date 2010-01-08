@@ -40,6 +40,7 @@ extern "C" {
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "SimDataFormats/GeneratorProducts/interface/PdfInfo.h"
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
  
 // ROOT stuff
@@ -85,7 +86,10 @@ public:
       std::string   process;
       edm::InputTag results;
       edm::InputTag event;
-      std::map<int, std::string> HLTMap;
+      //to map names to indices
+      HLTConfigProvider config;
+      std::vector< std::string > HLTriggers;
+      std::map< unsigned int, std::string > HLTMap;
    };
 
 
@@ -100,7 +104,7 @@ public:
    
    virtual void analyzeTrigger( const edm::Event &iEvent,
                                 pxl::EventView *EvtView,
-                                const trigger_def &trigger
+                                trigger_def &trigger
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);

@@ -71,8 +71,7 @@ Implementation:
 
 //for Trigger Bits
 #include "DataFormats/Common/interface/TriggerResults.h"
-#include "FWCore/Framework/interface/TriggerNames.h"
-//ok
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 //For L1 and Hlt objects
 #include "DataFormats/Common/interface/RefToBase.h"
@@ -98,10 +97,6 @@ Implementation:
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
  
-//includes for trigger info in 2_1_9
-#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
-#include "DataFormats/Common/interface/TriggerResults.h"
-#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 // L1 Trigger stuff
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
@@ -194,8 +189,6 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    vector< string > trigger_processes;
    trigger_pset.getParameterSetNames( trigger_processes );
 
-   HLTConfigProvider hltConfig;
-
    //loop over the names of the trigger PSets
    for( vector< string >::const_iterator trg_proc = trigger_processes.begin(); trg_proc != trigger_processes.end(); ++trg_proc ){
       trigger_def trigger;
@@ -207,18 +200,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
       trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
       
-      //fill the map that connects trigger name to trigger index
-      hltConfig.init( trigger.process );
-      unsigned int numTriggers = hltConfig.size();
-      vector<string> HLTriggers = one_trigger.getParameter< vector< string > >("HLTriggers");
-      for( vector<string>::const_iterator trg_name = HLTriggers.begin(); trg_name != HLTriggers.end(); ++trg_name ){
-         unsigned int index = hltConfig.triggerIndex( *trg_name );
-         if( index < numTriggers ){
-            trigger.HLTMap[ hltConfig.triggerIndex( *trg_name ) ] = *trg_name;
-         } else {
-            cout << "WARNING: Trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
-         }
-      }
+      trigger.HLTriggers = one_trigger.getParameter< vector< string > >("HLTriggers");
 
       triggers.push_back( trigger );
    }
@@ -310,7 +292,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // store Rec Objects only if requested
    if (!fGenOnly) {
       //Trigger bits
-      for( vector< trigger_def >::const_iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
+      for( vector< trigger_def >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
          analyzeTrigger( iEvent, RecEvtView, *trg );
       }
       // Reconstructed stuff
@@ -760,20 +742,33 @@ void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                                    pxl::EventView* EvtView,
-                                   const trigger_def &trigger
+                                   trigger_def &trigger
                                    ){
-   //reference for some of the following parts: CMSSW/HLTrigger/HLTcore/plugins/HLTEventAnalyzerAOD.cc
-
    edm::Handle<edm::TriggerResults>   triggerResultsHandle;
    iEvent.getByLabel( trigger.results, triggerResultsHandle );
    edm::Handle<trigger::TriggerEvent> triggerEventHandle;
    iEvent.getByLabel( trigger.event, triggerEventHandle );
-   
-   HLTConfigProvider hltConfig;
-   if( fStoreL3Objects ) hltConfig.init( trigger.process );
+
+   bool changed;
+   if( ! trigger.config.init( iEvent, trigger.process, changed ) ){
+      cout << "Initialization of trigger config failed, stopping trigger analysis." << endl;
+      return;
+   }
+
+   if( changed ){
+      cout << "HLT table changed, building new trigger map." << endl;
+      for( vector<string>::const_iterator trg_name = trigger.HLTriggers.begin(); trg_name != trigger.HLTriggers.end(); ++trg_name ){
+         unsigned int index = trigger.config.triggerIndex( *trg_name );
+         if( index < trigger.config.size() ){
+            trigger.HLTMap[ index ] = *trg_name;
+         } else {
+            cout << "WARNING: Trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
+         }
+      }
+   }
    
    //loop over selected trigger names
-   for( std::map<int, std::string>::const_iterator trig = trigger.HLTMap.begin(); trig != trigger.HLTMap.end(); ++trig ){
+   for( std::map< unsigned int, std::string >::const_iterator trig = trigger.HLTMap.begin(); trig != trigger.HLTMap.end(); ++trig ){
       //save trigger path status
       if( triggerResultsHandle->wasrun( trig->first ) && ! ( triggerResultsHandle->error( trig->first ) ) ){
          EvtView->setUserRecord< bool >( trigger.name+"_"+trig->second, triggerResultsHandle->accept( trig->first ) );
@@ -792,7 +787,7 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
               << " Error =" << triggerResultsHandle->error(  trig->first ) << endl;
       }
       if( fStoreL3Objects ){
-         const vector<string> &moduleLabels( hltConfig.moduleLabels( trig->first ) );
+         const vector<string> &moduleLabels( trigger.config.moduleLabels( trig->first ) );
          const unsigned int moduleIndex( triggerResultsHandle->index( trig->first) );
 
          // Results from TriggerEvent product - Attention: must look only for
@@ -810,7 +805,7 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                assert( nI==nK );
                size_t n( max( nI,nK ) );
                if( n > 5 ){
-                  cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << hltConfig.moduleType( moduleLabel ) << endl;
+                  cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << trigger.config.moduleType( moduleLabel ) << endl;
                   n = 5;
                }
                const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
