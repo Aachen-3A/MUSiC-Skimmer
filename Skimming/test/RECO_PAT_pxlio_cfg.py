@@ -6,10 +6,11 @@ process = cms.Process("PAT")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.limit = 100
 
 import FWCore.Framework.test.cmsExceptionsFatalOption_cff
 process.options   = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(False),
+    wantSummary = cms.untracked.bool(True),
     #open file in NOMERGE mode to avoid a memory leak
     fileMode = cms.untracked.string( 'NOMERGE' ),
     #stop processing on each and every thrown exception
