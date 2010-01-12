@@ -909,7 +909,9 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          //official CaloIso and TrkIso
          //Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
          part->setUserRecord<double>("CaloIso", muon->caloIso());
-         part->setUserRecord<double>("TrkIso", muon->trackIso()); 
+         part->setUserRecord<double>("TrkIso", muon->trackIso());
+         part->setUserRecord<double>("ECALIso", muon->ecalIso());
+         part->setUserRecord<double>("HCALIso", muon->hcalIso());
          //save offical isolation information: delta R = 0.3
          const MuonIsolation& muonIsoR03 = muon->isolationR03();
          part->setUserRecord<double>("IsoR3SumPt", muonIsoR03.sumPt);
@@ -1174,10 +1176,10 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<float>("HoEm", photon->hadronicOverEm());
          //save official isolation information
          // this is the BAD PAT isolation!!!
-         part->setUserRecord<float>("HCALIso", photon->hcalIso());
-         part->setUserRecord<float>("ECALIso", photon->ecalIso());
-         part->setUserRecord<float>("TrkIso", photon->trackIso());
-         part->setUserRecord<float>("CaloIso", photon->caloIso());
+         part->setUserRecord<double>("HCALIso", photon->hcalIso());
+         part->setUserRecord<double>("ECALIso", photon->ecalIso());
+         part->setUserRecord<double>("TrkIso", photon->trackIso());
+         part->setUserRecord<double>("CaloIso", photon->caloIso());
          part->setUserRecord<int>("TrackNum", photon->nTrkSolidConeDR04());
          // use egamma isolation based on RecHits:
          part->setUserRecord<float>("ID_HCALIso", photon->hcalTowerSumEtConeDR04());
