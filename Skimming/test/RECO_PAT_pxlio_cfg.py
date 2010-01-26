@@ -63,6 +63,7 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
+process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
 
 #filter on right BX in case of data
