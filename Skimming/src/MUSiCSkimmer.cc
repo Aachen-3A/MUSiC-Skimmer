@@ -859,7 +859,9 @@ void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
          vtx->setUserRecord<double>("yErr", vertex->yError());
          vtx->setUserRecord<double>("zErr", vertex->zError());	  
          // chi2 of vertex-fit
-         vtx->setUserRecord<double>("NormChi2", vertex->normalizedChi2());        
+         vtx->setUserRecord<double>("chi2", vertex->chi2());
+         vtx->setUserRecord<double>("ndof", vertex->ndof());
+         vtx->setUserRecord<double>("NormChi2", vertex->normalizedChi2());
          // number of tracks with origin in that vertex???
          vtx->setUserRecord<int>("NumTracks", vertex->tracksSize());
          // is valid?
