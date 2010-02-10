@@ -1127,6 +1127,9 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          part->setUserRecord<double>("PhysPhi", physP4.phi());
          part->setUserRecord<double>("PhysPt",  physP4.pt());
 
+         part->setUserRecord< double >( "fHPD", jet->jetID().fHPD );
+         part->setUserRecord< double >( "fRBX", jet->jetID().fRBX );
+
          // store b-tag discriminator values:
          const vector< pair< string, float > > &btags = jet->getPairDiscri();
          for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
