@@ -19,6 +19,9 @@ extern "C" {
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+//BeamSpot
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
@@ -111,7 +114,8 @@ public:
    bool GammaMC_cuts(const GenParticle* MCgamma) const;
    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
    bool METMC_cuts(const pxl::Particle* MCmet) const;
-   bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const; 
+   bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const;
+   bool PV_vertex_cuts( const reco::Vertex &vertex) const;
    bool Muon_cuts(const pat::Muon& muon) const;
    bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
    bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
@@ -175,8 +179,14 @@ public:
       min_jet_pt,
       min_met,
       max_eta,
-      max_vertex_z,
-      max_vertex_r,
-      vertex_offset;
+      vertex_minNDOF,
+      vertex_maxZ,
+      vertex_maxR,
+      PV_minNDOF,
+      PV_maxZ,
+      PV_maxR;
+
+   //vertex for physics eta, phi, pt
+   reco::BeamSpot::Point the_vertex;
 };
 #endif

@@ -117,7 +117,6 @@ Implementation:
 //Jet Flavour
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 
-
 using namespace std;
 using namespace edm;
 
@@ -230,15 +229,18 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    //cuts
    ParameterSet cut_pset = iConfig.getParameter< ParameterSet >( "cuts" );
-   min_muon_pt   = cut_pset.getParameter< double >( "min_muon_pt" );
-   min_ele_pt    = cut_pset.getParameter< double >( "min_ele_pt" );
-   min_gamma_pt  = cut_pset.getParameter< double >( "min_gamma_pt" );
-   min_jet_pt    = cut_pset.getParameter< double >( "min_jet_pt" );
-   min_met       = cut_pset.getParameter< double >( "min_met" );
-   max_eta       = cut_pset.getParameter< double >( "max_eta" );
-   max_vertex_z  = cut_pset.getParameter< double >( "max_vertex_z" );
-   max_vertex_r  = cut_pset.getParameter< double >( "max_vertex_r" );
-   vertex_offset = cut_pset.getParameter< double >( "vertex_offset" );
+   min_muon_pt    = cut_pset.getParameter< double >( "min_muon_pt" );
+   min_ele_pt     = cut_pset.getParameter< double >( "min_ele_pt" );
+   min_gamma_pt   = cut_pset.getParameter< double >( "min_gamma_pt" );
+   min_jet_pt     = cut_pset.getParameter< double >( "min_jet_pt" );
+   min_met        = cut_pset.getParameter< double >( "min_met" );
+   max_eta        = cut_pset.getParameter< double >( "max_eta" );
+   vertex_minNDOF = cut_pset.getParameter< double >( "vertex_minNDOF" );
+   vertex_maxZ    = cut_pset.getParameter< double >( "vertex_maxZ" );
+   vertex_maxR    = cut_pset.getParameter< double >( "vertex_maxR" );
+   PV_minNDOF     = cut_pset.getParameter< double >( "PV_minNDOF" );
+   PV_maxZ        = cut_pset.getParameter< double >( "PV_maxZ" );
+   PV_maxR        = cut_pset.getParameter< double >( "PV_maxR" );
 
 
 
@@ -822,12 +824,33 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
 void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* EvtView) {
    edm::Handle<reco::VertexCollection> vertices;
    iEvent.getByLabel(fVertexRecoLabel, vertices);
+
+   //get the beamspot
+   edm::Handle<reco::BeamSpot> recoBeamSpotHandle;
+   iEvent.getByLabel("offlineBeamSpot",recoBeamSpotHandle);
+   const reco::BeamSpot &beamspot = *recoBeamSpotHandle;
+
+   //store the BeamSpot
+   pxl::Vertex* bs = EvtView->create< pxl::Vertex >();
+   bs->setName( "BeamSpot" );
+   bs->setXYZ( beamspot.x0(), beamspot.y0(), beamspot.z0() );
+
+   //get the PV
+   const reco::Vertex &PV = *( vertices->begin() );
+
+   //save the primary vertex postion for later use
+   //use the BeamSpot in case the PV is shit
+   if( PV_vertex_cuts( PV ) ) {
+      the_vertex = PV.position();
+   } else {
+      the_vertex = beamspot.position();
+   }
    
    int numVertices = 0;
-   
+
    for (reco::VertexCollection::const_iterator  vertex = vertices->begin(); vertex != vertices->end(); ++vertex ) {
       //only fill primary vertex if cuts passed
-      if (Vertex_cuts(vertex)) { 
+      if (Vertex_cuts(vertex)) {
          pxl::Vertex* vtx = EvtView->create<pxl::Vertex>();
          vtx->setName("PV");
          vtx->setXYZ(vertex->x(), vertex->y(), vertex->z());
@@ -890,8 +913,8 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setUserRecord<int>("LHits", muontrack->numberOfLostHits());
          // Tracker Only
          part->setUserRecord<double>("NormChi2_TM", trackerTrack->normalizedChi2());
-         part->setUserRecord<int>("VHits_TM", trackerTrack->numberOfValidHits());
-         part->setUserRecord<int>("LHits_TM", trackerTrack->numberOfLostHits());	
+         part->setUserRecord<int>("TrackerVHits", trackerTrack->numberOfValidHits());
+         part->setUserRecord<int>("TrackerLHits", trackerTrack->numberOfLostHits());
          //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
          part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
          part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
@@ -986,7 +1009,8 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          //the seed cluster energy / track momentum at calo from outermost state
          part->setUserRecord<double>("ESCSeedPout", ele->eSeedClusterOverPout()); //ok
          //part->setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2()); //why was this left out?
-         part->setUserRecord<int>("ValidHits", ele->gsfTrack()->numberOfValidHits()); //ok
+         part->setUserRecord<int>("TrackerVHits", ele->gsfTrack()->numberOfValidHits()); //ok
+         part->setUserRecord<int>("TrackerLHits", ele->gsfTrack()->numberOfLostHits()); //ok
          part->setUserRecord<int>("Class", ele->classification()); //ok
 
          // Save distance to the primary vertex in z and xy plane i.e. impact parameter
@@ -1097,7 +1121,13 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
          part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
          part->setUserRecord<double>("TowersArea", jet->towersArea());
-         part->setUserRecord<double>("PhysicsEta", jet->physicsEta(VertexZ,jet->eta()));
+
+         //calculate the kinematics with a new vertex
+         reco::Candidate::LorentzVector physP4 = reco::Jet::physicsP4( the_vertex, *jet, jet->vertex() );
+         part->setUserRecord<double>("PhysEta", physP4.eta());
+         part->setUserRecord<double>("PhysPhi", physP4.phi());
+         part->setUserRecord<double>("PhysPt",  physP4.pt());
+
          // store b-tag discriminator values:
          const vector< pair< string, float > > &btags = jet->getPairDiscri();
          for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
@@ -1195,19 +1225,15 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          }
          // is near a gap ! isEEGap == always false not yet implemented ... CMSSW_2_1_9 
          part->setUserRecord<bool>("Gap", photon->isEBGap() || photon->isEEGap() || photon->isEBEEGap());
+
          // store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged 
-         //get primary vertex (hopefully correct one) for physics eta THIS NEEDS TO BE CHECKED !!!
-         math::XYZPoint vtx(0.0322, 0., 0.);
-         if (RecView->findUserRecord<int>("NumVertices") > 0) {
-            pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
-            vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
-         } 
-         /////  Set event vertex
          pat::Photon localPho(*photon);
-         localPho.setVertex(vtx);  //FIXME this line does not work (missing Cluster Shape info)
-         part->setUserRecord<double>("PhysEta", localPho.p4().eta());
-         part->setUserRecord<double>("PhysPhi", localPho.p4().phi());
-         part->setUserRecord<double>("PhysPt", localPho.p4().pt());
+         // Set event vertex
+         localPho.setVertex( the_vertex );
+         part->setUserRecord<double>("PhysEta", localPho.eta());
+         part->setUserRecord<double>("PhysPhi", localPho.phi());
+         part->setUserRecord<double>("PhysPt", localPho.pt());
+
          //store PAT matching info
          if (MC) {
             std::map< const Candidate*, pxl::Particle* >::const_iterator it = genmap.find( photon->genPhoton() );
@@ -1376,13 +1402,16 @@ bool MUSiCSkimmer::METMC_cuts(const pxl::Particle* MCmet) const {
 }
 
 // ------------ method to define RecVertex-cuts
+bool MUSiCSkimmer::Vertex_cuts( reco::VertexCollection::const_iterator vertex ) const {
+   return ( vertex->ndof() >= vertex_minNDOF
+            && fabs( vertex->z() ) <= vertex_maxZ
+            && vertex->position().rho() <= vertex_maxR );
+}
 
-bool MUSiCSkimmer::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
-   //check compatibility of vertex with beam spot
-   double zV = vertex->z();
-   double rV = sqrt( ( vertex->x()-vertex_offset ) * ( vertex->x()-vertex_offset ) + vertex->y() * vertex->y() );
-   if( fabs( zV ) > max_vertex_z || rV > max_vertex_r ) return false;
-   return true;
+bool MUSiCSkimmer::PV_vertex_cuts( const reco::Vertex &vertex ) const {
+   return ( vertex.ndof() >= PV_minNDOF
+            && fabs( vertex.z() ) <= PV_maxZ
+            && vertex.position().rho() <= PV_maxR );
 }
 
 // ------------ method to define MUON-cuts

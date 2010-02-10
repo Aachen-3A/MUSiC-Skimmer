@@ -75,8 +75,11 @@ Skimmer = cms.EDAnalyzer(
         min_jet_pt = cms.double( 30 ),
         min_met = cms.double( 30 ),
         max_eta = cms.double( 3 ),
-        max_vertex_z = cms.double( 20 ),
-        max_vertex_r = cms.double( 1 ),
-        vertex_offset = cms.double( 0.0322 ),
+        vertex_minNDOF = cms.double( 3 ),
+        vertex_maxZ = cms.double( 20 ),
+        vertex_maxR = cms.double( 4 ),
+        PV_minNDOF = cms.double( 5 ),
+        PV_maxZ = cms.double( 15 ),
+        PV_maxR = cms.double( 2 )
         )
     )
