@@ -58,7 +58,7 @@ def make_state( job ):
     if job.state == 'Retrieved' or job.state == 'Cleared':
         if job.grid == 0 and job.exe == 0:
             return 'Success'
-        elif job.exe == 0:
+        elif not job.exe or job.exe == 0:
             return 'Grid-Fail'
         else:
             return 'App-Fail'
@@ -104,7 +104,10 @@ def parse_output( output ):
         else:
             job.host = None
 
-        if len( split_line ) > 3:
+        if len( split_line ) == 4:
+            job.grid = int( split_line[3] )
+            job.exe = None
+        elif len( split_line ) > 4:
             job.exe = int( split_line[3] )
             job.grid = int( split_line[4] )
         else:
@@ -113,7 +116,7 @@ def parse_output( output ):
 
         job.state = make_state( job )
 
-        jobs[ job.state].append( job )
+        jobs[ job.state ].append( job )
 
 
     return jobs
@@ -137,7 +140,7 @@ def print_exit_codes( jobs ):
     grid_codes = defaultdict( list )
     exe_codes = defaultdict( list )
     for job in jobs:
-        if job.exe != 0:
+        if job.exe and job.exe != 0:
             exe_codes[ job.exe ].append( job.num )
         else:
             grid_codes[ job.grid ].append( job.num )
