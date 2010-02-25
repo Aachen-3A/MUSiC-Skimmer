@@ -8,6 +8,12 @@ import optparse
 import ConfigParser
 
 
+class JobStatusError( Exception ):
+    def __init__( self, job ):
+        self.job = job
+    def __str__( self ):
+        return 'Job with a weird status. Please report this with the following information:\n'+str(self.job)
+
 class defaultdict( dict ):
     def __init__( self, factory, *args ):
         self.factory = factory
@@ -22,7 +28,20 @@ class defaultdict( dict ):
 
 
 class Job:
-    pass
+    num = None
+    state = None
+    host = None
+    grid = None
+    exe = None
+
+    def __str__( self ):
+        return ( 'Job: '+
+                 'num='+str( self.num )+'; '+
+                 'state='+str( self.state )+'; '+
+                 'host='+str( self.host )+'; '+
+                 'grid_exit='+str( self.grid )+'; '+
+                 'exe_exit='+str( self.exe )
+                 )
 
 
 def format_job_list( jobs ):
@@ -55,13 +74,17 @@ def call_crab( command, jobs, dir, stdout=False ):
 
 
 def make_state( job ):
-    if job.state == 'Retrieved' or job.state == 'Cleared':
+    if job.state == 'Retrieved' or job.state == 'Cleared' or job.state == 'Done':
         if job.grid == 0 and job.exe == 0:
             return 'Success'
-        elif not job.exe or job.exe == 0:
-            return 'Grid-Fail'
-        else:
+        elif job.exe != None and job.exe != 0:
             return 'App-Fail'
+        elif job.grid != None and job.grid != 0 and ( not job.exe or job.exe == 0 ):
+            return 'Grid-Fail'
+        elif job.grid == None and job.exe == None and job.state == 'Done':
+            return job.state
+        else:
+            raise JobStatusError( job )
     else:
         return job.state
 
