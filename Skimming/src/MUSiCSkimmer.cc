@@ -372,24 +372,37 @@ void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
    //don't save PDF infos for processes without partons
    if( genEvtInfo->hasPDF() && !( 91 <= ID && ID <= 95 ) ){
       const gen::PdfInfo *pdf = genEvtInfo->pdf();
+      fpdf_vec.push_back( *pdf );
+
+      int id1 = pdf->id.first;
+      int id2 = pdf->id.second;
+
+      //reset the code for a gluon, at least SHERPA got a problem there
+      if( abs( id1 ) == 9 || abs( id1 ) == 21 ) {
+         id1 = 0;
+         fpdf_vec.back().id.first = 0;
+      }
+      if( abs( id2 ) == 9 || abs( id2 ) == 21 ) {
+         id2 = 0;
+         fpdf_vec.back().id.second = 0;
+      }
 
       EvtView->setUserRecord<float>("x1", pdf->x.first);
       EvtView->setUserRecord<float>("x2", pdf->x.second);
       EvtView->setUserRecord<float>("Q", pdf->scalePDF);
-      EvtView->setUserRecord<int>("f1", pdf->id.first);
-      EvtView->setUserRecord<int>("f2", pdf->id.second);
+      EvtView->setUserRecord<int>("f1", id1);
+      EvtView->setUserRecord<int>("f2", id2);
       EvtView->setUserRecord<float>("pdf1", pdf->xPDF.first);
       EvtView->setUserRecord<float>("pdf2", pdf->xPDF.second);
 
-      fpdf_vec.push_back( *pdf );
 
-      if( abs( pdf->id.first ) > 6 || abs( pdf->id.second ) > 6 ){
+      if( abs( id1 ) > 6 || abs( id2 ) > 6 ){
          throw cms::Exception( "PDF error" ) << "PDF information corrupted in a non-diffractive event." << endl
                                              << "Process ID " << genEvtInfo->signalProcessID() << " is not in list of diffractive processes (91 <= ID <= 95)." << endl
                                              << "Scale: " << pdf->scalePDF << endl
                                              << "x1 = " << pdf->x.first << "; x2 = " << pdf->x.second << endl
-                                             << "ID 1: " << pdf->id.first << endl
-                                             << "ID 2: " << pdf->id.second << endl;
+                                             << "ID 1: " << id1 << endl
+                                             << "ID 2: " << id2 << endl;
       }
    } else {
       gen::PdfInfo pdf;
