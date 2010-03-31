@@ -18,10 +18,10 @@ Skimmer = cms.EDAnalyzer(
     #vertices with beam spot constraint
     VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
     #the following is all PAT
-    MuonRecoLabel = cms.untracked.string("cleanLayer1Muons"),
-    ElectronRecoLabel = cms.untracked.string("cleanLayer1Electrons"),
-    GammaRecoLabel = cms.untracked.string("cleanLayer1Photons"),
-    METRecoLabel = cms.untracked.string("layer1METs"),
+    MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
+    ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
+    GammaRecoLabel = cms.untracked.string("cleanPatPhotons"),
+    METRecoLabel = cms.untracked.string("patMETs"),
     #ECAL RecHits for supercluster information
     reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
@@ -32,7 +32,7 @@ Skimmer = cms.EDAnalyzer(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
         AK5 = cms.PSet(
             MCLabel = cms.InputTag( "antikt5GenJets" ),
-            RecoLabel = cms.InputTag( "cleanLayer1Jets" )
+            RecoLabel = cms.InputTag( "cleanPatJets" )
             ),
         # the following vector must hold the names of the IDs in the same sequence
         # as the qualities in PhysicsTools/PatUtils/interface/JetIDSelectionFunctor.h

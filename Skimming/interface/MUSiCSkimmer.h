@@ -57,7 +57,7 @@ extern "C" {
 #include "DataFormats/PatCandidates/interface/Muon.h"
 
 //JetID
-#include "PhysicsTools/PatUtils/interface/JetIDSelectionFunctor.h"
+#include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 
 //for ClusterShape variables
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"

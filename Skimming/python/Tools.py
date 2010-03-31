@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 def configurePAT( process, runOnData ):
     if runOnData:
         import PhysicsTools.PatAlgos.tools.coreTools
-        PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, 'All' )
+        PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
     else:
         #in 33x, anti-kt jets are called ak*, however in the 31x they are called antikt*.
         #the following function call will fix this
@@ -30,25 +30,25 @@ def configurePAT( process, runOnData ):
         process.photonMatch.maxDeltaR = 0.2
         process.photonMatch.maxDPtRel = 1000000.0
         
-        process.jetPartonMatch.checkCharge = False
-        process.jetPartonMatch.resolveByMatchQuality = True
-        process.jetPartonMatch.maxDeltaR = 0.4
-        process.jetPartonMatch.maxDPtRel = 1000000.0
+        process.patJetPartonMatch.checkCharge = False
+        process.patJetPartonMatch.resolveByMatchQuality = True
+        process.patJetPartonMatch.maxDeltaR = 0.4
+        process.patJetPartonMatch.maxDPtRel = 1000000.0
         
-        process.jetGenJetMatch.checkCharge = False
-        process.jetGenJetMatch.resolveByMatchQuality = True
-        process.jetGenJetMatch.maxDeltaR = 0.4
-        process.jetGenJetMatch.maxDPtRel = 1000000.0
+        process.patJetGenJetMatch.checkCharge = False
+        process.patJetGenJetMatch.resolveByMatchQuality = True
+        process.patJetGenJetMatch.maxDeltaR = 0.4
+        process.patJetGenJetMatch.maxDPtRel = 1000000.0
         
         
         # save a reference to the gen-object instead of a copy.
         # this of course only works if the gen collection is still in the event
         # if we run PAT ourself on GEN-SIM-RECO, it is, so everything is fine
-        process.allLayer1Electrons.embedGenMatch = False
-        process.allLayer1Muons.embedGenMatch = False
-        process.allLayer1Photons.embedGenMatch = False
-        process.allLayer1Jets.embedGenJetMatch = False
-        process.allLayer1Jets.embedGenPartonMatch = False
+        process.patElectrons.embedGenMatch = False
+        process.patMuons.embedGenMatch = False
+        process.patPhotons.embedGenMatch = False
+        process.patJets.embedGenJetMatch = False
+        process.patJets.embedGenPartonMatch = False
 
 
 
@@ -60,7 +60,7 @@ def addFlavourMatching( process, skimmer, path):
                      jet_name+'GenJetPartonAssociation',
                      cms.EDFilter( 'JetPartonMatcher',
                                    jets = jet_def.MCLabel,
-                                   partons = cms.InputTag( 'jetPartons' ),
+                                   partons = cms.InputTag( 'patJetPartons' ),
                                    coneSizeToAssociate = cms.double( 0.3 )
                                    )
                      )
@@ -88,7 +88,7 @@ def addFlavourMatching( process, skimmer, path):
                      jet_name+'RecoJetPartonAssociation',
                      cms.EDFilter( 'JetPartonMatcher',
                                    jets = jet_def.RecoLabel,
-                                   partons = cms.InputTag( 'jetPartons' ),
+                                   partons = cms.InputTag( 'patJetPartons' ),
                                    coneSizeToAssociate = cms.double( 0.3 )
                                    )
                      )
