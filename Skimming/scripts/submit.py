@@ -72,7 +72,7 @@ for line in open( samples ):
             'rb = CERN\n'+
             'group = dcms\n'+
             'se_black_list = T0,T1\n'+
-            '[CONDORG]\n'
+            'additional_jdl_parameters=rank=-other.GlueCEStateEstimatedResponseTime+(RegExp("rwth-aachen.de",other.GlueCEUniqueID)?100000:0)+(RegExp("desy.de",other.GlueCEUniqueID)?100000:0)\n'
             )
     cfg_file = open(name+'.cfg', 'w')
     cfg_file.write(cfg)
