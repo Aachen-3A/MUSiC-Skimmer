@@ -70,6 +70,8 @@ Implementation:
 #include "DataFormats/Candidate/src/classes.h"
 
 //for Trigger Bits
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
@@ -96,12 +98,6 @@ Implementation:
 //test for 2_1_0
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
- 
-// L1 Trigger stuff
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
 
 // special stuff for sim truth of converted photons
 #include "SimDataFormats/Track/interface/SimTrack.h"
@@ -197,6 +193,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       ParameterSet one_trigger = trigger_pset.getParameter< ParameterSet >( trigger.name );
       trigger.process = one_trigger.getParameter< string >( "process" );
 
+      trigger.L1_result = one_trigger.getParameter< InputTag >( "L1_result" );
       trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
       trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
       
@@ -825,6 +822,23 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
          }
       } 
    }
+
+   //get the L1 data
+   edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
+   iEvent.getByLabel( trigger.L1_result, gtReadoutRecord );
+   //get the technical trigger word
+   const TechnicalTriggerWord &tech_word = gtReadoutRecord->technicalTriggerWord();
+   
+   //store the important bits
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_0", tech_word[ 0 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_36", tech_word[ 36 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_37", tech_word[ 37 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_38", tech_word[ 38 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_39", tech_word[ 39 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_40", tech_word[ 40 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_41", tech_word[ 41 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_42", tech_word[ 42 ] );
+   EvtView->setUserRecord< bool >( trigger.name+"_L1_43", tech_word[ 43 ] );
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------

@@ -84,6 +84,7 @@ public:
    struct trigger_def{
       std::string   name;
       std::string   process;
+      edm::InputTag L1_result;
       edm::InputTag results;
       edm::InputTag event;
       //to map names to indices

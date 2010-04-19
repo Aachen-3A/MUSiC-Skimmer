@@ -55,7 +55,8 @@ Skimmer = cms.EDAnalyzer(
             ),
         # Trigger menu: 8e29
         HLT8E29 = cms.PSet(
-            process = cms.string('HLT8E29'),
+            process = cms.string('HLT'),
+            L1_result = cms.InputTag( "gtDigis" ),
             results = cms.string('TriggerResults'),
             event   = cms.string('hltTriggerSummaryAOD'),
             HLTriggers = cms.vstring(
