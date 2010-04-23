@@ -11,7 +11,10 @@ import ConfigParser
 
 parser = optparse.OptionParser( description='Submit MUSiCSkimmer jobs, using CMSSW config CFG_FILE, on all samples listed in DATASET_FILE',  usage='usage: %prog [options] CFG_FILE DATASET_FILE' )
 parser.add_option( '-n', '--name', metavar='NAME', help='Output will be written in store/user/{your_name}/NAME/{short_dataset_name} [default: MUSiC/{current_date}]' )
-parser.add_option( '-r', '--runs', metavar='RUNS', help='Only analyze the given runs' )
+parser.add_option( '-r', '--runs', metavar='RUNS', help='Only analyze the given runs (comma separated list)' )
+parser.add_option( '-t', '--totalEvents', metavar='NUMBER', default='-1', help='Only anlyze NUMBER events [default: %default; means all]' )
+parser.add_option( '-j', '--eventsPerJob', metavar='NUMBER', default='50000', help='Anlyze NUMBER events per job [default: %default]' )
+parser.add_option( '-s', '--server', action='store_true', default=False, help='Use the CRAB server [default: %default]' )
 
 (options, args ) = parser.parse_args()
 
@@ -59,11 +62,13 @@ for line in open( samples ):
     config.add_section( 'CRAB' )
     config.set( 'CRAB', 'jobtype', 'cmssw' )
     config.set( 'CRAB', 'scheduler', 'glite' )
+    if options.server:
+        config.set( 'CRAB', 'use_server', '1' )
     config.add_section( 'CMSSW' )
     config.set( 'CMSSW', 'datasetpath', sample )
     config.set( 'CMSSW', 'pset', name+'_cfg.py' )
-    config.set( 'CMSSW', 'total_number_of_events', '-1' )
-    config.set( 'CMSSW', 'events_per_job', '50000' )
+    config.set( 'CMSSW', 'total_number_of_events', options.totalEvents )
+    config.set( 'CMSSW', 'events_per_job', options.eventsPerJob )
     if options.runs:
         config.set( 'CMSSW', 'runselection', options.runs )
     config.set( 'CMSSW', 'output_file', name+'.pxlio' )
@@ -80,6 +85,8 @@ for line in open( samples ):
 
     cfg_file = open(name+'.cfg', 'wb')
     config.write( cfg_file )
+    del config
+    del cfg_file
 
  
     print 'Generating CMSSW config...',
