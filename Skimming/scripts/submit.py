@@ -6,6 +6,7 @@ import imp
 import pickle
 import optparse
 import datetime
+import ConfigParser
 
 
 parser = optparse.OptionParser( description='Submit MUSiCSkimmer jobs, using CMSSW config CFG_FILE, on all samples listed in DATASET_FILE',  usage='usage: %prog [options] CFG_FILE DATASET_FILE' )
@@ -52,32 +53,35 @@ for line in open( samples ):
     line = line.split( ':' )
     name = line[0]
     sample = line[1]
-    print name, ': Generating CRAB cfg...',
-    cfg = ( '[CRAB]\n'+
-            'jobtype = cmssw\n'+
-            'scheduler = glite\n'+
-            '[CMSSW]\n'+
-            'datasetpath = '+sample+'\n'+
-            'pset = '+name+'_cfg.py\n'+
-            'total_number_of_events=-1\n'+
-            'events_per_job = 50000\n'+
-            run_line+
-            'output_file = '+name+'.pxlio\n'+
-            '[USER]\n'+
-            'return_data = 0\n'+
-            'copy_data = 1\n'+
-            'storage_element = T2_DE_RWTH\n'+
-            'user_remote_dir = '+outname+name+'\n'+
-            '[GRID]\n'+
-            'rb = CERN\n'+
-            'group = dcms\n'+
-            'se_black_list = T0,T1\n'+
-            'additional_jdl_parameters=rank=-other.GlueCEStateEstimatedResponseTime+(RegExp("rwth-aachen.de",other.GlueCEUniqueID)?100000:0)+(RegExp("desy.de",other.GlueCEUniqueID)?100000:0)\n'
-            )
-    cfg_file = open(name+'.cfg', 'w')
-    cfg_file.write(cfg)
-    cfg_file.close()
 
+    print name, ': Generating CRAB cfg...',
+    config = ConfigParser.RawConfigParser()
+    config.add_section( 'CRAB' )
+    config.set( 'CRAB', 'jobtype', 'cmssw' )
+    config.set( 'CRAB', 'scheduler', 'glite' )
+    config.add_section( 'CMSSW' )
+    config.set( 'CMSSW', 'datasetpath', sample )
+    config.set( 'CMSSW', 'pset', name+'_cfg.py' )
+    config.set( 'CMSSW', 'total_number_of_events', '-1' )
+    config.set( 'CMSSW', 'events_per_job', '50000' )
+    if options.runs:
+        config.set( 'CMSSW', 'runselection', options.runs )
+    config.set( 'CMSSW', 'output_file', name+'.pxlio' )
+    config.add_section( 'USER' )
+    config.set( 'USER', 'return_data', '0' )
+    config.set( 'USER', 'copy_data', '1' )
+    config.set( 'USER', 'storage_element', 'T2_DE_RWTH' )
+    config.set( 'USER', 'user_remote_dir', outname+name )
+    config.add_section( 'GRID' )
+    config.set( 'GRID', 'rb', 'CERN' )
+    config.set( 'GRID', 'group', 'dcms' )
+    config.set( 'GRID', 'se_black_list', 'T0,T1' )
+    config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime+(RegExp("rwth-aachen.de",other.GlueCEUniqueID)?100000:0)+(RegExp("desy.de",other.GlueCEUniqueID)?100000:0)' )
+
+    cfg_file = open(name+'.cfg', 'wb')
+    config.write( cfg_file )
+
+ 
     print 'Generating CMSSW config...',
     process.Skimmer.FileName = name+'.pxlio'
     process.Skimmer.Process = name
