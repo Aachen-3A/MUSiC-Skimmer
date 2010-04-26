@@ -31,7 +31,7 @@ Skimmer = cms.EDAnalyzer(
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
         AK5 = cms.PSet(
-            MCLabel = cms.InputTag( "antikt5GenJets" ),
+            MCLabel = cms.InputTag( "ak5GenJets" ),
             RecoLabel = cms.InputTag( "cleanPatJets" )
             ),
         # the following vector must hold the names of the IDs in the same sequence
@@ -41,18 +41,6 @@ Skimmer = cms.EDAnalyzer(
     
     triggers = cms.PSet(
         #REMARK: The names of the following PSets will be used as the trigger identifier in the PXL output
-        # Trigger menu: 1e31
-        HLT1E31 = cms.PSet(
-            process = cms.string('HLT'),
-            results = cms.string('TriggerResults'),
-            event   = cms.string('hltTriggerSummaryAOD'),
-            HLTriggers = cms.vstring(
-                'HLT_Mu9', 'HLT_DoubleMu0',
-                'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
-                'HLT_Photon25_L1R', 'HLT_DoublePhoton15_L1R',
-                'HLT_L1Mu14_L1SingleEG10', 'HLT_L2Mu5_Photon9_L1R'
-                ),
-            ),
         # Trigger menu: 8e29
         HLT8E29 = cms.PSet(
             process = cms.string('HLT'),
@@ -64,7 +52,7 @@ Skimmer = cms.EDAnalyzer(
                 'HLT_Ele10_LW_L1R', 'HLT_DoubleEle5_SW_L1R',
                 'HLT_Photon15_L1R', 'HLT_DoublePhoton10_L1R'
                 #no usefull cross-channel trigger in this menu
-                ),
+                )
             ),
         StoreL3Objects = cms.untracked.bool(False)
         ),
