@@ -233,40 +233,11 @@ def move_dir( dir, target ):
 
 
 
-def clean_output( dir, jobs, options ):
-    parser = ConfigParser.SafeConfigParser()
-    parser.read( os.path.join( dir, 'share/crab.cfg' ) )
-    remote_dir = parser.get( 'USER', 'user_remote_dir' )
-    out = parser.get( 'CMSSW', 'output_file' )
-    base,ext = os.path.splitext( out )
-    full_dir = os.path.join( '/cms/store/user/', options.user, remote_dir )
-    
-    proc = subprocess.Popen( [ 'dcls', full_dir ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
-    output = proc.communicate()[0]
-    if proc.returncode != 0:
-        if '550 Directory not found' in output:
-            #the directory doesn't exist, so there can't be a relic file
-            return
-        else:
-            print 'Something went wrong with getting the stageout directory content:', full_dir
-            sys.exit(1)
-
-    for job in jobs:
-        file = base+'_'+str( job.num )+ext
-        if file in output:
-            full_path = os.path.join( full_dir, file )
-            retcode = subprocess.call( [ 'dcdel', full_path ] )
-            #unfortunately dcdel is broken in the moment, so no retcode check
-            #if retcode != 0:
-            #    print 'Failed to delete:', full_path
-            #    sys.exit(1)
-        
+       
 
 
 
 def resubmit( dir, jobs, state, options ):
-    print 'Cleaning left over output file jobs in state:', state
-    clean_output( dir, jobs, options )
     print 'Resubmitting jobs in state:', state
     call_crab( '-resubmit', jobs, dir, stdout=True )
                   
