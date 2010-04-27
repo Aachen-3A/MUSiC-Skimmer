@@ -121,6 +121,8 @@ def parse_output( output ):
             continue
 
         job.state = split_line[1]
+        if job.state == 'Cancelled':
+            del split_line[2:4]
 
         if len( split_line ) > 2:
             job.host = split_line[2]
