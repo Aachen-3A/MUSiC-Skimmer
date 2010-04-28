@@ -73,13 +73,13 @@ def call_crab( command, jobs, dir, stdout=False ):
             return output.splitlines()
 
 
-def make_state( job ):
-    if job.state == 'Retrieved' or job.state == 'Cleared' or job.state == 'Done':
+def make_state( job, use_server ):
+    if job.state == 'Retrieved' or job.state == 'Cleared' or (not use_server and job.state == 'Done'):
         if job.grid == 0 and job.exe == 0:
             return 'Success'
         elif job.exe != None and job.exe != 0:
             return 'App-Fail'
-        elif job.grid != None and job.grid != 0 and ( not job.exe or job.exe == 0 ):
+        elif job.grid != None and job.grid != 0 and ( job.exe == None or job.exe == 0 ):
             return 'Grid-Fail'
         elif job.grid == None and job.exe == None and job.state == 'Done':
             return job.state
@@ -91,7 +91,7 @@ def make_state( job ):
 
 
 
-def parse_output( output ):
+def parse_output( output, use_server ):
     found_start = False
     jobs = defaultdict( list )
 
@@ -139,7 +139,7 @@ def parse_output( output ):
             job.exe = None
             job.grid = None
 
-        job.state = make_state( job )
+        job.state = make_state( job, use_server )
 
         jobs[ job.state ].append( job )
 
@@ -148,9 +148,9 @@ def parse_output( output ):
 
 
 
-def get_status( dir ):
+def get_status( dir, use_server ):
     output = call_crab( '-status', None, dir )
-    states = parse_output( output )
+    states = parse_output( output, use_server )
 
     for state,jobs in states.iteritems():
         print state, format_job_list( jobs )
@@ -273,7 +273,14 @@ moved_dirs = []
 for dir in crab_dirs:
     print '=====', dir, '====='
 
-    states = get_status( dir )
+    parser = ConfigParser.SafeConfigParser()
+    parser.read( os.path.join( dir, 'share/crab.cfg' ) )
+    try:
+        use_server = parser.getboolean( 'CRAB', 'use_server' )
+    except ConfigParser.NoOptionError:
+        use_server = False
+
+    states = get_status( dir, use_server )
 
     if 'Done' in states:
         print 'Jobs done, getting output...'
@@ -282,7 +289,7 @@ for dir in crab_dirs:
         print
         print 'Got output, new states:'
 
-        states = get_status( dir )
+        states = get_status( dir, use_server )
 
 
     stat.add_jobs( states )
