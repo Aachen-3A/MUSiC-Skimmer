@@ -95,9 +95,11 @@ Implementation:
 //test
 #include "DataFormats/Common/interface/Ptr.h"
 
-//test for 2_1_0
+//ECAL
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
+#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
 
 // special stuff for sim truth of converted photons
 #include "SimDataFormats/Track/interface/SimTrack.h"
@@ -1254,6 +1256,9 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
    edm::Handle<std::vector<pat::Photon> > photonHandle;
    iEvent.getByLabel(fGammaRecoLabel, photonHandle);
    const std::vector<pat::Photon>& photons = *photonHandle;
+
+   edm::Handle< EcalRecHitCollection > barrelRecHits;
+   iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits );
    
    int numGammaRec = 0;
    for (std::vector<pat::Photon>::const_iterator photon = photons.begin(); photon != photons.end(); ++photon) {  
@@ -1272,6 +1277,7 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          //use EcalClusterLazyTools to store ClusterShapeVariables
          part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
          part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
+         part->setUserRecord<double>( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits ) );
          std::vector<float> covariances = lazyTools.covariances(*SCSeed );
          part->setUserRecord<double>("EtaEta", covariances[0] ); 
          part->setUserRecord<double>("EtaPhi", covariances[1] );
