@@ -1,11 +1,11 @@
 runOnData = True
+#run on Summer09 (ReReco'd or not)
+runOnSummer09 = False
 #run on ReReco'ed data or Summer09 MC
 runOnReReco = False
-#run on NOT ReReco'ed Summer09
-runOnSummer09 = False
 
-if runOnReReco and runOnSummer09:
-    print "runOnReReco and runOnSummer09 can't be true at the same time!"
+if runOnData and runOnSummer09:
+    print "runOnData and runOnSummer09 can't be true at the same time!"
     import sys
     sys.exit(1)
 
@@ -47,10 +47,10 @@ if runOnData:
     else:
         process.GlobalTag.globaltag = cms.string('GR10_P_V5::All')
 else:
-    if runOnReReco:
-        process.GlobalTag.globaltag = cms.string('START3X_V26::All')
-    else:
+    if runOnSummer09 and not runOnReReco:
         process.GlobalTag.globaltag = cms.string('MC_3XY_V26::All')
+    else:
+        process.GlobalTag.globaltag = cms.string('START3X_V26::All')
 
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
@@ -87,12 +87,8 @@ if runOnData:
 
     process.incompleteECALFilter = cms.EDFilter( "recHitFilter" )
 
-    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.technicals * process.incompleteECALFilter )
+    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.technicals * process.incompleteECALFilter * process.patDefaultSequence )
 
-
-#add PAT to path
-if runOnData:
-    process.p += process.patDefaultSequence
 else:
     process.p = cms.Path( process.patDefaultSequence )
 
@@ -131,8 +127,10 @@ else:
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 if runOnSummer09:
-    #anti-kt 5 jets are called antikt5 in 3.1.X, but ak5 in later releases
-    process.Skimmer.jets.AK5.MCLabel = 'antikt5GenJets'
+    if not runOnReReco:
+        #anti-kt 5 jets are called antikt5 in 3.1.X, but ak5 in later releases
+        process.Skimmer.jets.AK5.MCLabel = 'antikt5GenJets'
+
     #add the high lumi trigger
     process.Skimmer.triggers.HLT1E31 = cms.PSet(
         process = cms.string('HLT'),
