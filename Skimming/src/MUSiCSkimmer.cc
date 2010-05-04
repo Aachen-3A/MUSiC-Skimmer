@@ -1068,7 +1068,20 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName("Ele");
          part->setCharge(ele->charge());
-         part->setP4(ele->px(), ele->py(),ele->pz(), ele->energy());
+
+         //make a new LorentzVector with defined energy, and direction, mass 0
+         TLorentzVector temp;
+         temp.SetE( ele->caloEnergy() );
+         temp.SetPz( ele->caloEnergy() );
+         temp.SetTheta( ele->theta() );
+         temp.SetPhi( ele->phi() );
+
+         part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
+
+
+         //reconstruction algorithm was (at least) driven by ECAL
+         part->setUserRecord< bool >( "ecalDriven", ele->ecalDrivenSeed() );
+
          part->setUserRecord<double>("Vtx_X", ele->vx());
          part->setUserRecord<double>("Vtx_Y", ele->vy());
          part->setUserRecord<double>("Vtx_Z", ele->vz());
@@ -1079,11 +1092,13 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          //! the seed cluster eta - track eta at calo from outermost state
          part->setUserRecord<double>("DEtaSeedTrk", ele->deltaEtaSeedClusterTrackAtCalo()); //ok
          part->setUserRecord<double>("DPhiSeedTrk", ele->deltaPhiSeedClusterTrackAtCalo()); //ok
-         //part->setUserRecord<double>("SCE", ele->superCluster()->energy());
+
          // the super cluster energy corrected by EnergyScaleFactor
          part->setUserRecord<float>("SCE", ele->caloEnergy()); //ok
-         // the errors on the supercluster energy and track momentum
+         part->setUserRecord< double >( "SCeta", ele->caloPosition().eta() );
+         // the errors on the supercluster energy
          part->setUserRecord<float>("SCEErr", ele->ecalEnergyError()); //ok
+
          // the errors on the track momentum
          part->setUserRecord<float>("PErr", ele->trackMomentumError());	 
          part->setUserRecord<double>("TrackerP", ele->gsfTrack()->p()); //ok
@@ -1119,14 +1134,20 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          // although we get a vector of SuperClusters an electron is only made out of ONE SC
          // therefore only the first element of the vector should be available!
          const SuperClusterRef SCRef = ele->superCluster();
-         const CaloClusterPtr& SCSeed = SCRef->seed(); 
+         const CaloClusterPtr& SCSeed = SCRef->seed();
+
          //use EcalClusterLazyTools to store ClusterShapeVariables
-         part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
-         part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
+         part->setUserRecord< double >( "e1x5",  ele->e1x5() );
+         part->setUserRecord< double >( "e2x5",  ele->e2x5Max() );
+         part->setUserRecord< double >( "e5x5",  ele->e5x5() );
+
          std::vector<float> covariances = lazyTools.covariances(*SCSeed, 4.7 );
          part->setUserRecord<double>("EtaEta", covariances[0] ); //used for CutBasedElectronID
          part->setUserRecord<double>("EtaPhi", covariances[1] );
          part->setUserRecord<double>("PhiPhi", covariances[2] );
+
+         part->setUserRecord< double >( "iEta_iEta", ele->scSigmaIEtaIEta() );
+
          //save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/Photon-Candidates (in final selection)
          part->setUserRecord<double>("seedphi", SCRef->seed()->phi());
          part->setUserRecord<double>("seedeta", SCRef->seed()->eta());
@@ -1145,6 +1166,11 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord<double>("TrkIso", ele->trackIso());
          part->setUserRecord<double>("ECALIso", ele->ecalIso());
          part->setUserRecord<double>("HCALIso", ele->hcalIso());
+
+         part->setUserRecord< double >( "TrkIso03", ele->dr03TkSumPt() );
+         part->setUserRecord< double >( "ECALIso03", ele->dr03EcalRecHitSumEt() );
+         part->setUserRecord< double >( "HCALIso03d1", ele->dr03HcalDepth1TowerSumEt() );
+         part->setUserRecord< double >( "HCALIso03d2", ele->dr03HcalDepth2TowerSumEt() );
  
          //FIXME this should somehow be accessible after moving to CMSSW_2_0_9
          // no I don't see an easy way how to do that (CH) Do we really need it?
