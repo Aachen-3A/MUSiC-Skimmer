@@ -12,19 +12,25 @@ import ConfigParser
 parser = optparse.OptionParser( description='Submit MUSiCSkimmer jobs, using CMSSW config CFG_FILE, on all samples listed in DATASET_FILE',  usage='usage: %prog [options] CFG_FILE DATASET_FILE' )
 parser.add_option( '-n', '--name', metavar='NAME', help='Output will be written in store/user/{your_name}/NAME/{short_dataset_name} [default: MUSiC/{current_date}]' )
 parser.add_option( '-r', '--runs', metavar='RUNS', help='Only analyze the given runs (comma separated list)' )
-parser.add_option( '-t', '--totalEvents', metavar='NUMBER', default='-1', help='Only anlyze NUMBER events [default: %default; means all]' )
-parser.add_option( '-j', '--eventsPerJob', metavar='NUMBER', default='50000', help='Anlyze NUMBER events per job [default: %default]' )
+parser.add_option( '-l', '--lumimask', metavar='FILE', help='Use JSON file FILE as lumi mask' )
+parser.add_option( '-t', '--total', metavar='NUMBER', default='-1', help='Only analyze NUMBER events/lumis [default: %default; means all]' )
+parser.add_option( '-j', '--perJob', metavar='NUMBER', default='unset', help='Anlyze NUMBER events.lumis per job [default: 50000 events or 35 lumis]' )
 parser.add_option( '-s', '--server', action='store_true', default=False, help='Use the CRAB server [default: %default]' )
+parser.add_option( '-g', '--scheduler', default='glite', help='Scheduler to use (glidein implies --server) [default: %default]' )
 
 (options, args ) = parser.parse_args()
 
 if len( args ) < 2:
     parser.error( 'CFG_FILE and DATASET_FILE required' )
 
+if options.runs and options.lumimask:
+    parser.error( '--lumimask and --runs cannot be given at the same time' )
+
 del parser
 
-pset = args[0]
-samples = args[1]
+
+if options.scheduler == 'glidein':
+    options.server = True
 
 if options.name:
     outname = options.name
@@ -36,10 +42,15 @@ else:
     outname = 'MUSiC/'+datetime.date.today().isoformat()
 outname += '/'
 
-if options.runs:
-    run_line = 'runselection = '+options.runs+'\n'
-else:
-    run_line = ''
+if options.perJob == 'unset':
+    if options.lumimask:
+        options.perJob = '35'
+    else:
+        options.perJob = '50000'
+
+
+pset = args[0]
+samples = args[1]
 
 
 print 'Reading config', pset
@@ -61,14 +72,19 @@ for line in open( samples ):
     config = ConfigParser.RawConfigParser()
     config.add_section( 'CRAB' )
     config.set( 'CRAB', 'jobtype', 'cmssw' )
-    config.set( 'CRAB', 'scheduler', 'glite' )
+    config.set( 'CRAB', 'scheduler', options.scheduler )
     if options.server:
         config.set( 'CRAB', 'use_server', '1' )
     config.add_section( 'CMSSW' )
     config.set( 'CMSSW', 'datasetpath', sample )
     config.set( 'CMSSW', 'pset', name+'_cfg.py' )
-    config.set( 'CMSSW', 'total_number_of_events', options.totalEvents )
-    config.set( 'CMSSW', 'events_per_job', options.eventsPerJob )
+    if options.lumimask:
+        config.set( 'CMSSW', 'lumi_mask', options.lumimask )
+        config.set( 'CMSSW', 'total_number_of_lumis', options.total )
+        config.set( 'CMSSW', 'lumis_per_job', options.perJob )
+    else:
+        config.set( 'CMSSW', 'total_number_of_events', options.total )
+        config.set( 'CMSSW', 'events_per_job', options.perJob )
     if options.runs:
         config.set( 'CMSSW', 'runselection', options.runs )
     config.set( 'CMSSW', 'output_file', name+'.pxlio' )
