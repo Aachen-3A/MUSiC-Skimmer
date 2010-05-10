@@ -7,6 +7,7 @@ import shutil
 import optparse
 import ConfigParser
 import xml.dom.minidom
+import time
 
 
 class JobStatusError( Exception ):
@@ -347,7 +348,12 @@ for dir in crab_dirs:
         call_crab( '-get', states[ 'Done' ], dir, stdout=True )
 
         print
-        print 'Got output, new states:'
+        if use_server:
+            print 'Got output, sleeping 10 seconds to allow server to settle.'
+            time.sleep( 10 )
+            print 'Getting new states:'
+        else:
+            print 'Got output, new states:'
 
         states = get_status( dir, use_server )
 
