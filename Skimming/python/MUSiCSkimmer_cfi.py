@@ -42,7 +42,7 @@ Skimmer = cms.EDAnalyzer(
     triggers = cms.PSet(
         #REMARK: The names of the following PSets will be used as the trigger identifier in the PXL output
         # Trigger menu: 8e29
-        HLT8E29 = cms.PSet(
+        HLT = cms.PSet(
             process = cms.string('HLT'),
             L1_result = cms.InputTag( "gtDigis" ),
             results = cms.string('TriggerResults'),

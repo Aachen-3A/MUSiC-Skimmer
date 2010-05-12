@@ -127,11 +127,7 @@ else:
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 if runOnSummer09:
-    if not runOnReReco:
-        #anti-kt 5 jets are called antikt5 in 3.1.X, but ak5 in later releases
-        process.Skimmer.jets.AK5.MCLabel = 'antikt5GenJets'
-
-    #add the high lumi trigger
+    #add the high-lumi trigger
     process.Skimmer.triggers.HLT1E31 = cms.PSet(
         process = cms.string('HLT'),
         L1_result = cms.InputTag( "gtDigis" ),
@@ -142,10 +138,17 @@ if runOnSummer09:
             'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
             'HLT_Photon25_L1R', 'HLT_DoublePhoton15_L1R',
             'HLT_L1Mu14_L1SingleEG10', 'HLT_L2Mu5_Photon9_L1R'
-            )
         )
-    #and rename the low lumi trigger
-    process.Skimmer.triggers.HLT8E29.process = 'HLT8E29'
+    )
+    
+    if runOnReReco:
+        #use the re-digi trigger in re-reco
+        process.Skimmer.triggers.HLT.process = 'REDIGI'
+    else:
+        #anti-kt 5 jets are called antikt5 in 3.1.X, but ak5 in later releases
+        process.Skimmer.jets.AK5.MCLabel = 'antikt5GenJets'
+        #process name for low-lumi trigger
+        process.Skimmer.triggers.HLT.process = 'HLT8E29'
 
 
 if not runOnData:
