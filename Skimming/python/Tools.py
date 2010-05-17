@@ -1,25 +1,17 @@
 import FWCore.ParameterSet.Config as cms
 
 def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
-    import PhysicsTools.PatAlgos.tools.jetTools
-    #stay consistent wth older samples
-    if runOnSummer09 and not runOnReReco:
-        PhysicsTools.PatAlgos.tools.jetTools.switchJECSet( process, "Summer09_7TeV" )
-    else:
-        PhysicsTools.PatAlgos.tools.jetTools.switchJECSet( process, "Summer09_7TeV_ReReco332" )
-
     if runOnData:
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
     else:
+        import PhysicsTools.PatAlgos.tools.cmsswVersionTools
         if runOnSummer09:
-            import PhysicsTools.PatAlgos.tools.cmsswVersionTools
-            if runOnReReco:
-                #in ReReco of Summer09 there are no ak5GenJets, so add them
-                PhysicsTools.PatAlgos.tools.cmsswVersionTools.run33xOnReRecoMC( process )
-            else:
-                #in >= 33x, anti-kt jets are called ak*, however in the 31x they are called antikt*.
-                PhysicsTools.PatAlgos.tools.cmsswVersionTools.run33xOn31xMC( process )
+            #in ReReco of Summer09 there are no ak5GenJets, so add them
+            PhysicsTools.PatAlgos.tools.cmsswVersionTools.run36xOn35xInput( process, genJets='ak5GenJets' )
+        else:
+            #change b-tag algos for samples reco'ed with CMSSW < 3.6.X
+            PhysicsTools.PatAlgos.tools.cmsswVersionTools.run36xOn35xInput( process )
 
 
         #configure PAT matching
@@ -66,7 +58,7 @@ def addFlavourMatching( process, skimmer, path):
         if isinstance( jet_def, cms.PSet ):
             setattr( process,
                      jet_name+'GenJetPartonAssociation',
-                     cms.EDFilter( 'JetPartonMatcher',
+                     cms.EDProducer( 'JetPartonMatcher',
                                    jets = jet_def.MCLabel,
                                    partons = cms.InputTag( 'patJetPartons' ),
                                    coneSizeToAssociate = cms.double( 0.3 )
@@ -76,7 +68,7 @@ def addFlavourMatching( process, skimmer, path):
 
             setattr( process,
                      jet_name+'GenJetFlavourAlgo',
-                     cms.EDFilter( 'JetFlavourIdentifier',
+                     cms.EDProducer( 'JetFlavourIdentifier',
                                    srcByReference = cms.InputTag( jet_name+'GenJetPartonAssociation' ),
                                    physicsDefinition = cms.bool( False )
                                    )
@@ -85,7 +77,7 @@ def addFlavourMatching( process, skimmer, path):
 
             setattr( process,
                      jet_name+'GenJetFlavourPhysics',
-                     cms.EDFilter( 'JetFlavourIdentifier',
+                     cms.EDProducer( 'JetFlavourIdentifier',
                                    srcByReference = cms.InputTag( jet_name+'GenJetPartonAssociation' ),
                                    physicsDefinition = cms.bool( True )
                                    )
@@ -94,7 +86,7 @@ def addFlavourMatching( process, skimmer, path):
 
             setattr( process,
                      jet_name+'RecoJetPartonAssociation',
-                     cms.EDFilter( 'JetPartonMatcher',
+                     cms.EDProducer( 'JetPartonMatcher',
                                    jets = jet_def.RecoLabel,
                                    partons = cms.InputTag( 'patJetPartons' ),
                                    coneSizeToAssociate = cms.double( 0.3 )
@@ -104,7 +96,7 @@ def addFlavourMatching( process, skimmer, path):
 
             setattr( process,
                      jet_name+'RecoJetFlavourPhysics',
-                     cms.EDFilter( 'JetFlavourIdentifier',
+                     cms.EDProducer( 'JetFlavourIdentifier',
                                    srcByReference = cms.InputTag( jet_name+'RecoJetPartonAssociation' ),
                                    physicsDefinition = cms.bool( True )
                                    )

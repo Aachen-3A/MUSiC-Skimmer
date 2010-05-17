@@ -1217,7 +1217,7 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          }
          //jet IDs
          for( jet_id_list::iterator ID = jet_ids.begin(); ID != jet_ids.end(); ++ID ){
-            strbitset ret = ID->second.getBitTemplate();
+            pat::strbitset ret = ID->second.getBitTemplate();
             part->setUserRecord< bool >( ID->first, ID->second( *jet, ret ) );
          }
          if (fDebug > 1) {

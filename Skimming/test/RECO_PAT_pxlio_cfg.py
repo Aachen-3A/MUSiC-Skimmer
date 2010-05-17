@@ -9,6 +9,11 @@ if runOnData and runOnSummer09:
     import sys
     sys.exit(1)
 
+if runOnSummer09 and not runOnReReco:
+    print 'Reco of CMSSW < 3.5.X is not supported anymore!'
+    import sys
+    sys.exit(1)
+
 
 import FWCore.ParameterSet.Config as cms
 
@@ -33,7 +38,9 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'/store/mc/Summer09/TTbar/GEN-SIM-RECO/MC_31X_V3_test_production-v1/0000/962E4ECF-077C-DE11-871F-001F2907AF5C.root'
+'/store/data/Commissioning10/MinimumBias/RAW-RECO/May6thPDSkim_Skim_logerror-v1/0130/0A06F34A-5A5D-DF11-8CCC-0018F3D095EC.root',
+'/store/data/Commissioning10/MinimumBias/RAW-RECO/May6thPDSkim_Skim_logerror-v1/0123/60525751-F35C-DF11-A397-0018F3D095EC.root',
+'/store/data/Commissioning10/MinimumBias/RAW-RECO/May6thPDSkim_Skim_logerror-v1/0122/CABC72FE-C95C-DF11-A944-001A92810AC8.root'
 	)
 )
 
@@ -43,14 +50,11 @@ process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 if runOnData:
     if runOnReReco:
-        process.GlobalTag.globaltag = cms.string('GR_R_35X_V7::All')
+        process.GlobalTag.globaltag = cms.string('GR_R_37X_V6::All')
     else:
-        process.GlobalTag.globaltag = cms.string('GR10_P_V5::All')
+        process.GlobalTag.globaltag = cms.string('GR_R_37X_V6::All')
 else:
-    if runOnSummer09 and not runOnReReco:
-        process.GlobalTag.globaltag = cms.string('MC_3XY_V26::All')
-    else:
-        process.GlobalTag.globaltag = cms.string('START3X_V26::All')
+    process.GlobalTag.globaltag = cms.string('START37_V5::All')
 
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
@@ -93,37 +97,6 @@ else:
     process.p = cms.Path( process.patDefaultSequence )
 
 
-# this might be commented in in order to safe the edm root file containing the PAT Products
-# Output module configuration
-# process.out = cms.OutputModule("PoolOutputModule",
-#    fileName = cms.untracked.string('PATLayer1_Output.fromAOD_full.root'),
-#    # save only events passing the full path
-#    SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
-#    outputCommands = cms.untracked.vstring('drop *')
-# )
-# process.outpath = cms.EndPath(process.out)
-# save PAT Layer 1 output
-# from PhysicsTools.PatAlgos.patEventContent_cff import *
-# process.out.outputCommands += patEventContent
-# process.out.outputCommands.extend(["keep *_selectedLayer1Jets*_*_*"])
-
-# insert following lines in order to get info about the HLT content (don't forget to include into path)
-# import HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi
-# process.hltAnalyzer = HLTrigger.HLTcore.hltEventAnalyzerAOD_cfi.hltEventAnalyzerAOD.clone()
-
-
-#process.pTHat = cms.EDFilter("PtHatFilter",
-#         pt_hat_lower_bound = cms.double(200.),
-#         pt_hat_upper_bound = cms.double(500.)
-#)
-
-# cut on the factorization scale e.g. suitable for cuts on inv. mass of resonances in Pythia!
-#process.FacScale = cms.EDFilter("FacScaleFilter",
-#         fac_scale_lower_bound = cms.double(200.),
-#         fac_scale_upper_bound = cms.double(500.)
-#)
-
-
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 if runOnSummer09:
@@ -141,14 +114,8 @@ if runOnSummer09:
         )
     )
     
-    if runOnReReco:
-        #use the re-digi trigger in re-reco
-        process.Skimmer.triggers.HLT.process = 'REDIGI'
-    else:
-        #anti-kt 5 jets are called antikt5 in 3.1.X, but ak5 in later releases
-        process.Skimmer.jets.AK5.MCLabel = 'antikt5GenJets'
-        #process name for low-lumi trigger
-        process.Skimmer.triggers.HLT.process = 'HLT8E29'
+    #use the re-digi trigger in re-reco
+    process.Skimmer.triggers.HLT.process = 'REDIGI'
 
 
 if not runOnData:
