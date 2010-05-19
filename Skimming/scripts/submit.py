@@ -17,6 +17,7 @@ parser.add_option( '-t', '--total', metavar='NUMBER', default='-1', help='Only a
 parser.add_option( '-j', '--perJob', metavar='NUMBER', default='unset', help='Anlyze NUMBER events.lumis per job [default: 50000 events or 35 lumis]' )
 parser.add_option( '-s', '--server', action='store_true', default=False, help='Use the CRAB server [default: %default]' )
 parser.add_option( '-g', '--scheduler', default='glite', help='Scheduler to use (glidein implies --server) [default: %default]' )
+parser.add_option( '-b', '--blacklist', metavar='SITES', help='Blacklist SITES in addition to T0,T1' )
 
 (options, args ) = parser.parse_args()
 
@@ -48,6 +49,11 @@ if options.perJob == 'unset':
     else:
         options.perJob = '50000'
 
+if options.blacklist:
+    options.blacklist = 'T0,T1,'+options.blacklist
+else:
+    options.blacklist = 'T0,T1'
+    
 
 pset = args[0]
 samples = args[1]
@@ -96,7 +102,7 @@ for line in open( samples ):
     config.add_section( 'GRID' )
     config.set( 'GRID', 'rb', 'CERN' )
     config.set( 'GRID', 'group', 'dcms' )
-    config.set( 'GRID', 'se_black_list', 'T0,T1' )
+    config.set( 'GRID', 'se_black_list', options.blacklist )
     config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime+(RegExp("rwth-aachen.de",other.GlueCEUniqueID)?100000:0)+(RegExp("desy.de",other.GlueCEUniqueID)?100000:0)' )
 
     cfg_file = open(name+'.cfg', 'wb')
