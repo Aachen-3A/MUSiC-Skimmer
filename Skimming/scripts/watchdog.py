@@ -8,6 +8,8 @@ import optparse
 import ConfigParser
 import xml.dom.minidom
 import time
+import MUSiCProject.Skimming.outputCleaner as outputCleaner
+import logging
 
 
 class JobStatusError( Exception ):
@@ -256,53 +258,8 @@ def resubmit( dir, jobs, state, options ):
 def clean_output( dir, parser, jobs ):
     if parser.getboolean( 'USER', 'copy_data' ) and not options.noclean:
         print 'Cleaning output'
-
         remote_dir = parser.get( 'USER', 'user_remote_dir' )
-        full_dir = os.path.join( 'srm://grid-srm.physik.rwth-aachen.de:8443/srm/managerv2?SFN=/pnfs/physik.rwth-aachen.de/cms/store/user/', options.user, remote_dir )
-
-        proc = subprocess.Popen( [ 'srmls', full_dir ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
-        output = proc.communicate()[0]
-        if proc.returncode != 0:
-            if 'does not exist' in output:
-            #the directory doesn't exist, so there can't be any relic files
-                files_in_dir = []
-            else:
-                print 'Something went wrong with getting the stageout directory content:', full_dir
-                print 'Output of srmls:'
-                print output
-                sys.exit(1)
-        else:
-            files_in_dir = set()
-            for line in output.splitlines():
-                if 'WARNING: SRM_PATH' in line: continue
-                if '  0' in line: continue
-                if not line: continue
-                files_in_dir.add( os.path.basename( line.split()[1] ) )
-
-        valid_files = set()
-        for job in jobs:
-            fjr_file = os.path.join( dir, 'res', 'crab_fjr_'+str( job.num )+'.xml' )
-            dom = xml.dom.minidom.parse( fjr_file )
-            LFN = dom.getElementsByTagName( 'AnalysisFile' )[0].getElementsByTagName( 'LFN' )[0].getAttribute( 'Value' )
-            file_name = os.path.basename( LFN )
-            valid_files.add( file_name )
-
-        superfluos_files = files_in_dir - valid_files
-
-        for file in superfluos_files:
-            full_path = os.path.join( full_dir, file )
-            print 'srmrm', full_path
-            retcode = subprocess.call( [ 'srmrm', full_path ] )
-            if retcode != 0:
-                print 'Failed to delete:', full_path
-                sys.exit(1)
-
-        missing_files = valid_files - files_in_dir
-        if len( missing_files ) > 0:
-            print 'There are files in the crab_fjr_*.xml that are not in the output directory:'
-            for file in missing_files:
-                print os.path.join( full_dir, file )
-
+        outputCleaner.clean( dir, [ job.num for job in jobs ], remote_dir, clear_all=True )
         print 'Done\n\n'
 
     moved_dirs.append( dir )
@@ -318,7 +275,12 @@ parser.add_option( '-g', '--resubmit-grid-failed', action='store_true', default=
 parser.add_option( '-f', '--resubmit-app-failed', action='store_true', default=False, help='Resubmit jobs with application failures' )
 parser.add_option( '-u', '--user', help='Set the grid user name, in case it is not the same as the login name' )
 parser.add_option( '-n', '--noclean', action='store_true', default=False, help='Do not check for and delete files left over by resubmission' )
+parser.add_option( '--debug', metavar='LEVEL', default='INFO', help='Set the debug level. Allowed values: ERROR, WARNING, INFO, DEBUG. [default: %default]' )
 (options, crab_dirs) = parser.parse_args()
+
+#set log level
+logging.basicConfig( level=logging._levelNames[ options.debug ] )
+
 
 if not options.user:
     options.user = os.getenv( 'LOGNAME' )
