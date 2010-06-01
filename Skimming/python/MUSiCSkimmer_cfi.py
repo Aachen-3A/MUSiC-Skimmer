@@ -48,10 +48,9 @@ Skimmer = cms.EDAnalyzer(
             results = cms.string('TriggerResults'),
             event   = cms.string('hltTriggerSummaryAOD'),
             HLTriggers = cms.vstring(
-                'HLT_Mu3', 'HLT_DoubleMu0',
-                'HLT_Ele10_LW_L1R', 'HLT_DoubleEle5_SW_L1R',
-                'HLT_Photon15_L1R', 'HLT_DoublePhoton10_L1R'
-                #no usefull cross-channel trigger in this menu
+                'HLT_L1Mu20','HLT_L2Mu9','HLT_L2Mu11','HLT_L1Mu14_L1SingleEG10','HLT_L1Mu14_L1SingleJet6U','HLT_L1Mu14_L1ETM30','HLT_L2DoubleMu0','HLT_L1DoubleMuOpen','HLT_DoubleMu0','HLT_DoubleMu3','HLT_Mu3','HLT_Mu5','HLT_Mu9','HLT_IsoMu3','HLT_Mu0_L1MuOpen','HLT_Mu0_Track0_Jpsi','HLT_Mu3_L1MuOpen','HLT_Mu3_Track0_Jpsi','HLT_Mu5_L1MuOpen','HLT_Mu5_Track0_Jpsi','HLT_Mu0_L2Mu0','HLT_Mu3_L2Mu0','HLT_Mu5_L2Mu0',
+                'HLT_Photon15_L1R','HLT_Photon15_LooseEcalIso_L1R','HLT_Photon20_L1R','HLT_Photon30_L1R_8E29','HLT_DoublePhoton4_Jpsi_L1R','HLT_DoublePhoton4_Upsilon_L1R','HLT_DoublePhoton5_Jpsi_L1R','HLT_DoublePhoton5_Upsilon_L1R','HLT_DoublePhoton5_L1R','HLT_DoublePhoton10_L1R','HLT_DoubleEle5_SW_L1R','HLT_Ele20_LW_L1R','HLT_Ele15_SiStrip_L1R','HLT_Ele15_SC10_LW_L1R','HLT_Ele15_LW_L1R','HLT_Ele10_LW_EleId_L1R','HLT_Ele10_LW_L1R','HLT_Photon15_TrackIso_L1R',
+                'HLT_FwdJet20U','HLT_Jet30U','HLT_Jet50U','HLT_DiJetAve30U_8E29','HLT_QuadJet15U','HLT_MET45','HLT_MET100','HLT_HT100U','HLT_SingleLooseIsoTau20','HLT_DoubleLooseIsoTau15','HLT_DoubleJet15U_ForwardBackward','HLT_BTagMu_Jet10U','HLT_BTagIP_Jet50U','HLT_StoppedHSCP_8E29'
                 )
             ),
         StoreL3Objects = cms.untracked.bool(False)
