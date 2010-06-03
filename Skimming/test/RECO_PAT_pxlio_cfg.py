@@ -83,15 +83,9 @@ if runOnData:
                                            )
 
 
-    process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
-    process.load('HLTrigger/HLTfilters/hltLevel1GTSeed_cfi')
-    process.technicals = process.hltLevel1GTSeed.clone()
-    process.technicals.L1TechTriggerSeeding = cms.bool(True)
-    process.technicals.L1SeedsLogicalExpression = cms.string('0 AND (40 OR 41) AND NOT (36 OR 37 OR 38 OR 39) AND NOT ( (42 AND NOT 43) OR (43 AND NOT 42) )')
-
     process.incompleteECALFilter = cms.EDFilter( "recHitFilter" )
 
-    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.technicals * process.incompleteECALFilter * process.patDefaultSequence )
+    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.incompleteECALFilter * process.patDefaultSequence )
 
 else:
     process.p = cms.Path( process.patDefaultSequence )
