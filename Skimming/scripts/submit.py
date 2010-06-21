@@ -24,9 +24,6 @@ parser.add_option( '-b', '--blacklist', metavar='SITES', help='Blacklist SITES i
 if len( args ) < 2:
     parser.error( 'CFG_FILE and DATASET_FILE required' )
 
-if options.runs and options.lumimask:
-    parser.error( '--lumimask and --runs cannot be given at the same time' )
-
 del parser
 
 
@@ -103,7 +100,15 @@ for line in open( samples ):
     config.set( 'GRID', 'rb', 'CERN' )
     config.set( 'GRID', 'group', 'dcms' )
     config.set( 'GRID', 'se_black_list', options.blacklist )
-    config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime+(RegExp("rwth-aachen.de",other.GlueCEUniqueID)?100000:0)+(RegExp("desy.de",other.GlueCEUniqueID)?100000:0)' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime;' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=(other.GlueCEStateEstimatedResponseTime > 2592000) ? (-other.GlueCEStateEstimatedResponseTime) : ( (other.GlueCEStateFreeJobSlots > 0) ? (other.GlueCEStateFreeJobSlots) : (-other.GlueCEStateEstimatedResponseTime) );' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEStateFreeJobSlots-other.GlueCEStateWaitingJobs;' )
+    config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime+(other.GlueCEStateFreeJobSlots > 10 ? 86400 : 0)+(other.GlueCEStateWaitingJobs > 10 ? 0 : 86400);' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEStateWaitingJobs < 1 ? 1000*other.GlueCEStateRunningJobs : 1000*other.GlueCEStateRunningJobs/other.GlueCEStateWaitingJobs;FuzzyRank=true;' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEInfoTotalCPUs;FuzzyRank=true;' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEPolicyAssignedJobSlots;FuzzyRank=true;' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEPolicyMaxRunningJobs;FuzzyRank=true;' )
+    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=(other.GlueCEPolicyAssignedJobSlots < 100000) ? ( (other.GlueCEPolicyAssignedJobSlots > 0) ? other.GlueCEPolicyAssignedJobSlots : ( (other.GlueCEPolicyMaxRunningJobs < 10000 && other.GlueCEPolicyMaxRunningJobs > 0) ? other.GlueCEPolicyMaxRunningJobs : other.GlueCEInfoTotalCPUs ) ) : other.GlueCEPolicyMaxRunningJobs;;FuzzyRank=true;' )
 
     cfg_file = open(name+'.cfg', 'wb')
     config.write( cfg_file )
