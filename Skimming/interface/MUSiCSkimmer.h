@@ -80,21 +80,27 @@ public:
   
 
  private:
-   //defines everything used to analyze one trigger
-   struct trigger_def{
+   //information about one single trigger
+   struct trigger_def {
+      std::string name;
+      unsigned int ID;
+      bool active;
+   };
+   //information about one trigger group
+   struct trigger_group {
       std::string   name;
       std::string   process;
       edm::InputTag L1_result;
       edm::InputTag results;
       edm::InputTag event;
-      //to map names to indices
       HLTConfigProvider config;
-      std::vector< std::string > HLTriggers;
-      std::map< unsigned int, std::string > HLTMap;
+      std::vector< std::string > triggers_names;
+      std::vector< trigger_def > trigger_infos;
    };
 
 
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
+   virtual void beginRun( const edm::Run &iRun, const edm::EventSetup &iSetup );
    virtual void endJob();
    virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
@@ -104,8 +110,9 @@ public:
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
    virtual void analyzeTrigger( const edm::Event &iEvent,
+                                const edm::EventSetup &iSetup,
                                 pxl::EventView *EvtView,
-                                trigger_def &trigger
+                                trigger_group &trigger
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
@@ -163,7 +170,7 @@ public:
    edm::InputTag hcal_noise_label;
 
    //all triggers
-   std::vector< trigger_def > triggers;
+   std::vector< trigger_group > triggers;
 
    bool fStoreL3Objects;
  

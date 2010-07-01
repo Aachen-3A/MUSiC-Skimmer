@@ -187,7 +187,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    //loop over the names of the trigger PSets
    for( vector< string >::const_iterator trg_proc = trigger_processes.begin(); trg_proc != trigger_processes.end(); ++trg_proc ){
-      trigger_def trigger;
+      trigger_group trigger;
       trigger.name = *trg_proc;
       
       ParameterSet one_trigger = trigger_pset.getParameter< ParameterSet >( trigger.name );
@@ -197,7 +197,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
       trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
       
-      trigger.HLTriggers = one_trigger.getParameter< vector< string > >("HLTriggers");
+      trigger.triggers_names = one_trigger.getParameter< vector< string > >("HLTriggers");
 
       triggers.push_back( trigger );
    }
@@ -289,8 +289,8 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    // store Rec Objects only if requested
    if (!fGenOnly) {
       //Trigger bits
-      for( vector< trigger_def >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
-         analyzeTrigger( iEvent, RecEvtView, *trg );
+      for( vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
+         analyzeTrigger( iEvent, iSetup, RecEvtView, *trg );
       }
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
@@ -331,6 +331,53 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }   
    fePaxFile.writeEvent(&event);
 }
+
+
+
+
+void MUSiCSkimmer::beginRun( const edm::Run &iRun, const edm::EventSetup &iSetup ) {
+   //we are in a new run, so we might have a new trigger config
+   //hence we're going to check those guys
+   for( vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
+      trigger_group &trigger = *trg;
+
+      //read the new trigger config, test for error and whether something has changed
+      bool changed;
+      if( ! trigger.config.init( iRun, iSetup, trigger.process, changed ) ){
+         cout << "TRIGGER ERROR: Initialization of trigger config failed." << endl;
+         throw "TRIGGER ERROR: Initialization of trigger config failed.";
+      }
+
+      //the trigger config has actually changed, so read in the new one
+      if( changed ){
+         cout << "TRIGGER INFO: HLT table changed, building new trigger map." << endl;
+         //reset the map
+         trigger.trigger_infos.clear();
+
+         for( vector<string>::const_iterator trg_name = trigger.triggers_names.begin(); trg_name != trigger.triggers_names.end(); ++trg_name ){
+            //get the number of the trigger path
+            unsigned int index = trigger.config.triggerIndex( *trg_name );
+
+            //check if that's a valid number
+            if( index < trigger.config.size() ){
+               //it is, so store the name and the number
+               trigger_def trg;
+               trg.name = *trg_name;
+               trg.ID = index;
+               trg.active = true;
+               trigger.trigger_infos.push_back( trg );
+            } else {
+               //the number is invalid, the trigger path is not in the config
+               cout << "TRIGGER WARNING: In run " << iRun.run() << " trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
+            }
+         }
+      }
+   }
+}
+
+
+
+
 
 // ------------ reading Generator related Stuff ------------
 
@@ -738,54 +785,65 @@ void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
 // ------------ reading HLT and L1 Trigger Bits ------------
 
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
+                                   const edm::EventSetup &iSetup,
                                    pxl::EventView* EvtView,
-                                   trigger_def &trigger
+                                   trigger_group &trigger
                                    ){
    edm::Handle<edm::TriggerResults>   triggerResultsHandle;
    iEvent.getByLabel( trigger.results, triggerResultsHandle );
    edm::Handle<trigger::TriggerEvent> triggerEventHandle;
    iEvent.getByLabel( trigger.event, triggerEventHandle );
 
-   bool changed;
-   if( ! trigger.config.init( iEvent, trigger.process, changed ) ){
-      cout << "Initialization of trigger config failed, stopping trigger analysis." << endl;
-      return;
-   }
-
-   if( changed ){
-      cout << "HLT table changed, building new trigger map." << endl;
-      for( vector<string>::const_iterator trg_name = trigger.HLTriggers.begin(); trg_name != trigger.HLTriggers.end(); ++trg_name ){
-         unsigned int index = trigger.config.triggerIndex( *trg_name );
-         if( index < trigger.config.size() ){
-            trigger.HLTMap[ index ] = *trg_name;
-         } else {
-            cout << "WARNING: Trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
-         }
-      }
-   }
-   
    //loop over selected trigger names
-   for( std::map< unsigned int, std::string >::const_iterator trig = trigger.HLTMap.begin(); trig != trigger.HLTMap.end(); ++trig ){
-      //save trigger path status
-      if( triggerResultsHandle->wasrun( trig->first ) && ! ( triggerResultsHandle->error( trig->first ) ) ){
-         EvtView->setUserRecord< bool >( trigger.name+"_"+trig->second, triggerResultsHandle->accept( trig->first ) );
-         if( fDebug > 0 && triggerResultsHandle->accept( trig->first ) )
-            cout << endl << "Trigger: " << trig->second << " in menu " << trigger.process << " fired" << endl;
+   for( vector< trigger_def >::iterator trig = trigger.trigger_infos.begin(); trig != trigger.trigger_infos.end(); ++trig ){
+      //skip this trigger if it's not active, e.g. because it's prescaled
+      if( !trig->active ) continue;
+
+      //get trigger path status
+      bool wasrun = triggerResultsHandle->wasrun( trig->ID );
+      bool error = triggerResultsHandle->error( trig->ID );
+      unsigned int prescale = 0;
+
+      //check that the trigger was run and not in error
+      if( wasrun && !error ){
+         //get the current prescale value
+         prescale = trigger.config.prescaleValue( iEvent, iSetup, trig->name );
+         
+         //we can only use unprescaled triggers
+         if( prescale == 1 ) {
+            //unprescaled, so store it
+            EvtView->setUserRecord< bool >( trigger.name+"_"+trig->name, triggerResultsHandle->accept( trig->ID ) );
+
+            //debug output
+            if( fDebug > 0 && triggerResultsHandle->accept( trig->ID ) )
+               cout << endl << "Trigger: " << trig->name << " in menu " << trigger.process << " fired" << endl;
+         } else {
+            //prescaled!
+            //switch it off
+            trig->active = false;
+            cout << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process << endl;
+            cout << "TRIGGER WARNING: Run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
+            cout << "TRIGGER WARNING: " << trig->name << " switched to inactive." << endl;
+         }
       } else {
-         if( !triggerResultsHandle->wasrun( trig->first ) ) cout << "Trigger: " << trig->second << " in menu " << trigger.process << " was not executed!" << endl;
-         if( triggerResultsHandle->error( trig->first ) ) cout << "An error occured during execution of Trigger: " << trig->second << " in menu " << trigger.process << endl;
+         //either error or was not run
+         if( !wasrun ) cout << "TRIGGER WARNING: Trigger: " << trig->name << " in menu " << trigger.process << " was not executed!" << endl;
+         if( error ) cout << "TRIGGER WARNING: An error occured during execution of Trigger: " << trig->name << " in menu " << trigger.process << endl;
+         cout << "TRIGGER WARNING: Run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
       }
+
       //begin cout of saved information for debugging
       if( fDebug > 1 ){
-         cout << "triggerName: " << trig->second << "  triggerIndex: " << trig->first << endl;
+         cout << "triggerName: " << trig->name << "  triggerIndex: " << trig->ID << endl;
          cout << " Trigger path status:"
-              << " WasRun=" << triggerResultsHandle->wasrun( trig->first )
-              << " Accept=" << triggerResultsHandle->accept( trig->first )
-              << " Error =" << triggerResultsHandle->error(  trig->first ) << endl;
+              << " WasRun=" << wasrun
+              << " Accept=" << triggerResultsHandle->accept( trig->ID )
+              << " Error=" << error
+              << " Prescale=" << prescale << endl;
       }
       if( fStoreL3Objects ){
-         const vector<string> &moduleLabels( trigger.config.moduleLabels( trig->first ) );
-         const unsigned int moduleIndex( triggerResultsHandle->index( trig->first) );
+         const vector<string> &moduleLabels( trigger.config.moduleLabels( trig->ID ) );
+         const unsigned int moduleIndex( triggerResultsHandle->index( trig->ID) );
 
          // Results from TriggerEvent product - Attention: must look only for
          // modules actually run in this path for this event!
