@@ -38,9 +38,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'/store/data/Commissioning10/MinimumBias/RAW-RECO/May6thPDSkim_Skim_logerror-v1/0130/0A06F34A-5A5D-DF11-8CCC-0018F3D095EC.root',
-'/store/data/Commissioning10/MinimumBias/RAW-RECO/May6thPDSkim_Skim_logerror-v1/0123/60525751-F35C-DF11-A397-0018F3D095EC.root',
-'/store/data/Commissioning10/MinimumBias/RAW-RECO/May6thPDSkim_Skim_logerror-v1/0122/CABC72FE-C95C-DF11-A944-001A92810AC8.root'
+'/store/mc/Summer10/MinBias_TuneD6T_7TeV-pythia6/GEN-SIM-RECODEBUG/START36_V10_SP10-v1/0012/1CCD3461-D678-DF11-879E-001A4BA910A0.root'
 	)
 )
 
@@ -88,28 +86,22 @@ if runOnData:
     process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.incompleteECALFilter * process.patDefaultSequence )
 
 else:
-    process.p = cms.Path( process.patDefaultSequence )
+    if runOnSummer09:
+        process.load("RecoJets.Configuration.GenJetParticles_cff")
+        process.load("RecoJets.JetProducers.ak5GenJets_cfi")
+        process.p = cms.Path( process.genParticlesForJets * process.ak5GenJets * process.patDefaultSequence )
+    else:
+        process.p = cms.Path( process.patDefaultSequence )
 
 
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
-if runOnSummer09:
-    #add the high-lumi trigger
-    process.Skimmer.triggers.HLT1E31 = cms.PSet(
-        process = cms.string('HLT'),
-        L1_result = cms.InputTag( "gtDigis" ),
-        results = cms.string('TriggerResults'),
-        event   = cms.string('hltTriggerSummaryAOD'),
-        HLTriggers = cms.vstring(
-            'HLT_Mu9', 'HLT_DoubleMu0',
-            'HLT_Ele20_SW_L1R', 'HLT_DoubleEle10_SW_L1R',
-            'HLT_Photon25_L1R', 'HLT_DoublePhoton15_L1R',
-            'HLT_L1Mu14_L1SingleEG10', 'HLT_L2Mu5_Photon9_L1R'
-        )
-    )
-    
+if not runOnData and runOnReReco:
     #use the re-digi trigger in re-reco
-    process.Skimmer.triggers.HLT.process = 'REDIGI'
+    if runOnSummer09:
+        process.Skimmer.triggers.HLT.process = 'REDIGI36X'
+    else:
+        process.Skimmer.triggers.HLT.process = 'REDIGI36'
 
 
 if not runOnData:

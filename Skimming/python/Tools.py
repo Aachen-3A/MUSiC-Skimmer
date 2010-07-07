@@ -4,15 +4,6 @@ def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
     if runOnData:
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
-    else:
-        import PhysicsTools.PatAlgos.tools.cmsswVersionTools
-        if runOnSummer09:
-            #in ReReco of Summer09 there are no ak5GenJets, so add them
-            PhysicsTools.PatAlgos.tools.cmsswVersionTools.run36xOn35xInput( process, genJets='ak5GenJets' )
-        else:
-            #change b-tag algos for samples reco'ed with CMSSW < 3.6.X
-            PhysicsTools.PatAlgos.tools.cmsswVersionTools.run36xOn35xInput( process )
-
 
         #configure PAT matching
         process.electronMatch.checkCharge = False
