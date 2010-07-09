@@ -100,6 +100,10 @@ def parse_output( output, use_server ):
     jobs = defaultdict( list )
 
     for line in output:
+        if 'WARNING: Error getting the status from server. Please issue crab -status again' in line:
+            #CRAB failed to get the status, so what we got is outdated
+            return None
+
         if not found_start:
             if 'STATUS' in line:
                 found_start = True
@@ -153,8 +157,14 @@ def parse_output( output, use_server ):
 
 
 def get_status( dir, use_server ):
-    output = call_crab( '-status', None, dir )
-    states = parse_output( output, use_server )
+    for trial in xrange( 3 ):
+        print 'Retrieving status (trial %s)...' % (trial+1)
+        output = call_crab( '-status', None, dir )
+        states = parse_output( output, use_server )
+        if states: break
+    else:
+        print 'Failed 3 times to get the status!'
+        return None
 
     for state,jobs in states.iteritems():
         print state, format_job_list( jobs )
@@ -304,6 +314,9 @@ for dir in crab_dirs:
         use_server = False
 
     states = get_status( dir, use_server )
+    if states == None:
+        print 'Skipping', dir
+        continue
 
     if 'Done' in states:
         print 'Jobs done, getting output...'
@@ -318,6 +331,9 @@ for dir in crab_dirs:
             print 'Got output, new states:'
 
         states = get_status( dir, use_server )
+        if states == None:
+            print 'Skipping', dir
+            continue
 
 
     stat.add_jobs( states )
