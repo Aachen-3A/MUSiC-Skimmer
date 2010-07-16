@@ -57,19 +57,22 @@ def format_job_list( jobs ):
     return output
 
 
-def call_crab( command, jobs, dir, stdout=False ):
+def call_crab( command, jobs, dir, stdout=False, additionals=None ):
     jobs = format_job_list( jobs )
+    cmndlst = [ 'crab', command, jobs, '-c', dir ]
+    if additionals:
+        cmndlst += additionals
     if stdout:
-        retcode = subprocess.call( [ 'crab', command, jobs, '-c', dir ] )
+        retcode = subprocess.call( cmndlst )
         if retcode != 0:
             print
-            print 'Failed command:', 'crab', command, jobs, '-c', dir
+            print 'Failed command:', cmndlst
             print 'Returncode:', retcode
     else:
-        proc = subprocess.Popen( [ 'crab', command, jobs, '-c', dir ], stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+        proc = subprocess.Popen( cmndlst, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
         output = proc.communicate()[0]
         if not proc.returncode == 0:
-            print 'Failed command:', 'crab', command, jobs, '-c', dir
+            print 'Failed command:', cmndlst
             print 'Returncode:', proc.returncode
             print '=====================Output:'
             print output
@@ -255,7 +258,11 @@ def move_dir( dir, target ):
 
 def resubmit( dir, jobs, state, options ):
     print 'Resubmitting jobs in state:', state
-    call_crab( '-resubmit', jobs, dir, stdout=True )
+    if options.blacklist:
+        bl_cmd = [ '-GRID.ce_black_list', options.blacklist ]
+    else:
+        bl_cmd = None
+    call_crab( '-resubmit', jobs, dir, stdout=True, additionals=bl_cmd )
                   
     stat.add_resubmitted( jobs )
                   
@@ -284,6 +291,7 @@ parser.add_option( '-a', '--resubmit-aborted', action='store_true', default=Fals
 parser.add_option( '-g', '--resubmit-grid-failed', action='store_true', default=False, help='Resubmit jobs with grid failures' )
 parser.add_option( '-f', '--resubmit-app-failed', action='store_true', default=False, help='Resubmit jobs with application failures' )
 parser.add_option( '-u', '--user', help='Set the grid user name, in case it is not the same as the login name' )
+parser.add_option( '-b', '--blacklist', metavar='STRING', help='Blacklist STRING during resubmission.' )
 parser.add_option( '-n', '--noclean', action='store_true', default=False, help='Do not check for and delete files left over by resubmission' )
 parser.add_option( '--debug', metavar='LEVEL', default='INFO', help='Set the debug level. Allowed values: ERROR, WARNING, INFO, DEBUG. [default: %default]' )
 (options, crab_dirs) = parser.parse_args()
