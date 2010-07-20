@@ -135,20 +135,34 @@ def parse_output( output, use_server ):
         if job.state == 'Cancelled':
             del split_line[2:4]
 
-        if len( split_line ) > 2:
-            job.host = split_line[2]
-        else:
+        if len( split_line ) == 2:
             job.host = None
-
-        if len( split_line ) == 4:
-            job.grid = int( split_line[3] )
             job.exe = None
-        elif len( split_line ) > 4:
+            job.grid = None
+        elif len( split_line ) == 3:
+            if split_line[2].isdigit():
+                job.host = None
+                job.exe = None
+                job.grid = int( split_line[2] )
+            else:
+                job.host = split_line[2]
+                job.exe = None
+                job.grid = None
+        elif len( split_line ) == 4:
+            if split_line[2].isdigit():
+                job.host = None
+                job.exe = int( split_line[2] )
+                job.grid = int( split_line[3] )
+            else:
+                job.host = split_line[2]
+                job.exe = None
+                job.grid = int( split_line[3] )
+        elif len( split_line ) == 5:
+            job.host = split_line[2]
             job.exe = int( split_line[3] )
             job.grid = int( split_line[4] )
         else:
-            job.exe = None
-            job.grid = None
+            raise Exception( 'Unexpected line in crab output: %s' % line )
 
         job.state = make_state( job, use_server )
 
