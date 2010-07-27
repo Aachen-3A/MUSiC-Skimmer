@@ -38,27 +38,28 @@ def clean( crab_dir, jobs, r_dir, clear_all=False, simulate=False ):
     log.info( 'Building list of files on storage element' )
     existing_files = {}
     for dir_name in valid_files.keys():
-        log.debug( 'srmls '+dir_name )
-        proc = subprocess.Popen( [ 'srmls', dir_name ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+        ftp_dir_name = '/pnfs'+dir_name.split( 'pnfs' )[1]
+        log.debug( 'uberftp grid-ftp.physik.rwth-aachen.de "cd '+ftp_dir_name+'; ls"' )
+        proc = subprocess.Popen( [ 'uberftp', 'grid-ftp.physik.rwth-aachen.de', 'cd '+ftp_dir_name+'; ls' ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
         output = proc.communicate()[0]
         files = set()
-        if proc.returncode != 0:
-            if 'does not exist' in output:
-                #the directory doesn't exist, so there can't be any relic files
-                log.warning( 'Directory not found, probably no output has been written.' )
-                log.warning( 'Missing directory: %s', dir_name )
-            else:
-                log.error( 'Something went wrong with getting the stageout directory content: %s', dir_name )
-                log.error( 'Output of srmls:' )
-                log.error( output )
-                sys.exit(1)
-        else:
+        if proc.returncode == 0:
             for line in output.splitlines():
-                if 'WARNING: SRM_PATH' in line: continue
-                if '  0' in line: continue
                 if not line: continue
-                files.add( os.path.basename( line.split()[1] ) )
-                log.debug( 'Found file: '+os.path.basename( line.split()[1] ) )
+                if '220 GSI FTP door ready' in line: continue
+                if '200 PASS command successful' in line: continue
+                if '550 File not found' in line:
+                    #the directory doesn't exist, so there can't be any relic files
+                    log.warning( 'Directory not found, probably no output has been written.' )
+                    log.warning( 'Missing directory: %s', dir_name )
+                    break
+                files.add( line.split()[-1] )
+                log.debug( 'Found file: '+line.split()[-1] )
+        else:
+            log.error( 'Something went wrong with getting the stageout directory content: %s', dir_name )
+            log.error( 'Output of uberftp:' )
+            log.error( output )
+            sys.exit(1)
         existing_files[ dir_name ] = files
     
     log.info( 'Comparing directories' )
@@ -109,24 +110,27 @@ def clean( crab_dir, jobs, r_dir, clear_all=False, simulate=False ):
         unknown_files[ dir_name ] = u_f
         if len( u_f ) > 0:
             unknown_files_present = True
-        log.info( '%i unknown files', len( r_f ) )
+        log.info( '%i unknown files', len( u_f ) )
 
 
     if relic_files_present:
         log.info( 'Deleting relic files' )
         for dir_name, files in relic_files.items():
             for file_name in files:
-                full_name = os.path.join( dir_name, file_name )
+                ftp_dir_name = '/pnfs'+dir_name.split( 'pnfs' )[1]
                 if simulate:
-                    print 'srmrm', full_name
+                    print 'uberftp grid-ftp.physik.rwth-aachen.de "cd %s; rm %s"' % (ftp_dir_name, file_name)
                 else:
-                    log.info( 'srmrm %s', full_name )
-                    proc = subprocess.Popen( [ 'srmrm', full_name ], stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+                    log.info( 'uberftp grid-ftp.physik.rwth-aachen.de "cd %s; rm %s"', ftp_dir_name, file_name )
+                    proc = subprocess.Popen(
+                        [ 'uberftp', 'grid-ftp.physik.rwth-aachen.de', 'cd %s; rm %s'%(ftp_dir_name, file_name) ],
+                        stdout = subprocess.PIPE,
+                        stderr = subprocess.STDOUT
+                        )
                     output = proc.communicate()[0]
                     if proc.returncode != 0:
-                        log.error( 'Failed to delete %s', full_name )
-                        log.error( 'srmrm output:' )
-                        log.error( output )
+                        log.error( 'Failed to delete %s/%s', ftp_dir_name, file_name )
+                        log.error( 'uberftp output:\n%s', output )
                         sys.exit(1)
 
     if missing_files_present:
