@@ -1303,7 +1303,8 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          //use EcalClusterLazyTools to store ClusterShapeVariables
          part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
          part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
-         part->setUserRecord<double>( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits ) );
+         part->setUserRecord<double>( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
+         part->setUserRecord<double>( "SwissCrossNoBorder", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, true ) );
          std::vector<float> covariances = lazyTools.covariances(*SCSeed );
          part->setUserRecord<double>("EtaEta", covariances[0] ); 
          part->setUserRecord<double>("EtaPhi", covariances[1] );
