@@ -38,7 +38,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'/store/mc/Summer10/MinBias_TuneD6T_7TeV-pythia6/GEN-SIM-RECODEBUG/START36_V10_SP10-v1/0012/1CCD3461-D678-DF11-879E-001A4BA910A0.root'
+'/store/data/Run2010A/EG/RECO/v4/000/140/180/72FE1D24-3690-DF11-93AB-0030487CD7B4.root',
+'/store/data/Run2010A/EG/RECO/v4/000/140/180/4EF3A795-3C90-DF11-B188-001617E30F48.root'
 	)
 )
 
