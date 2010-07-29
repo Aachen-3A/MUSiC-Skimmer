@@ -1469,8 +1469,12 @@ void MUSiCSkimmer::endJob() {
       tmpFile.close();
       Input.close();
       // rename tmporary file
-      system(("mv Tmp" + fFileName + " " + fFileName).c_str());     
+      system(("mv Tmp" + fFileName + " " + fFileName).c_str());
    }
+
+   //write a single EOF byte at the end of the file
+   //that doesn't hurt PXL, but should avoid the "file has zero size" stage-out problem
+   system( ("echo -e \\0004 >> "+fFileName).c_str() );
 }
 
 
