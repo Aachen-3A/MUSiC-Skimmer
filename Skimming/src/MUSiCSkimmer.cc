@@ -1305,6 +1305,12 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
          part->setUserRecord<double>( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
          part->setUserRecord<double>( "SwissCrossNoBorder", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, true ) );
+         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( SCSeed->seed() );
+         if( recHit_it != barrelRecHits->end() ) {
+            const EcalRecHit &seedRecHit = *recHit_it;
+            unsigned int recoFlag = seedRecHit.recoFlag();
+            part->setUserRecord< unsigned int >("recoFlag",  recoFlag  );
+         }
          std::vector<float> covariances = lazyTools.covariances(*SCSeed );
          part->setUserRecord<double>("EtaEta", covariances[0] ); 
          part->setUserRecord<double>("EtaPhi", covariances[1] );
