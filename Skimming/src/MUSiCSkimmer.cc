@@ -100,6 +100,8 @@ Implementation:
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
 
 // special stuff for sim truth of converted photons
 #include "SimDataFormats/Track/interface/SimTrack.h"
@@ -210,18 +212,20 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    //cuts
    ParameterSet cut_pset = iConfig.getParameter< ParameterSet >( "cuts" );
-   min_muon_pt    = cut_pset.getParameter< double >( "min_muon_pt" );
-   min_ele_pt     = cut_pset.getParameter< double >( "min_ele_pt" );
-   min_gamma_pt   = cut_pset.getParameter< double >( "min_gamma_pt" );
-   min_jet_pt     = cut_pset.getParameter< double >( "min_jet_pt" );
-   min_met        = cut_pset.getParameter< double >( "min_met" );
-   max_eta        = cut_pset.getParameter< double >( "max_eta" );
+   min_muon_pt = cut_pset.getParameter< double >( "min_muon_pt" );
+   min_ele_pt = cut_pset.getParameter< double >( "min_ele_pt" );
+   min_gamma_pt = cut_pset.getParameter< double >( "min_gamma_pt" );
+   min_jet_pt = cut_pset.getParameter< double >( "min_jet_pt" );
+   min_met = cut_pset.getParameter< double >( "min_met" );
+   max_eta = cut_pset.getParameter< double >( "max_eta" );
+   min_rechit_energy = cut_pset.getParameter< double >( "min_rechit_energy" );
+   min_rechit_swiss_cross = cut_pset.getParameter< double >( "min_rechit_swiss_cross" );
    vertex_minNDOF = cut_pset.getParameter< double >( "vertex_minNDOF" );
-   vertex_maxZ    = cut_pset.getParameter< double >( "vertex_maxZ" );
-   vertex_maxR    = cut_pset.getParameter< double >( "vertex_maxR" );
-   PV_minNDOF     = cut_pset.getParameter< double >( "PV_minNDOF" );
-   PV_maxZ        = cut_pset.getParameter< double >( "PV_maxZ" );
-   PV_maxR        = cut_pset.getParameter< double >( "PV_maxR" );
+   vertex_maxZ = cut_pset.getParameter< double >( "vertex_maxZ" );
+   vertex_maxR = cut_pset.getParameter< double >( "vertex_maxR" );
+   PV_minNDOF = cut_pset.getParameter< double >( "PV_minNDOF" );
+   PV_maxZ = cut_pset.getParameter< double >( "PV_maxZ" );
+   PV_maxR = cut_pset.getParameter< double >( "PV_maxR" );
 
 
 
@@ -303,6 +307,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
       analyzeRecMET(iEvent, RecEvtView);
       analyzeRecGammas(iEvent, RecEvtView, IsMC, lazyTools, genmap);
+      analyzeECALRecHits( iEvent, iSetup, RecEvtView );
    }
 
    if (IsMC){
@@ -1380,6 +1385,55 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
    RecView->setUserRecord<int>("NumGamma", numGammaRec);
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
 }
+
+
+
+
+
+void MUSiCSkimmer::analyzeECALRecHits( const edm::Event &iEvent, const edm::EventSetup &iSetup, pxl::EventView *RecView ) {
+   //get the ECAL barrel rec hits
+   edm::Handle< EcalRecHitCollection > barrelRecHits_h;
+   iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits_h );
+   const EcalRecHitCollection &barrelRecHits = *barrelRecHits_h;
+
+   //get the calo geometry
+   edm::ESHandle< CaloGeometry > geo;
+   iSetup.get< CaloGeometryRecord >().get( geo );
+
+   //loop over all rec-hits and store the 4-vector of weird ones
+   for( EcalRecHitCollection::const_iterator rechit_it = barrelRecHits.begin(); rechit_it != barrelRecHits.end(); ++rechit_it ) {
+      const EcalRecHit &rechit = *rechit_it;
+      const EBDetId id( rechit.id() );
+      uint32_t recoFlag = rechit.recoFlag();
+      double swiss_cross = EcalSeverityLevelAlgo::swissCross( id, barrelRecHits, 0, false );
+      double energy = rechit.energy();
+      if( energy > min_rechit_energy
+          && ( recoFlag == EcalRecHit::kOutOfTime || swiss_cross > min_rechit_swiss_cross )
+          ) {
+         int ieta = id.ieta();
+
+         pxl::Particle* part = RecView->create<pxl::Particle>();
+         part->setName("ECALRecHit");
+         part->setCharge(0);
+
+         TLorentzVector temp;
+         temp.SetE( energy );
+         temp.SetPz( energy );
+         temp.SetTheta( geo->getPosition( id ).theta() );
+         temp.SetPhi( geo->getPosition( id ).phi() );
+
+         part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
+         
+         part->setUserRecord< int >( "ieta", ieta );
+         part->setUserRecord< uint32_t >( "recoFlag", recoFlag );
+         part->setUserRecord< double >( "swiss_cross", swiss_cross );
+      }
+   }
+}
+
+
+
+
 
 // ------------ method returning the EventClassType ------------
 
