@@ -1059,6 +1059,9 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
    iEvent.getByLabel(fElectronRecoLabel, electronHandle);
    const std::vector<pat::Electron> &electrons = *electronHandle;
 
+   edm::Handle< EcalRecHitCollection > barrelRecHits;
+   iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits );
+
    for (std::vector<pat::Electron>::const_iterator ele = electrons.begin(); ele != electrons.end(); ++ele ) {
       if (Ele_cuts(ele)) {
          if (fDebug > 1) {
@@ -1140,6 +1143,14 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord< double >( "e1x5",  ele->e1x5() );
          part->setUserRecord< double >( "e2x5",  ele->e2x5Max() );
          part->setUserRecord< double >( "e5x5",  ele->e5x5() );
+
+         part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
+         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( SCSeed->seed() );
+         if( recHit_it != barrelRecHits->end() ) {
+            const EcalRecHit &seedRecHit = *recHit_it;
+            unsigned int recoFlag = seedRecHit.recoFlag();
+            part->setUserRecord< unsigned int >("recoFlag",  recoFlag  );
+         }
 
          std::vector<float> covariances = lazyTools.covariances(*SCSeed, 4.7 );
          part->setUserRecord<double>("EtaEta", covariances[0] ); //used for CutBasedElectronID
