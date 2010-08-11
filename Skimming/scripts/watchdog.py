@@ -50,6 +50,7 @@ class Job:
 
 def format_job_list( jobs ):
     if jobs == None: return ''
+    if jobs == 'all': return jobs
     job_list = [ x.num for x in jobs ]
     output = str( job_list )
     output = output[1:-1] #remove []
@@ -304,6 +305,8 @@ parser = optparse.OptionParser( usage='usage: %prog [options] crab_dirs...' )
 parser.add_option( '-a', '--resubmit-aborted', action='store_true', default=False, help='Resubmit aborted jobs' )
 parser.add_option( '-g', '--resubmit-grid-failed', action='store_true', default=False, help='Resubmit jobs with grid failures' )
 parser.add_option( '-f', '--resubmit-app-failed', action='store_true', default=False, help='Resubmit jobs with application failures' )
+parser.add_option( '-k', '--kill-resubmit', action='store_true', default=False, help='Kill running jobs and resubmit them' )
+parser.add_option( '--kill-all', action='store_true', default=False, help='Issue -kill all for all tasks' )
 parser.add_option( '-u', '--user', help='Set the grid user name, in case it is not the same as the login name' )
 parser.add_option( '-b', '--blacklist', metavar='STRING', help='Blacklist STRING during resubmission.' )
 parser.add_option( '-n', '--noclean', action='store_true', default=False, help='Do not check for and delete files left over by resubmission' )
@@ -320,6 +323,9 @@ if not options.user:
         print 'Cannot get user name, please provide one on the command line.'
         sys.exit(1)
 
+if options.kill_all and ( options.resubmit_aborted or options.resubmit_grid_failed or options.resubmit_app_failed or options.kill_resubmit ):
+    print '--kill-all must be the only command'
+    sys.exit(1)
 
 
 stat = statistics()
@@ -327,6 +333,12 @@ moved_dirs = []
 
 for dir in crab_dirs:
     print '=====', dir, '====='
+
+    #if we just need to kill, then do so
+    if options.kill_all:
+        call_crab( '-kill', 'all', dir, stdout=True )
+        #and continue with the next task
+        continue
 
     parser = ConfigParser.SafeConfigParser()
     parser.read( os.path.join( dir, 'share/crab.cfg' ) )
@@ -338,6 +350,7 @@ for dir in crab_dirs:
     states = get_status( dir, use_server )
     if states == None:
         print 'Skipping', dir
+        print
         continue
 
     if 'Done' in states:
@@ -378,7 +391,10 @@ for dir in crab_dirs:
     if options.resubmit_app_failed and 'App-Fail' in states:
         resubmit( dir, states[ 'App-Fail' ], 'App-Fail', options )
         
-
+    if options.kill_resubmit and 'Running' in states:
+        print 'Killing jobs'
+        call_crab( '-kill', states[ 'Running' ], dir, stdout=True )
+        resubmit( dir, states[ 'Running' ], 'Killed', options )
 
 stat.print_statistics()
 
