@@ -1153,6 +1153,11 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord< double >( "e2x5",  ele->e2x5Max() );
          part->setUserRecord< double >( "e5x5",  ele->e5x5() );
 
+         double eMax = lazyTools.eMax(*SCSeed);
+         part->setUserRecord< double >( "Emax", eMax );
+         double e3x3 = lazyTools.e3x3( *SCSeed );
+         part->setUserRecord< double >( "e3x3",  e3x3 );
+         part->setUserRecord< double >( "r19", eMax / e3x3 );
          part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
          EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( SCSeed->seed() );
          if( recHit_it != barrelRecHits->end() ) {
