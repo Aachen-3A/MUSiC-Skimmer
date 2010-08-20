@@ -1321,7 +1321,8 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<double>("rawEnergy",  SCRef->rawEnergy() );
          part->setUserRecord<double>("preshowerEnergy",  SCRef->preshowerEnergy() );
          //use EcalClusterLazyTools to store ClusterShapeVariables
-         part->setUserRecord<double>("e3x3",  lazyTools.e3x3(*SCSeed) );
+         double e3x3 = lazyTools.e3x3( *SCSeed );
+         part->setUserRecord<double>("e3x3",  e3x3 );
          part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
          part->setUserRecord<double>( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
          part->setUserRecord<double>( "SwissCrossNoBorder", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, true ) );
@@ -1336,9 +1337,9 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<double>("EtaPhi", covariances[1] );
          part->setUserRecord<double>("PhiPhi", covariances[2] );
          part->setUserRecord<double>("Emax",  lazyTools.eMax(*SCSeed)  );
-         part->setUserRecord<double>("r9", ( lazyTools.e3x3(*SCSeed) )/( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
+         part->setUserRecord<double>("r9", e3x3 /( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
          // part->setUserRecord<double>("r9", photon->r9()); <== different computation of r9 here :-(
-         part->setUserRecord<double>("r19",  (lazyTools.eMax(*SCSeed) / lazyTools.e3x3(*SCSeed)) );
+         part->setUserRecord<double>("r19",  (lazyTools.eMax(*SCSeed) / e3x3 ) );
          //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection) adn to reject converted photons
          part->setUserRecord<double>("seedphi", SCRef->seed()->phi());
          part->setUserRecord<double>("seedeta", SCRef->seed()->eta());
