@@ -194,6 +194,7 @@ public:
       max_eta,
       min_rechit_energy,
       min_rechit_swiss_cross,
+      min_rechit_R19,
       vertex_minNDOF,
       vertex_maxZ,
       vertex_maxR,

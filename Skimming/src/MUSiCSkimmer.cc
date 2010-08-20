@@ -98,9 +98,12 @@ Implementation:
 //ECAL
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 #include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/CaloTopology/interface/CaloTopology.h"
+#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 
 // special stuff for sim truth of converted photons
@@ -220,6 +223,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    max_eta = cut_pset.getParameter< double >( "max_eta" );
    min_rechit_energy = cut_pset.getParameter< double >( "min_rechit_energy" );
    min_rechit_swiss_cross = cut_pset.getParameter< double >( "min_rechit_swiss_cross" );
+   min_rechit_R19 = cut_pset.getParameter< double >( "min_rechit_R19" );
    vertex_minNDOF = cut_pset.getParameter< double >( "vertex_minNDOF" );
    vertex_maxZ = cut_pset.getParameter< double >( "vertex_maxZ" );
    vertex_maxR = cut_pset.getParameter< double >( "vertex_maxR" );
@@ -1400,33 +1404,47 @@ void MUSiCSkimmer::analyzeECALRecHits( const edm::Event &iEvent, const edm::Even
    edm::ESHandle< CaloGeometry > geo;
    iSetup.get< CaloGeometryRecord >().get( geo );
 
+   edm::ESHandle<CaloTopology> topo_h;
+   iSetup.get< CaloTopologyRecord >().get( topo_h );
+   const CaloTopology &topo = *topo_h;
+
+   //we need a totally useless dummy cluster for matrixEnergy()
+   reco::BasicCluster dummy;
+
    //loop over all rec-hits and store the 4-vector of weird ones
    for( EcalRecHitCollection::const_iterator rechit_it = barrelRecHits.begin(); rechit_it != barrelRecHits.end(); ++rechit_it ) {
       const EcalRecHit &rechit = *rechit_it;
-      const EBDetId id( rechit.id() );
-      uint32_t recoFlag = rechit.recoFlag();
-      double swiss_cross = EcalSeverityLevelAlgo::swissCross( id, barrelRecHits, 0, false );
       double energy = rechit.energy();
-      if( energy > min_rechit_energy
-          && ( recoFlag == EcalRecHit::kOutOfTime || swiss_cross > min_rechit_swiss_cross )
-          ) {
-         int ieta = id.ieta();
+      if( energy > min_rechit_energy ) {
+         const EBDetId id( rechit.id() );
+         uint32_t recoFlag = rechit.recoFlag();
+         double swiss_cross = EcalSeverityLevelAlgo::swissCross( id, barrelRecHits, 0, false );
+         double e3x3 = EcalClusterTools::matrixEnergy( dummy, &barrelRecHits, &topo, id, -1, 1, -1, 1 );
+         double r19 = energy / e3x3;
 
-         pxl::Particle* part = RecView->create<pxl::Particle>();
-         part->setName("ECALRecHit");
-         part->setCharge(0);
+         if( recoFlag == EcalRecHit::kOutOfTime
+             || swiss_cross > min_rechit_swiss_cross
+             || r19 > min_rechit_R19
+             ) {
+            int ieta = id.ieta();
 
-         TLorentzVector temp;
-         temp.SetE( energy );
-         temp.SetPz( energy );
-         temp.SetTheta( geo->getPosition( id ).theta() );
-         temp.SetPhi( geo->getPosition( id ).phi() );
+            pxl::Particle* part = RecView->create<pxl::Particle>();
+            part->setName("ECALRecHit");
+            part->setCharge(0);
 
-         part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
+            TLorentzVector temp;
+            temp.SetE( energy );
+            temp.SetPz( energy );
+            temp.SetTheta( geo->getPosition( id ).theta() );
+            temp.SetPhi( geo->getPosition( id ).phi() );
+            
+            part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
          
-         part->setUserRecord< int >( "ieta", ieta );
-         part->setUserRecord< uint32_t >( "recoFlag", recoFlag );
-         part->setUserRecord< double >( "swiss_cross", swiss_cross );
+            part->setUserRecord< int >( "ieta", ieta );
+            part->setUserRecord< uint32_t >( "recoFlag", recoFlag );
+            part->setUserRecord< double >( "SwissCross", swiss_cross );
+            part->setUserRecord< double >( "r19", r19 );
+         }
       }
    }
 }

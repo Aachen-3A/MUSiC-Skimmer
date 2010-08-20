@@ -67,6 +67,7 @@ Skimmer = cms.EDAnalyzer(
         max_eta = cms.double( 3 ),
         min_rechit_energy = cms.double( 20 ),
         min_rechit_swiss_cross = cms.double( 0.8 ),
+        min_rechit_R19 = cms.double( 0.8 ),
         vertex_minNDOF = cms.double( 3 ),
         vertex_maxZ = cms.double( 30 ),
         vertex_maxR = cms.double( 3 ),
