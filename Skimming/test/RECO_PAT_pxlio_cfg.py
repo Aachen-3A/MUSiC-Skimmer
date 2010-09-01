@@ -96,6 +96,11 @@ else:
         process.p = cms.Path( process.patDefaultSequence )
 
 
+#store the result of the HCAL noise info
+process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
+process.p += process.HBHENoiseFilterResultProducer
+
+
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 if not runOnData and runOnReReco:
