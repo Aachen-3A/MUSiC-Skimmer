@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import subprocess
 import imp
@@ -7,6 +8,8 @@ import pickle
 import optparse
 import datetime
 import ConfigParser
+
+lumi_mask_dir = os.path.join( os.environ[ 'CMSSW_BASE' ], 'src/MUSiCProject/Skimming/test/lumi' )
 
 
 parser = optparse.OptionParser( description='Submit MUSiCSkimmer jobs, using CMSSW config CFG_FILE, on all samples listed in DATASET_FILE',  usage='usage: %prog [options] CFG_FILE DATASET_FILE' )
@@ -41,10 +44,11 @@ else:
 outname += '/'
 
 if options.perJob == 'unset':
-    if options.lumimask:
-        options.perJob = '35'
-    else:
-        options.perJob = '50000'
+    defaultLumiPerJob = '100'
+    eventsPerJob = '50000'
+else:
+    defaultLumiPerJob = options.perJob
+    eventsPerJob = options.perJob
 
 if options.blacklist:
     options.blacklist = 'T0,T1,'+options.blacklist
@@ -67,9 +71,22 @@ del cfo
 for line in open( samples ):
     line = line[:-1]
     if not line or line.startswith( '#' ): continue
-    line = line.split( ':' )
-    name = line[0]
-    sample = line[1]
+
+    #lumi-mask and lumis-per-job can be specified in the command line
+    if ';' in line:
+        split_line = line.split( ';' )
+        first_part = split_line[ 0 ]
+        lumi_mask = os.path.join( lumi_mask_dir, split_line[ 1 ] )
+        if len( split_line ) > 2:
+            lumiPerJob = int( split_line[ 2 ] )
+        else:
+            lumiPerJob = defaultLumiPerJob
+    else:
+        lumiPerJob = defaultLumiPerJob
+        first_part = line
+        lumi_mask = None
+
+    (name,sample) = first_part.split( ':' )
 
     print name, ': Generating CRAB cfg...',
     config = ConfigParser.RawConfigParser()
@@ -81,13 +98,16 @@ for line in open( samples ):
     config.add_section( 'CMSSW' )
     config.set( 'CMSSW', 'datasetpath', sample )
     config.set( 'CMSSW', 'pset', name+'_cfg.py' )
-    if options.lumimask:
-        config.set( 'CMSSW', 'lumi_mask', options.lumimask )
+    if options.lumimask or lumi_mask:
         config.set( 'CMSSW', 'total_number_of_lumis', options.total )
-        config.set( 'CMSSW', 'lumis_per_job', options.perJob )
+        config.set( 'CMSSW', 'lumis_per_job', lumiPerJob )
+        if options.lumimask:
+            config.set( 'CMSSW', 'lumi_mask', options.lumimask )
+        else:
+            config.set( 'CMSSW', 'lumi_mask', lumi_mask )
     else:
         config.set( 'CMSSW', 'total_number_of_events', options.total )
-        config.set( 'CMSSW', 'events_per_job', options.perJob )
+        config.set( 'CMSSW', 'events_per_job', eventsPerJob )
     if options.runs:
         config.set( 'CMSSW', 'runselection', options.runs )
     config.set( 'CMSSW', 'output_file', name+'.pxlio' )
@@ -100,15 +120,7 @@ for line in open( samples ):
     config.set( 'GRID', 'rb', 'CERN' )
     config.set( 'GRID', 'group', 'dcms' )
     config.set( 'GRID', 'se_black_list', options.blacklist )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime;' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=(other.GlueCEStateEstimatedResponseTime > 2592000) ? (-other.GlueCEStateEstimatedResponseTime) : ( (other.GlueCEStateFreeJobSlots > 0) ? (other.GlueCEStateFreeJobSlots) : (-other.GlueCEStateEstimatedResponseTime) );' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEStateFreeJobSlots-other.GlueCEStateWaitingJobs;' )
     config.set( 'GRID', 'additional_jdl_parameters', 'rank=-other.GlueCEStateEstimatedResponseTime+(other.GlueCEStateFreeJobSlots > 10 ? 86400 : 0)+(other.GlueCEStateWaitingJobs > 10 ? 0 : 86400);' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEStateWaitingJobs < 1 ? 1000*other.GlueCEStateRunningJobs : 1000*other.GlueCEStateRunningJobs/other.GlueCEStateWaitingJobs;FuzzyRank=true;' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEInfoTotalCPUs;FuzzyRank=true;' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEPolicyAssignedJobSlots;FuzzyRank=true;' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=other.GlueCEPolicyMaxRunningJobs;FuzzyRank=true;' )
-    #config.set( 'GRID', 'additional_jdl_parameters', 'rank=(other.GlueCEPolicyAssignedJobSlots < 100000) ? ( (other.GlueCEPolicyAssignedJobSlots > 0) ? other.GlueCEPolicyAssignedJobSlots : ( (other.GlueCEPolicyMaxRunningJobs < 10000 && other.GlueCEPolicyMaxRunningJobs > 0) ? other.GlueCEPolicyMaxRunningJobs : other.GlueCEInfoTotalCPUs ) ) : other.GlueCEPolicyMaxRunningJobs;;FuzzyRank=true;' )
 
     cfg_file = open(name+'.cfg', 'wb')
     config.write( cfg_file )
