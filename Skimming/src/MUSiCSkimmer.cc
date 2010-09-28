@@ -131,7 +131,6 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    // The labels used in cfg-file 
    //fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
-   fMETMCLabel = iConfig.getUntrackedParameter<string>("METMCLabel");
    fVertexRecoLabel = iConfig.getUntrackedParameter<string>("VertexRecoLabel");
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
@@ -146,7 +145,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    jets_pset.getParameterSetNames( jet_names );
    //loop over the names of the jet PSets
    for( vector< string >::const_iterator jet_name = jet_names.begin(); jet_name != jet_names.end(); ++jet_name ){
-      jet_def jet;
+      collection_def jet;
       jet.name = *jet_name;
 
       ParameterSet one_jet = jets_pset.getParameter< ParameterSet >( jet.name );
@@ -174,10 +173,26 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       pair< std::string, JetIDSelectionFunctor > ID( id_names[q], JetIDSelectionFunctor( JetIDSelectionFunctor::CRAFT08, q ) );
       jet_ids.push_back( ID );
    }
-   
 
-   // MET label
-   fMETRecoLabel = iConfig.getUntrackedParameter<string>("METRecoLabel");
+
+
+   //MET
+   //get the PSet that contains all MET PSets
+   ParameterSet METs_pset = iConfig.getParameter< ParameterSet >( "METs" );
+   //get the names of all sub-PSets
+   vector< string > MET_names;
+   METs_pset.getParameterSetNames( MET_names );
+   //loop over the names of the MET PSets
+   for( vector< string >::const_iterator MET_name = MET_names.begin(); MET_name != MET_names.end(); ++MET_name ){
+      collection_def MET;
+      MET.name = *MET_name;
+
+      ParameterSet one_MET = METs_pset.getParameter< ParameterSet >( MET.name );
+      MET.MCLabel   = one_MET.getParameter< InputTag >( "MCLabel" );
+      MET.RecoLabel = one_MET.getParameter< InputTag >( "RecoLabel" );
+
+      MET_infos.push_back( MET );
+   }
 
    //HCAL noise
    hcal_noise_label = iConfig.getParameter< InputTag >( "HCALNoise" );
@@ -285,10 +300,12 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
       analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
-      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
       }
-      analyzeGenMET(iEvent, GenEvtView);
+      for( vector< collection_def >::const_iterator MET_info = MET_infos.begin(); MET_info != MET_infos.end(); ++MET_info ){
+         analyzeGenMET(iEvent, GenEvtView, *MET_info);
+      }
       if (fUseSIM){
          analyzeSIM(iEvent, GenEvtView);
       }
@@ -303,10 +320,13 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
       analyzeRecElectrons(iEvent, RecEvtView, IsMC, lazyTools, genmap);
-      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
       }
-      analyzeRecMET(iEvent, RecEvtView);
+      for( vector< collection_def >::const_iterator MET_info = MET_infos.begin(); MET_info != MET_infos.end(); ++MET_info ){
+         analyzeRecMET( iEvent, RecEvtView, *MET_info );
+      }
+      analyzeHCALNoise(iEvent, RecEvtView);
       analyzeRecGammas(iEvent, RecEvtView, IsMC, lazyTools, genmap);
       analyzeECALRecHits( iEvent, iSetup, RecEvtView );
    }
@@ -318,21 +338,21 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    if (fDebug > 0) {  
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
-      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( std::vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << jet_info->name << " ";
       }
       cout << "  MET  " << endl;
       cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
            << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
            << setw(7) << GenEvtView->findUserRecord<int>("NumGamma");
-      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( std::vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << setw(4) << GenEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
            << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
            << setw(7) << RecEvtView->findUserRecord<int>("NumGamma");
-      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( std::vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << setw(4) << RecEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
@@ -604,7 +624,7 @@ void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator Jets ------------
 
-void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ) {
+void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info ) {
    //Get the GenJet collections
    edm::Handle<reco::GenJetCollection> GenJets;
    iEvent.getByLabel( jet_info.MCLabel, GenJets );
@@ -659,16 +679,17 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
 
 // ------------ reading the Generator MET ------------
 
-void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtView, const collection_def &MET_info ) {
    edm::Handle<reco::GenMETCollection> GenMet;
-   iEvent.getByLabel(fMETMCLabel, GenMet);
+   iEvent.getByLabel(MET_info.MCLabel, GenMet);
    const GenMETCollection *genmetcol = GenMet.product();
    const GenMET genmet = genmetcol->front();  // MET exists only once!
- 
+
    int numMETMC = 0; //means no MET in event
 
+
    pxl::Particle* part = EvtView->create<pxl::Particle>();
-   part->setName("MET");
+   part->setName(MET_info.name);
    part->setP4(genmet.px(), genmet.py(), genmet.pz(), genmet.energy());
    part->setUserRecord<double>("sumEt", genmet.sumEt());
    part->setUserRecord<double>("mEtSig", genmet.mEtSig());
@@ -693,7 +714,7 @@ void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
       //part->setP4(part->getPx(), part->getPy(), 0., sqrt(part->getPx()*part->getPx()+part->getPy()*part->getPy()));  
       if (fDebug > 1) cout << "GenMET after muon corr: Px = " << part->getPx() << "   Py = " << part->getPy() << "   Pt = " << part->getPt() << endl;     
    }
-   if (METMC_cuts(part)) numMETMC++; 
+   if (METMC_cuts(part)) numMETMC++;
    EvtView->setUserRecord<int>("NumMET", numMETMC);
    if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
    //cout << " Our GenMET: " << part->getPt() << endl;
@@ -755,28 +776,27 @@ void MUSiCSkimmer::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView)
 // ------------ reading the Reconstructed MET ------------
 //the stored information should already contain the muon corrections plus several other corrections
 //it will have certainly corrections in the future as there are certain functions for uncorrection planned
-
-void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void MUSiCSkimmer::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventView* EvtView) {
    //save HCAL noise infos
    edm::Handle< bool > hcal_noise;
    iEvent.getByLabel( hcal_noise_label, hcal_noise );
    EvtView->setUserRecord< bool >( "HCALNoisy", !*hcal_noise );
 
+}
+
+
+void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtView, const collection_def &MET_info ) {
    edm::Handle<std::vector<pat::MET> > METHandle;
-   iEvent.getByLabel(fMETRecoLabel, METHandle);
+   iEvent.getByLabel(MET_info.RecoLabel, METHandle);
    const std::vector<pat::MET>& METs = *METHandle;
    std::vector<pat::MET>::const_iterator met = METs.begin();
 
    int numMETRec = 0;
    pxl::Particle* part = EvtView->create<pxl::Particle>();
-   part->setName("MET");
+   part->setName(MET_info.name);
    part->setP4(met->px(), met->py(), met->pz(), met->energy());
    part->setUserRecord<double>("sumEt", met->sumEt());
    part->setUserRecord<double>("mEtSig", met->mEtSig());
-   part->setUserRecord<double>("EmEt", met->emEtFraction());         
-   part->setUserRecord<double>("HadEt", met->etFractionHadronic()); 
-   part->setUserRecord<double>("MaxEtEm", met->maxEtInEmTowers());   
-   part->setUserRecord<double>("MaxEtHad", met->maxEtInHadTowers()); 
 
    if (MET_cuts(part)) numMETRec++;
    EvtView->setUserRecord<int>("NumMET", numMETRec);
@@ -1211,7 +1231,7 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 
 // ------------ reading Reconstructed Jets ------------
 
-void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info){
+void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info){
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
    if (RecView->findUserRecord<int>("NumVertices") > 0) {

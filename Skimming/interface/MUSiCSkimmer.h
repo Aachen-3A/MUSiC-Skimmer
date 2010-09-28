@@ -68,7 +68,7 @@ extern "C" {
 // but ePax can deal with both of them
 #include "MUSiCProject/Pxl/interface/Pxl.h"
 #include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
-#include "MUSiCProject/Skimming/interface/jet_def.h"
+#include "MUSiCProject/Skimming/interface/collection_def.h"
 
 
 class MUSiCSkimmer : public edm::EDAnalyzer {
@@ -104,8 +104,8 @@ public:
    virtual void endJob();
    virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
-   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
-   virtual void analyzeGenMET(const edm::Event&, pxl::EventView*);
+   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info );
+   virtual void analyzeGenMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info );
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
@@ -117,10 +117,11 @@ public:
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
-   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
-   virtual void analyzeRecMET(const edm::Event&, pxl::EventView*);
+   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info );
+   virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
    virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeECALRecHits( const edm::Event &iEvent, const edm::EventSetup &iSetup, pxl::EventView *RecView );
+   virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
    bool MuonMC_cuts(const GenParticle* MCmuon) const;
    bool EleMC_cuts(const GenParticle* MCele) const;
@@ -158,12 +159,12 @@ public:
    // Photon
    std::string fGammaRecoLabel;
    // Jets
-   std::vector< jet_def > jet_infos;
+   std::vector< collection_def > jet_infos;
    //JetIDs
    typedef std::vector< std::pair< std::string, JetIDSelectionFunctor > > jet_id_list;
    jet_id_list jet_ids;
    // MET labels
-   std::string fMETRecoLabel;
+   std::vector< collection_def > MET_infos;
    // Cluster
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;

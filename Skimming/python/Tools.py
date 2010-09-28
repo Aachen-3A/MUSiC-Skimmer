@@ -2,9 +2,6 @@ import FWCore.ParameterSet.Config as cms
 
 def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
     if runOnData:
-        import PhysicsTools.PatAlgos.tools.coreTools
-        PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
-
         #configure PAT matching
         process.electronMatch.checkCharge = False
         process.electronMatch.resolveByMatchQuality = True

@@ -66,6 +66,13 @@ import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
 process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
+from PhysicsTools.PatAlgos.tools.pfTools import *
+usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow") 
+
+if runOnData:
+    import PhysicsTools.PatAlgos.tools.coreTools
+    PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
+
 
 #filter on right BX in case of data
 if runOnData:
@@ -96,6 +103,7 @@ else:
         process.p = cms.Path( process.patDefaultSequence )
 
 
+process.p += getattr(process,"patPF2PATSequencePFlow")
 #store the result of the HCAL noise info
 process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
 process.p += process.HBHENoiseFilterResultProducer

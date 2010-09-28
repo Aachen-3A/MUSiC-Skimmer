@@ -14,20 +14,29 @@ Skimmer = cms.EDAnalyzer(
     UseSIM = cms.untracked.bool( True ),
     #labels of source
     genParticleCandidatesLabel = cms.untracked.string( "genParticles" ),
-    METMCLabel = cms.untracked.string( "genMetCalo" ),  # muon-correction needed ---> yes!
     #vertices with beam spot constraint
     VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
     #the following is all PAT
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
     GammaRecoLabel = cms.untracked.string("cleanPatPhotons"),
-    METRecoLabel = cms.untracked.string("patMETs"),
     #ECAL RecHits for supercluster information
     reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
     #HCAL noise
     HCALNoise = cms.InputTag( 'HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult' ),
-    
+
+    METs = cms.PSet(
+        # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the METs
+        caloMET = cms.PSet(
+                MCLabel = cms.InputTag( "genMetCalo" ),
+                RecoLabel = cms.InputTag("patMETs")
+                ),
+        pfMET = cms.PSet(
+                MCLabel = cms.InputTag( "genMetCalo" ),
+                RecoLabel = cms.InputTag("patMETsPFlow") #patMETsPFlow")
+                )
+        ),
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
         AK5 = cms.PSet(
