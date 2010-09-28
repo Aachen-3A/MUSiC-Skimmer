@@ -49,11 +49,11 @@ process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 if runOnData:
     if runOnReReco:
-        process.GlobalTag.globaltag = cms.string('GR_R_37X_V6::All')
+        process.GlobalTag.globaltag = cms.string('GR_R_38X_V13A::All')
     else:
-        process.GlobalTag.globaltag = cms.string('GR_R_37X_V6::All')
+        process.GlobalTag.globaltag = cms.string('GR_R_38X_V13A::All')
 else:
-    process.GlobalTag.globaltag = cms.string('START37_V5::All')
+    process.GlobalTag.globaltag = cms.string('START38_V12::All')
 
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
