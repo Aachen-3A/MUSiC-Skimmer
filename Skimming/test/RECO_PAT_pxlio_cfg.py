@@ -90,9 +90,7 @@ if runOnData:
                                            )
 
 
-    process.incompleteECALFilter = cms.EDFilter( "recHitFilter" )
-
-    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.incompleteECALFilter * process.patDefaultSequence )
+    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.patDefaultSequence )
 
 else:
     if runOnSummer09:
