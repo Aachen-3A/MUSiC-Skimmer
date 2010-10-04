@@ -1170,6 +1170,7 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
 
          double eMax = lazyTools.eMax(*SCSeed);
          part->setUserRecord< double >( "Emax", eMax );
+         part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCSeed ) );
          double e3x3 = lazyTools.e3x3( *SCSeed );
          part->setUserRecord< double >( "e3x3",  e3x3 );
          part->setUserRecord< double >( "r19", eMax / e3x3 );
@@ -1357,6 +1358,7 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<double>("EtaPhi", covariances[1] );
          part->setUserRecord<double>("PhiPhi", covariances[2] );
          part->setUserRecord<double>("Emax",  lazyTools.eMax(*SCSeed)  );
+         part->setUserRecord<double>("E2nd",  lazyTools.e2nd(*SCSeed)  );
          part->setUserRecord<double>("r9", e3x3 /( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
          // part->setUserRecord<double>("r9", photon->r9()); <== different computation of r9 here :-(
          part->setUserRecord<double>("r19",  (lazyTools.eMax(*SCSeed) / e3x3 ) );
