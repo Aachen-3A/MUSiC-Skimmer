@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
+    #do not store TagInfos, as they are not in AOD
+    process.patJets.addTagInfos = False
+
     if runOnData:
         #configure PAT matching
         process.electronMatch.checkCharge = False
