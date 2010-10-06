@@ -324,7 +324,7 @@ if not options.user:
         print 'Cannot get user name, please provide one on the command line.'
         sys.exit(1)
 
-if options.kill_all and ( options.resubmit_aborted or options.resubmit_grid_failed or options.resubmit_app_failed or options.kill_resubmit ):
+if options.kill_all and ( options.resubmit_aborted or options.resubmit_grid_failed or options.resubmit_app_failed or options.resubmit_running or options.resubmit_scheduled ):
     print '--kill-all must be the only command'
     sys.exit(1)
 
