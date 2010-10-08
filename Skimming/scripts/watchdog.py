@@ -288,12 +288,19 @@ def resubmit( dir, jobs, state, options ):
 
 
 def clean_output( dir, parser, jobs ):
+    #first clean the output
     if parser.getboolean( 'USER', 'copy_data' ) and not options.noclean:
         print 'Cleaning output'
         remote_dir = parser.get( 'USER', 'user_remote_dir' )
         outputCleaner.clean( dir, [ job.num for job in jobs ], remote_dir, clear_all=True )
         print 'Done\n\n'
 
+    #the generate the report
+    print 'Generating report'
+    call_crab( '-report', 'all', dir, stdout=True )
+    print '\n'
+
+    #and finally move the directory
     moved_dirs.append( dir )
     move_dir( dir, 'done' )
 
