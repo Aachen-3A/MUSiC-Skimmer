@@ -1,7 +1,5 @@
 #Configuration
-#runOnData = True
-#runOnSummer09 = False
-#runOnReReco = False
+config=data_prompt_cfg.py
 
 Data_144115_146436_Mu:/Mu/Run2010B-PromptReco-v2/RECO;DCS-144115-146436.json
 Data_144115_146436_E:/Electron/Run2010B-PromptReco-v2/RECO;DCS-144115-146436.json

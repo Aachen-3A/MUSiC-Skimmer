@@ -1,7 +1,5 @@
 #Configuration:
-#runOnData = True
-#runOnSummer09 = False
-#runOnReReco = True
+config=data_rereco_cfg.py
 
 Data_135808_140070_Mu:/Mu/Run2010A-Sep17ReReco_v2/RECO;DCS-135808-140070.json;300
 Data_135808_140070_EG:/EG/Run2010A-Sep17ReReco_v2/RECO;DCS-135808-140070.json;300

@@ -1,7 +1,5 @@
 #Configuration:
-#runOnData = False
-#runOnSummer09 = True
-#runOnReReco = True
+config=mc_S10_S09_cfg.py
 
 #QCD
 QCD_Pt15:/QCD_Pt15/Summer10-START36_V9_S09-v1/GEN-SIM-RECODEBUG
