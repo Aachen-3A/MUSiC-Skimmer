@@ -57,12 +57,12 @@ Skimmer = cms.EDAnalyzer(
             results = cms.string('TriggerResults'),
             event   = cms.string('hltTriggerSummaryAOD'),
             HLTriggers = cms.vstring(
-                'HLT_Mu9',
-                'HLT_Photon20_L1R','HLT_Photon20_Cleaned_L1R','HLT_Photon30_L1R','HLT_Photon30_Cleaned_L1R','HLT_Photon30_L1R_8E29',
-                'HLT_Ele20_SW_L1R','HLT_Ele20_LW_L1R','HLT_Ele40_SW_L1R',
-                'HLT_Jet50U','HLT_Jet70U','HLT_Jet100U',
+                'HLT_Mu9','HLT_Mu11',
+                'HLT_Photon20_L1R','HLT_Photon20_Cleaned_L1R','HLT_Photon30_L1R','HLT_Photon30_Cleaned_L1R','HLT_Photon30_L1R_8E29','HLT_Photon50_Cleaned_L1R_v1',
+                'HLT_Ele20_SW_L1R','HLT_Ele20_LW_L1R','HLT_Ele40_SW_L1R','HLT_Ele17_SW_TightEleId_L1R',
+                'HLT_Jet50U','HLT_Jet70U','HLT_Jet100U','HLT_Jet100U_v2',
                 'HLT_BTagMu_Jet10U','HLT_BTagMu_Jet20U',
-                'HLT_MET100'
+                'HLT_MET100','HLT_MET100_v2'
                 )
             ),
         StoreL3Objects = cms.untracked.bool(False)
