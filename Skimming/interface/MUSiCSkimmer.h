@@ -100,7 +100,6 @@ public:
 
 
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
-   virtual void beginRun( const edm::Run &iRun, const edm::EventSetup &iSetup );
    virtual void endJob();
    virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
@@ -109,6 +108,11 @@ public:
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
+   virtual void initializeTrigger( const edm::Event &event,
+                                   const edm::EventSetup &setup,
+                                   trigger_group &trigger,
+                                   const std::string &process
+                                   );
    virtual void analyzeTrigger( const edm::Event &iEvent,
                                 const edm::EventSetup &iSetup,
                                 pxl::EventView *EvtView,

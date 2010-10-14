@@ -109,14 +109,6 @@ process.p += process.HBHENoiseFilterResultProducer
 
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
-if not runOnData and runOnReReco:
-    #use the re-digi trigger in re-reco
-    if runOnSummer09:
-        process.Skimmer.triggers.HLT.process = 'REDIGI36X'
-    else:
-        process.Skimmer.triggers.HLT.process = 'REDIGI36'
-
-
 if not runOnData:
     MUSiCProject.Skimming.Tools.addFlavourMatching( process, process.Skimmer, process.p )
 

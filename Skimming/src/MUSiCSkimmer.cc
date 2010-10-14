@@ -213,8 +213,13 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       trigger.process = one_trigger.getParameter< string >( "process" );
 
       trigger.L1_result = one_trigger.getParameter< InputTag >( "L1_result" );
-      trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
-      trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
+      if( trigger.process == "auto" ) {
+         trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "" );
+         trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ), "" );
+      } else {
+         trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
+         trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
+      }
       
       trigger.triggers_names = one_trigger.getParameter< vector< string > >("HLTriggers");
 
@@ -359,50 +364,6 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }   
    fePaxFile.writeEvent(&event);
 }
-
-
-
-
-void MUSiCSkimmer::beginRun( const edm::Run &iRun, const edm::EventSetup &iSetup ) {
-   //we are in a new run, so we might have a new trigger config
-   //hence we're going to check those guys
-   for( vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
-      trigger_group &trigger = *trg;
-
-      //read the new trigger config, test for error and whether something has changed
-      bool changed;
-      if( ! trigger.config.init( iRun, iSetup, trigger.process, changed ) ){
-         cout << "TRIGGER ERROR: Initialization of trigger config failed." << endl;
-         throw "TRIGGER ERROR: Initialization of trigger config failed.";
-      }
-
-      //the trigger config has actually changed, so read in the new one
-      if( changed ){
-         cout << "TRIGGER INFO: HLT table changed, building new trigger map." << endl;
-         //reset the map
-         trigger.trigger_infos.clear();
-
-         for( vector<string>::const_iterator trg_name = trigger.triggers_names.begin(); trg_name != trigger.triggers_names.end(); ++trg_name ){
-            //get the number of the trigger path
-            unsigned int index = trigger.config.triggerIndex( *trg_name );
-
-            //check if that's a valid number
-            if( index < trigger.config.size() ){
-               //it is, so store the name and the number
-               trigger_def trg;
-               trg.name = *trg_name;
-               trg.ID = index;
-               trg.active = true;
-               trigger.trigger_infos.push_back( trg );
-            } else {
-               //the number is invalid, the trigger path is not in the config
-               cout << "TRIGGER WARNING: In run " << iRun.run() << " trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
-            }
-         }
-      }
-   }
-}
-
 
 
 
@@ -808,17 +769,71 @@ void MUSiCSkimmer::analyzeRecMET(const edm::Event& iEvent, pxl::EventView* EvtVi
    */
 }
 
-// ------------ reading HLT and L1 Trigger Bits ------------
+
+
+
+
+
+
+void MUSiCSkimmer::initializeTrigger( const edm::Event &event,
+                                      const edm::EventSetup &setup,
+                                      trigger_group &trigger,
+                                      const std::string &process
+                                      ) {
+   //read the new trigger config, test for error and whether something has changed
+   bool changed;
+   if( ! trigger.config.init( event.getRun(), setup, process, changed ) ){
+      throw cms::Exception( "TRIGGER ERROR" ) << "Initialization of trigger config failed.";
+   }
+
+   //the trigger config has actually changed, so read in the new one
+   if( changed ){
+      cout << "TRIGGER INFO: HLT table changed in run " << event.run() << ", building new trigger map for process " << process << endl;
+      //reset the map
+      trigger.trigger_infos.clear();
+
+      for( vector<string>::const_iterator trg_name = trigger.triggers_names.begin(); trg_name != trigger.triggers_names.end(); ++trg_name ){
+         //get the number of the trigger path
+         unsigned int index = trigger.config.triggerIndex( *trg_name );
+
+         //check if that's a valid number
+         if( index < trigger.config.size() ){
+            //it is, so store the name and the number
+            trigger_def trg;
+            trg.name = *trg_name;
+            trg.ID = index;
+            trg.active = true;
+            trigger.trigger_infos.push_back( trg );
+         } else {
+            //the number is invalid, the trigger path is not in the config
+            cout << "TRIGGER WARNING: In run " << event.run() << " trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
+         }
+      }
+   }
+}
+
+
 
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                                    const edm::EventSetup &iSetup,
                                    pxl::EventView* EvtView,
                                    trigger_group &trigger
                                    ){
-   edm::Handle<edm::TriggerResults>   triggerResultsHandle;
-   iEvent.getByLabel( trigger.results, triggerResultsHandle );
-   edm::Handle<trigger::TriggerEvent> triggerEventHandle;
+   edm::Handle< trigger::TriggerEvent > triggerEventHandle;
+   edm::Handle< edm::TriggerResults >   triggerResultsHandle;
    iEvent.getByLabel( trigger.event, triggerEventHandle );
+   //try to find the right trigger if requested
+   std::string process;
+   if( trigger.process == "auto" ) {
+      process = triggerEventHandle.provenance()->processName();
+      edm::InputTag trigResultsTag( trigger.results.label(), trigger.results.instance(), process );
+      iEvent.getByLabel( trigResultsTag, triggerResultsHandle );
+   } else {
+      process = trigger.results.process();
+      iEvent.getByLabel( trigger.results, triggerResultsHandle );
+   }
+   //initialize the trigger config
+   initializeTrigger( iEvent, iSetup, trigger, process );
 
    //loop over selected trigger names
    for( vector< trigger_def >::iterator trig = trigger.trigger_infos.begin(); trig != trigger.trigger_infos.end(); ++trig ){
@@ -847,9 +862,7 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
             //prescaled!
             //switch it off
             trig->active = false;
-            cout << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process << endl;
-            cout << "TRIGGER WARNING: Run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
-            cout << "TRIGGER WARNING: " << trig->name << " switched to inactive." << endl;
+            cout << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process << " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
          }
       } else {
          //either error or was not run
