@@ -302,9 +302,6 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
    RecEvtView->setUserRecord<std::string>("Process", fProcess);
 
-   //create object for EcalClusterLazyTools
-   EcalClusterLazyTools lazyTools( iEvent, iSetup, freducedBarrelRecHitCollection, freducedEndcapRecHitCollection);
-   
    // Generator stuff
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
@@ -321,6 +318,13 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
    // store Rec Objects only if requested
    if (!fGenOnly) {
+      //get the calo geometry
+      edm::ESHandle< CaloGeometry > geo;
+      iSetup.get< CaloGeometryRecord >().get( geo );
+
+      //create object for EcalClusterLazyTools
+      EcalClusterLazyTools lazyTools( iEvent, iSetup, freducedBarrelRecHitCollection, freducedEndcapRecHitCollection);
+
       //Trigger bits
       for( vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
          analyzeTrigger( iEvent, iSetup, RecEvtView, *trg );
@@ -328,7 +332,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
-      analyzeRecElectrons(iEvent, RecEvtView, IsMC, lazyTools, genmap);
+      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo );
       for( vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
       }
@@ -336,8 +340,8 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          analyzeRecMET( iEvent, RecEvtView, *MET_info );
       }
       analyzeHCALNoise(iEvent, RecEvtView);
-      analyzeRecGammas(iEvent, RecEvtView, IsMC, lazyTools, genmap);
-      analyzeECALRecHits( iEvent, iSetup, RecEvtView );
+      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo );
+      analyzeECALRecHits( iEvent, iSetup, RecEvtView, geo );
    }
 
    if (IsMC){
@@ -1130,7 +1134,13 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
 // ------------ reading Reconstructed Electrons ------------
 
-void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap) {
+void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
+                                        pxl::EventView *RecView,
+                                        bool &MC,
+                                        EcalClusterLazyTools &lazyTools,
+                                        std::map< const Candidate*, pxl::Particle*> &genmap,
+                                        edm::ESHandle< CaloGeometry > &geo
+                                        ) {
    int numEleRec = 0;   
    int numEleAll = 0;   // for matching
 
@@ -1186,7 +1196,6 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord<double>("TrackerP", ele->gsfTrack()->p()); //ok
          //the seed cluster energy / track momentum at calo from outermost state
          part->setUserRecord<double>("ESCSeedPout", ele->eSeedClusterOverPout()); //ok
-         //part->setUserRecord<double>("NormChi2", ele->gsfTrack()->normalizedChi2()); //why was this left out?
          part->setUserRecord<int>("TrackerVHits", ele->gsfTrack()->numberOfValidHits()); //ok
          part->setUserRecord<int>("TrackerLHits", ele->gsfTrack()->numberOfLostHits()); //ok
          part->setUserRecord<int>("Class", ele->classification()); //ok
@@ -1208,36 +1217,37 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
             if( it != genmap.end() ){
                part->linkSoft( it->second, "pat-match" );
             }
-         }
-
+            }
+         
          // Get the supercluster (ref) of the Electron
          // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
          // a SuperClusterCollection is a std::vector<SuperCluster>
          // although we get a vector of SuperClusters an electron is only made out of ONE SC
          // therefore only the first element of the vector should be available!
          const SuperClusterRef SCRef = ele->superCluster();
-         const CaloClusterPtr& SCSeed = SCRef->seed();
 
          //use EcalClusterLazyTools to store ClusterShapeVariables
          part->setUserRecord< double >( "e1x5",  ele->e1x5() );
          part->setUserRecord< double >( "e2x5",  ele->e2x5Max() );
          part->setUserRecord< double >( "e5x5",  ele->e5x5() );
 
-         double eMax = lazyTools.eMax(*SCSeed);
+         std::pair<DetId, float> max_hit = lazyTools.getMaximum( *SCRef );
+         DetId seedID = max_hit.first;
+         double eMax = max_hit.second;
          part->setUserRecord< double >( "Emax", eMax );
-         part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCSeed ) );
-         double e3x3 = lazyTools.e3x3( *SCSeed );
+         part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
+         double e3x3 = lazyTools.e3x3( *SCRef );
          part->setUserRecord< double >( "e3x3",  e3x3 );
          part->setUserRecord< double >( "r19", eMax / e3x3 );
-         part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
-         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( SCSeed->seed() );
+         part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( seedID, *barrelRecHits, 0, false ) );
+         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( seedID );
          if( recHit_it != barrelRecHits->end() ) {
             const EcalRecHit &seedRecHit = *recHit_it;
             unsigned int recoFlag = seedRecHit.recoFlag();
             part->setUserRecord< unsigned int >("recoFlag",  recoFlag  );
          }
 
-         std::vector<float> covariances = lazyTools.covariances(*SCSeed, 4.7 );
+         std::vector<float> covariances = lazyTools.covariances(*SCRef, 4.7 );
          part->setUserRecord<double>("EtaEta", covariances[0] ); //used for CutBasedElectronID
          part->setUserRecord<double>("EtaPhi", covariances[1] );
          part->setUserRecord<double>("PhiPhi", covariances[2] );
@@ -1245,11 +1255,10 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord< double >( "iEta_iEta", ele->scSigmaIEtaIEta() );
 
          //save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/Photon-Candidates (in final selection)
-         part->setUserRecord<double>("seedphi", SCRef->seed()->phi());
-         part->setUserRecord<double>("seedeta", SCRef->seed()->eta());
-         part->setUserRecord<unsigned int>("seedId", lazyTools.getMaximum(*SCSeed).first.rawId()); 
+         part->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
+         part->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
+         part->setUserRecord<unsigned int>("seedId", seedID.rawId()); 
          //additional data used for cutBasedElectronId in CMSSW 2_0_X
-         part->setUserRecord<double>("eSeed", SCRef->seed()->energy()); //used for CutBasedElectronID
          part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
          part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
          //store ID information
@@ -1267,17 +1276,7 @@ void MUSiCSkimmer::analyzeRecElectrons(const edm::Event& iEvent, pxl::EventView*
          part->setUserRecord< double >( "ECALIso03", ele->dr03EcalRecHitSumEt() );
          part->setUserRecord< double >( "HCALIso03d1", ele->dr03HcalDepth1TowerSumEt() );
          part->setUserRecord< double >( "HCALIso03d2", ele->dr03HcalDepth2TowerSumEt() );
- 
-         //FIXME this should somehow be accessible after moving to CMSSW_2_0_9
-         // no I don't see an easy way how to do that (CH) Do we really need it?
-         // Get the association vector for track number
-         //edm::Handle<reco::PMGsfElectronIsoNumCollection> trackNumHandle;
-         //iEvent.getByLabel(fElectronTrackNumProducer, trackNumHandle);
 
-         //direct access (by object). We have candidate already from HCAL-isolation
-         //int numVal = (*trackNumHandle)[ electronIsoRef ];
-         //part->setUserRecord<int>("TrackNum", numVal);
-	 	 
          numEleRec++;
       }
       numEleAll++;
@@ -1373,7 +1372,13 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
 
 // ------------ reading Reconstructed Gammas ------------
 
-void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* RecView, bool& MC, EcalClusterLazyTools& lazyTools, std::map<const Candidate*, pxl::Particle*> & genmap){
+void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
+                                     pxl::EventView *RecView,
+                                     bool &MC,
+                                     EcalClusterLazyTools &lazyTools,
+                                     std::map< const Candidate*, pxl::Particle* > &genmap,
+                                     edm::ESHandle< CaloGeometry > &geo
+                                     ){
    // get Photon Collection     
    edm::Handle<std::vector<pat::Photon> > photonHandle;
    iEvent.getByLabel(fGammaRecoLabel, photonHandle);
@@ -1391,36 +1396,38 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
          part->setP4(photon->px(), photon->py(), photon->pz(), photon->energy());         
          /// Whether or not the SuperCluster has a matched pixel seed
          part->setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
+         //get the SC and the seed
          const SuperClusterRef SCRef = photon->superCluster();
+         std::pair<DetId, float> max_hit = lazyTools.getMaximum( *SCRef );
+         DetId seedID = max_hit.first;
+         double eMax = max_hit.second;
          // Find the entry in the map corresponding to the seed BasicCluster of the SuperCluster
-         const CaloClusterPtr& SCSeed = SCRef->seed();
          part->setUserRecord<double>("rawEnergy",  SCRef->rawEnergy() );
          part->setUserRecord<double>("preshowerEnergy",  SCRef->preshowerEnergy() );
          //use EcalClusterLazyTools to store ClusterShapeVariables
-         double e3x3 = lazyTools.e3x3( *SCSeed );
-         part->setUserRecord<double>("e3x3",  e3x3 );
-         part->setUserRecord<double>("e5x5",  lazyTools.e5x5(*SCSeed)  );
-         part->setUserRecord<double>( "SwissCross", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, false ) );
-         part->setUserRecord<double>( "SwissCrossNoBorder", EcalSeverityLevelAlgo::swissCross( SCSeed->seed(), *barrelRecHits, 0, true ) );
-         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( SCSeed->seed() );
+         double e3x3 = photon->e3x3();
+         part->setUserRecord< double >("e3x3",  e3x3 );
+         part->setUserRecord< double >( "e5x5",  photon->e5x5() );
+         part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( seedID, *barrelRecHits, 0, false ) );
+         part->setUserRecord< double >( "SwissCrossNoBorder", EcalSeverityLevelAlgo::swissCross( seedID, *barrelRecHits, 0, true ) );
+         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( seedID );
          if( recHit_it != barrelRecHits->end() ) {
             const EcalRecHit &seedRecHit = *recHit_it;
             unsigned int recoFlag = seedRecHit.recoFlag();
             part->setUserRecord< unsigned int >("recoFlag",  recoFlag  );
          }
-         std::vector<float> covariances = lazyTools.covariances(*SCSeed );
+         std::vector< float > covariances = lazyTools.covariances( *SCRef );
          part->setUserRecord<double>("EtaEta", covariances[0] ); 
          part->setUserRecord<double>("EtaPhi", covariances[1] );
          part->setUserRecord<double>("PhiPhi", covariances[2] );
-         part->setUserRecord<double>("Emax",  lazyTools.eMax(*SCSeed)  );
-         part->setUserRecord<double>("E2nd",  lazyTools.e2nd(*SCSeed)  );
+         part->setUserRecord< double >( "Emax", eMax );
+         part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
          part->setUserRecord<double>("r9", e3x3 /( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
-         // part->setUserRecord<double>("r9", photon->r9()); <== different computation of r9 here :-(
-         part->setUserRecord<double>("r19",  (lazyTools.eMax(*SCSeed) / e3x3 ) );
+         part->setUserRecord< double >( "r19", lazyTools.eMax( *SCRef ) / e3x3 );
          //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection) adn to reject converted photons
-         part->setUserRecord<double>("seedphi", SCRef->seed()->phi());
-         part->setUserRecord<double>("seedeta", SCRef->seed()->eta());
-         part->setUserRecord<unsigned int>("seedId", lazyTools.getMaximum(*SCSeed).first.rawId()); 
+         part->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
+         part->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
+         part->setUserRecord<unsigned int>("seedId", seedID.rawId()); 
          //set hadronic over electromagnetic energy fraction
          part->setUserRecord<float>("HoEm", photon->hadronicOverEm());
          //save official isolation information
@@ -1472,15 +1479,15 @@ void MUSiCSkimmer::analyzeRecGammas(const edm::Event& iEvent, pxl::EventView* Re
 
 
 
-void MUSiCSkimmer::analyzeECALRecHits( const edm::Event &iEvent, const edm::EventSetup &iSetup, pxl::EventView *RecView ) {
+void MUSiCSkimmer::analyzeECALRecHits( const edm::Event &iEvent,
+                                       const edm::EventSetup &iSetup,
+                                       pxl::EventView *RecView,
+                                       edm::ESHandle< CaloGeometry > &geo
+                                       ) {
    //get the ECAL barrel rec hits
    edm::Handle< EcalRecHitCollection > barrelRecHits_h;
    iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits_h );
    const EcalRecHitCollection &barrelRecHits = *barrelRecHits_h;
-
-   //get the calo geometry
-   edm::ESHandle< CaloGeometry > geo;
-   iSetup.get< CaloGeometryRecord >().get( geo );
 
    edm::ESHandle<CaloTopology> topo_h;
    iSetup.get< CaloTopologyRecord >().get( topo_h );

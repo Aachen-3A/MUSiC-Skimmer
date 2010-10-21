@@ -120,11 +120,27 @@ public:
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
    virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
-   virtual void analyzeRecElectrons(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeRecElectrons( const edm::Event &iEvent,
+                                     pxl::EventView *RecView,
+                                     bool &MC,
+                                     EcalClusterLazyTools &lazyTools,
+                                     std::map< const Candidate*, pxl::Particle* > &genmap,
+                                     edm::ESHandle< CaloGeometry > &geo
+                                     );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info );
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
-   virtual void analyzeRecGammas(const edm::Event&, pxl::EventView*, bool&, EcalClusterLazyTools&, std::map<const Candidate*, pxl::Particle*>&);
-   virtual void analyzeECALRecHits( const edm::Event &iEvent, const edm::EventSetup &iSetup, pxl::EventView *RecView );
+   virtual void analyzeRecGammas( const edm::Event &iEvent,
+                                  pxl::EventView *RecView,
+                                  bool &MC,
+                                  EcalClusterLazyTools &lazyTools,
+                                  std::map<const Candidate*, pxl::Particle*> &genmap,
+                                  edm::ESHandle< CaloGeometry > &geo
+                                  );
+   virtual void analyzeECALRecHits( const edm::Event &iEvent,
+                                    const edm::EventSetup &iSetup,
+                                    pxl::EventView *RecView,
+                                    edm::ESHandle< CaloGeometry > &geo
+                                    );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
    bool MuonMC_cuts(const GenParticle* MCmuon) const;
