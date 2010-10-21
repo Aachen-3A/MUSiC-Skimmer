@@ -1424,6 +1424,7 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
          part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
          part->setUserRecord<double>("r9", e3x3 /( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
          part->setUserRecord< double >( "r19", lazyTools.eMax( *SCRef ) / e3x3 );
+         part->setUserRecord< double >( "iEta_iEta", photon->sigmaIetaIeta() );
          //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection) adn to reject converted photons
          part->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
          part->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
