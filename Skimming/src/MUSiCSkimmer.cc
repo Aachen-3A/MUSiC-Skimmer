@@ -1055,9 +1055,14 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
          //safe information for "cocktail" high energy refit
          reco::TrackRef pmcTrack = muon::tevOptimized(*muon, tevMap1, tevMap2, tevMap3);
-         part->setUserRecord<double>("pxCocktail",pmcTrack->px());
-         part->setUserRecord<double>("pyCocktail",pmcTrack->py());
-         part->setUserRecord<double>("pzCocktail",pmcTrack->pz());
+         if( pmcTrack.isAvailable() ) {
+            part->setUserRecord< bool >( "validCocktail", true );
+            part->setUserRecord<double>("pxCocktail",pmcTrack->px());
+            part->setUserRecord<double>("pyCocktail",pmcTrack->py());
+            part->setUserRecord<double>("pzCocktail",pmcTrack->pz());
+         } else {
+            part->setUserRecord< bool >( "validCocktail", false );
+         }
 
          // Tracker Only
          //part->setUserRecord<double>("NormChi2_Tracker", trackerTrack->normalizedChi2());
