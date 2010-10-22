@@ -112,6 +112,10 @@ Implementation:
 //Jet Flavour
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 
+//Muon refits
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
+
+
 using namespace std;
 using namespace edm;
 
@@ -997,6 +1001,17 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
    const std::vector<pat::Muon>& muons = *muonHandle;
 
+   //get basic info for the refits
+   Handle <reco::TrackToTrackMap> tevMapH1;
+   Handle <reco::TrackToTrackMap> tevMapH2;
+   Handle <reco::TrackToTrackMap> tevMapH3;
+   iEvent.getByLabel("tevMuons", "default", tevMapH1);
+   const reco::TrackToTrackMap tevMap1 = *(tevMapH1.product());
+   iEvent.getByLabel("tevMuons", "firstHit", tevMapH2);
+   const reco::TrackToTrackMap tevMap2 = *(tevMapH2.product());
+   iEvent.getByLabel("tevMuons", "picky", tevMapH3);
+   const reco::TrackToTrackMap tevMap3 = *(tevMapH3.product());
+
    // count muons   
    int numMuonRec = 0;
    // loop over all pat::Muon's but only store GLOBAL MUONs
@@ -1017,22 +1032,42 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
                part->linkSoft( it->second, "pat-match" );
             }
          }
-	 
-         //mind that from CMSSW 2.1 on information will be stored in outerTrack, innerTrack, globalTrack
-         //combinedMuon and standAloneMuon and track might then be deprecated sooner or later!
-         // since we are only interested in Global Muons we can look at the track given by combinedMuon() or globalTrack() 
-         // both methods return the same! See DataFormats/PatCandidates/interface/Muon.h
-	 
+
+         //check if muon is Global/Tracker/StandAlone -Muon
+         part->setUserRecord<bool>("isGlobalMuon", muon->isGlobalMuon());
+         part->setUserRecord<bool>("isTrackerMuon", muon->isTrackerMuon());
+         part->setUserRecord<bool>("isStandAloneMuon", muon->isStandAloneMuon());
+
          //save info about quality of track-fit for combined muon (muon system + tracker)
          reco::TrackRef muontrack = muon->globalTrack();
          reco::TrackRef trackerTrack = muon->innerTrack();
+         reco::TrackRef outerTrack = muon->outerTrack();
+
          part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2());
-         part->setUserRecord<int>("VHits", muontrack->numberOfValidHits());
          part->setUserRecord<int>("LHits", muontrack->numberOfLostHits());
+
+         //store info from HitPattern of the global track
+         //valid hits
+         part->setUserRecord<int>("VHits",muontrack->hitPattern().numberOfValidHits());
+         part->setUserRecord<int>("VHitsPixel",muontrack->hitPattern().numberOfValidPixelHits());
+         part->setUserRecord<int>("VHitsTracker",muontrack->hitPattern().numberOfValidTrackerHits());
+         part->setUserRecord<int>("VHitsMuonSys",muontrack->hitPattern().numberOfValidMuonHits());
+
+         //safe information for "cocktail" high energy refit
+         reco::TrackRef pmcTrack = muon::tevOptimized(*muon, tevMap1, tevMap2, tevMap3);
+         part->setUserRecord<double>("pxCocktail",pmcTrack->px());
+         part->setUserRecord<double>("pyCocktail",pmcTrack->py());
+         part->setUserRecord<double>("pzCocktail",pmcTrack->pz());
+
          // Tracker Only
-         part->setUserRecord<double>("NormChi2_TM", trackerTrack->normalizedChi2());
-         part->setUserRecord<int>("TrackerVHits", trackerTrack->numberOfValidHits());
-         part->setUserRecord<int>("TrackerLHits", trackerTrack->numberOfLostHits());
+         //part->setUserRecord<double>("NormChi2_Tracker", trackerTrack->normalizedChi2());
+         //part->setUserRecord<int>("TrackerVHits", trackerTrack->numberOfValidHits());
+         //part->setUserRecord<int>("TrackerLHits", trackerTrack->numberOfLostHits());
+         // Muon System Only 
+         //part->setUserRecord<double>("NormChi2_MuonSys", outerTrack->normalizedChi2());
+         //part->setUserRecord<int>("MuonSysVHits", outerTrack->numberOfValidHits());
+         //part->setUserRecord<int>("MuonSysLHits", outerTrack->numberOfLostHits());
+
          //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
          part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
          part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
@@ -1079,6 +1114,8 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setUserRecord<bool>("isGood", muon::isGoodMuon( *muon, muon::GlobalMuonPromptTight ) );
          part->setUserRecord<bool>("lastStationTight", muon::isGoodMuon( *muon, muon::TMLastStationTight ) ); 
          part->setUserRecord<float>("SegComp", muon::segmentCompatibility( *muon ) );
+
+
          numMuonRec++;
       }
    }
