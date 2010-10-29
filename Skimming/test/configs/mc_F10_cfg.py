@@ -1,8 +1,8 @@
 runOnData = False
 #run on Summer09 (ReReco'd or not)
-runOnSummer09 = True
+runOnSummer09 = False
 #run on ReReco'ed data or Summer09 MC
-runOnReReco = True
+runOnReReco = False
 
 if runOnData and runOnSummer09:
     print "runOnData and runOnSummer09 can't be true at the same time!"
@@ -93,45 +93,13 @@ if runOnData:
     process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.patDefaultSequence )
 
 else:
-    #this filter selects events containing muons
-    process.mugenfilter = cms.EDFilter("MCSmartSingleParticleFilter",
-                                       MaxDecayRadius = cms.untracked.vdouble(2000.0, 2000.0),
-                                       Status = cms.untracked.vint32(1, 1),
-                                       MinPt = cms.untracked.vdouble(5.0, 5.0),
-                                       ParticleID = cms.untracked.vint32(13, -13),
-                                       MaxEta = cms.untracked.vdouble(2.5, 2.5),
-                                       MinEta = cms.untracked.vdouble(-2.5, -2.5),
-                                       MaxDecayZ = cms.untracked.vdouble(4000.0, 4000.0),
-                                       MinDecayZ = cms.untracked.vdouble(-4000.0, -4000.0)
-                                       )
-    #this filter selects events containing electromagnetic stuff
-    process.emenrichingfilter = cms.EDFilter( "EMEnrichingFilter",
-                                              filterAlgoPSet = cms.PSet( requireTrackMatch = cms.bool(False),
-                                                                         caloIsoMax = cms.double(10.0),
-                                                                         isoGenParConeSize = cms.double(0.1),
-                                                                         tkIsoMax = cms.double(5.0),
-                                                                         hOverEMax = cms.double(0.5),
-                                                                         isoGenParETMin = cms.double(20.0),
-                                                                         genParSource = cms.InputTag("genParticles"),
-                                                                         isoConeSize = cms.double(0.2),
-                                                                         clusterThreshold = cms.double(20.0)
-                                                                         )
-                                              )
-    #this filter selects events containing BC->E
-    process.bctoefilter = cms.EDFilter("BCToEFilter",
-                                       filterAlgoPSet = cms.PSet( genParSource = cms.InputTag("genParticles"),
-                                                                  eTThreshold = cms.double(10)
-                                                                  )
-                                       )
-    #and we don't want either of those events in this sample
-    process.p = cms.Path( ~process.mugenfilter + ~process.emenrichingfilter + ~process.bctoefilter )
     if runOnSummer09:
         process.load("RecoJets.Configuration.GenJetParticles_cff")
         process.load("RecoJets.JetProducers.ak5GenJets_cfi")
-        process.p += process.genParticlesForJets * process.ak5GenJets
-    #now add PAT
-    process.p += process.patDefaultSequence
-    
+        process.p = cms.Path( process.genParticlesForJets * process.ak5GenJets * process.patDefaultSequence )
+    else:
+        process.p = cms.Path( process.patDefaultSequence )
+
 
 process.p += getattr(process,"patPF2PATSequencePFlow")
 #store the result of the HCAL noise info

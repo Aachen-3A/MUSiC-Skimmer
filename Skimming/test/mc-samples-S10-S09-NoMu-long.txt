@@ -1,8 +1,0 @@
-#ATTENTION: Many events in those samples, so run it with -j 100000
-
-#Configuration:
-config=mc_S10_S09_NoMu_cfg.py
-
-#EM-enriched QCD (BC->E already removed)
-QCD_EM_Pt20to30:/QCD_EMEnriched_Pt20to30/Summer10-START36_V9_S09-v2/GEN-SIM-RECO
-QCD_EM_Pt30to80:/QCD_EMEnriched_Pt30to80/Summer10-START36_V9_S09-v1/GEN-SIM-RECO

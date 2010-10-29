@@ -1,8 +1,8 @@
 runOnData = False
 #run on Summer09 (ReReco'd or not)
-runOnSummer09 = True
+runOnSummer09 = False
 #run on ReReco'ed data or Summer09 MC
-runOnReReco = True
+runOnReReco = False
 
 if runOnData and runOnSummer09:
     print "runOnData and runOnSummer09 can't be true at the same time!"
