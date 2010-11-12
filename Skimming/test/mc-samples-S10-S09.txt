@@ -1,17 +1,7 @@
 #Configuration:
 config=mc_S10_S09_cfg.py
 
-ZJets_MG:/ZJets_7TeV-madgraph/Summer10-START36_V10-v2/GEN-SIM-RECO
 WJets_MG:/WJets_7TeV-madgraph/Summer10-START36_V10-v1/GEN-SIM-RECO
-
-VQQJets_MG:/VQQJets_7TeV-madgraph/Summer10-START36_V10-v1/GEN-SIM-RECO
-VVJets_MG:/VVJets_7TeV-madgraph/Summer10-START36_V10-v1/GEN-SIM-RECO
-
-
-#TTbar
-TTbar:/TTbar/Summer10-START36_V9_S09-v1/GEN-SIM-RECO
-
-TTJets_MG:/TTJets_7TeV-madgraph/Summer10-START36_V10-v1/GEN-SIM-RECO
 
 
 #PhotonJets

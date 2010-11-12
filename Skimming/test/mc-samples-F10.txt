@@ -24,6 +24,17 @@ QCD_Mu_Pt120to150:/QCD_Pt-120to150_MuPt5Enriched_TuneZ2_7TeV-pythia6/Fall10-STAR
 QCD_Mu_Pt150:/QCD_Pt-150_MuPt5Enriched_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO
 
 
+DiPhotonBox_Pt25to250:/DiPhotonBox_Pt25to250_TrackingParticles_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECODEBUG
+DiPhotonBox_Pt10to25:/DiPhotonBox_Pt10to25_TrackingParticles_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECODEBUG
+DiPhotonBorn_Pt25to250:/DiPhotonBorn_Pt25to250_TrackingParticles_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECODEBUG
+DiPhotonBorn_Pt250toinf:/DiPhotonBorn_Pt250toinf_TrackingParticles_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECODEBUG
+DiPhotonBorn_Pt10to25:/DiPhotonBorn_Pt10to25_TrackingParticles_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECODEBUG
+
+
+TT:/TT_TuneZ2_7TeV-pythia6-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
+TTJets_MG:/TTJets_TuneZ2_7TeV-madgraph-tauola/Fall10-START38_V12-v2/GEN-SIM-RECO
+
+
 DYToTauTau_M10to20:/DYToTauTau_M-10To20_TuneZ2_7TeV-pythia6-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
 DYToTauTau_M20:/DYToTauTau_M-20_TuneZ2_7TeV-pythia6-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
 DYToEE_M10to20:/DYToEE_M-10To20_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO
@@ -71,6 +82,15 @@ WToMuNu:/WToMuNu_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO
 WToENu:/WToENu_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO
 
 
+DYJetsToLL_M50:/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola/Fall10-START38_V12-v2/GEN-SIM-RECO
+DYJetsToLL_M50_D6T:/DYJetsToLL_TuneD6T_M-50_7TeV-madgraph-tauola/Fall10-START38_V12-v2/GEN-SIM-RECO
+DYJetsToLL_M10to50_D6T:/DYJetsToLL_TuneD6T_M-10To50_7TeV-madgraph-tauola/Fall10-START38_V12-v2/GEN-SIM-RECO
+
+
 ZZ:/ZZtoAnything_TuneZ2_7TeV-pythia6-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
 WZ:/WZtoAnything_TuneZ2_7TeV-pythia6-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
 WW:/WWtoAnything_TuneZ2_7TeV-pythia6-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
+
+
+VVJetsTo4L_MG:/VVJetsTo4L_TuneD6T_7TeV-madgraph-tauola/Fall10-START38_V12-v1/GEN-SIM-RECO
+VQQJetsToLL_MG:/VQQJetsToLL_TuneD6T_7TeV-madgraph-tauola/Fall10-START38_V12-v2/GEN-SIM-RECO
