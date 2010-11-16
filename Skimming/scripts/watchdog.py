@@ -312,8 +312,7 @@ parser = optparse.OptionParser( usage='usage: %prog [options] crab_dirs...' )
 parser.add_option( '-a', '--resubmit-aborted', action='store_true', default=False, help='Resubmit aborted jobs' )
 parser.add_option( '-g', '--resubmit-grid-failed', action='store_true', default=False, help='Resubmit jobs with grid failures' )
 parser.add_option( '-f', '--resubmit-app-failed', action='store_true', default=False, help='Resubmit jobs with application failures' )
-parser.add_option( '-r', '--resubmit-running', action='store_true', default=False, help='Kill running jobs and resubmit them' )
-parser.add_option( '-s', '--resubmit-scheduled', action='store_true', default=False, help='Kill scheduled jobs and resubmit them' )
+parser.add_option( '-k', '--kill-resubmit', metavar='STATES', help='Kill and resubmit jobs in STATES, which can be a comma-separated list' )
 parser.add_option( '--kill-all', action='store_true', default=False, help='Issue -kill all for all tasks' )
 parser.add_option( '-u', '--user', help='Set the grid user name, in case it is not the same as the login name' )
 parser.add_option( '-b', '--blacklist', metavar='STRING', help='Blacklist STRING during resubmission.' )
@@ -399,14 +398,13 @@ for dir in crab_dirs:
     if options.resubmit_app_failed and 'App-Fail' in states:
         resubmit( dir, states[ 'App-Fail' ], 'App-Fail', options )
 
-    to_kill = []
-    if options.resubmit_running:
-        to_kill += states[ 'Running' ]
-    if options.resubmit_scheduled:
-        to_kill += states[ 'Scheduled' ]
-    if to_kill:
-        call_crab( '-kill', to_kill, dir, stdout=True )
-        resubmit( dir, to_kill, 'Killed', options )
+    if options.kill_resubmit:
+        to_kill = list()
+        for s in options.kill_resubmit.split( ',' ):
+            to_kill += states[ s ]
+        if to_kill:
+            call_crab( '-kill', to_kill, dir, stdout=True )
+            resubmit( dir, to_kill, 'Killed', options )
 
 stat.print_statistics()
 
