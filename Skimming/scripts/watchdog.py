@@ -271,13 +271,16 @@ def move_dir( dir, target ):
 
 
 
-def resubmit( dir, jobs, state, options ):
+def resubmit( dir, jobs, state, options, force=False ):
     print 'Resubmitting jobs in state:', state
     if options.blacklist:
         bl_cmd = [ '-GRID.ce_black_list', options.blacklist ]
     else:
         bl_cmd = None
-    call_crab( '-resubmit', jobs, dir, stdout=True, additionals=bl_cmd )
+    if force:
+        call_crab( '-forceResubmit', jobs, dir, stdout=True, additionals=bl_cmd )
+    else:
+        call_crab( '-resubmit', jobs, dir, stdout=True, additionals=bl_cmd )
                   
     stat.add_resubmitted( jobs )
                   
@@ -313,6 +316,7 @@ parser.add_option( '-a', '--resubmit-aborted', action='store_true', default=Fals
 parser.add_option( '-g', '--resubmit-grid-failed', action='store_true', default=False, help='Resubmit jobs with grid failures' )
 parser.add_option( '-f', '--resubmit-app-failed', action='store_true', default=False, help='Resubmit jobs with application failures' )
 parser.add_option( '-k', '--kill-resubmit', metavar='STATES', help='Kill and resubmit jobs in STATES, which can be a comma-separated list' )
+parser.add_option( '--force', metavar='STATES', help='ForceResubmit jobs in STATES, which can be a comma-separated list' )
 parser.add_option( '--kill-all', action='store_true', default=False, help='Issue -kill all for all tasks' )
 parser.add_option( '-u', '--user', help='Set the grid user name, in case it is not the same as the login name' )
 parser.add_option( '-b', '--blacklist', metavar='STRING', help='Blacklist STRING during resubmission.' )
@@ -405,6 +409,12 @@ for dir in crab_dirs:
         if to_kill:
             call_crab( '-kill', to_kill, dir, stdout=True )
             resubmit( dir, to_kill, 'Killed', options )
+    if options.force:
+        resub = list()
+        for s in options.force.split( ',' ):
+            resub += states[ s ]
+        if resub:
+            resubmit( dir, resub, 'Forced', options, force=True )
 
 stat.print_statistics()
 
