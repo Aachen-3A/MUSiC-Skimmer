@@ -40,6 +40,11 @@ def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
         process.patPhotons.embedGenMatch = False
         process.patJets.embedGenJetMatch = False
         process.patJets.embedGenPartonMatch = False
+        process.patJetCorrFactors.levels = cms.vstring( 'L2Relative', 'L3Absolute', 'L2L3Residual', 'Uncertainty' )
+
+    else:
+        #By default the L2L3Residual corrections are applied to all jets. This is wrong for MC! So correct this.
+        process.patJetCorrFactors.levels = cms.vstring( 'L2Relative', 'L3Absolute', 'Uncertainty' )
 
 
 
