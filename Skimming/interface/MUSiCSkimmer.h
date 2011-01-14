@@ -57,7 +57,10 @@ extern "C" {
 #include "DataFormats/PatCandidates/interface/Muon.h"
 
 //JetID
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "PhysicsTools/SelectorUtils/interface/Selector.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
+#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
 
 //for ClusterShape variables
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
@@ -103,7 +106,7 @@ public:
    virtual void endJob();
    virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
-   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info );
+   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info );
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
@@ -127,7 +130,7 @@ public:
                                      std::map< const Candidate*, pxl::Particle* > &genmap,
                                      edm::ESHandle< CaloGeometry > &geo
                                      );
-   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info );
+   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
    virtual void analyzeRecGammas( const edm::Event &iEvent,
                                   pxl::EventView *RecView,
@@ -179,10 +182,9 @@ public:
    // Photon
    std::string fGammaRecoLabel;
    // Jets
-   std::vector< collection_def > jet_infos;
+   std::vector< jet_def > jet_infos;
    //JetIDs
-   typedef std::vector< std::pair< std::string, JetIDSelectionFunctor > > jet_id_list;
-   jet_id_list jet_ids;
+   typedef std::vector< std::pair< std::string, Selector<pat::Jet>* > > jet_id_list;
    // MET labels
    std::vector< collection_def > MET_infos;
    // Cluster

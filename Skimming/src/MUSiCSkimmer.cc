@@ -115,6 +115,8 @@ Implementation:
 //Muon refits
 #include "DataFormats/MuonReco/interface/MuonCocktails.h"
 
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "PhysicsTools/SelectorUtils/interface/Selector.h"
 
 using namespace std;
 using namespace edm;
@@ -149,33 +151,46 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    jets_pset.getParameterSetNames( jet_names );
    //loop over the names of the jet PSets
    for( vector< string >::const_iterator jet_name = jet_names.begin(); jet_name != jet_names.end(); ++jet_name ){
-      collection_def jet;
+      jet_def jet;
       jet.name = *jet_name;
 
       ParameterSet one_jet = jets_pset.getParameter< ParameterSet >( jet.name );
       jet.MCLabel   = one_jet.getParameter< InputTag >( "MCLabel" );
       jet.RecoLabel = one_jet.getParameter< InputTag >( "RecoLabel" );
+      vector< string > id_names = one_jet.getParameter< vector< string > >( "IDs" );
+      jet.isPF = one_jet.getParameter< bool >( "isPF" );
+
+      //JetIDs
+      unsigned int num_IDs=0;
+      if (jet.isPF) num_IDs = PFJetIDSelectionFunctor::N_QUALITY;
+      else num_IDs = JetIDSelectionFunctor::N_QUALITY;
+      if( num_IDs < id_names.size() ){
+         cout << "Less JetIDs available than requested, using only available." << endl;
+      } else if( num_IDs > id_names.size() ){
+         cout << "More JetIDs available than requested, using only requested." << endl;
+         num_IDs = id_names.size();
+      }
+
+      //ATTENTION: The following is REALLY ugly
+      //Looping over enums is apparentlt not forseen in C++
+      //Seems to be the only way to make the JetIDs configurable
+      if (jet.isPF) {
+         for( PFJetIDSelectionFunctor::Quality_t q = PFJetIDSelectionFunctor::Quality_t(0);
+            q < PFJetIDSelectionFunctor::N_QUALITY;
+            q = PFJetIDSelectionFunctor::Quality_t( q+1 ) ){
+            pair< std::string, ::Selector<pat::Jet>* > ID( id_names[q], new PFJetIDSelectionFunctor( PFJetIDSelectionFunctor::FIRSTDATA, q ) );
+            jet.IDs.push_back( ID );
+         }
+      } else {
+         for( JetIDSelectionFunctor::Quality_t q = JetIDSelectionFunctor::Quality_t(0);
+            q < JetIDSelectionFunctor::N_QUALITY;
+            q = JetIDSelectionFunctor::Quality_t( q+1 ) ){
+            pair< std::string, ::Selector<pat::Jet>* > ID( id_names[q], new JetIDSelectionFunctor( JetIDSelectionFunctor::PURE09, q ) );
+            jet.IDs.push_back( ID );
+         }
+      }
 
       jet_infos.push_back( jet );
-   }
-
-   //JetIDs
-   vector< string > id_names = jets_pset.getParameter< vector< string > >( "IDs" );
-   unsigned int num_IDs = JetIDSelectionFunctor::N_QUALITY;
-   if( num_IDs < id_names.size() ){
-      cout << "Less JetIDs available than requested, using only available." << endl;
-   } else if( num_IDs > id_names.size() ){
-      cout << "More JetIDs available than requested, using only requested." << endl;
-      num_IDs = id_names.size();
-   }
-   //ATTENTION: The following is REALLY ugly
-   //Looping over enums is apparentlt not forseen in C++
-   //Seems to be the only way to make the JetIDs configurable
-   for( JetIDSelectionFunctor::Quality_t q = JetIDSelectionFunctor::Quality_t(0);
-        q < JetIDSelectionFunctor::N_QUALITY;
-        q = JetIDSelectionFunctor::Quality_t( q+1 ) ){
-      pair< std::string, JetIDSelectionFunctor > ID( id_names[q], JetIDSelectionFunctor( JetIDSelectionFunctor::CRAFT08, q ) );
-      jet_ids.push_back( ID );
    }
 
 
@@ -306,7 +321,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
       analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
-      for( vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
       }
       for( vector< collection_def >::const_iterator MET_info = MET_infos.begin(); MET_info != MET_infos.end(); ++MET_info ){
@@ -333,7 +348,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo );
-      for( vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
       }
       for( vector< collection_def >::const_iterator MET_info = MET_infos.begin(); MET_info != MET_infos.end(); ++MET_info ){
@@ -351,21 +366,21 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
    if (fDebug > 0) {  
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
-      for( std::vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << jet_info->name << " ";
       }
       cout << "  MET  " << endl;
       cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
            << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
            << setw(7) << GenEvtView->findUserRecord<int>("NumGamma");
-      for( std::vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << setw(4) << GenEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
       cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
            << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
            << setw(7) << RecEvtView->findUserRecord<int>("NumGamma");
-      for( std::vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << setw(4) << RecEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
       } 
       cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
@@ -593,7 +608,7 @@ void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator Jets ------------
 
-void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info ) {
+void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ) {
    //Get the GenJet collections
    edm::Handle<reco::GenJetCollection> GenJets;
    iEvent.getByLabel( jet_info.MCLabel, GenJets );
@@ -1286,7 +1301,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
 
 // ------------ reading Reconstructed Jets ------------
 
-void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const collection_def &jet_info){
+void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info){
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
    if (RecView->findUserRecord<int>("NumVertices") > 0) {
@@ -1314,15 +1329,24 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName( jet_info.name );
          part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
-         part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
-         part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-         part->setUserRecord<int>("N90", jet->n90());
-         part->setUserRecord<int>("N60", jet->n60());
-         std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
-         part->setUserRecord<int>("NCaloRefs", caloRefs.size());
-         part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
-         part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
-         part->setUserRecord<double>("TowersArea", jet->towersArea());
+         if (jet_info.isPF) {
+            part->setUserRecord<double>("chargedHadronEnergyFraction",jet->chargedHadronEnergyFraction());
+            part->setUserRecord<double>("neutralHadronEnergyFraction", ( jet->neutralHadronEnergy() + jet->HFHadronEnergy() ) / jet->energy());
+            part->setUserRecord<double>("chargedEmEnergyFraction", jet->chargedEmEnergyFraction());
+            part->setUserRecord<double>("neutralEmEnergyFraction", jet->neutralEmEnergyFraction());
+            part->setUserRecord<double>("chargedMultiplicity", jet->chargedMultiplicity());
+            part->setUserRecord<double>("nconstituents", jet->numberOfDaughters());
+         } else {
+            part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+            part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
+            part->setUserRecord<int>("N90", jet->n90());
+            part->setUserRecord<int>("N60", jet->n60());
+            std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
+            part->setUserRecord<int>("NCaloRefs", caloRefs.size());
+            part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
+            part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+            part->setUserRecord<double>("TowersArea", jet->towersArea());
+         }
 
          //calculate the kinematics with a new vertex
          reco::Candidate::LorentzVector physP4 = reco::Jet::physicsP4( the_vertex, *jet, jet->vertex() );
@@ -1332,17 +1356,17 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
 
          part->setUserRecord< double >( "fHPD", jet->jetID().fHPD );
          part->setUserRecord< double >( "fRBX", jet->jetID().fRBX );
-
          // store b-tag discriminator values:
          const vector< pair< string, float > > &btags = jet->getPairDiscri();
          for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
             part->setUserRecord< float >( btag->first, btag->second );
          }
          //jet IDs
-         for( jet_id_list::iterator ID = jet_ids.begin(); ID != jet_ids.end(); ++ID ){
-            pat::strbitset ret = ID->second.getBitTemplate();
-            part->setUserRecord< bool >( ID->first, ID->second( *jet, ret ) );
+         for( jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID ){
+            pat::strbitset ret = ID->second->getBitTemplate();
+            part->setUserRecord< bool >( ID->first, (*(ID->second))( *jet, ret ) );
          }
+
          if (fDebug > 1) {
             const std::vector<std::pair<std::string, float> > & bTags = jet->getPairDiscri();
             part->print(0);

@@ -5,7 +5,7 @@ using namespace pxl;
 
 // ------------ matching Method ------------
 
-void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, const std::vector< collection_def > &jet_infos, const std::string &_METType ){
+void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, const std::vector< jet_def > &jet_infos, const std::string &_METType ){
 
    // FIXME: Make code more generic! Generate a list of all Particle types
    std::vector<std::string> typeList;
@@ -13,7 +13,7 @@ void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, cons
    typeList.push_back("Ele"); 
    typeList.push_back("Gamma"); 
    typeList.push_back(_METType);
-   for( vector< collection_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info) {
+   for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info) {
       typeList.push_back( jet_info->name );
    }
 

@@ -24,7 +24,7 @@ class ParticleMatcher {
       // Destruktor
       ~ParticleMatcher() {;};
       // Match method
-      void matchObjects( pxl::EventView *GenView, pxl::EventView *RecView, const std::vector< collection_def > &jet_infos, const std::string &_METType); 
+      void matchObjects( pxl::EventView *GenView, pxl::EventView *RecView, const std::vector< jet_def > &jet_infos, const std::string &_METType); 
       void makeMatching(std::vector<pxl::Particle*>& gen_particles, std::vector<pxl::Particle*>& rec_particles, const std::string& _METType);
       
    private:

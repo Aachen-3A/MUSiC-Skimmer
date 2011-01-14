@@ -41,11 +41,20 @@ Skimmer = cms.EDAnalyzer(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
         AK5 = cms.PSet(
             MCLabel = cms.InputTag( "ak5GenJets" ),
-            RecoLabel = cms.InputTag( "cleanPatJets" )
+            RecoLabel = cms.InputTag( "cleanPatJets" ),
+            isPF = cms.bool(False),
+            # the following vector must hold the names of the IDs in the same sequence
+            # as the qualities in PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h
+            IDs = cms.vstring( 'MINIMAL', 'LOOSE_AOD', 'LOOSE', 'TIGHT' )
             ),
-        # the following vector must hold the names of the IDs in the same sequence
-        # as the qualities in PhysicsTools/PatUtils/interface/JetIDSelectionFunctor.h
-        IDs = cms.vstring( 'minimal', 'loose_aod', 'loose', 'tight' )
+        pfAK5 = cms.PSet(
+            MCLabel = cms.InputTag( "ak5GenJets" ),
+            RecoLabel = cms.InputTag( "selectedPatJetsPFlow" ),
+            isPF = cms.bool(True),
+            # the following vector must hold the names of the IDs in the same sequence
+            # as the qualities in PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h
+            IDs = cms.vstring( 'LOOSE', 'TIGHT' )
+            ),
         ),
     
     triggers = cms.PSet(
