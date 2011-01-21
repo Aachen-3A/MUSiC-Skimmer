@@ -10,6 +10,7 @@ import xml.dom.minidom
 import time
 import MUSiCProject.Skimming.outputCleaner as outputCleaner
 import logging
+import itertools
 
 
 class JobStatusError( Exception ):
@@ -309,6 +310,13 @@ def clean_output( dir, parser, jobs ):
 
 
 
+#returns iterator that slices list l into pieces of length c
+def constant_length_slice( l, c ):
+    for i in itertools.count(0):
+        start = i*c
+        if start >= len( l ): break
+        else: yield l[start:start+c]
+
 
 
 parser = optparse.OptionParser( usage='usage: %prog [options] crab_dirs...' )
@@ -333,10 +341,6 @@ if not options.user:
     if not options.user:
         print 'Cannot get user name, please provide one on the command line.'
         sys.exit(1)
-
-if options.kill_all and ( options.resubmit_aborted or options.resubmit_grid_failed or options.resubmit_app_failed or options.resubmit_running or options.resubmit_scheduled ):
-    print '--kill-all must be the only command'
-    sys.exit(1)
 
 
 stat = statistics()
@@ -366,7 +370,12 @@ for dir in crab_dirs:
 
     if 'Done' in states:
         print 'Jobs done, getting output...'
-        call_crab( '-get', states[ 'Done' ], dir, stdout=True )
+        if len( states[ 'Done' ] ) < 10:
+            call_crab( '-get', states[ 'Done' ], dir, stdout=True )
+        else:
+            print 'More than 10 jobs done, splitting the operation...'
+            for piece in constant_length_slice( states[ 'Done' ], 10 ):
+                call_crab( '-get', piece, dir, stdout=True )
 
         print
         if use_server:
