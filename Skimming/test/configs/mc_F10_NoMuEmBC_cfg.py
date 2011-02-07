@@ -76,12 +76,6 @@ if runOnData:
 
 #filter on right BX in case of data
 if runOnData:
-    process.primaryVertexFilter = cms.EDFilter( "VertexSelector",
-                                                src = cms.InputTag( "offlinePrimaryVertices" ),
-                                                cut = cms.string( "!isFake && ndof > 4 && abs(z) <= 15 && position.Rho <= 2" ),
-                                                filter = cms.bool( True ), # otherwise it won't filter the events, just produce an empty vertex collection.
-                                                )                            
-
     process.scrapingFilter = cms.EDFilter( "FilterOutScraping",
                                            applyfilter = cms.untracked.bool( True ),
                                            debugOn = cms.untracked.bool( False ),
@@ -90,7 +84,7 @@ if runOnData:
                                            )
 
 
-    process.p = cms.Path( process.primaryVertexFilter * process.scrapingFilter * process.patDefaultSequence )
+    process.p = cms.Path( process.scrapingFilter * process.patDefaultSequence )
 
 else:
     #this filter selects events containing muons
