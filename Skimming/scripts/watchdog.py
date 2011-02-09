@@ -42,7 +42,9 @@ class Job:
     def __str__( self ):
         return ( 'Job: '+
                  'num='+str( self.num )+'; '+
+                 'ended='+str( self.ended )+'; '+
                  'state='+str( self.state )+'; '+
+                 'action='+str( self.action )+'; '+
                  'host='+str( self.host )+'; '+
                  'grid_exit='+str( self.grid )+'; '+
                  'exe_exit='+str( self.exe )
@@ -83,19 +85,32 @@ def call_crab( command, jobs, dir, stdout=False, additionals=None ):
 
 
 def make_state( job, use_server ):
-    if job.state == 'Retrieved' or job.state == 'Cleared' or (not use_server and job.state == 'Done'):
-        if job.grid == 0 and job.exe == 0:
-            return 'Success'
-        elif job.exe != None and job.exe != 0:
-            return 'App-Fail'
-        elif job.grid != None and job.grid != 0 and ( job.exe == None or job.exe == 0 ):
-            return 'Grid-Fail'
-        elif job.grid == None and job.exe == None and job.state == 'Done':
+    if job.ended == 'Y': job.ended = True
+    else: job.ended = False
+
+    if job.ended:
+        if job.state == 'Retrieved' or job.state == 'Cleared' or (not use_server and job.state == 'Done'):
+            if job.grid == 0 and job.exe == 0:
+                return 'Success'
+            elif job.exe != None and job.exe != 0:
+                return 'App-Fail'
+            elif job.grid != None and job.grid != 0 and ( job.exe == None or job.exe == 0 ):
+                return 'Grid-Fail'
+            elif job.grid == None and job.exe == None and job.state == 'Done':
+                return job.state
+            else:
+                raise JobStatusError( job )
+        elif job.state == 'Aborted':
             return job.state
         else:
             raise JobStatusError( job )
     else:
-        return job.state
+        if job.state == 'Retrieved' or job.state == 'Cleared':
+            raise JobStatusError( job )
+        elif job.state == 'Done':
+            return 'Done(waiting)'
+        else:
+            return job.state
 
 
 
@@ -133,36 +148,40 @@ def parse_output( output, use_server ):
         else:
             continue
 
-        job.state = split_line[1]
-        if job.state == 'Cancelled':
-            del split_line[2:4]
+        job.ended = split_line[1]
 
-        if len( split_line ) == 2:
+        job.state = split_line[2]
+        if job.state == 'Cancelled':
+            del split_line[4:6]
+
+        job.action = split_line[3]
+
+        if len( split_line ) == 4:
             job.host = None
             job.exe = None
             job.grid = None
-        elif len( split_line ) == 3:
-            if split_line[2].isdigit():
-                job.host = None
+        elif len( split_line ) == 5:
+            if split_line[4].isdigit():
                 job.exe = None
-                job.grid = int( split_line[2] )
+                job.grid = int( split_line[4] )
+                job.host = None
             else:
-                job.host = split_line[2]
                 job.exe = None
                 job.grid = None
-        elif len( split_line ) == 4:
-            if split_line[2].isdigit():
+                job.host = split_line[4]
+        elif len( split_line ) == 6:
+            if split_line[4].isdigit():
+                job.exe = int( split_line[4] )
+                job.grid = int( split_line[5] )
                 job.host = None
-                job.exe = int( split_line[2] )
-                job.grid = int( split_line[3] )
             else:
-                job.host = split_line[2]
                 job.exe = None
-                job.grid = int( split_line[3] )
-        elif len( split_line ) == 5:
-            job.host = split_line[2]
-            job.exe = int( split_line[3] )
-            job.grid = int( split_line[4] )
+                job.grid = int( split_line[4] )
+                job.host = split_line[5]
+        elif len( split_line ) == 7:
+            job.exe = int( split_line[4] )
+            job.grid = int( split_line[5] )
+            job.host = split_line[6]
         else:
             raise Exception( 'Unexpected line in crab output: %s' % line )
 
@@ -179,8 +198,9 @@ def get_status( dir, use_server ):
     for trial in xrange( 3 ):
         print 'Retrieving status (trial %s)...' % (trial+1)
         output = call_crab( '-status', None, dir )
-        states = parse_output( output, use_server )
-        if states: break
+        if output:
+            states = parse_output( output, use_server )
+            if states: break
     else:
         print 'Failed 3 times to get the status!'
         return None
