@@ -3,6 +3,9 @@ import FWCore.ParameterSet.Config as cms
 def configurePAT( process, runOnData, runOnReReco, runOnSummer09 ):
     #do not store TagInfos, as they are not in AOD
     process.patJets.addTagInfos = False
+    #do not embed muon tracks, as it breaks the TeV-refit
+    process.patMuons.embedCombinedMuon = False
+    process.patMuons.embedStandAloneMuon = False
 
     if runOnData:
         #configure PAT matching
