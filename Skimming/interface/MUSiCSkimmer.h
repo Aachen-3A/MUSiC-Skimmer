@@ -11,6 +11,10 @@ extern "C" {
 }
 
 
+//standard library
+#include <map>
+
+
 // CMSSW includes
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -102,11 +106,11 @@ public:
    };
 
 
-   virtual void analyze(const edm::Event&, const edm::EventSetup&);
+   virtual void analyze( const edm::Event &iEvent, const edm::EventSetup &iSetup );
    virtual void endJob();
-   virtual void analyzeGenInfo(const edm::Event&, pxl::EventView*, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeGenInfo( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
-   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
+   virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeGenMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info );
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
@@ -122,21 +126,21 @@ public:
                                 trigger_group &trigger
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
-   virtual void analyzeRecMuons(const edm::Event&, pxl::EventView*, const bool&, std::map<const Candidate*, pxl::Particle*>&);
+   virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
                                      bool &MC,
                                      EcalClusterLazyTools &lazyTools,
-                                     std::map< const Candidate*, pxl::Particle* > &genmap,
+                                     std::map< const reco::Candidate*, pxl::Particle* > &genmap,
                                      edm::ESHandle< CaloGeometry > &geo
                                      );
-   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
+   virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
    virtual void analyzeRecGammas( const edm::Event &iEvent,
                                   pxl::EventView *RecView,
                                   bool &MC,
                                   EcalClusterLazyTools &lazyTools,
-                                  std::map<const Candidate*, pxl::Particle*> &genmap,
+                                  std::map< const reco::Candidate*, pxl::Particle* > &genmap,
                                   edm::ESHandle< CaloGeometry > &geo
                                   );
    virtual void analyzeECALRecHits( const edm::Event &iEvent,
@@ -146,9 +150,9 @@ public:
                                     );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
-   bool MuonMC_cuts(const GenParticle* MCmuon) const;
-   bool EleMC_cuts(const GenParticle* MCele) const;
-   bool GammaMC_cuts(const GenParticle* MCgamma) const;
+   bool MuonMC_cuts( const reco::GenParticle* MCmuon ) const;
+   bool EleMC_cuts( const reco::GenParticle* MCele ) const;
+   bool GammaMC_cuts( const reco::GenParticle* MCgamma ) const;
    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
    bool METMC_cuts(const pxl::Particle* MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const;

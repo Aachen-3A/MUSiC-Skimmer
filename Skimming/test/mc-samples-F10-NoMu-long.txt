@@ -1,7 +1,0 @@
-#ATTENTION: Samples with many events, use -t 20000000
-
-#Configuration:
-config=mc_F10_NoMu_cfg.py
-
-QCD_EM_Pt20to30:/QCD_Pt-20to30_EMEnriched_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO
-QCD_EM_Pt30to80:/QCD_Pt-30to80_EMEnriched_TuneZ2_7TeV-pythia6/Fall10-START38_V12-v1/GEN-SIM-RECO

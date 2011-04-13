@@ -1,5 +1,0 @@
-<use name=zlib>
-<export>
-  <lib name=MUSiCProjectPxl>
-  <use name=zlib>
-</export>

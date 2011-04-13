@@ -1,4 +1,4 @@
-runOnData = False
+runOnData = True
 #run on Summer09 (ReReco'd or not)
 runOnSummer09 = False
 #run on ReReco'ed data or Summer09 MC
@@ -32,28 +32,25 @@ process.options   = cms.untracked.PSet(
     Rethrow = FWCore.Framework.test.cmsExceptionsFatalOption_cff.Rethrow
     )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 # source
 process.source = cms.Source("PoolSource", 
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-'/store/data/Run2010A/EG/RECO/v4/000/140/180/72FE1D24-3690-DF11-93AB-0030487CD7B4.root',
-'/store/data/Run2010A/EG/RECO/v4/000/140/180/4EF3A795-3C90-DF11-B188-001617E30F48.root'
-	)
+    '/store/data/Run2011A/DoubleMu/AOD/PromptReco-v1/000/161/312/449EDD53-7959-E011-AF38-003048F024C2.root'
+    )
 )
 
 
 process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.PyReleaseValidation.autoCond import autoCond
 if runOnData:
-    if runOnReReco:
-        process.GlobalTag.globaltag = cms.string('GR_R_38X_V15::All')
-    else:
-        process.GlobalTag.globaltag = cms.string('GR10_P_V11::All')
+    process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
 else:
-    process.GlobalTag.globaltag = cms.string('START38_V14::All')
+    process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
 
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
 
@@ -66,8 +63,8 @@ import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
 process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
-from PhysicsTools.PatAlgos.tools.pfTools import *
-usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow") 
+from PhysicsTools.PatAlgos.tools import pfTools
+pfTools.usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow")
 
 if runOnData:
     import PhysicsTools.PatAlgos.tools.coreTools

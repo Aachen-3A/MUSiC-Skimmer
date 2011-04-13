@@ -310,8 +310,8 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    RecEvtView->setUserRecord<std::string>("Type", "Rec");
    
    //maps for matching
-   std::map<const Candidate*, pxl::Particle*> genmap; 
-   std::map<const Candidate*, pxl::Particle*> genjetmap;
+   std::map< const reco::Candidate*, pxl::Particle* > genmap;
+   std::map< const reco::Candidate*, pxl::Particle* > genjetmap;
 
    //set process name
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
@@ -469,13 +469,13 @@ void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
 
 // ------------ reading the Generator Stuff ------------
 
-void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtView, std::map<const Candidate*, pxl::Particle*>& genmap ) {
+void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* EvtView, std::map< const reco::Candidate*, pxl::Particle* >& genmap ) {
    //gen particles
    edm::Handle<reco::GenParticleCollection> genParticleHandel;
    iEvent.getByLabel(fgenParticleCandidatesLabel , genParticleHandel );
 
      
-   const GenParticle* p = (const GenParticle*) &(*genParticleHandel->begin()); //this is the incoming proton
+   const reco::GenParticle* p = (const reco::GenParticle*) &(*genParticleHandel->begin()); //this is the incoming proton
    pxl::Vertex* GenVtx = EvtView->create<pxl::Vertex>();
    GenVtx->setName("PV");
    //mind that clearly the following line crashes in case of ParticleGun RelVal like single photon
@@ -490,13 +490,13 @@ void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
    int GenId = 0;
 
    //save mother of stable particle
-   const Candidate* p_mother; 
+   const reco::Candidate* p_mother;
    int mother = 0;
    
    // loop over all particles
    for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++ pa ) {
       //cast iterator into GenParticleCandidate
-      const GenParticle* p = (const GenParticle*) &(*pa);
+      const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
       // fill Gen Muons passing some basic cuts
       if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
@@ -608,7 +608,7 @@ void MUSiCSkimmer::analyzeGenInfo(const edm::Event& iEvent, pxl::EventView* EvtV
 
 // ------------ reading the Generator Jets ------------
 
-void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ) {
+void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ) {
    //Get the GenJet collections
    edm::Handle<reco::GenJetCollection> GenJets;
    iEvent.getByLabel( jet_info.MCLabel, GenJets );
@@ -633,7 +633,7 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
          pxl::Particle *part = EvtView->create< pxl::Particle >();
          
          //cast iterator into GenParticleCandidate
-         const GenParticle *p = dynamic_cast< const GenParticle* >( &(*genJet) );
+         const reco::GenParticle *p = dynamic_cast< const reco::GenParticle* >( &(*genJet) );
          genjetmap[p] = part;
          part->setName( jet_info.name );
          part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
@@ -646,8 +646,8 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
          
          //save number of GenJet-constituents fulfilling some cuts
          int numGenJetConstit_withcuts = 0;
-         const vector< const GenParticle* > &genJetConstit = genJet->getGenConstituents();
-         for( std::vector< const GenParticle* >::const_iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
+         const vector< const reco::GenParticle* > &genJetConstit = genJet->getGenConstituents();
+         for( std::vector< const reco::GenParticle* >::const_iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
             //raise counter if cut passed
             if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
          }
@@ -666,8 +666,8 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
 void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtView, const collection_def &MET_info ) {
    edm::Handle<reco::GenMETCollection> GenMet;
    iEvent.getByLabel(MET_info.MCLabel, GenMet);
-   const GenMETCollection *genmetcol = GenMet.product();
-   const GenMET genmet = genmetcol->front();  // MET exists only once!
+   const reco::GenMETCollection *genmetcol = GenMet.product();
+   const reco::GenMET genmet = genmetcol->front();  // MET exists only once!
 
    int numMETMC = 0; //means no MET in event
 
@@ -1014,7 +1014,7 @@ void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 
 // ------------ reading Reconstructed Muons ------------
 
-void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map<const Candidate*, pxl::Particle*> & genmap) {
+void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map< const reco::Candidate*, pxl::Particle*> & genmap ) {
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
@@ -1046,7 +1046,7 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
 
          //store PAT matching info if MC
          if (MC){
-            std::map< const Candidate*, pxl::Particle* >::const_iterator it = genmap.find( muon->genLepton() );
+            std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( muon->genLepton() );
             if( it != genmap.end() ){
                part->linkSoft( it->second, "pat-match" );
             }
@@ -1113,7 +1113,7 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setUserRecord<double>("ECALIso", muon->ecalIso());
          part->setUserRecord<double>("HCALIso", muon->hcalIso());
          //save offical isolation information: delta R = 0.3
-         const MuonIsolation& muonIsoR03 = muon->isolationR03();
+         const reco::MuonIsolation& muonIsoR03 = muon->isolationR03();
          part->setUserRecord<double>("IsoR3SumPt", muonIsoR03.sumPt);
          part->setUserRecord<double>("IsoR3EmEt", muonIsoR03.emEt);
          part->setUserRecord<double>("IsoR3HadEt", muonIsoR03.hadEt);
@@ -1121,7 +1121,7 @@ void MUSiCSkimmer::analyzeRecMuons(const edm::Event& iEvent, pxl::EventView* Rec
          part->setUserRecord<int>("IsoR3NTracks", muonIsoR03.nTracks);
          part->setUserRecord<int>("IsoR3NJets", muonIsoR03.nJets);
          //save offical isolation information: delta R = 0.5
-         const MuonIsolation& muonIsoR05 = muon->isolationR05();
+         const reco::MuonIsolation& muonIsoR05 = muon->isolationR05();
          part->setUserRecord<double>("IsoR5SumPt", muonIsoR05.sumPt);
          part->setUserRecord<double>("IsoR5EmEt", muonIsoR05.emEt);
          part->setUserRecord<double>("IsoR5HadEt", muonIsoR05.hadEt);
@@ -1153,7 +1153,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
                                         pxl::EventView *RecView,
                                         bool &MC,
                                         EcalClusterLazyTools &lazyTools,
-                                        std::map< const Candidate*, pxl::Particle*> &genmap,
+                                        std::map< const reco::Candidate*, pxl::Particle*> &genmap,
                                         edm::ESHandle< CaloGeometry > &geo
                                         ) {
    int numEleRec = 0;   
@@ -1228,7 +1228,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
 
          //store PAT matching info if MC
          if( MC ){
-            std::map<const Candidate*, pxl::Particle*>::const_iterator it = genmap.find( ele->genLepton() );
+            std::map<const reco::Candidate*, pxl::Particle*>::const_iterator it = genmap.find( ele->genLepton() );
             if( it != genmap.end() ){
                part->linkSoft( it->second, "pat-match" );
             }
@@ -1239,7 +1239,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
          // a SuperClusterCollection is a std::vector<SuperCluster>
          // although we get a vector of SuperClusters an electron is only made out of ONE SC
          // therefore only the first element of the vector should be available!
-         const SuperClusterRef SCRef = ele->superCluster();
+         const reco::SuperClusterRef SCRef = ele->superCluster();
 
          //use EcalClusterLazyTools to store ClusterShapeVariables
          part->setUserRecord< double >( "e1x5",  ele->e1x5() );
@@ -1301,7 +1301,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
 
 // ------------ reading Reconstructed Jets ------------
 
-void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info){
+void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ){
    //get primary vertex (hopefully correct one) for physics eta
    double VertexZ = 0.;
    if (RecView->findUserRecord<int>("NumVertices") > 0) {
@@ -1382,7 +1382,7 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
             RefToBase< reco::Jet > jetRef( RefToBaseProd< reco::Jet >( jetHandle ), jet_index );
             part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
 
-            std::map< const Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
+            std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
             if( it != genjetmap.end() ){
                part->linkSoft( it->second, "pat-match" );
             }
@@ -1400,7 +1400,7 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
                                      bool &MC,
                                      EcalClusterLazyTools &lazyTools,
-                                     std::map< const Candidate*, pxl::Particle* > &genmap,
+                                     std::map< const reco::Candidate*, pxl::Particle* > &genmap,
                                      edm::ESHandle< CaloGeometry > &geo
                                      ){
    // get Photon Collection     
@@ -1421,7 +1421,7 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
          /// Whether or not the SuperCluster has a matched pixel seed
          part->setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
          //get the SC and the seed
-         const SuperClusterRef SCRef = photon->superCluster();
+         const reco::SuperClusterRef SCRef = photon->superCluster();
          std::pair<DetId, float> max_hit = lazyTools.getMaximum( *SCRef );
          DetId seedID = max_hit.first;
          double eMax = max_hit.second;
@@ -1487,7 +1487,7 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
 
          //store PAT matching info
          if (MC) {
-            std::map< const Candidate*, pxl::Particle* >::const_iterator it = genmap.find( photon->genPhoton() );
+            std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( photon->genPhoton() );
             if( it != genmap.end() ){
                part->linkSoft( it->second, "pat-match" );
             }
@@ -1680,7 +1680,7 @@ void MUSiCSkimmer::endJob() {
 
 // ------------ method to define MC-MUON-cuts
 
-bool MUSiCSkimmer::MuonMC_cuts(const GenParticle* MCmuon) const {
+bool MUSiCSkimmer::MuonMC_cuts( const reco::GenParticle *MCmuon ) const {
    if( MCmuon->pt() < min_muon_pt ) return false;
    if( fabs( MCmuon->eta() ) > max_eta ) return false;
    return true;
@@ -1690,7 +1690,7 @@ bool MUSiCSkimmer::MuonMC_cuts(const GenParticle* MCmuon) const {
 
 // ------------ method to define MC-Electron-cuts
 
-bool MUSiCSkimmer::EleMC_cuts(const GenParticle* MCele) const {
+bool MUSiCSkimmer::EleMC_cuts( const reco::GenParticle *MCele ) const {
    if( MCele->pt() < min_ele_pt ) return false;
    if( fabs( MCele->eta() ) > max_eta ) return false;
    return true;
@@ -1698,7 +1698,7 @@ bool MUSiCSkimmer::EleMC_cuts(const GenParticle* MCele) const {
 
 // ------------ method to define MC-Gamma-cuts
 
-bool MUSiCSkimmer::GammaMC_cuts(const GenParticle* MCgamma) const {
+bool MUSiCSkimmer::GammaMC_cuts( const reco::GenParticle *MCgamma ) const {
    if( MCgamma->pt() < min_gamma_pt) return false;
    if( fabs(MCgamma->eta() ) > max_eta ) return false;
    return true;
@@ -1794,7 +1794,7 @@ double MUSiCSkimmer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
         pa != genParticleHandel->end(); ++ pa ) {
 
       //cast iterator into GenParticleCandidate
-      const GenParticle* p = (const GenParticle*) &(*pa);
+      const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
       // only consider stable particles and charged particles in order to be more comparable with track-isolation
       if ( p->status() == 1 && p->charge() != 0 ) {
