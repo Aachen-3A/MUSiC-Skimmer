@@ -193,8 +193,7 @@ def parse_output( output, use_server ):
     return jobs
 
 
-
-def get_status( dir, use_server ):
+def get_and_parse_status( dir, use_server ):
     for trial in xrange( 3 ):
         print 'Retrieving status (trial %s)...' % (trial+1)
         output = call_crab( '-status', None, dir )
@@ -210,6 +209,16 @@ def get_status( dir, use_server ):
 
     print
 
+    return states
+
+
+
+
+def get_status( dir, use_server ):
+    states = get_and_parse_status( dir, use_server )
+    while not use_server and 'Done(waiting)' in states:
+        print 'Jobs in Done(waiting), fetching status again...'
+        states = get_and_parse_status( dir, use_server )
     return states
 
 
