@@ -348,6 +348,38 @@ def constant_length_slice( l, c ):
 
 
 
+def detect_stuck_jobs( states, old_states ):
+    #there can only be stuck jobs if there is at least one done before and after
+    if 'Done' in states and 'Done' in old_states:
+        #get the list of job numbers for the done jobs
+        done_before = set( ( job.num for job in old_states[ 'Done' ] ) )
+        done_after = set( ( job.num for job in states[ 'Done' ] ) )
+        #jobs now done but not before are not stuck, but newly done
+        newly_done = done_after - done_before
+        #jobs done before and after getoutput are stuck
+        stuck_done = done_after & done_before
+        
+        if stuck_done:
+            #put the stuck jobs into the right state
+            states[ 'Done(stuck)' ] = [ job for job in states[ 'Done' ] if job.num in stuck_done ]
+            for job in states[ 'Done(stuck)' ]:
+                job.state = 'Done(stuck)'
+
+        #only add done jobs if there are any, otherwise remove the empty entry
+        if newly_done:
+            states[ 'Done' ] = [ job for job in states[ 'Done' ] if job.num in newly_done ]
+        else:
+            del states[ 'Done' ]
+
+        #print if something happened
+        if 'Done(stuck)' in states:
+            print 'Found stuck jobs:'
+            for state,jobs in states.iteritems():
+                print state, format_job_list( jobs )
+            print
+
+
+
 parser = optparse.OptionParser( usage='usage: %prog [options] crab_dirs...' )
 parser.add_option( '-a', '--resubmit-aborted', action='store_true', default=False, help='Resubmit aborted jobs' )
 parser.add_option( '-g', '--resubmit-grid-failed', action='store_true', default=False, help='Resubmit jobs with grid failures' )
@@ -414,11 +446,13 @@ for dir in crab_dirs:
         else:
             print 'Got output, new states:'
 
+        old_states = states
         states = get_status( dir, use_server )
         if states == None:
             print 'Skipping', dir
             continue
 
+        detect_stuck_jobs( states, old_states )
 
     stat.add_jobs( states )
 
