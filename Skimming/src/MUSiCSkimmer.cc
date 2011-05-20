@@ -95,9 +95,10 @@ Implementation:
 //ECAL
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
-#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/CaloTopology/interface/CaloTopology.h"
 #include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
@@ -1201,8 +1202,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
    for (std::vector<pat::Electron>::const_iterator ele = electrons.begin(); ele != electrons.end(); ++ele ) {
       if (Ele_cuts(ele)) {
          if (fDebug > 1) {
-            cout << "Electron Energy scale corrected: " << ele->isEnergyScaleCorrected() 
-                 << "  Momentum corrected: " << ele->isMomentumCorrected() << endl;
+            cout << "Electron Energy scale corrected: " << ele->isEnergyScaleCorrected() << endl;
          }
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName("Ele");
@@ -1286,7 +1286,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
          double e3x3 = lazyTools.e3x3( *SCRef );
          part->setUserRecord< double >( "e3x3",  e3x3 );
          part->setUserRecord< double >( "r19", eMax / e3x3 );
-         part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( seedID, *barrelRecHits, 0, false ) );
+         part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *barrelRecHits, 0, false ) );
          EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( seedID );
          if( recHit_it != barrelRecHits->end() ) {
             const EcalRecHit &seedRecHit = *recHit_it;
@@ -1464,8 +1464,8 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
          double e3x3 = photon->e3x3();
          part->setUserRecord< double >("e3x3",  e3x3 );
          part->setUserRecord< double >( "e5x5",  photon->e5x5() );
-         part->setUserRecord< double >( "SwissCross", EcalSeverityLevelAlgo::swissCross( seedID, *barrelRecHits, 0, false ) );
-         part->setUserRecord< double >( "SwissCrossNoBorder", EcalSeverityLevelAlgo::swissCross( seedID, *barrelRecHits, 0, true ) );
+         part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *barrelRecHits, 0, false ) );
+         part->setUserRecord< double >( "SwissCrossNoBorder", EcalTools::swissCross( seedID, *barrelRecHits, 0, true ) );
          EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( seedID );
          if( recHit_it != barrelRecHits->end() ) {
             const EcalRecHit &seedRecHit = *recHit_it;
@@ -1560,7 +1560,7 @@ void MUSiCSkimmer::analyzeECALRecHits( const edm::Event &iEvent,
       if( energy > min_rechit_energy ) {
          const EBDetId id( rechit.id() );
          uint32_t recoFlag = rechit.recoFlag();
-         double swiss_cross = EcalSeverityLevelAlgo::swissCross( id, barrelRecHits, 0, false );
+         double swiss_cross = EcalTools::swissCross( id, barrelRecHits, 0, false );
          double e3x3 = EcalClusterTools::matrixEnergy( dummy, &barrelRecHits, &topo, id, -1, 1, -1, 1 );
          double r19 = energy / e3x3;
 
