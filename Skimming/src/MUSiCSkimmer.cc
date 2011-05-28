@@ -108,6 +108,7 @@ Implementation:
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 //Jet Flavour
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
@@ -604,6 +605,37 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
    EvtView->setUserRecord<int>("NumMuon", numMuonMC);
    EvtView->setUserRecord<int>("NumEle", numEleMC);
    EvtView->setUserRecord<int>("NumGamma", numGammaMC);
+
+   // take care of the pile-up in the event
+   //
+   Handle< std::vector< PileupSummaryInfo > >  PUInfo;
+   iEvent.getByLabel( InputTag( "addPileupInfo" ), PUInfo );
+
+   vector< PileupSummaryInfo >::const_iterator PUiter;
+
+   // loop over all PU info object in an event and get the number of
+   // primary vertices for in-time and out-of-time pile-up
+   //
+   int nPrimaryVertices       = 0;
+   int nPrimaryVerticesLastBX = 0;
+   int nPrimaryVerticesNextBX = 0;
+
+   for( PUiter = PUInfo->begin(); PUiter != PUInfo->end(); ++PUiter ) {
+      int BX  = (*PUiter).getBunchCrossing();
+      int num = (*PUiter).getPU_NumInteractions();
+
+      if( BX == -1 ) {
+         nPrimaryVerticesLastBX = num;
+      } else if( BX == 0 ) {
+         nPrimaryVertices = num;
+      } else if( BX == 1 ) {
+         nPrimaryVerticesNextBX = num;
+      }
+   }
+
+   EvtView->setUserRecord< int >( "NumVerticesPU",       nPrimaryVertices );
+   EvtView->setUserRecord< int >( "NumVerticesPULastBX", nPrimaryVerticesLastBX );
+   EvtView->setUserRecord< int >( "NumVerticesPUNextBX", nPrimaryVerticesNextBX );
 }
 
 // ------------ reading the Generator Jets ------------
