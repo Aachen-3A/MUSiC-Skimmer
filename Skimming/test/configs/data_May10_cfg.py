@@ -35,10 +35,13 @@ process.options   = cms.untracked.PSet(
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 # source
-process.source = cms.Source("PoolSource", 
+process.source = cms.Source("PoolSource",
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-    '/store/data/Run2011A/DoubleMu/AOD/PromptReco-v1/000/161/312/449EDD53-7959-E011-AF38-003048F024C2.root'
+    #'/store/data/Run2011A/DoubleMu/AOD/PromptReco-v1/000/161/312/449EDD53-7959-E011-AF38-003048F024C2.root'
+    #'/store/data/Run2011A/METBTag/AOD/May10ReReco-v1/0003/2E963CD5-8C7E-E011-949F-0026189438E0.root'
+    #'/store/data/Run2011A/METBTag/AOD/May10ReReco-v1/0000/5238D1D2-0481-E011-8928-002618943905.root'
+    '/store/mc/Summer11/DYToEE_M-20_TuneZ2_7TeV-pythia6/AODSIM/PU_S3_START42_V11-v2/0000/7AF46394-8A7C-E011-9B29-00237DDC5B9E.root'
     )
 )
 
@@ -49,9 +52,10 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.PyReleaseValidation.autoCond import autoCond
 if runOnData:
     process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
+    #process.GlobalTag.globaltag = cms.string( 'FT_R_42_V13A::All' )
+    process.GlobalTag.globaltag = cms.string( 'GR_R_42_V14::All' )
 else:
     process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
-
 print "INFO: Using global tag:", process.GlobalTag.globaltag
 
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
@@ -65,8 +69,8 @@ import MUSiCProject.Skimming.Tools
 MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
 process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
-from PhysicsTools.PatAlgos.tools import pfTools
-pfTools.usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow")
+from PhysicsTools.PatAlgos.tools.pfTools import *
+usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow" )
 process.patJetCorrFactorsPFlow.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
 
 if runOnData:
@@ -104,39 +108,43 @@ process.p += process.HBHENoiseFilterResultProducer
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 if runOnData:
-   process.Skimmer.triggers.HLT.HLTriggers = cms.vstring( 'HLT_Mu30_v3',
-                                                          'HLT_Mu40_v1',
-                                                          'HLT_Mu40_v2',
-                                                          'HLT_Mu100_v1',
-                                                          'HLT_Mu100_v2',
-                                                          'HLT_IsoMu17_v8',
-                                                          'HLT_IsoMu24_v4',
-                                                          'HLT_IsoMu24_v5',
-                                                          'HLT_IsoMu24_v6',
+   process.Skimmer.triggers.HLT.HLTriggers = cms.vstring( 'HLT_Mu15_v2',
+                                                          'HLT_Mu20_v1',
+                                                          'HLT_Mu24_v1',
+                                                          'HLT_Mu24_v2',
+                                                          'HLT_IsoMu12_v1',
+                                                          'HLT_IsoMu15_v5',
+                                                          'HLT_IsoMu17_v5',
+                                                          'HLT_IsoMu17_v6',
 
-                                                          'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3',
-                                                          'HLT_Ele42_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
-                                                          'HLT_Ele52_CaloIdVT_TrkIdT_v1',
-                                                          'HLT_Ele52_CaloIdVT_TrkIdT_v2',
-                                                          'HLT_Ele65_CaloIdVT_TrkIdT_v1',
+                                                          'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
+                                                          'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2',
+                                                          'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3',
+                                                          'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
+                                                          'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2',
 
-                                                          'HLT_Photon75_CaloIdVL_IsoL_v4',
-                                                          'HLT_Photon90_CaloIdVL_IsoL_v1',
-                                                          'HLT_Photon90_CaloIdVL_IsoL_v2',
-                                                          'HLT_Photon125_v1',
-                                                          'HLT_Photon125_v2',
-                                                          'HLT_Photon200_NoHE_v1',
-                                                          'HLT_Photon200_NoHE_v2',
+                                                          'HLT_Photon20_CaloIdVL_IsoL_v1',
+                                                          'HLT_Photon50_CaloIdVL_IsoL_v1',
+                                                          'HLT_Photon75_CaloIdVL_IsoL_v1',
+                                                          'HLT_Photon75_CaloIdVL_IsoL_v2',
+                                                          'HLT_Photon75_CaloIdVL_IsoL_v3',
+                                                          'HLT_Photon75_CaloIdVL_v1',
+                                                          'HLT_Photon75_CaloIdVL_v2',
+                                                          'HLT_Photon75_CaloIdVL_v3',
 
-                                                          'HLT_Jet300_v2',
-                                                          'HLT_Jet300_v3',
-                                                          'HLT_Jet300_v4',
+                                                          'HLT_Jet240_v1',
+                                                          'HLT_Jet300_v1',
+                                                          'HLT_Jet370_NoJetID_v1',
+                                                          'HLT_Jet370_NoJetID_v2',
+                                                          'HLT_Jet370_v1',
+                                                          'HLT_Jet370_v2',
 
-                                                          'HLT_MET200_v3',
-                                                          'HLT_MET200_v4',
-                                                          'HLT_MET200_v5'
+                                                          'HLT_MET200_v1',
+                                                          'HLT_MET200_v2'
                                                          )
+
 if not runOnData:
     MUSiCProject.Skimming.Tools.addFlavourMatching( process, process.Skimmer, process.p )
 
 process.p += process.Skimmer
+
