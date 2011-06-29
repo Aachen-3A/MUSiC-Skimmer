@@ -65,6 +65,7 @@ process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
 from PhysicsTools.PatAlgos.tools import pfTools
 pfTools.usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow")
+process.patJetCorrFactorsPFlow.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
 
 if runOnData:
     import PhysicsTools.PatAlgos.tools.coreTools
