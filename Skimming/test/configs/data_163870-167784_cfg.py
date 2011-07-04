@@ -35,7 +35,7 @@ process.options   = cms.untracked.PSet(
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 # source
-process.source = cms.Source("PoolSource", 
+process.source = cms.Source("PoolSource",
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
     '/store/data/Run2011A/DoubleMu/AOD/PromptReco-v1/000/161/312/449EDD53-7959-E011-AF38-003048F024C2.root'
@@ -107,35 +107,34 @@ if runOnData:
    process.Skimmer.triggers.HLT.HLTriggers = cms.vstring( 'HLT_Mu30_v3',
                                                           'HLT_Mu40_v1',
                                                           'HLT_Mu40_v2',
-                                                          'HLT_Mu100_v1',
-                                                          'HLT_Mu100_v2',
+                                                          'HLT_Mu40_v3',
                                                           'HLT_IsoMu17_v8',
                                                           'HLT_IsoMu24_v4',
                                                           'HLT_IsoMu24_v5',
                                                           'HLT_IsoMu24_v6',
+                                                          'HLT_IsoMu24_v7',
 
                                                           'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3',
-                                                          'HLT_Ele42_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
                                                           'HLT_Ele52_CaloIdVT_TrkIdT_v1',
                                                           'HLT_Ele52_CaloIdVT_TrkIdT_v2',
-                                                          'HLT_Ele65_CaloIdVT_TrkIdT_v1',
+                                                          'HLT_Ele52_CaloIdVT_TrkIdT_v3',
 
                                                           'HLT_Photon75_CaloIdVL_IsoL_v4',
                                                           'HLT_Photon90_CaloIdVL_IsoL_v1',
                                                           'HLT_Photon90_CaloIdVL_IsoL_v2',
-                                                          'HLT_Photon125_v1',
-                                                          'HLT_Photon125_v2',
-                                                          'HLT_Photon200_NoHE_v1',
-                                                          'HLT_Photon200_NoHE_v2',
+                                                          'HLT_Photon90_CaloIdVL_IsoL_v3'
 
                                                           'HLT_Jet300_v2',
                                                           'HLT_Jet300_v3',
                                                           'HLT_Jet300_v4',
+                                                          'HLT_Jet300_v5',
 
                                                           'HLT_MET200_v3',
                                                           'HLT_MET200_v4',
-                                                          'HLT_MET200_v5'
+                                                          'HLT_MET200_v5',
+                                                          'HLT_MET200_v6'
                                                          )
+
 if not runOnData:
     MUSiCProject.Skimming.Tools.addFlavourMatching( process, process.Skimmer, process.p )
 
