@@ -40,6 +40,10 @@ Skimmer = cms.EDAnalyzer(
         pfMET = cms.PSet(
                 MCLabel = cms.InputTag( "genMetCalo" ),
                 RecoLabel = cms.InputTag("patMETsPFlow") #patMETsPFlow")
+                ),
+        pfMETNoPU = cms.PSet(
+                MCLabel = cms.InputTag( 'genMetCalo' ),
+                RecoLabel = cms.InputTag( 'patMETsPFlowNoPU' )
                 )
         ),
     jets = cms.PSet(

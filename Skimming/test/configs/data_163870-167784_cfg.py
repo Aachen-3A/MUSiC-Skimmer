@@ -40,7 +40,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source = cms.Source("PoolSource",
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-    '/store/data/Run2011A/DoubleMu/AOD/PromptReco-v1/000/161/312/449EDD53-7959-E011-AF38-003048F024C2.root'
+    #'/store/data/Run2011A/MET/AOD/PromptReco-v4/000/168/423/7C1E218D-1AA6-E011-A278-003048F11114.root'
+    '/store/data/Run2011A/MET/AOD/PromptReco-v4/000/166/512/80F7C542-ED91-E011-99B6-001D09F24259.root'
     )
 )
 
@@ -53,7 +54,7 @@ if runOnData:
     process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
 else:
     process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
-
+process.GlobalTag.globaltag = 'GR_R_42_V19::All'
 print "INFO: Using global tag:", process.GlobalTag.globaltag
 
 process.load("Configuration/StandardSequences/MagneticField_38T_cff")
@@ -68,9 +69,47 @@ if not runOnGen:
    MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
    process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
+   process.load( 'JetMETCorrections.Configuration.DefaultJEC_cff' )
+   process.load( 'RecoJets.Configuration.RecoPFJets_cff' )
+   process.kt6PFJets.doRhoFastjet = True                          # Turn-on the FastJet density calculation
+   process.ak5PFJets.doAreaFastjet = True                         # Turn-on the FastJet jet area calculation for ak5PFJets
+
+   process.p = cms.Path( process.kt6PFJets * process.ak5PFJets )
+
+   # for "PFnoPU" #
+   from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
+
+   # Create good primary vertices to be used for PF association
+   process.goodOfflinePrimaryVertices = cms.EDFilter(
+      'PrimaryVertexObjectFilter',
+      filterParams = pvSelector.clone( minNdof = cms.double( 4.0 ), maxZ = cms.double( 24.0 ) ),
+      src = cms.InputTag( 'offlinePrimaryVertices' )
+      )
+   ################
+
    from PhysicsTools.PatAlgos.tools import pfTools
-   pfTools.usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow")
-   process.patJetCorrFactorsPFlow.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
+   postfix = 'PFlow'
+   pfTools.usePF2PAT( process, runPF2PAT = True, jetAlgo = 'AK5', runOnMC = not runOnData, postfix = postfix )
+   #process.patJetCorrFactorsPFlow.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
+   if runOnData: process.patJetCorrFactorsPFlow.levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
+
+   # for "PFnoPU" #
+   process.pfPileUpPFlow.Enable = True
+   process.pfPileUpPFlow.Vertices = 'goodOfflinePrimaryVertices'
+   process.pfJetsPFlow.doAreaFastjet = True
+   process.pfJetsPFlow.doRhoFastjet = False
+   process.patJetCorrFactorsPFlow.rho = cms.InputTag( 'kt6PFJetsPFlow', 'rho' )
+   process.pfPileUpPFlow.checkClosestZVertex = cms.bool( False )
+
+   # Compute the mean pt per unit area ("rho") using KT6 Jets with the active areas method.
+   from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
+   process.kt6PFJetsPFlow = kt4PFJets.clone(
+      rParam = cms.double(0.6),
+      src = cms.InputTag( 'pfNoElectron' + postfix ),
+      doAreaFastjet = cms.bool( True ),
+      doRhoFastjet = cms.bool( True )
+      )
+   ################
 
    if runOnData:
       import PhysicsTools.PatAlgos.tools.coreTools
@@ -86,21 +125,42 @@ if runOnData:
                                            thresh = cms.untracked.double( 0.25 )
                                            )
 
-
-    process.p = cms.Path( process.scrapingFilter * process.patDefaultSequence )
+    process.p += process.scrapingFilter * process.patDefaultSequence
 
 else:
    if runOnSummer09:
       process.load("RecoJets.Configuration.GenJetParticles_cff")
       process.load("RecoJets.JetProducers.ak5GenJets_cfi")
-      process.p = cms.Path( process.genParticlesForJets * process.ak5GenJets * process.patDefaultSequence )
+      process.p += process.genParticlesForJets * process.ak5GenJets * process.patDefaultSequence
    elif runOnGen:
       process.p = cms.Path( process.patJetPartons )
    else:
-      process.p = cms.Path( process.patDefaultSequence )
+      process.p += process.patDefaultSequence
 
 if not runOnGen:
-   process.p += getattr(process,"patPF2PATSequencePFlow")
+   # for "PFnoPU" #
+   getattr( process, 'patPF2PATSequence' + postfix ).replace( getattr( process, 'pfNoElectron' + postfix ), getattr( process, 'pfNoElectron' + postfix ) * process.kt6PFJetsPFlow )
+   process.patseq = cms.Sequence(
+      process.goodOfflinePrimaryVertices*
+      getattr( process, 'patPF2PATSequence' + postfix )
+      )
+   ################
+   process.p += process.patseq
+
+   # METnoPU (stolen from: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/lucieg/METsWithPU/METsAnalyzer/python/pfMetNoPileUp_cff.py)
+   process.pfMetNoPileUp       = getattr( process, 'pfMET' + postfix ).clone()
+   process.pfMetNoPileUp.alias = 'pfMetNoPileUp'
+   process.pfMetNoPileUp.src   = cms.InputTag( 'pfNoPileUp' + postfix )
+
+   process.p += process.pfMetNoPileUp
+
+   patMETsPFlowNoPU = 'patMETs' + postfix + 'NoPU'
+   setattr( process, patMETsPFlowNoPU, getattr( process, 'patMETs' + postfix ).clone() )
+   getattr( process, patMETsPFlowNoPU ).metSource = cms.InputTag( 'pfMetNoPileUp' )
+
+   process.p += getattr( process, patMETsPFlowNoPU )
+
+
    #store the result of the HCAL noise info
    process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
    process.p += process.HBHENoiseFilterResultProducer
