@@ -1,21 +1,11 @@
 runOnData = True
-#run on Summer09 (ReReco'd or not)
-runOnSummer09 = False
-#run on ReReco'ed data or Summer09 MC
-runOnReReco = False
 #run on GEN sample
 runOnGen = False
 
-if runOnData and runOnSummer09:
-    print "runOnData and runOnSummer09 can't be true at the same time!"
+if runOnGen and runOnData :
+    print "runOnData and runOnGen can't be true at the same time!"
     import sys
     sys.exit(1)
-
-if runOnSummer09 and not runOnReReco:
-    print 'Reco of CMSSW < 3.5.X is not supported anymore!'
-    import sys
-    sys.exit(1)
-
 
 import FWCore.ParameterSet.Config as cms
 
@@ -40,12 +30,11 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source = cms.Source("PoolSource",
      skipEvents = cms.untracked.uint32(0),
      fileNames = cms.untracked.vstring(
-    '/store/mc/Summer11/DYToEE_M-20_TuneZ2_7TeV-pythia6/AODSIM/PU_S3_START42_V11-v2/0000/7AF46394-8A7C-E011-9B29-00237DDC5B9E.root'
+    #'/store/data/Run2011A/MET/AOD/PromptReco-v4/000/166/512/80F7C542-ED91-E011-99B6-001D09F24259.root'
+    '/store/data/Run2011A/METBTag/AOD/May10ReReco-v1/0000/D4C112A8-697C-E011-9625-0018F3D0960A.root'
+    #'/store/mc/Summer11/DYToEE_M-20_CT10_TuneZ2_7TeV-powheg-pythia/AODSIM/PU_S4_START42_V11-v1/0000/C45712AA-A6A8-E011-8679-0024E86E8D4C.root'
     )
 )
-
-
-process.load("Configuration/StandardSequences/GeometryPilot2_cff")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.PyReleaseValidation.autoCond import autoCond
@@ -54,55 +43,36 @@ if runOnData:
 else:
     process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
 
-print "INFO: Using global tag:", process.GlobalTag.globaltag
-process.load("Configuration/StandardSequences/MagneticField_38T_cff")
+process.load( 'Configuration.StandardSequences.GeometryPilot2_cff' )
+process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
 
-# PAT Layer 0+1
-process.load("PhysicsTools.PatAlgos.patSequences_cff")
 process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 import MUSiCProject.Skimming.Tools
 
-if not runOnGen:
-   MUSiCProject.Skimming.Tools.configurePAT( process, runOnData, runOnReReco, runOnSummer09 )
-   process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
-
-   from PhysicsTools.PatAlgos.tools import pfTools
-   pfTools.usePF2PAT(process,runPF2PAT=True, jetAlgo='AK5', runOnMC= not runOnData, postfix="PFlow")
-   process.patJetCorrFactorsPFlow.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
-
-   if runOnData:
-      import PhysicsTools.PatAlgos.tools.coreTools
-      PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
-
-
-#filter on right BX in case of data
-if runOnData:
-    process.scrapingFilter = cms.EDFilter( "FilterOutScraping",
-                                           applyfilter = cms.untracked.bool( True ),
-                                           debugOn = cms.untracked.bool( False ),
-                                           numtrack = cms.untracked.uint32( 10 ),
-                                           thresh = cms.untracked.double( 0.25 )
-                                           )
-
-
-    process.p = cms.Path( process.scrapingFilter * process.patDefaultSequence )
-
-else:
-   if runOnSummer09:
-      process.load("RecoJets.Configuration.GenJetParticles_cff")
-      process.load("RecoJets.JetProducers.ak5GenJets_cfi")
-      process.p = cms.Path( process.genParticlesForJets * process.ak5GenJets * process.patDefaultSequence )
-   elif runOnGen:
-      process.p = cms.Path( process.patJetPartons )
-   else:
-      process.p = cms.Path( process.patDefaultSequence )
+# create an empty path because modules will be added by calling the functions below
+process.p = cms.Path()
 
 if not runOnGen:
-   process.p += getattr(process,"patPF2PATSequencePFlow")
-   #store the result of the HCAL noise info
-   process.load('CommonTools/RecoAlgos/HBHENoiseFilterResultProducer_cfi')
-   process.p += process.HBHENoiseFilterResultProducer
+    # Keep the following functions in the right order as they will add modules to the path!
+    if runOnData: MUSiCProject.Skimming.Tools.addScrapingFilter( process )
+    MUSiCProject.Skimming.Tools.configureJEC( process, runOnData )
+    MUSiCProject.Skimming.Tools.configurePAT( process, runOnData )
+    process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
+
+    postfix = 'PFlow'
+    MUSiCProject.Skimming.Tools.configurePF( process, runOnData, postfix )
+    MUSiCProject.Skimming.Tools.configurePFnoPU( process, postfix )
+
+    import PhysicsTools.PatAlgos.tools.coreTools
+    PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, ['All'] )
+
+    # store the result of the HCAL noise info
+    process.load( 'CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi' )
+    process.p += process.HBHENoiseFilterResultProducer
+
+if not runOnData:
+   process.p += process.patJetPartons
 
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
@@ -143,32 +113,34 @@ if runOnData:
                                                          )
 # HLTs for Summer11 MCs (using HLT config: /cdaq/physics/Run2011/5e32/v6.2/HLT/V1)
 else:
-   process.Skimmer.triggers.HLT.HLTriggers = cms.vstring( 'HLT_Mu15_v2',
-                                                          'HLT_Mu20_v1',
-                                                          'HLT_Mu24_v1',
-                                                          'HLT_Mu30_v1',
-                                                          'HLT_IsoMu12_v1',
-                                                          'HLT_IsoMu15_v5',
-                                                          'HLT_IsoMu17_v5',
-                                                          'HLT_IsoMu24_v1',
-                                                          'HLT_IsoMu30_v1',
+    process.Skimmer.triggers.HLT.HLTriggers = cms.vstring( 'HLT_Mu15_v2',
+                                                           'HLT_Mu20_v1',
+                                                           'HLT_Mu24_v1',
+                                                           'HLT_Mu30_v1',
+                                                           'HLT_IsoMu12_v1',
+                                                           'HLT_IsoMu15_v5',
+                                                           'HLT_IsoMu17_v5',
+                                                           'HLT_IsoMu24_v1',
+                                                           'HLT_IsoMu30_v1',
 
-                                                          'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2',
-                                                          'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
-                                                          'HLT_Ele45_CaloIdVT_TrkIdT_v2',
+                                                           'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2',
+                                                           'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
+                                                           'HLT_Ele45_CaloIdVT_TrkIdT_v2',
 
-                                                          'HLT_Photon50_CaloIdVL_IsoL_v1',
-                                                          'HLT_Photon75_CaloIdVL_v2',
-                                                          'HLT_Photon75_CaloIdVL_IsoL_v2',
+                                                           'HLT_Photon50_CaloIdVL_IsoL_v1',
+                                                           'HLT_Photon75_CaloIdVL_v2',
+                                                           'HLT_Photon75_CaloIdVL_IsoL_v2',
 
-                                                          'HLT_Jet240_v1',
-                                                          'HLT_Jet370_v1',
-                                                          'HLT_Jet370_NoJetID_v1',
+                                                           'HLT_Jet240_v1',
+                                                           'HLT_Jet370_v1',
+                                                           'HLT_Jet370_NoJetID_v1',
 
-                                                          'HLT_MET200_v1'
-                                                          )
+                                                           'HLT_MET200_v1'
+                                                           )
 
 if not runOnData:
     MUSiCProject.Skimming.Tools.addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
 
 process.p += process.Skimmer
+
+print 'INFO: Using global tag:', process.GlobalTag.globaltag
