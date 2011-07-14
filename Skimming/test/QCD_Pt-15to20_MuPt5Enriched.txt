@@ -1,0 +1,3 @@
+config=mc_SU11_Nob_cfg.py
+
+QCD_Pt-15to20_MuPt5Enriched:/QCD_Pt-15to20_MuPt5Enriched_TuneZ2_7TeV-pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM

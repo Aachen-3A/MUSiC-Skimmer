@@ -1,0 +1,4 @@
+config=mc_SU11_cfg.py
+
+QCD_Pt-0to5:/QCD_Pt-0to5_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM
+QCD_Pt-5to15:/QCD_Pt-5to15_TuneZ2_7TeV_pythia6/Summer11-PU_S3_START42_V11-v2/AODSIM
