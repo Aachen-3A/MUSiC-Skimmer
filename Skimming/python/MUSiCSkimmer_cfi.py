@@ -12,6 +12,11 @@ Skimmer = cms.EDAnalyzer(
     GenOnly = cms.untracked.bool( False ),
     # UseSIM true means to use SIM info for finding converted photons
     UseSIM = cms.untracked.bool( False ),
+    # name of the LHgrid for pdf weights
+    #LHgridName = cms.untracked.string("cteq61.LHgrid"),
+    LHgridName = cms.untracked.string("cteq61.LHgrid"),
+    # number of pdf error sets in the LHgrid for pdf weights
+    NumLHgridErrorSets = cms.untracked.int32(40),
     #labels of source
     genParticleCandidatesLabel = cms.untracked.string( "genParticles" ),
     #vertices with beam spot constraint

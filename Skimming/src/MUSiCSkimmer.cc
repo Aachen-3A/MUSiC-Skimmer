@@ -136,6 +136,10 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fDebug = iConfig.getUntrackedParameter<int>("debug");
    // Use SIM info
    fUseSIM = iConfig.getUntrackedParameter<bool>("UseSIM");
+   // name of the LHgrid for pdf weights
+   fLHgridName = iConfig.getUntrackedParameter<string>("LHgridName"),
+   // number of pdf error sets in the LHgrid for pdf weights
+   fNumLHgridErrorSets = iConfig.getUntrackedParameter<int>("NumLHgridErrorSets"),
    // The labels used in cfg-file 
    //fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
@@ -318,7 +322,6 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    //set process name
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
    RecEvtView->setUserRecord<std::string>("Process", fProcess);
-
    // Generator stuff
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
@@ -361,12 +364,12 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeECALRecHits( iEvent, iSetup, RecEvtView, geo );
    }
 
-   if (IsMC){
+   if (IsMC && !fGenOnly){
       const string met_name = "MET";
       Matcher->matchObjects(GenEvtView, RecEvtView, jet_infos, met_name);
    }
 
-   if (fDebug > 0) {  
+   if (fDebug > 0 && !fGenOnly) {
       cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
       for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          cout << jet_info->name << " ";
@@ -656,7 +659,6 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
    size_t jet_index = 0;
    int numJetMC = 0;
    double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
-   
    //Loop over GenJets
    for( reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet, jet_index++ ){
       if( JetMC_cuts( genJet ) ){
@@ -685,7 +687,6 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
             if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++; 
          }
          part->setUserRecord< int >( "GenJetConstit", numGenJetConstit_withcuts );
-
          part->setUserRecord< int >( "algoFlavour",    (*algoFlavour)   [ jetRef ].getFlavour() );
          part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
       }
@@ -1626,8 +1627,9 @@ void MUSiCSkimmer::endJob() {
       const char *lhaPDFPath = getenv("LHAPATH");
       string pdfSet(lhaPDFPath);
       string::size_type loc = pdfSet.find( ":", 0 );
-      if (loc != string::npos) pdfSet = pdfSet.substr(0,loc); 
-      pdfSet.append("/cteq61.LHgrid");
+      if (loc != string::npos) pdfSet = pdfSet.substr(0,loc);
+      pdfSet.append("/");
+      pdfSet.append(fLHgridName);
       cout << "PDF set - " << pdfSet.data() << endl;
       initpdfset_((char *)pdfSet.data(), pdfSet.size());
 
@@ -1655,7 +1657,7 @@ void MUSiCSkimmer::endJob() {
       }
 
       //loop over all error PDFs
-      for( int subpdf = 1; subpdf < 41; subpdf++ ){
+      for( int subpdf = 1; subpdf <= fNumLHgridErrorSets; subpdf++ ){
          initpdf_(subpdf);
          //cout << "Initialized sub PDF " << subpdf << endl;
          vector<float>::const_iterator best_fit_iter = best_fit.begin();

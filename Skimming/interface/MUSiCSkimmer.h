@@ -174,6 +174,8 @@ public:
    std::string fProcess;
    bool fGenOnly;
    bool fUseSIM;
+   std::string fLHgridName;
+   int fNumLHgridErrorSets;
    // The labels used in cfg-file 
    // Generator 
    std::string fgenParticleCandidatesLabel;
