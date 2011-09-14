@@ -503,6 +503,22 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
       //cast iterator into GenParticleCandidate
       const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
+      // the following is interesting for GEN studies
+      p_mother = p->mother();
+      if( p_mother ) {
+         if( p->status() == 3 ) {
+            int p_id = p->pdgId();
+            mother = p_mother->pdgId();
+            if( p_id != mother && mother <= 100 ) {
+               pxl::Particle* part = EvtView->create< pxl::Particle >();
+               part->setName( "S3" );
+               part->setP4( p->px(), p->py(), p->pz(), p->energy() );
+               part->setUserRecord< int >( "id", p_id );
+               part->setUserRecord< int >( "mother_id", mother );
+            }
+         }
+      }
+
       // fill Gen Muons passing some basic cuts
       if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
          if ( MuonMC_cuts(p) ) { 
