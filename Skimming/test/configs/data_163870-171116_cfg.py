@@ -81,21 +81,26 @@ if runOnData:
                                                            'HLT_Mu40_v1',
                                                            'HLT_Mu40_v2',
                                                            'HLT_Mu40_v3',
+                                                           'HLT_Mu40_v5',
                                                            'HLT_IsoMu17_v8',
                                                            'HLT_IsoMu24_v4',
                                                            'HLT_IsoMu24_v5',
                                                            'HLT_IsoMu24_v6',
                                                            'HLT_IsoMu24_v7',
+                                                           'HLT_IsoMu24_v8',
 
                                                            'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3',
+                                                           'HLT_Ele42_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
                                                            'HLT_Ele52_CaloIdVT_TrkIdT_v1',
                                                            'HLT_Ele52_CaloIdVT_TrkIdT_v2',
                                                            'HLT_Ele52_CaloIdVT_TrkIdT_v3',
+                                                           'HLT_Ele65_CaloIdVT_TrkIdT_v3',
 
                                                            'HLT_Photon75_CaloIdVL_IsoL_v4',
                                                            'HLT_Photon90_CaloIdVL_IsoL_v1',
                                                            'HLT_Photon90_CaloIdVL_IsoL_v2',
                                                            'HLT_Photon90_CaloIdVL_IsoL_v3',
+                                                           'HLT_Photon135_v1',
 
                                                            'HLT_Jet300_v2',
                                                            'HLT_Jet300_v3',
@@ -105,8 +110,10 @@ if runOnData:
                                                            'HLT_MET200_v3',
                                                            'HLT_MET200_v4',
                                                            'HLT_MET200_v5',
-                                                           'HLT_MET200_v6'
+                                                           'HLT_MET200_v6',
+                                                           'HLT_MET200_v7'
                                                            )
+
 # HLTs for Summer11 MCs (using HLT config: /cdaq/physics/Run2011/5e32/v6.2/HLT/V1)
 else:
     process.Skimmer.triggers.HLT.HLTriggers = cms.vstring( 'HLT_Mu15_v2',
