@@ -1122,6 +1122,9 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<int>("VHitsTracker",muontrack->hitPattern().numberOfValidTrackerHits());
          part->setUserRecord<int>("VHitsMuonSys",muontrack->hitPattern().numberOfValidMuonHits());
 
+         //store the number of muon stations containing segments
+         part->setUserRecord< int > ( "NMachedStations", muon->numberOfMatchedStations() );
+
          //safe information for "cocktail" high energy refit
          reco::TrackRef pmcTrack = muon::tevOptimized(*muon, tevMap1, tevMap2, tevMap3);
          if( pmcTrack.isAvailable() ) {
