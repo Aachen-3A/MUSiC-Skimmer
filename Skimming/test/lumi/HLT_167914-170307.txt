@@ -1,0 +1,41 @@
+Script called with the parameters:
+/.automount/home/home__home1/institut_3a/papacz/CMSSW/slc5_64/CMSSW_4_2_5/bin/slc5_amd64_gcc434/getHLT.py -f 167914 -l 170307 -F Mu -F Ele -F MET -F Jet -F Photon -F ~Double -F ~BTag -F ~Spike -F ~DiJet -F ~PFMHT -F ~Photon18 -F ~Central -F ~HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL -F ~HLT_Photon32_CaloIdL_Photon26_CaloIdL_v1 -F ~HLT_Photon32_CaloIdL_Photon -F ~HLT_Photon36_CaloIdL_Photon -F ~Ele25_WP80 -F ~Photon36_CaloIdL_IsoVL_Photon22 -F ~L2Mu60_1Hit_MET -F ~Photon36_R9Id_Photon22 -F ~Photon36_IsoVL_Photon22 -F ~Photon36_CaloId_IsoVL_Photon22 -F ~Photon40_CaloIdL_Photon28 -F ~HBHENoiseFiltered -F ~HLT_Jet370 -F ~Photon44_CaloIdL_Photon34 -F ~Photon48_CaloIdL_Photon38 -F ~Photon400 -F ~IsoMu30 -F ~Ele100 -F ~MET120 -F ~WP -F ~eta -F ~Jet800 -F ~MET400 -F ~Photon220 -F ~Photon225 -F ~Photon200 -F ~Mu100
+
+Number of ranges: 1
+
+
+Range: 170249-170307
+--------------------
+
+SingleElectron:
+---------------
+HLT_Ele65_CaloIdVT_TrkIdT_v3
+
+MET:
+----
+HLT_MET200_v7
+
+Photon:
+-------
+HLT_Photon135_v1
+
+SingleMu:
+---------
+HLT_IsoMu24_v8
+HLT_Mu40_v5
+HLT_Mu60_v2
+
+Jet:
+----
+HLT_Jet300_v5
+
+All unprescaled triggers for all run ranges:
+--------------------------------------------
+'HLT_Ele65_CaloIdVT_TrkIdT_v3',
+'HLT_IsoMu24_v8',
+'HLT_Jet300_v5',
+'HLT_MET200_v7',
+'HLT_Mu40_v5',
+'HLT_Mu60_v2',
+'HLT_Photon135_v1'
+
