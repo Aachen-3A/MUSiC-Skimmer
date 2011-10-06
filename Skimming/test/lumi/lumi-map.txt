@@ -1,2 +1,3 @@
-#*May10*:Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v2.txt
-*:Cert_160404-171116_7TeV_PromptReco_Collisions11_JSON.txt
+*May10*:Cert_160404-163869_7TeV_May10ReReco_Collisions11_JSON_v2.txt
+*Aug05*:Cert_170249-172619_7TeV_ReReco5Aug_Collisions11_JSON_v2.txt
+*:Cert_160404-176309_7TeV_PromptReco_Collisions11_JSON.txt

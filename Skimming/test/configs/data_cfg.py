@@ -99,12 +99,15 @@ if runOnData:
                                                            'HLT_Ele52_CaloIdVT_TrkIdT_v2',
                                                            'HLT_Ele52_CaloIdVT_TrkIdT_v3',
                                                            'HLT_Ele65_CaloIdVT_TrkIdT_v3',
+                                                           'HLT_Ele65_CaloIdVT_TrkIdT_v4',
 
                                                            'HLT_Photon75_CaloIdVL_IsoL_v4',
                                                            'HLT_Photon90_CaloIdVL_IsoL_v1',
                                                            'HLT_Photon90_CaloIdVL_IsoL_v2',
                                                            'HLT_Photon90_CaloIdVL_IsoL_v3',
+                                                           'HLT_Photon90_CaloIdVL_IsoL_v5',
                                                            'HLT_Photon135_v1',
+                                                           'HLT_Photon135_v2',
 
                                                            'HLT_Jet300_v2',
                                                            'HLT_Jet300_v3',
