@@ -1050,6 +1050,9 @@ void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
    bs->setName( "BeamSpot" );
    bs->setXYZ( beamspot.x0(), beamspot.y0(), beamspot.z0() );
 
+   //save the BS for further purpose
+   the_beamspot = beamspot.position();
+
    //get the PV
    const reco::Vertex &PV = *( vertices->begin() );
 
@@ -1207,17 +1210,15 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
          part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
          part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
-         // Save distance to the primary vertex in z and xy plane i.e. impact parameter
-         //get primary vertex (hopefully correct one) for physics eta THIS NEEDS TO BE CHECKED !!
-         // units given in cm!!! Use nominal beam spot of Summer/Fall08 if no vertex available
-         math::XYZPoint vtx(0.0322, 0., 0.);
-         if (RecView->findUserRecord<int>("NumVertices") > 0) {
-            pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
-            vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
-         } 
-         part->setUserRecord<double>("Dsz", muontrack->dsz(vtx));
-         part->setUserRecord<double>("Dxy", muontrack->dxy(vtx));
-       
+
+         // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
+         // (i.e. the impact parameter)
+         part->setUserRecord< double >( "Dsz", muontrack->dsz( the_vertex ) );
+         part->setUserRecord< double >( "Dxy", muontrack->dxy( the_vertex ) );
+
+         part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
+         part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
+
          //official CaloIso and TrkIso
          //Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
          part->setUserRecord<double>("CaloIso", muon->caloIso());
@@ -1326,16 +1327,13 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
          part->setUserRecord<int>("TrackerLHits", ele->gsfTrack()->numberOfLostHits()); //ok
          part->setUserRecord<int>("Class", ele->classification()); //ok
 
-         // Save distance to the primary vertex in z and xy plane i.e. impact parameter
-         //get primary vertex (hopefully correct one)
-         // units given in cm!!! Use nominal beam spot of Summer/Fall08 if no vertex available
-         math::XYZPoint vtx(0.0322, 0., 0.);
-         if (RecView->findUserRecord<int>("NumVertices") > 0) {
-            pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
-            vtx = math::XYZPoint((*vtx_iter)->getX(), (*vtx_iter)->getY(), (*vtx_iter)->getZ());
-         } 
-         part->setUserRecord<double>("Dsz", ele->gsfTrack()->dsz(vtx));
-         part->setUserRecord<double>("Dxy", ele->gsfTrack()->dxy(vtx));
+         // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
+         // (i.e. the impact parameter)
+         part->setUserRecord< double >( "Dsz", ele->gsfTrack()->dsz( the_vertex ) );
+         part->setUserRecord< double >( "Dxy", ele->gsfTrack()->dxy( the_vertex ) );
+
+         part->setUserRecord< double >( "DszBS", ele->gsfTrack()->dsz( the_beamspot ) );
+         part->setUserRecord< double >( "DxyBS", ele->gsfTrack()->dxy( the_beamspot ) );
 
          //store PAT matching info if MC
          if( MC ){
@@ -1413,13 +1411,6 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
 // ------------ reading Reconstructed Jets ------------
 
 void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info ){
-   //get primary vertex (hopefully correct one) for physics eta
-   double VertexZ = 0.;
-   if (RecView->findUserRecord<int>("NumVertices") > 0) {
-      pxl::ObjectOwnerTypeIterator<pxl::Vertex> vtx_iter = RecView->getObjectOwner().begin<pxl::Vertex>();
-      VertexZ = (*vtx_iter)->getZ();
-   } 
-   
    int numJetRec = 0;
    // get RecoJets
    edm::Handle< std::vector< pat::Jet > > jetHandle;

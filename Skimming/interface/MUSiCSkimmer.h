@@ -241,5 +241,6 @@ public:
 
    //vertex for physics eta, phi, pt
    reco::BeamSpot::Point the_vertex;
+   reco::BeamSpot::Point the_beamspot;
 };
 #endif
