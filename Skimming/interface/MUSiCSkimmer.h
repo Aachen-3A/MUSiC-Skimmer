@@ -59,6 +59,7 @@ extern "C" {
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
 
 //JetID
 #include "DataFormats/PatCandidates/interface/Jet.h"
@@ -126,6 +127,7 @@ public:
                                 trigger_group &trigger
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
+   virtual void analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle*> &genmap );
    virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
@@ -150,6 +152,7 @@ public:
                                     );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
+   bool TauMC_cuts( const reco::GenParticle *MCtau ) const;
    bool MuonMC_cuts( const reco::GenParticle* MCmuon ) const;
    bool EleMC_cuts( const reco::GenParticle* MCele ) const;
    bool GammaMC_cuts( const reco::GenParticle* MCgamma ) const;
@@ -157,6 +160,7 @@ public:
    bool METMC_cuts(const pxl::Particle* MCmet) const;
    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const;
    bool PV_vertex_cuts( const reco::Vertex &vertex) const;
+   bool Tau_cuts (const pat::Tau &tau) const;
    bool Muon_cuts(const pat::Muon& muon) const;
    bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
    bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
@@ -181,6 +185,9 @@ public:
    std::string fgenParticleCandidatesLabel;
    std::string fMETMCLabel;
    std::string fVertexRecoLabel;
+   //Tau
+   std::string fTauRecoLabel;
+   std::string fPFTauDiscriminator;
    // Muon
    std::string fMuonRecoLabel;
    // Electron
@@ -220,6 +227,7 @@ public:
       min_gamma_pt,
       min_jet_pt,
       min_met,
+      min_tau_pt,
       max_eta,
       min_rechit_energy,
       min_rechit_swiss_cross,

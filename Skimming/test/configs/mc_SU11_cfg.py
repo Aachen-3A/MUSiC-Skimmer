@@ -72,6 +72,10 @@ if not runOnGen:
 if not runOnData:
    process.p += process.patJetPartons
 
+#rerun PFTau reco
+process.load( "RecoTauTag.Configuration.RecoPFTauTag_cff" )
+process.p += process.PFTau
+
 process.load( "MUSiCProject.Skimming.MUSiCSkimmer_cfi" )
 
 if runOnData:
@@ -129,7 +133,14 @@ else:
                                                            'HLT_Jet370_v1',
                                                            'HLT_Jet370_NoJetID_v1',
 
-                                                           'HLT_MET200_v1'
+                                                           'HLT_MET200_v1',
+
+                                                            #tau trigger
+                                                           'HLT_IsoPFTau35_Trk20_MET45_v2',
+                                                           'HLT_DoubleIsoPFTau20_Trk5_v2',
+                                                           'HLT_Mu15_LooseIsoPFTau20_v2',
+                                                           'HLT_IsoMu12_LooseIsoPFTau10_v2',
+                                                           'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v2'
                                                            )
 
 if not runOnData:

@@ -87,6 +87,8 @@ Implementation:
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
 //test
@@ -144,11 +146,13 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    //fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
    fVertexRecoLabel = iConfig.getUntrackedParameter<string>("VertexRecoLabel");
+   fTauRecoLabel = iConfig.getUntrackedParameter< string >( "TauRecoLabel" );
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
    freducedEndcapRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedEndcapRecHitCollection");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
+
 
    //get the PSet that contains all jet PSets
    ParameterSet jets_pset = iConfig.getParameter< ParameterSet >( "jets" );
@@ -257,6 +261,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    //cuts
    ParameterSet cut_pset = iConfig.getParameter< ParameterSet >( "cuts" );
+   min_tau_pt = cut_pset.getParameter< double >( "min_tau_pt" );
    min_muon_pt = cut_pset.getParameter< double >( "min_muon_pt" );
    min_ele_pt = cut_pset.getParameter< double >( "min_ele_pt" );
    min_gamma_pt = cut_pset.getParameter< double >( "min_gamma_pt" );
@@ -351,6 +356,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
+      analyzeRecTaus( iEvent, RecEvtView, IsMC, genmap );
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
@@ -489,6 +495,7 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
    else GenVtx->setXYZ(p->vx(), p->vy(), p->vz());  // if we do not have pp collisions
    EvtView->setUserRecord<int>("NumVertices", 1);  
   
+   int numTauMC = 0;
    int numMuonMC = 0;
    int numEleMC = 0;
    int numGammaMC = 0;
@@ -518,8 +525,23 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
             }
          }
       }
-
+      // fill Gen Taus passing some basic cuts -> status? What kind of taus can be found?
+      if( abs( ( p )->pdgId() ) == 15 && p->status() == 2 ) {
+         if( TauMC_cuts( p ) ) {
+            pxl::Particle* part = EvtView->create< pxl::Particle > ();
+            genmap[ p ] = part; //fill genmap
+            part->setName( "Tau" );
+            part->setCharge( p->charge() );
+            part->setP4( p->px(), p->py(), p->pz(), p->energy() );
+            part->setUserRecord< float > ( "Vtx_X", p->vx() );
+            part->setUserRecord< float > ( "Vtx_Y", p->vy() );
+            part->setUserRecord< float > ( "Vtx_Z", p->vz() );
+            part->setUserRecord< int > ( "GenId", GenId );
+         }
+         numTauMC++;
+      }
       // fill Gen Muons passing some basic cuts
+
       if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
          if ( MuonMC_cuts(p) ) { 
             pxl::Particle* part = EvtView->create<pxl::Particle>();
@@ -656,6 +678,7 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
    EvtView->setUserRecord< int >( "NumVerticesPU",       nPrimaryVertices );
    EvtView->setUserRecord< int >( "NumVerticesPULastBX", nPrimaryVerticesLastBX );
    EvtView->setUserRecord< int >( "NumVerticesPUNextBX", nPrimaryVerticesNextBX );
+
 }
 
 // ------------ reading the Generator Jets ------------
@@ -1062,6 +1085,42 @@ void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
    EvtView->setUserRecord<int>("NumVertices", numVertices); 
 }
 
+// ------------ reading Reconstructed Taus------------
+
+void MUSiCSkimmer::analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap ) {
+   // get pat::Tau's from event
+   edm::Handle< reco::PFTauCollection > tauHandle;
+   iEvent.getByLabel( fTauRecoLabel, tauHandle );
+   const std::vector< reco::PFTau > &taus = *tauHandle;
+
+   std::vector< edm::Handle< reco::PFTauDiscriminator > > tauDiscriminatorHandle;
+   iEvent.getManyByType( tauDiscriminatorHandle );
+
+   int numTauRec = 0;
+   unsigned tau_index = 0;
+   for( reco::PFTauCollection::const_iterator tau = taus.begin(); tau != taus.end(); ++tau, ++tau_index ) {
+      reco::PFTauRef tauCandidate( tauHandle, tau_index );
+      if( Tau_cuts( *tau ) ) {
+         pxl::Particle *part = RecView->create< pxl::Particle > ();
+         part->setName( "Tau" );
+         part->setCharge( tau->charge() );
+         part->setP4( tau->px(), tau->py(), tau->pz(), tau->energy() );
+
+         //loop over discriminators starting with "hpsPF" and NOT ending with "PFlow" and storing their names in the UserRecord
+         for( std::vector< edm::Handle< reco::PFTauDiscriminator > >::iterator discriminator = tauDiscriminatorHandle.begin();
+              discriminator != tauDiscriminatorHandle.end();
+              ++discriminator ) {
+            if( discriminator->provenance()->processName() == tauHandle.provenance()->processName() ) {
+               string completename = discriminator->provenance()->moduleLabel();
+               if( completename.compare( 0, 5, "hpsPF" ) == 0 && completename.compare( ( completename.size() - 5 ), 5, "PFlow" ) != 0 ) {
+                  part->setUserRecord< double > ( completename.substr( 24 ), ( **discriminator )[ tauCandidate ] );
+               }
+            }
+         }
+         numTauRec++;
+      }
+   }
+}
 // ------------ reading Reconstructed Muons ------------
 
 void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map< const reco::Candidate*, pxl::Particle*> & genmap ) {
@@ -1729,7 +1788,13 @@ void MUSiCSkimmer::endJob() {
    //that doesn't hurt PXL, but should avoid the "file has zero size" stage-out problem
    system( ("echo -e \\0004 >> "+fFileName).c_str() );
 }
+// ------------ method to define MC-TAU-cuts
 
+bool MUSiCSkimmer::TauMC_cuts( const reco::GenParticle *MCtau ) const {
+   if( MCtau->pt() < min_tau_pt ) return false;
+   if( fabs( MCtau->eta() ) > max_eta ) return false;
+   return true;
+}
 
 // ------------ method to define MC-MUON-cuts
 
@@ -1783,6 +1848,16 @@ bool MUSiCSkimmer::PV_vertex_cuts( const reco::Vertex &vertex ) const {
    return ( vertex.ndof() >= PV_minNDOF
             && fabs( vertex.z() ) <= PV_maxZ
             && vertex.position().rho() <= PV_maxR );
+}
+
+
+// ------------ method to define TAU-cuts
+
+bool MUSiCSkimmer::Tau_cuts( const pat::Tau &tau ) const {
+   // basic preselection cuts
+   if( tau.pt() < min_tau_pt )  return false;
+   if( fabs( tau.eta() ) > max_eta ) return false;
+   return true;
 }
 
 // ------------ method to define MUON-cuts

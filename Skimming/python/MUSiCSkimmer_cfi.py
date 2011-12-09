@@ -22,6 +22,7 @@ Skimmer = cms.EDAnalyzer(
     #vertices with beam spot constraint
     VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
     #the following is all PAT
+    TauRecoLabel = cms.untracked.string("hpsPFTauProducer"),
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
     GammaRecoLabel = cms.untracked.string("cleanPatPhotons"),
@@ -93,6 +94,7 @@ Skimmer = cms.EDAnalyzer(
         ),
 
     cuts = cms.PSet(
+        min_tau_pt  = cms.double( 10 ),
         min_muon_pt = cms.double( 5 ),
         min_ele_pt = cms.double( 5 ),
         min_gamma_pt = cms.double( 5 ),
