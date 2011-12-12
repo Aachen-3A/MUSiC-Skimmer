@@ -121,6 +121,13 @@ public:
                                    trigger_group &trigger,
                                    const std::string &process
                                    );
+
+   virtual void analyzeFilter( const edm::Event &iEvent,
+                               const edm::EventSetup &iSetup,
+                               pxl::EventView *EvtView,
+                               trigger_group &filter
+                               );
+
    virtual void analyzeTrigger( const edm::Event &iEvent,
                                 const edm::EventSetup &iSetup,
                                 pxl::EventView *EvtView,
@@ -208,6 +215,7 @@ public:
 
    //all triggers
    std::vector< trigger_group > triggers;
+   std::vector< trigger_group > filters;
 
    bool fStoreL3Objects;
  

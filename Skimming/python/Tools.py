@@ -1,5 +1,94 @@
 import FWCore.ParameterSet.Config as cms
 
+def prepare( runOnGen, runOnData ):
+    process = cms.Process( 'PAT' )
+
+    # Initialize MessageLogger and output report.
+    #
+    process.load( 'FWCore.MessageLogger.MessageLogger_cfi' )
+    process.MessageLogger.cerr.FwkReport.limit = 100
+
+    import FWCore.Framework.test.cmsExceptionsFatalOption_cff
+    process.options = cms.untracked.PSet(
+        wantSummary = cms.untracked.bool( True ),
+        # Open file in NOMERGE mode to avoid a memory leak.
+        #
+        fileMode = cms.untracked.string( 'NOMERGE' ),
+        # Stop processing on each and every thrown exception.
+        #
+        Rethrow = FWCore.Framework.test.cmsExceptionsFatalOption_cff.Rethrow
+        )
+
+    # The global tag is retrieved automatically but can be changed by the
+    # configureJEC function.
+    #
+    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
+    from Configuration.PyReleaseValidation.autoCond import autoCond
+    if runOnData:
+        process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
+    else:
+        process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
+
+    process.load( 'Configuration.StandardSequences.GeometryPilot2_cff' )
+    process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
+
+    # do we need this ?
+    #process.content = cms.EDAnalyzer( 'EventContentAnalyzer' )
+
+    # Create an empty path because modules will be added by calling the
+    # functions below.
+    #
+    process.p = cms.Path()
+
+    process.load( 'MUSiCProject.Skimming.MUSiCSkimmer_cfi' )
+
+    # Several filters are used while running over data or MC.
+    # In order to be flexible, events *not* passing these filtes we do not want
+    # to throw these events away but rather write the outcome as a bool into the
+    # event.
+    # To do this, each filter runs in an own path. These paths are stored in the
+    # filterlist. This list is later used to access the value of the filter with
+    # help of edm::TriggerResult.
+    #
+    process.Skimmer.filterlist = cms.vstring()
+
+    if not runOnGen:
+        addScrapingFilter( process )
+
+        # Keep the following functions in the right order as they will add modules to the path!
+        #
+        configureJEC( process, runOnData )
+        configurePAT( process, runOnData )
+        process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
+
+        postfix = 'PFlow'
+        configurePF( process, runOnData, postfix )
+        configurePFnoPU( process, postfix )
+
+        import PhysicsTools.PatAlgos.tools.coreTools
+        PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ] )
+
+        addHCALnoiseFilter( process )
+
+    if not runOnData:
+       process.p += process.patJetPartons
+
+    if not runOnData:
+        addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
+
+    configureTaus( process )
+
+    process.Skimmer.filters.AllFilters.paths = process.Skimmer.filterlist
+    process.Skimmer.filters.AllFilters.process = process.name_()
+
+    # The skimmer is in the endpath because then the results of all preceding paths
+    # are available. This is used to access the outcome of filters that ran.
+    #
+    process.e = cms.EndPath( process.Skimmer )
+
+    return process
+
+
 def configurePAT( process, runOnData ):
     # PAT Layer 0+1
     process.load( 'PhysicsTools.PatAlgos.patSequences_cff' )
@@ -201,10 +290,12 @@ def addScrapingFilter( process ):
                                            thresh = cms.untracked.double( 0.25 )
                                            )
 
-    process.p += process.scrapingFilter
+    process.p_scrapingFilter = cms.Path( process.scrapingFilter )
+    process.Skimmer.filterlist.append( 'p_scrapingFilter' )
 
 
-def configureMuGenFilter( process, pt ):
+def addMuGenFilter( process, pt ):
+    mugenfilterName = 'mugenfilter' + str( pt )
     # this filter selects events containing muons with pt > pt GeV ...
     mugenfilter = cms.EDFilter( 'MCSmartSingleGenParticleFilter',
                                 MaxDecayRadius = cms.untracked.vdouble( 2000.0, 2000.0 ),
@@ -217,12 +308,14 @@ def configureMuGenFilter( process, pt ):
                                 MinDecayZ = cms.untracked.vdouble( -4000.0, -4000.0 ),
                                 genParSource = cms.InputTag( 'genParticles' )
                                 )
-    setattr( process, 'mugenfilter' + str( pt ), mugenfilter.clone() )
+    setattr( process, mugenfilterName, mugenfilter.clone() )
+
     # ... but we don't want these events
-    process.p += ~getattr( process, 'mugenfilter' + str( pt ) )
+    setattr( process, 'p_' + mugenfilterName, cms.Path( ~getattr( process, mugenfilterName ) ) )
+    process.Skimmer.filterlist.append( 'p_' + mugenfilterName )
 
 
-def configureEMFilter( process ):
+def addEMFilter( process ):
     # this filter selects events containing at least one potential electron candidate ...
     process.emenrichingfilter = cms.EDFilter( 'EMEnrichingFilter',
                                               filterAlgoPSet = cms.PSet( requireTrackMatch = cms.bool( False ),
@@ -236,27 +329,45 @@ def configureEMFilter( process ):
                                                                          clusterThreshold = cms.double( 20.0 )
                                                                          )
                                               )
+
     # ... but we don't want these events
-    process.p += ~process.emenrichingfilter
+    process.p_emenrichingfilter = cms.Path( ~process.emenrichingfilter )
+    process.Skimmer.filterlist.append( 'p_emenrichingfilter' )
 
 
-def configureBCtoEFilter( process ):
+def addBCtoEFilter( process ):
     # this filter selects events containing electrons that come from b or c hadrons ...
     process.bctoefilter = cms.EDFilter( 'BCToEFilter',
                                         filterAlgoPSet = cms.PSet( genParSource = cms.InputTag( 'genParticles' ),
                                                                    eTThreshold = cms.double( 10 )
                                                                    )
                                         )
+
     # ... but we don't want these events
-    process.p += ~process.bctoefilter
+    process.p_bctoefilter = cms.Path( ~process.bctoefilter )
+    process.Skimmer.filterlist.append( 'p_bctoefilter' )
 
 
-def configureBFilter( process ):
+def addBFilter( process ):
     # this filter selects events containing b quarks
     process.bbfilter = cms.EDFilter( 'MCSingleGenParticleFilter',
                                      genParSource = cms.InputTag( 'genParticles' ),
                                      ParticleID = cms.untracked.vint32( 5, -5 ),
                                      Status = cms.untracked.vint32( 2, 2 )
                                      )
+
     # ... but we don't want these events
-    process.p += ~process.bbfilter
+    process.p_bbfilter = cms.Path( ~process.bbfilter )
+    process.Skimmer.filterlist.append( 'p_bbfilter' )
+
+
+def addHCALnoiseFilter( process ):
+    # Store the result of the HCAL noise info.
+    #
+    process.load( 'CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi' )
+    process.p += process.HBHENoiseFilterResultProducer
+
+def configureTaus( process ):
+    # rerun PFTau reco
+    process.load( 'RecoTauTag.Configuration.RecoPFTauTag_cff' )
+    process.p += process.PFTau

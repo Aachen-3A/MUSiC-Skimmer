@@ -69,20 +69,47 @@ Skimmer = cms.EDAnalyzer(
     
     triggers = cms.PSet(
         #REMARK: The names of the following PSets will be used as the trigger identifier in the PXL output
-        # Trigger menu: 8e29
         HLT = cms.PSet(
             process = cms.string( 'auto' ),
             L1_result = cms.InputTag( "gtDigis" ),
             results = cms.string('TriggerResults'),
             event   = cms.string('hltTriggerSummaryAOD'),
             HLTriggers = cms.vstring(
-                #MC triggers
-                'HLT_Mu15_v1', 'HLT_IsoMu11_v4',
-                'HLT_Ele22_SW_L1R_v2',
-                'HLT_Photon50_Cleaned_L1R_v1',
-                'HLT_Jet100U_v3',
-                'HLT_MET120_v3',
-                #data triggers
+                # MC HLTs for Summer11 MCs
+                # (using HLT config: /cdaq/physics/Run2011/5e32/v6.2/HLT/V1)
+                #
+                'HLT_Mu15_v2',
+                'HLT_Mu20_v1',
+                'HLT_Mu24_v1',
+                'HLT_Mu30_v1',
+                'HLT_IsoMu12_v1',
+                'HLT_IsoMu15_v5',
+                'HLT_IsoMu17_v5',
+                'HLT_IsoMu24_v1',
+                'HLT_IsoMu30_v1',
+
+                'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2',
+                'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
+                'HLT_Ele45_CaloIdVT_TrkIdT_v2',
+
+                'HLT_Photon50_CaloIdVL_IsoL_v1',
+                'HLT_Photon75_CaloIdVL_v2',
+                'HLT_Photon75_CaloIdVL_IsoL_v2',
+
+                'HLT_Jet240_v1',
+                'HLT_Jet370_v1',
+                'HLT_Jet370_NoJetID_v1',
+
+                'HLT_MET200_v1',
+
+                'HLT_IsoPFTau35_Trk20_MET45_v2',
+                'HLT_DoubleIsoPFTau20_Trk5_v2',
+                'HLT_Mu15_LooseIsoPFTau20_v2',
+                'HLT_IsoMu12_LooseIsoPFTau10_v2',
+                'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v2'
+
+                # Default data triggers. The actual once are defined in data*cfg.py
+                #
                 'HLT_Mu15_v2', 'HLT_Mu20_v1', 'HLT_IsoMu12_v1', 'HLT_IsoMu15_v5',
                 'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2', 'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
                 'HLT_Photon50_CaloIdVL_IsoL_v1', 'HLT_Photon75_CaloIdVL_IsoL_v2',
@@ -92,6 +119,16 @@ Skimmer = cms.EDAnalyzer(
             ),
         StoreL3Objects = cms.untracked.bool(False)
         ),
+
+    # This is used to access the results of all filters that ran.
+    #
+    filters = cms.PSet(
+        AllFilters = cms.PSet(
+            process = cms.string( 'PAT' ),
+            results = cms.string( 'TriggerResults' ),
+            paths = cms.vstring()
+        )
+    ),
 
     cuts = cms.PSet(
         min_tau_pt  = cms.double( 10 ),

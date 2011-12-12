@@ -70,6 +70,7 @@ Implementation:
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 //For L1 and Hlt objects
@@ -257,6 +258,30 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
    fStoreL3Objects = trigger_pset.getUntrackedParameter<bool>("StoreL3Objects");
 
+   // Filters
+   // -------
+   // This is based on the triggers handling from above because the information
+   // from filters that ran are accessed with help of the edm::TriggerResults.
+   // Basically it is foreseen (but not used atm.) to use more than one filter combination.
+   //
+   ParameterSet filter_pset = iConfig.getParameter< ParameterSet >( "filters" );
+
+   vector< string > filter_paths;
+   filter_pset.getParameterSetNames( filter_paths );
+
+   for( vector< string >::const_iterator filter_path = filter_paths.begin(); filter_path != filter_paths.end(); ++filter_path ) {
+      trigger_group filter;
+      filter.name = *filter_path;
+
+      ParameterSet one_filter = filter_pset.getParameter< ParameterSet >( filter.name );
+      filter.process = one_filter.getParameter< string >( "process" );
+
+      filter.results = InputTag( one_filter.getParameter< string >( "results" ), "" );
+
+      filter.triggers_names = one_filter.getParameter< vector< string > >( "paths" );
+
+      filters.push_back( filter );
+   }
 
 
    //cuts
@@ -354,6 +379,13 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       for( vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
          analyzeTrigger( iEvent, iSetup, RecEvtView, *trg );
       }
+
+      //Filters more info see above.
+      //
+      for( vector< trigger_group >::iterator filt = filters.begin(); filt != filters.end(); ++filt ){
+         analyzeFilter( iEvent, iSetup, RecEvtView, *filt );
+      }
+
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTaus( iEvent, RecEvtView, IsMC, genmap );
@@ -908,6 +940,36 @@ void MUSiCSkimmer::initializeTrigger( const edm::Event &event,
    }
 }
 
+
+void MUSiCSkimmer::analyzeFilter( const edm::Event &iEvent,
+                                  const edm::EventSetup &iSetup,
+                                  pxl::EventView *EvtView,
+                                  trigger_group &filter
+                                  ) {
+   initializeTrigger( iEvent, iSetup, filter, filter.process );
+
+   edm::Handle< edm::TriggerResults > filterResultsHandle;
+   iEvent.getByLabel( filter.results, filterResultsHandle );
+
+   for( vector< trigger_def >::iterator filt = filter.trigger_infos.begin(); filt != filter.trigger_infos.end(); ++filt ) {
+      if( !filt->active ) continue;
+
+      bool wasrun = filterResultsHandle->wasrun( filt->ID );
+      bool error  = filterResultsHandle->error( filt->ID );
+
+      if( wasrun && !error ){
+        EvtView->setUserRecord< bool >( filter.name + "_" + filt->name, filterResultsHandle->accept( filt->ID ) );
+
+        if( fDebug > 0 && filterResultsHandle->accept( filt->ID ) )
+           cout << endl << "Event in process: '" << filter.process << "' passed filter: '" << filt->name << "'." << endl;
+      } else {
+         //either error or was not run
+         if( !wasrun ) cout << "FILTER WARNING: Filter: " << filt->name << " in process " << filter.process << " was not executed!" << endl;
+         if( error )   cout << "FILTER WARNING: An error occured during execution of Filter: " << filt->name << " in process " << filter.process << endl;
+         cout << "FILTER WARNING: Run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
+      }
+   }
+}
 
 
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
