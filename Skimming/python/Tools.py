@@ -47,9 +47,9 @@ def configurePAT( process, runOnData ):
         process.patJets.embedGenJetMatch = False
         process.patJets.embedGenPartonMatch = False
 
-        process.patJetCorrFactors.levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
+        process.patJetCorrFactors.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
     else:
-        process.patJetCorrFactors.levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute' )
+        process.patJetCorrFactors.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
 
     process.p += process.patDefaultSequence
 
@@ -133,8 +133,13 @@ def configurePF( process, runOnData, postfix ):
         print "WARNING: No postfix provided, setting to: '%s'" %postfix
 
     from PhysicsTools.PatAlgos.tools import pfTools
-    pfTools.usePF2PAT( process, runPF2PAT = True, jetAlgo = 'AK5', runOnMC = not runOnData, postfix = postfix )
-    if runOnData: getattr( process, 'patJetCorrFactors' + postfix ).levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
+    pfTools.usePF2PAT( process,
+                       runPF2PAT = True,
+                       jetAlgo = 'AK5',
+                       jetCorrections = ( 'AK5PFchs', process.patJetCorrFactors.levels ),
+                       runOnMC = not runOnData,
+                       postfix = postfix
+                       )
 
 
 def configurePFnoPU( process, postfix ):
