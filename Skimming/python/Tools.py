@@ -364,8 +364,26 @@ def addBFilter( process ):
 def addHCALnoiseFilter( process ):
     # Store the result of the HCAL noise info.
     #
-    process.load( 'CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi' )
+    process.HBHENoiseFilterResultProducer = cms.EDProducer(
+        'HBHENoiseFilterResultProducer',
+        label = cms.InputTag( 'hcalnoise', '', 'RECO' ),
+        minRatio = cms.double( -999 ),
+        maxRatio = cms.double( 999 ),
+        minHPDHits = cms.int32( 17 ),
+        minRBXHits = cms.int32( 999 ),
+        minHPDNoOtherHits = cms.int32( 10 ),
+        minZeros = cms.int32( 10 ),
+        minHighEHitTime = cms.double( -9999.0 ),
+        maxHighEHitTime = cms.double( 9999.0 ),
+        maxRBXEMF = cms.double( -999.0 ),
+        minNumIsolatedNoiseChannels = cms.int32( 9999 ),
+        minIsolatedNoiseSumE = cms.double( 9999 ),
+        minIsolatedNoiseSumEt = cms.double( 9999 ),
+        useTS4TS5 = cms.bool( True )
+        )
+
     process.p += process.HBHENoiseFilterResultProducer
+
 
 def configureTaus( process ):
     # rerun PFTau reco
