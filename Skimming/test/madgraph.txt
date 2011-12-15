@@ -1,40 +1,55 @@
 config=mc_SU11_cfg.py
 
-WJets_PU_S4_MG:/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
-#ZJetsToNuNu_200_HT_inf_MG:/ZJetsToNuNu_200_HT_inf_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
-
-WWJets_PU_S4_MG:/WWJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
-
-TTJets_PU_S4_MG:/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v2/AODSIM
-
 GVJets_PU_S4_MG:/GVJets_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 
 DiPhotonJets_PU_S4_MG:/DiPhotonJets_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 
+WJets_PU_S4_MG:/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+WJetsToLNu_PtW-100_PU_S4_MG:/WJetsToLNu_PtW-100_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+
+WbbToLNu_PU_S4_MG:/WbbToLNu_TuneZ2_7TeV-madgraph-pythia6-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+
+W1Jet_PU_S4_MG:/W1Jet_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+W3Jets_PU_S4_MG:/W3Jets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+W4Jets_PU_S4_MG:/W4Jets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+
+WWJetsTo2L2Nu_PU_S4_MG:/WWJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+WWplusTo2L2Nu_PU_S4_MG:/WWplusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+WWminusTo2L2Nu_PU_S4_MG:/WWminusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+WWplusTo2L2Nu_PU_S4_MG:/WWplusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+
 DYJets_M-50_PU_S4_MG:/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
-
-ZJetsToNuNu_200_HT_inf_PU_S4_MG:/ZJetsToNuNu_200_HT_inf_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
-
-WWJetsTo2L2Nu_TuneZ2_PU_S4_MG:/WWJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+DYJetsToNuNu_PtZ-100_PU_S4_MG:/DYJetsToNuNu_PtZ-100_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+DYJetsToLL_PtZ-100_PU_S4_MG:/DYJetsToLL_PtZ-100_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
 
 ZccToLL_M-40_PtB1-15_PU_S4_MG:/ZccToLL_M-40_PtB1-15_TuneZ2_7TeV-madgraph-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
 ZbbToLL_M-50_PU_S4_MG:/ZbbToLL_M-50_TuneZ2_7TeV-madgraph-pythia6_tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
 ZbbToLL_M-40_PtB1-15_PU_S4_MG:/ZbbToLL_M-40_PtB1-15_TuneZ2_7TeV-madgraph-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
 
+Z2Jets_PU_S4_MG:/Z2Jets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+Z1Jet_PU_S4_MG:/Z1Jet_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+
+ZZJetsTo4L_PU_S4_MG:/ZZJetsTo4L_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZZJetsTo2L2Q_PU_S4_MG:/ZZJetsTo2L2Q_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZZJetsTo2L2Nu_PU_S4_MG:/ZZJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+
 WGToTauNuG_PU_S4_MG:/WGToTauNuG_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
 WGToMuNuG_PU_S4_MG:/WGToMuNuG_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 WGToENuG_PU_S4_MG:/WGToENuG_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 
-DYJetsToNuNu_PtZ-100_PU_S4_MG:/DYJetsToNuNu_PtZ-100_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
-DYJetsToLL_PtZ-100_PU_S4_MG:/DYJetsToLL_PtZ-100_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZGToTauTauG_PU_S4_MG:/ZGToTauTauG_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZGToNuNuG_PU_S4_MG:/ZGToNuNuG_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZGToMuMuG_PU_S4_MG:/ZGToMuMuG_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZGToEEG_PU_S4_MG:/ZGToEEG_TuneZ2_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 
-### NEW
+WZJetsTo3LNu_PU_S4_MG:/WZJetsTo3LNu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+WZJetsTo2L2Q_PU_S4_MG:/WZJetsTo2L2Q_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
 
-WWplusTo2L2Nu_PU_S4_MG:/WWplusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
-WWminusTo2L2Nu_PU_S4_MG:/WWminusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 WWWTo2Lplus2Nu_PU_S4_MG:/WWWTo2Lplus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 WWWTo2Lminus2Nu_PU_S4_MG:/WWWTo2Lminus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 TTZTo2Lplus2Nu_PU_S4_MG:/TTZTo2Lplus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 TTZTo2Lminus2Nu_PU_S4_MG:/TTZTo2Lminus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 TTWTo2Lplus2Nu_PU_S4_MG:/TTWTo2Lplus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 TTWTo2Lminus2Nu_PU_S4_MG:/TTWTo2Lminus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
+
+TTJets_PU_S4_MG:/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v2/AODSIM
