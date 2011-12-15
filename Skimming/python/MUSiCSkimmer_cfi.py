@@ -103,7 +103,6 @@ Skimmer = cms.EDAnalyzer(
                 'HLT_MET200_v1',
 
                 'HLT_IsoPFTau35_Trk20_MET45_v2',
-                'HLT_DoubleIsoPFTau20_Trk5_v2',
                 'HLT_Mu15_LooseIsoPFTau20_v2',
                 'HLT_IsoMu12_LooseIsoPFTau10_v2',
                 'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v2'

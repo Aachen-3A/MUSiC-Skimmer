@@ -74,6 +74,12 @@ def prepare( runOnGen, runOnData ):
        process.p += process.patJetPartons
 
     if not runOnData:
+        # This is done to fix a bug in Pythia in SU11 and FA11 samples.
+        # More information:
+        # https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/1489.html
+        # https://hypernews.cern.ch/HyperNews/CMS/get/generators/1228.html
+        #
+        addKinematicsFilter( process )
         addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
 
     configureTaus( process )
@@ -383,6 +389,13 @@ def addHCALnoiseFilter( process ):
         )
 
     process.p += process.HBHENoiseFilterResultProducer
+
+
+def addKinematicsFilter( process ):
+    process.load( 'GeneratorInterface.GenFilters.TotalKinematicsFilter_cfi' )
+
+    process.p_kinematicsfilter = cms.Path( process.totalKinematicsFilter )
+    process.Skimmer.filterlist.append( 'p_kinematicsfilter' )
 
 
 def configureTaus( process ):
