@@ -1,0 +1,30 @@
+-F ~DoubleIsoPFTau
+-F ~IsoPFTau45_Trk20_MET60
+-F ~DiJet -F ~NoJetID
+-F ~BTagMu -F ~CentralJet -F ~PFMHT
+-F ~DoublePhoton -F ~Photon26_CaloIdL_IsoVL_Photon
+-F ~Photon26_IsoVL_Photon -F ~Photon32_CaloIdL_Photon
+-F ~Photon26_R9Id_Photon
+-F ~NoSpikeFilter
+-F ~coplanarity -F ~NoVertex -F ~TripleMu
+-F ~WP -F ~L2Mu -F ~HBHENoiseFiltered -F ~DoubleMu45
+-F ~DoubleEle -F ~Photon20_R9Id_Photon -F ~Photon36_CaloIdL_IsoVL_Photon
+-F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_IsoVL_Photon
+-F ~Photon40_CaloIdL_Photon -F ~Photon36_CaloIdL_Photon -F ~NoHE
+-F ~Photon36_CaloId_IsoVL_Photon -F ~Photon36_R9Id_Photon
+-F ~Photon44_CaloIdL_Photon -F ~Photon48_CaloIdL_Photon
+-F ~Photon400
+-F ~Mu100
+-F ~Jet800
+
+-F ~IsoPFTau35_Trk20_MET70
+-F ~Jet370
+-F ~MET400
+-F ~Mu17_Mu8
+-F ~DoubleMu5_IsoMu5
+-F ~IsoMu34
+-F ~Mu60
+-F ~Ele100_CaloIdVL_CaloIsoVL_TrkIdVL_TrkIsoVL
+-F ~Photon26_CaloIdXL_IsoXL_Photon
+-F ~Ele20_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau20
+-F ~IsoMu15_LooseIsoPFTau20

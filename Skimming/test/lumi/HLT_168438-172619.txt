@@ -1,0 +1,57 @@
+Script called with the parameters:
+/.automount/home/home__home1/institut_3a/papacz/CMSSW/slc5_64/CMSSW_4_2_8_patch7/bin/slc5_amd64_gcc434/getHLT.py -f 168438 -l 172619 -F ~DoubleIsoPFTau -F ~IsoPFTau45_Trk20_MET60 -F ~DiJet -F ~NoJetID -F ~BTagMu -F ~CentralJet -F ~PFMHT -F ~DoublePhoton -F ~Photon26_CaloIdL_IsoVL_Photon -F ~Photon26_IsoVL_Photon -F ~Photon32_CaloIdL_Photon -F ~Photon26_R9Id_Photon -F ~NoSpikeFilter -F ~coplanarity -F ~NoVertex -F ~TripleMu -F ~WP -F ~L2Mu -F ~HBHENoiseFiltered -F ~DoubleMu45 -F ~DoubleEle -F ~Photon20_R9Id_Photon -F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_IsoVL_Photon -F ~Photon40_CaloIdL_Photon -F ~Photon36_CaloIdL_Photon -F ~NoHE -F ~Photon36_CaloId_IsoVL_Photon -F ~Photon36_R9Id_Photon -F ~Photon44_CaloIdL_Photon -F ~Photon48_CaloIdL_Photon -F ~Photon400 -F ~Mu100 -F ~Jet800 -F ~Mu17_Mu8 -F ~Ele18_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TightIsoPFTau -F ~Ele100_CaloIdVL_CaloIsoVL_TrkIdVL_TrkIsoVL -F ~IsoMu30 -F ~Mu60 -F ~Jet370 -F ~IsoPFTau40_IsoPFTau30 -F ~IsoPFTau35_Trk20_MET70 -F ~MET200 -F ~MET400 -F ~IsoMu15_LooseIsoPFTau20 -F ~DoubleMu5_IsoMu5 -J
+
+Number of ranges: 1
+
+
+Range: 170249-172619
+--------------------
+
+Tau:
+----
+HLT_IsoPFTau35_Trk20_MET60_v6
+
+Jet:
+----
+HLT_Jet300_v5
+
+Photon:
+-------
+HLT_Photon135_v1
+
+SingleMu:
+---------
+HLT_IsoMu24_v8
+HLT_Mu40_v5
+
+SingleElectron:
+---------------
+HLT_Ele65_CaloIdVT_TrkIdT_v3
+
+MET:
+----
+HLT_MET120_v7
+
+TauPlusX:
+---------
+HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TightIsoPFTau20_v2
+HLT_IsoMu15_LooseIsoPFTau15_v8
+HLT_IsoMu15_TightIsoPFTau20_v6
+
+DoubleMu:
+---------
+HLT_Mu13_Mu8_v6
+
+All unprescaled triggers for all run ranges:
+--------------------------------------------
+'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TightIsoPFTau20_v2',
+'HLT_Ele65_CaloIdVT_TrkIdT_v3',
+'HLT_IsoMu15_LooseIsoPFTau15_v8',
+'HLT_IsoMu15_TightIsoPFTau20_v6',
+'HLT_IsoMu24_v8',
+'HLT_IsoPFTau35_Trk20_MET60_v6',
+'HLT_Jet300_v5',
+'HLT_MET120_v7',
+'HLT_Mu13_Mu8_v6',
+'HLT_Mu40_v5',
+'HLT_Photon135_v1',
