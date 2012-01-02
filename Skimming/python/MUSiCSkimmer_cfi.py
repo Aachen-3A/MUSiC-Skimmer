@@ -22,7 +22,7 @@ Skimmer = cms.EDAnalyzer(
     #vertices with beam spot constraint
     VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
     #the following is all PAT
-    TauRecoLabel = cms.untracked.string("hpsPFTauProducer"),
+    TauRecoLabel = cms.untracked.string( "patTausPFlow" ),
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
     GammaRecoLabel = cms.untracked.string("cleanPatPhotons"),

@@ -58,6 +58,7 @@ def prepare( runOnGen, runOnData ):
         # Keep the following functions in the right order as they will add modules to the path!
         #
         configureJEC( process, runOnData )
+	configureTaus( process )
         configurePAT( process, runOnData )
         process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
@@ -82,7 +83,7 @@ def prepare( runOnGen, runOnData ):
         addKinematicsFilter( process )
         addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
 
-    configureTaus( process )
+    #configureTaus( process )
 
     process.Skimmer.filters.AllFilters.paths = process.Skimmer.filterlist
     process.Skimmer.filters.AllFilters.process = process.name_()
@@ -239,6 +240,7 @@ def configurePF( process, runOnData, postfix ):
                        postfix = postfix,
                        outputModules = []
                        )
+    pfTools.adaptPFTaus(process,"hpsPFTau",postfix=postfix)
 
 
 def configurePFnoPU( process, postfix ):

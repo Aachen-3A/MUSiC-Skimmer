@@ -556,21 +556,7 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
             }
          }
       }
-      // fill Gen Taus passing some basic cuts -> status? What kind of taus can be found?
-      if( abs( ( p )->pdgId() ) == 15 && p->status() == 2 ) {
-         if( TauMC_cuts( p ) ) {
-            pxl::Particle* part = EvtView->create< pxl::Particle > ();
-            genmap[ p ] = part; //fill genmap
-            part->setName( "Tau" );
-            part->setCharge( p->charge() );
-            part->setP4( p->px(), p->py(), p->pz(), p->energy() );
-            part->setUserRecord< float > ( "Vtx_X", p->vx() );
-            part->setUserRecord< float > ( "Vtx_Y", p->vy() );
-            part->setUserRecord< float > ( "Vtx_Z", p->vz() );
-            part->setUserRecord< int > ( "GenId", GenId );
-         }
-         numTauMC++;
-      }
+
       // fill Gen Muons passing some basic cuts
 
       if ( abs((p)->pdgId()) == 13 && (p)->status() == 1) {
@@ -672,6 +658,29 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
 
       GenId++;
 
+      // fill Gen Taus passing some basic cuts -> status? What kind of taus can be found?
+      if( abs( p->pdgId() ) == 15 && p->status() == 2 && TauMC_cuts( p ) ) {
+         //check whether the tau is final or radiates a tau
+         bool isfinal = true;
+         for( reco::GenParticle::const_iterator daughter = p->begin(); daughter != p->end(); ++daughter ) {
+            if( daughter->pdgId() == 15 ) {
+               isfinal = false;
+               break;
+            }
+         }
+         if( isfinal ) {
+            pxl::Particle *part = EvtView->create< pxl::Particle >();
+            genmap[ p ] = part; //fill genmap
+            part->setName( "Tau" );
+            part->setCharge( p->charge() );
+            part->setP4( p->px(), p->py(), p->pz(), p->energy() );
+            part->setUserRecord< float >( "Vtx_X", p->vx() );
+            part->setUserRecord< float >( "Vtx_Y", p->vy() );
+            part->setUserRecord< float >( "Vtx_Z", p->vz() );
+            part->setUserRecord< int >( "GenId", GenId );
+            numTauMC++;
+         }
+      }
    } //end of loop over generated particles
 
    if (fDebug > 1)  cout << "MC Found:  " << numMuonMC <<  " mu  " << numEleMC << " e  " << numGammaMC << " gamma" << endl;
@@ -1153,33 +1162,29 @@ void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
 
 void MUSiCSkimmer::analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap ) {
    // get pat::Tau's from event
-   edm::Handle< reco::PFTauCollection > tauHandle;
+   edm::Handle< std::vector< pat::Tau > > tauHandle;
    iEvent.getByLabel( fTauRecoLabel, tauHandle );
-   const std::vector< reco::PFTau > &taus = *tauHandle;
-
-   std::vector< edm::Handle< reco::PFTauDiscriminator > > tauDiscriminatorHandle;
-   iEvent.getManyByType( tauDiscriminatorHandle );
+   const std::vector< pat::Tau > &taus = *tauHandle;
 
    int numTauRec = 0;
-   unsigned tau_index = 0;
-   for( reco::PFTauCollection::const_iterator tau = taus.begin(); tau != taus.end(); ++tau, ++tau_index ) {
-      reco::PFTauRef tauCandidate( tauHandle, tau_index );
+   for( std::vector< pat::Tau >::const_iterator tau = taus.begin(); tau != taus.end(); ++tau ) {
       if( Tau_cuts( *tau ) ) {
-         pxl::Particle *part = RecView->create< pxl::Particle > ();
+         pxl::Particle *part = RecView->create< pxl::Particle >();
          part->setName( "Tau" );
          part->setCharge( tau->charge() );
          part->setP4( tau->px(), tau->py(), tau->pz(), tau->energy() );
-
-         //loop over discriminators starting with "hpsPF" and NOT ending with "PFlow" and storing their names in the UserRecord
-         for( std::vector< edm::Handle< reco::PFTauDiscriminator > >::iterator discriminator = tauDiscriminatorHandle.begin();
-              discriminator != tauDiscriminatorHandle.end();
-              ++discriminator ) {
-            if( discriminator->provenance()->processName() == tauHandle.provenance()->processName() ) {
-               string completename = discriminator->provenance()->moduleLabel();
-               if( completename.compare( 0, 5, "hpsPF" ) == 0 && completename.compare( ( completename.size() - 5 ), 5, "PFlow" ) != 0 ) {
-                  part->setUserRecord< double > ( completename.substr( 24 ), ( **discriminator )[ tauCandidate ] );
-               }
-            }
+         part->setUserRecord< float >( "PhiPhi", tau->phiphiMoment() );
+         part->setUserRecord< float >( "EtaPhi", tau->etaphiMoment() );
+         part->setUserRecord< float >( "EtaEta", tau->etaetaMoment() );
+         //Pt of the Leading Charged Hadron of the Jet
+         part->setUserRecord< float >( "LeadingHadronPt",    tau->leadPFChargedHadrCand()->pt() );
+         part->setUserRecord< float >( "PfAllParticleIso",   tau->userIsolation( "pat::PfAllParticleIso" ) );
+         part->setUserRecord< float >( "PfChargedHadronIso", tau->userIsolation( "pat::PfChargedHadronIso" ) );
+         part->setUserRecord< float >( "PfNeutralHadronIso", tau->userIsolation( "pat::PfNeutralHadronIso" ) );
+         part->setUserRecord< float >( "PfGammaIso",         tau->userIsolation( "pat::PfGammaIso" ) );
+         //Saving all discriminators
+         for ( std::vector< pat::Tau::IdPair >::const_iterator it = tau->tauIDs().begin(); it != tau->tauIDs().end(); ++it ) {
+            part->setUserRecord < float >( it->first, it->second );
          }
          numTauRec++;
       }
