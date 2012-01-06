@@ -40,6 +40,9 @@ ZZTo2e2numu_PU_S4_PH:/ZZTo2e2numu_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11
 ZZTo2e2nue_PU_S4_PH:/ZZTo2e2nue_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
 ZZTo2e2mu_PU_S4_PH:/ZZTo2e2mu_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
 ZZTo2e2tau_PU_S4_PH:/ZZTo2e2tau_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZZTo4tau_PU_S4_PH:/ZZTo4tau_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZZTo2mu2tau_PU_S4_PH:/ZZTo2mu2tau_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
+ZZTo2e2tau_PU_S4_PH:/ZZTo2e2tau_7TeV-powheg-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
 
 WplusToTauNu_M-20_CT10_PU_S4_PH:/WplusToTauNu_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
 WplusToMuNu_M-20_CT10_PU_S4_PH:/WplusToMuNu_M-20_CT10_TuneZ2_7TeV-powheg-pythia/Summer11-PU_S4_START42_V11-v1/AODSIM

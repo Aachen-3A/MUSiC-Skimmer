@@ -14,7 +14,6 @@ W3Jets_PU_S4_MG:/W3Jets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v
 W4Jets_PU_S4_MG:/W4Jets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
 
 WWJetsTo2L2Nu_PU_S4_MG:/WWJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
-WWplusTo2L2Nu_PU_S4_MG:/WWplusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 WWminusTo2L2Nu_PU_S4_MG:/WWminusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 WWplusTo2L2Nu_PU_S4_MG:/WWplusTo2L2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 
