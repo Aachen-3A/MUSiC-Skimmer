@@ -23,7 +23,7 @@ def prepare( runOnGen, runOnData ):
     # configureJEC function.
     #
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
-    from Configuration.PyReleaseValidation.autoCond import autoCond
+    from Configuration.AlCa.autoCond import autoCond
     if runOnData:
         process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
     else:
@@ -66,7 +66,7 @@ def prepare( runOnGen, runOnData ):
         configurePFnoPU( process, postfix )
 
         import PhysicsTools.PatAlgos.tools.coreTools
-        PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ] )
+        PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ], outputModules = [] )
 
         addHCALnoiseFilter( process )
 
@@ -205,11 +205,14 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
 
 def configureJEC( process, runOnData ):
     if runOnData:
-        jecGlobalTag = cms.string( 'GR_R_42_V19::All' )
+        jecGlobalTag = cms.string( 'GR_R_44_V0::All' )
+        jecVersion = 0
     else:
-        jecGlobalTag = cms.string( 'START42_V13::All' )
+        jecGlobalTag = cms.string( 'START44_V0::All' )
+        jecVersion = 0
     GlobalTag = process.GlobalTag.globaltag
-    if process.GlobalTag.globaltag != jecGlobalTag:
+    version = int( str( GlobalTag ).split( 'V' )[1].split( ':' )[0] )
+    if version < jecVersion:
         process.GlobalTag.globaltag = jecGlobalTag
         print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
 
@@ -233,7 +236,8 @@ def configurePF( process, runOnData, postfix ):
                        jetAlgo = 'AK5',
                        jetCorrections = ( 'AK5PFchs', process.patJetCorrFactors.levels ),
                        runOnMC = not runOnData,
-                       postfix = postfix
+                       postfix = postfix,
+                       outputModules = []
                        )
 
 
@@ -369,10 +373,11 @@ def addBFilter( process ):
 
 def addHCALnoiseFilter( process ):
     # Store the result of the HCAL noise info.
+    # (HCAL DPG recommended baseline filter.)
     #
     process.HBHENoiseFilterResultProducer = cms.EDProducer(
         'HBHENoiseFilterResultProducer',
-        label = cms.InputTag( 'hcalnoise', '', 'RECO' ),
+        noiselabel = cms.InputTag( 'hcalnoise', '', 'RECO' ),
         minRatio = cms.double( -999 ),
         maxRatio = cms.double( 999 ),
         minHPDHits = cms.int32( 17 ),
