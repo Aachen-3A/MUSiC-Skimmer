@@ -399,7 +399,6 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       }
       analyzeHCALNoise(iEvent, RecEvtView);
       analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo );
-      analyzeECALRecHits( iEvent, iSetup, RecEvtView, geo );
    }
 
    if (IsMC && !fGenOnly){
@@ -1341,11 +1340,22 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
    edm::Handle< EcalRecHitCollection > barrelRecHits;
    iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits );
 
+   edm::Handle< EcalRecHitCollection > endcapRecHits;
+   iEvent.getByLabel( freducedEndcapRecHitCollection, endcapRecHits );
+
    for (std::vector<pat::Electron>::const_iterator ele = electrons.begin(); ele != electrons.end(); ++ele ) {
       if (Ele_cuts(ele)) {
          if (fDebug > 1) {
             cout << "Electron Energy scale corrected: " << ele->isEnergyScaleCorrected() << endl;
          }
+         edm::Handle< EcalRecHitCollection > recHits;
+
+         bool isBarrel = ele->isEB();
+         bool isEndcap = ele->isEE();
+
+         if( isBarrel ) recHits = barrelRecHits;
+         if( isEndcap ) recHits = endcapRecHits;
+
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName("Ele");
          part->setCharge(ele->charge());
@@ -1359,6 +1369,8 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
 
          part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
 
+         part->setUserRecord< bool >( "isBarrel", isBarrel );
+         part->setUserRecord< bool >( "isEndcap", isEndcap );
 
          //reconstruction algorithm was (at least) driven by ECAL
          part->setUserRecord< bool >( "ecalDriven", ele->ecalDrivenSeed() );
@@ -1425,12 +1437,19 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
          double e3x3 = lazyTools.e3x3( *SCRef );
          part->setUserRecord< double >( "e3x3",  e3x3 );
          part->setUserRecord< double >( "r19", eMax / e3x3 );
-         part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *barrelRecHits, 0, false ) );
-         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( seedID );
-         if( recHit_it != barrelRecHits->end() ) {
-            const EcalRecHit &seedRecHit = *recHit_it;
-            unsigned int recoFlag = seedRecHit.recoFlag();
-            part->setUserRecord< unsigned int >("recoFlag",  recoFlag  );
+         part->setUserRecord< double >( "SwissCross", -1 );
+         part->setUserRecord< double >( "SwissCrossNoBorder", -1 );
+
+         if( isBarrel || isEndcap ) {
+            part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *recHits, 0, false ) );
+            part->setUserRecord< double >( "SwissCrossNoBorder", EcalTools::swissCross( seedID, *recHits, 0, true ) );
+
+            EcalRecHitCollection::const_iterator recHit_it = recHits->find( seedID );
+            if( recHit_it != recHits->end() ) {
+               const EcalRecHit &seedRecHit = *recHit_it;
+               unsigned int recoFlag = seedRecHit.recoFlag();
+               part->setUserRecord< unsigned int >( "recoFlag", recoFlag );
+            }
          }
 
          std::vector<float> covariances = lazyTools.covariances(*SCRef, 4.7 );
@@ -1574,10 +1593,22 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
 
    edm::Handle< EcalRecHitCollection > barrelRecHits;
    iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits );
-   
+
+   edm::Handle< EcalRecHitCollection > endcapRecHits;
+   iEvent.getByLabel( freducedEndcapRecHitCollection, endcapRecHits );
+
    int numGammaRec = 0;
    for (std::vector<pat::Photon>::const_iterator photon = photons.begin(); photon != photons.end(); ++photon) {  
       if ( Gamma_cuts(photon) ) { 
+
+         edm::Handle< EcalRecHitCollection > recHits;
+
+         bool isBarrel = photon->isEB();
+         bool isEndcap = photon->isEE();
+
+         if( isBarrel ) recHits = barrelRecHits;
+         if( isEndcap ) recHits = endcapRecHits;
+
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName("Gamma");
          part->setCharge(0);
@@ -1596,14 +1627,21 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
          double e3x3 = photon->e3x3();
          part->setUserRecord< double >("e3x3",  e3x3 );
          part->setUserRecord< double >( "e5x5",  photon->e5x5() );
-         part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *barrelRecHits, 0, false ) );
-         part->setUserRecord< double >( "SwissCrossNoBorder", EcalTools::swissCross( seedID, *barrelRecHits, 0, true ) );
-         EcalRecHitCollection::const_iterator recHit_it = barrelRecHits->find( seedID );
-         if( recHit_it != barrelRecHits->end() ) {
-            const EcalRecHit &seedRecHit = *recHit_it;
-            unsigned int recoFlag = seedRecHit.recoFlag();
-            part->setUserRecord< unsigned int >("recoFlag",  recoFlag  );
+
+         part->setUserRecord< double >( "SwissCross", -1 );
+         part->setUserRecord< double >( "SwissCrossNoBorder", -1 );
+
+         if( isBarrel || isEndcap ) {
+            part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *recHits, 0, false ) );
+            part->setUserRecord< double >( "SwissCrossNoBorder", EcalTools::swissCross( seedID, *recHits, 0, true ) );
+            EcalRecHitCollection::const_iterator recHit_it = recHits->find( seedID );
+            if( recHit_it != recHits->end() ) {
+               const EcalRecHit &seedRecHit = *recHit_it;
+               unsigned int recoFlag = seedRecHit.recoFlag();
+               part->setUserRecord< unsigned int >( "recoFlag", recoFlag );
+            }
          }
+
          std::vector< float > covariances = lazyTools.covariances( *SCRef );
          part->setUserRecord<double>("EtaEta", covariances[0] ); 
          part->setUserRecord<double>("EtaPhi", covariances[1] );
@@ -1663,68 +1701,6 @@ void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
    RecView->setUserRecord<int>("NumGamma", numGammaRec);
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
 }
-
-
-
-
-
-void MUSiCSkimmer::analyzeECALRecHits( const edm::Event &iEvent,
-                                       const edm::EventSetup &iSetup,
-                                       pxl::EventView *RecView,
-                                       edm::ESHandle< CaloGeometry > &geo
-                                       ) {
-   //get the ECAL barrel rec hits
-   edm::Handle< EcalRecHitCollection > barrelRecHits_h;
-   iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits_h );
-   const EcalRecHitCollection &barrelRecHits = *barrelRecHits_h;
-
-   edm::ESHandle<CaloTopology> topo_h;
-   iSetup.get< CaloTopologyRecord >().get( topo_h );
-   const CaloTopology &topo = *topo_h;
-
-   //we need a totally useless dummy cluster for matrixEnergy()
-   reco::BasicCluster dummy;
-
-   //loop over all rec-hits and store the 4-vector of weird ones
-   for( EcalRecHitCollection::const_iterator rechit_it = barrelRecHits.begin(); rechit_it != barrelRecHits.end(); ++rechit_it ) {
-      const EcalRecHit &rechit = *rechit_it;
-      double energy = rechit.energy();
-      if( energy > min_rechit_energy ) {
-         const EBDetId id( rechit.id() );
-         uint32_t recoFlag = rechit.recoFlag();
-         double swiss_cross = EcalTools::swissCross( id, barrelRecHits, 0, false );
-         double e3x3 = EcalClusterTools::matrixEnergy( dummy, &barrelRecHits, &topo, id, -1, 1, -1, 1 );
-         double r19 = energy / e3x3;
-
-         if( recoFlag == EcalRecHit::kOutOfTime
-             || swiss_cross > min_rechit_swiss_cross
-             || r19 > min_rechit_R19
-             ) {
-            int ieta = id.ieta();
-
-            pxl::Particle* part = RecView->create<pxl::Particle>();
-            part->setName("ECALRecHit");
-            part->setCharge(0);
-
-            TLorentzVector temp;
-            temp.SetE( energy );
-            temp.SetPz( energy );
-            temp.SetTheta( geo->getPosition( id ).theta() );
-            temp.SetPhi( geo->getPosition( id ).phi() );
-            
-            part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
-         
-            part->setUserRecord< int >( "ieta", ieta );
-            part->setUserRecord< uint32_t >( "recoFlag", recoFlag );
-            part->setUserRecord< double >( "SwissCross", swiss_cross );
-            part->setUserRecord< double >( "r19", r19 );
-         }
-      }
-   }
-}
-
-
-
 
 
 // ------------ method returning the EventClassType ------------

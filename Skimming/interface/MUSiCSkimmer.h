@@ -152,11 +152,6 @@ public:
                                   std::map< const reco::Candidate*, pxl::Particle* > &genmap,
                                   edm::ESHandle< CaloGeometry > &geo
                                   );
-   virtual void analyzeECALRecHits( const edm::Event &iEvent,
-                                    const edm::EventSetup &iSetup,
-                                    pxl::EventView *RecView,
-                                    edm::ESHandle< CaloGeometry > &geo
-                                    );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
    bool TauMC_cuts( const reco::GenParticle *MCtau ) const;
