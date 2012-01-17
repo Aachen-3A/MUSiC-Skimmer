@@ -1440,6 +1440,11 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
          part->setUserRecord< double >( "DszBS", ele->gsfTrack()->dsz( the_beamspot ) );
          part->setUserRecord< double >( "DxyBS", ele->gsfTrack()->dxy( the_beamspot ) );
 
+         // Store the number of *expected* crossed layers before the first trajectory's hit.
+         // If this number is 0, this is the number of missing hits in that trajectory.
+         //
+         part->setUserRecord< int >( "NMissingHits: ", ele->gsfTrack()->trackerExpectedHitsInner().numberOfHits() );
+
          //store PAT matching info if MC
          if( MC ){
             std::map<const reco::Candidate*, pxl::Particle*>::const_iterator it = genmap.find( ele->genLepton() );
