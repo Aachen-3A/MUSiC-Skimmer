@@ -377,7 +377,7 @@ def addHCALnoiseFilter( process ):
     #
     process.HBHENoiseFilterResultProducer = cms.EDProducer(
         'HBHENoiseFilterResultProducer',
-        noiselabel = cms.InputTag( 'hcalnoise', '', 'RECO' ),
+        noiselabel = cms.InputTag( 'hcalnoise' ),
         minRatio = cms.double( -999 ),
         maxRatio = cms.double( 999 ),
         minHPDHits = cms.int32( 17 ),
