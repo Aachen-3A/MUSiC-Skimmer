@@ -6,3 +6,4 @@ TTbarWIncl_PU_S4_MG:/TTbarWIncl_TuneZ2_7TeV-madgraph-tauola/mbrodski-TTbarWIncl_
 TTbarZIncl_PU_S4_MG:/TTbarZIncl_TuneZ2_7TeV-madgraph-tauola/mbrodski-TTbarZIncl_TuneZ2_7TeV-madgraph-tauola-5109230522246240267ad06f5c2c3dbf/USER
 TTbarWWIncl_PZ_S4_MG:/TTbarWWIncl_TuneZ2_7TeV-madgraph-tauola/mbrodski-TTbarWWIncl_TuneZ2_7TeV-madgraph-tauola-0b4ce8da42b5161ee1635dad341b5951/USER
 WWW_PU_S4_MG:/WWW_TuneZ2_7TeV-madgraph-tauola/mbrodski-WWW_TuneZ2_7TeV-madgraph-tauola-0b4ce8da42b5161ee1635dad341b5951/USER
+TTGJets_PU_S4_MG:/TTGJets_7TeV-madgraph/mbrodski-TTGJets_7TeV-madgraph-04a10ff3016674ba89d5e56bcbe5e0a4/USER
