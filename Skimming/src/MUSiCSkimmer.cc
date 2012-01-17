@@ -1193,6 +1193,11 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
    const std::vector<pat::Muon>& muons = *muonHandle;
 
+   // TODO: The following method is depricated and should be replaced with
+   // pat::muon::muonTrackFromMap( MuonTrackType ). The new method is only
+   // available for samples reprocessed with CMSSW 4_4_X+. So it should be
+   // implemented once Summer11 samples are not used anymore.
+   //
    //get basic info for the refits
    Handle <reco::TrackToTrackMap> tevMapH1;
    Handle <reco::TrackToTrackMap> tevMapH2;
@@ -1236,41 +1241,35 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          reco::TrackRef outerTrack = muon->outerTrack();
 
          part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2());
-         part->setUserRecord<int>("LHits", muontrack->numberOfLostHits());
 
-         //store info from HitPattern of the global track
-         //valid hits
+         // Store info from HitPattern of the global tracker.
+
+         // Number of lost ( = invalid) hits on track.
+         //
+         part->setUserRecord< int >( "LHits", muontrack->hitPattern().numberOfLostHits() );
+
+         // Valid hit information
+         //
          part->setUserRecord<int>("VHits",muontrack->hitPattern().numberOfValidHits());
          part->setUserRecord<int>("VHitsPixel",muontrack->hitPattern().numberOfValidPixelHits());
          part->setUserRecord<int>("VHitsTracker",muontrack->hitPattern().numberOfValidTrackerHits());
          part->setUserRecord<int>("VHitsMuonSys",muontrack->hitPattern().numberOfValidMuonHits());
 
+         // Store the number of tracker layers with measurement.
+         //
+         part->setUserRecord< int >( "TrackerLayersWithMeas", muontrack->hitPattern().trackerLayersWithMeasurement() );
+
          //store the number of muon stations containing segments
          part->setUserRecord< int > ( "NMachedStations", muon->numberOfMatchedStations() );
-
-         //safe information for "cocktail" high energy refit
-         reco::TrackRef pmcTrack = muon::tevOptimized(*muon, tevMap1, tevMap2, tevMap3);
-         if( pmcTrack.isAvailable() ) {
-            part->setUserRecord< bool >( "validCocktail", true );
-            part->setUserRecord<double>("pxCocktail",pmcTrack->px());
-            part->setUserRecord<double>("pyCocktail",pmcTrack->py());
-            part->setUserRecord<double>("pzCocktail",pmcTrack->pz());
-         } else {
-            part->setUserRecord< bool >( "validCocktail", false );
-         }
-
-         // Tracker Only
-         //part->setUserRecord<double>("NormChi2_Tracker", trackerTrack->normalizedChi2());
-         //part->setUserRecord<int>("TrackerVHits", trackerTrack->numberOfValidHits());
-         //part->setUserRecord<int>("TrackerLHits", trackerTrack->numberOfLostHits());
-         // Muon System Only 
-         //part->setUserRecord<double>("NormChi2_MuonSys", outerTrack->normalizedChi2());
-         //part->setUserRecord<int>("MuonSysVHits", outerTrack->numberOfValidHits());
-         //part->setUserRecord<int>("MuonSysLHits", outerTrack->numberOfLostHits());
 
          //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
          part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
          part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
+
+         // Store also the pt error from the tracker track.
+         // ( qoverpError() is the same as error(0) for a track. )
+         part->setUserRecord< double >( "dPtRelTrack_Tracker", trackerTrack->qoverpError() / muontrack->qoverp() );
+         part->setUserRecord< double >( "dPtRelTrack_off_Tracker", trackerTrack->ptError() / muontrack->pt() );
 
          // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
          // (i.e. the impact parameter)
@@ -1279,6 +1278,38 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
 
          part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
          part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
+
+         // TODO: Depricated, see above.
+         // Store information for "cocktail" high energy refit.
+         reco::TrackRef pmcTrack = muon::tevOptimized( *muon, tevMap1, tevMap2, tevMap3 );
+         if( pmcTrack.isAvailable() ) {
+            part->setUserRecord< bool >( "validCocktail", true );
+            // Same as above but for cocktail
+            //
+            part->setUserRecord< double >( "pxCocktail", pmcTrack->px() );
+            part->setUserRecord< double >( "pyCocktail", pmcTrack->py() );
+            part->setUserRecord< double >( "pzCocktail", pmcTrack->pz() );
+
+            part->setUserRecord< double >( "qoverpCocktail",      pmcTrack->qoverp() );
+            part->setUserRecord< double >( "qoverpErrorCocktail", pmcTrack->qoverpError() );
+            part->setUserRecord< double >( "ptErrorCocktail",     pmcTrack->ptError() );
+            part->setUserRecord< double >( "ptCocktail",          pmcTrack->pt() );
+
+            part->setUserRecord< double >( "NormChi2Cocktail", pmcTrack->normalizedChi2() );
+
+            part->setUserRecord< int >( "LHitsCocktail",        pmcTrack->hitPattern().numberOfLostHits() );
+            part->setUserRecord< int >( "VHitsCocktail",        pmcTrack->hitPattern().numberOfValidHits() );
+            part->setUserRecord< int >( "VHitsPixelCocktail",   pmcTrack->hitPattern().numberOfValidPixelHits() );
+            part->setUserRecord< int >( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
+            part->setUserRecord< int >( "VHitsMuonSysCocktail", pmcTrack->hitPattern().numberOfValidMuonHits() );
+
+            part->setUserRecord< double >( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
+            part->setUserRecord< double >( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
+            part->setUserRecord< double >( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
+            part->setUserRecord< double >( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
+         } else {
+            part->setUserRecord< bool >( "validCocktail", false );
+         }
 
          //official CaloIso and TrkIso
          //Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
