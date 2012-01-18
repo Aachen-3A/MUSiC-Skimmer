@@ -1262,14 +1262,28 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          //store the number of muon stations containing segments
          part->setUserRecord< int > ( "NMachedStations", muon->numberOfMatchedStations() );
 
+         // Store the pt and error from the global track.
+         // ( qoverpError() is the same as error(0) for a track. )
+         //
+         part->setUserRecord< double >( "qoverp",      muontrack->qoverp() );
+         part->setUserRecord< double >( "qoverpError", muontrack->qoverpError() );
+         part->setUserRecord< double >( "ptError",     muontrack->ptError() );
+         part->setUserRecord< double >( "pt",          muontrack->pt() );
+
+         // TODO: These variables are still used in the analysis and should be
+         // replaced with those above in the future.
+         //
          //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
          part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
          part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
 
          // Store also the pt error from the tracker track.
          // ( qoverpError() is the same as error(0) for a track. )
-         part->setUserRecord< double >( "dPtRelTrack_Tracker", trackerTrack->qoverpError() / muontrack->qoverp() );
-         part->setUserRecord< double >( "dPtRelTrack_off_Tracker", trackerTrack->ptError() / muontrack->pt() );
+         //
+         part->setUserRecord< double >( "qoverpTracker",      trackerTrack->qoverp() );
+         part->setUserRecord< double >( "qoverpErrorTracker", trackerTrack->qoverpError() );
+         part->setUserRecord< double >( "ptErrorTracker",     trackerTrack->ptError() );
+         part->setUserRecord< double >( "ptTracker",          trackerTrack->pt() );
 
          // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
          // (i.e. the impact parameter)
