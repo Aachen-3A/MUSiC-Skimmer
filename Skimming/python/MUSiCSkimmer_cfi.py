@@ -74,6 +74,10 @@ Skimmer = cms.EDAnalyzer(
             L1_result = cms.InputTag( "gtDigis" ),
             results = cms.string('TriggerResults'),
             event   = cms.string('hltTriggerSummaryAOD'),
+
+            # Data triggers must be defined in the actual data*cfg.py.
+            # Examples in $CMSSW_BASE/src/MUSiCProject/Skimming/test/configs
+            #
             HLTriggers = cms.vstring(
                 # MC HLTs for Summer11 MCs
                 # (using HLT config: /cdaq/physics/Run2011/5e32/v6.2/HLT/V1)
@@ -105,15 +109,7 @@ Skimmer = cms.EDAnalyzer(
                 'HLT_IsoPFTau35_Trk20_MET45_v2',
                 'HLT_Mu15_LooseIsoPFTau20_v2',
                 'HLT_IsoMu12_LooseIsoPFTau10_v2',
-                'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v2'
-
-                # Default data triggers. The actual once are defined in data*cfg.py
-                #
-                'HLT_Mu15_v2', 'HLT_Mu20_v1', 'HLT_IsoMu12_v1', 'HLT_IsoMu15_v5',
-                'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2', 'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
-                'HLT_Photon50_CaloIdVL_IsoL_v1', 'HLT_Photon75_CaloIdVL_IsoL_v2',
-                'HLT_Jet240_v1', 'HLT_Jet370_v1',
-                'HLT_MET200_v1'
+                'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau15_v2',
                 )
             ),
         StoreL3Objects = cms.untracked.bool(False)
