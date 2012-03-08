@@ -241,6 +241,8 @@ def configurePF( process, runOnData, postfix ):
                        outputModules = []
                        )
     pfTools.adaptPFTaus(process,"hpsPFTau",postfix=postfix)
+    process.patMuonsPFlow.embedHighLevelSelection = False
+    process.patElectronsPFlow.embedHighLevelSelection = False
 
 
 def configurePFnoPU( process, postfix ):
