@@ -52,3 +52,7 @@ TTWTo2Lplus2Nu_PU_S4_MG:/TTWTo2Lplus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11
 TTWTo2Lminus2Nu_PU_S4_MG:/TTWTo2Lminus2Nu_7TeV-madgraph/Summer11-PU_S4_START42_V11-v1/AODSIM
 
 TTJets_PU_S4_MG:/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v2/AODSIM
+
+WGstarToLNu2Tau_PU_S4_MG:/WGstarToLNu2Tau_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+WGstarToLNu2Mu_PU_S4_MG:/WGstarToLNu2Mu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
+WGstarToLNu2E_PU_S4_MG:/WGstarToLNu2E_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM
