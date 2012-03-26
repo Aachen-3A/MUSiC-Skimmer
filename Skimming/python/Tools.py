@@ -264,7 +264,6 @@ def configurePFnoPU( process, postfix ):
     process.pfJetsPFlow.doAreaFastjet = True
     process.pfJetsPFlow.doRhoFastjet = False
     process.patJetCorrFactorsPFlow.rho = cms.InputTag( 'kt6PFJetsPFlow', 'rho' )
-    process.pfPileUpPFlow.checkClosestZVertex = cms.bool( False )
 
     # Compute the mean pt per unit area ("rho") using KT6 Jets with the active areas method.
     from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
