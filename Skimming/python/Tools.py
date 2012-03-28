@@ -241,6 +241,8 @@ def configurePF( process, runOnData, postfix ):
                        outputModules = []
                        )
     pfTools.adaptPFTaus(process,"hpsPFTau",postfix=postfix)
+    getattr(process,"pfTaus"+postfix).discriminators = cms.VPSet(cms.PSet(discriminator = cms.InputTag("pfTausBaseDiscriminationByDecayModeFinding"+postfix),selectionCut = cms.double(0.5)))
+    process.patJetsPFlow.jetSource = "pfJetsPFlow"
     process.patMuonsPFlow.embedHighLevelSelection = False
     process.patElectronsPFlow.embedHighLevelSelection = False
 
