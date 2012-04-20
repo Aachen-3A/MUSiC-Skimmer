@@ -1,10 +1,10 @@
 Script called with the parameters:
-/.automount/home/home__home1/institut_3a/papacz/CMSSW/slc5_64/CMSSW_4_2_8_patch7/bin/slc5_amd64_gcc434/getHLT.py -f 175771 -l 180296 -F ~DoubleIsoPFTau -F ~IsoPFTau45_Trk20_MET60 -F ~DiJet -F ~NoJetID -F ~BTagMu -F ~CentralJet -F ~PFMHT -F ~DoublePhoton -F ~Photon26_CaloIdL_IsoVL_Photon -F ~Photon26_IsoVL_Photon -F ~Photon32_CaloIdL_Photon -F ~Photon26_R9Id_Photon -F ~NoSpikeFilter -F ~coplanarity -F ~NoVertex -F ~TripleMu -F ~WP -F ~L2Mu -F ~HBHENoiseFiltered -F ~DoubleMu45 -F ~DoubleEle -F ~Photon20_R9Id_Photon -F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_IsoVL_Photon -F ~Photon40_CaloIdL_Photon -F ~Photon36_CaloIdL_Photon -F ~NoHE -F ~Photon36_CaloId_IsoVL_Photon -F ~Photon36_R9Id_Photon -F ~Photon44_CaloIdL_Photon -F ~Photon48_CaloIdL_Photon -F ~Photon400 -F ~Mu100 -F ~Jet800 -F ~Photon26_R9IdT_Photon18 -F ~Photon26_CaloIdXL_IsoXL_Photon -F ~QuadJet -F ~L1ETM20 -F ~MET400 -F ~Mu50 -F ~Mu60 -F ~Ele100_CaloIdVT -F ~Mu17_TkMu8 -F ~MediumIsoPFTau35_Trk20_MET70 -F ~Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau25 -F ~IsoMu34 -F ~IsoMu40 -F ~Mu200 -F ~L1FastJet -F ~Ele100_CaloIdVL_CaloIsoVL_TrkIdVL_TrkIsoVL -F ~DoubleMu5_IsoMu5 -J
+/.automount/home/home__home1/institut_3a/papacz/CMSSW/slc5_64/CMSSW_4_4_2_patch6/bin/slc5_amd64_gcc434/getHLT.py -f 175832 -l 180296 -F ~BTagMu -F ~CentralJet -F ~DiJet -F ~DoubleEle -F ~DoubleIsoPFTau -F ~DoubleMu45 -F ~DoubleMu5_IsoMu5 -F ~DoublePhoton -F ~HBHENoiseFiltered -F ~Jet800 -F ~L2Mu -F ~Mu100 -F ~NoJetID -F ~NoHE -F ~NoSpikeFilter -F ~NoVertex -F ~PFMHT -F ~Photon20_R9Id_Photon -F ~Photon26_CaloIdL_IsoVL_Photon -F ~Photon26_CaloIdXL_IsoXL_Photon -F ~Photon26_IsoVL_Photon -F ~Photon26_R9Id_Photon -F ~Photon32_CaloIdL_Photon -F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_CaloIdL_IsoVL_Photon -F ~Photon36_CaloIdL_Photon -F ~Photon36_CaloId_IsoVL_Photon -F ~Photon36_IsoVL_Photon -F ~Photon36_R9Id_Photon -F ~Photon40_CaloIdL_Photon -F ~Photon44_CaloIdL_Photon -F ~Photon48_CaloIdL_Photon -F ~TripleMu -F ~WP -F ~coplanarity -F ~Photon400 -F ~Ele100 -F ~Mass60 -F ~L1ETM20 -F ~Mu200 -F ~Mu60 -F ~Mu50 -F ~IsoMu40 -F ~IsoMu34 -F ~L1FastJet -F ~MET400 -F ~Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau25 -F ~MediumIsoPFTau35_Trk20_MET70 -F ~QuadJet -J
 
 Number of ranges: 6
 
 
-Range: 175832-175837
+Range: 175833-175837
 --------------------
 
 Tau:
@@ -212,6 +212,7 @@ HLT_IsoMu15_eta2p1_TightIsoPFTau20_v5
 DoubleMu:
 ---------
 HLT_Mu17_Mu8_v10
+HLT_Mu17_TkMu8_v3
 
 Range: 179959-180252
 --------------------
@@ -251,6 +252,7 @@ HLT_IsoMu15_eta2p1_TightIsoPFTau20_v6
 DoubleMu:
 ---------
 HLT_Mu17_Mu8_v11
+HLT_Mu17_TkMu8_v4
 
 All unprescaled triggers for all run ranges:
 --------------------------------------------
@@ -286,6 +288,8 @@ All unprescaled triggers for all run ranges:
 'HLT_Mu17_Mu8_v10',
 'HLT_Mu17_Mu8_v11',
 'HLT_Mu17_Mu8_v7',
+'HLT_Mu17_TkMu8_v3',
+'HLT_Mu17_TkMu8_v4',
 'HLT_Mu40_eta2p1_v1',
 'HLT_Mu40_eta2p1_v4',
 'HLT_Mu40_eta2p1_v5',
