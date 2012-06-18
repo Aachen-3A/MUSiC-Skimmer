@@ -286,9 +286,6 @@ def configurePFandMET( process, runOnData, postfix ):
        getattr( process, 'patPF2PATSequence' + postfix )
        )
 
-    # Switch to HPS Taus with PF2PAT.
-    pfTools.adaptPFTaus( process, 'hpsPFTau', postfix = postfix )
-
     process.p += process.patseq
 
     # Type 0+1 MET corrections. Type 2 is not recommended for general use.
@@ -299,13 +296,6 @@ def configurePFandMET( process, runOnData, postfix ):
     getattr( process, 'patType1CorrectedPFMet' + postfix ).srcType1Corrections = cms.VInputTag(
         cms.InputTag( 'patPFJetMETtype1p2Corr' + postfix, 'type1' ),
         cms.InputTag( 'patPFMETtype0Corr' + postfix )
-        )
-
-    # Use at least one discriminator for taus to reduce the collection
-    getattr( process, 'pfTaus' + postfix ).discriminators = cms.VPSet(
-        cms.PSet( discriminator = cms.InputTag( 'pfTausBaseDiscriminationByDecayModeFinding' + postfix ),
-                  selectionCut = cms.double( 0.5 )
-                  )
         )
 
     # Set the jetSource to all jets, i.e. jets that have identified as taus have
@@ -594,9 +584,12 @@ def addCoherentNoiseAbsoluteFilter( process ):
 
 
 def configureTaus( process ):
-    # rerun PFTau reco
+    # Re-run full HPS sequence as PFTau ID stored in AODs produced
+    # by CMSSW < 5_3_12 is outdated.
+    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID?rev=145#5_3_12_and_higher
+    #
     process.load( 'RecoTauTag.Configuration.RecoPFTauTag_cff' )
-    process.p += process.PFTau
+    process.p += process.recoTauClassicHPSSequence
 
 
 # Initialize MessageLogger and output report.

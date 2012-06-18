@@ -30,7 +30,7 @@ Skimmer = cms.EDAnalyzer(
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
 
     # Use these taus (list of possible pat::Taus):
-    patTauTags = cms.VInputTag( cms.InputTag( 'patTausPFlow' ),
+    patTauTags = cms.VInputTag( cms.InputTag( 'patTaus' ),
                                 ),
 
     # Needed for electron vetoing.

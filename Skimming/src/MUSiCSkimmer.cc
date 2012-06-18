@@ -1530,6 +1530,26 @@ void MUSiCSkimmer::analyzeRecPatTaus( edm::Event const &iEvent,
          part->setUserRecord< float >( "PfChargedHadronIso", tau->userIsolation( "pat::PfChargedHadronIso" ) );
          part->setUserRecord< float >( "PfNeutralHadronIso", tau->userIsolation( "pat::PfNeutralHadronIso" ) );
          part->setUserRecord< float >( "PfGammaIso",         tau->userIsolation( "pat::PfGammaIso" ) );
+
+         // Store variables to cross-check tau decay modes.
+         reco::PFCandidateRefVector const &signalPFGammaCands = tau->signalPFGammaCands();
+         if( signalPFGammaCands.isNonnull() )
+            part->setUserRecord< int >( "NumPFGammaCands", signalPFGammaCands.size() );
+         else
+            part->setUserRecord< int >( "NumPFGammaCands", -1 );
+
+         reco::PFCandidateRefVector const &signalPFChargedHadrCands = tau->signalPFChargedHadrCands();
+         if( signalPFChargedHadrCands.isNonnull() )
+            part->setUserRecord< int >( "NumPFChargedHadrCands", signalPFChargedHadrCands.size() );
+         else
+            part->setUserRecord< int >( "NumPFChargedHadrCands", -1 );
+
+         reco::TrackRefVector const &signalTracks = tau->signalTracks();
+         if( signalTracks.isNonnull() )
+            part->setUserRecord< int >( "NumSignalTracks", signalTracks.size() );
+         else
+            part->setUserRecord< int >( "NumSignalTracks", -1 );
+
          //Saving all discriminators
          for ( std::vector< pat::Tau::IdPair >::const_iterator it = tau->tauIDs().begin(); it != tau->tauIDs().end(); ++it ) {
             part->setUserRecord < float >( it->first, it->second );
