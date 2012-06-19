@@ -1,0 +1,3 @@
+config = mc_FA11_cfg.py
+
+WWTo2L2Nu-PU_S6_MC:/WWTo2L2Nu_CT10_7TeV-mcatnlo/Fall11-PU_S6_START44_V9B-v1/AODSIM

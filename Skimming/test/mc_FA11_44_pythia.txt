@@ -1,0 +1,4 @@
+config = mc_FA11_cfg.py
+
+QCD_Pt-30to80_EMEnriched-PU_S6_PY:/QCD_Pt-30to80_EMEnriched_TuneZ2_7TeV-pythia/Fall11-PU_S6_START44_V9B-v1/AODSIM
+QCD_Pt-80to170_BCtoE-PU_S6_PY:/QCD_Pt-80to170_BCtoE_TuneZ2_7TeV-pythia/Fall11-PU_S6_START44_V9B-v1/AODSIM

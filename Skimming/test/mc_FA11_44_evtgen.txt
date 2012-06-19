@@ -1,0 +1,9 @@
+config = mc_FA11_cfg.py
+
+QCD_Pt-150_bEnriched-PU_S6_EG:/QCD_Pt-150_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Fall11-PU_S6_START44_V9B-v1/AODSIM
+QCD_Pt-15to30_bEnriched-PU_S6_EG:/QCD_Pt-15to30_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Fall11-PU_S6_START44_V9B-v1/AODSIM
+QCD_Pt-30to50_bEnriched-PU_S6_EG:/QCD_Pt-30to50_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Fall11-PU_S6_START44_V9B-v1/AODSIM
+QCD_Pt-50to150_bEnriched-PU_S6_EG:/QCD_Pt-50to150_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Fall11-PU_S6_START44_V9B-v1/AODSIM
+
+Upsilon1SToMuMu-PU_S6_EG:/Upsilon1SToMuMu_2MuEtaFilter_tuneD6T_7TeV-pythia6-evtgen/Fall11-PU_S6_START44_V9B-v1/AODSIM
+Upsilon2SToMuMu-PU_S6_EG:/Upsilon2SToMuMu_2MuEtaFilter_tuneD6T_7TeV-pythia6-evtgen/Fall11-PU_S6_START44_V9B-v1/AODSIM

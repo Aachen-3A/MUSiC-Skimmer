@@ -1,5 +1,0 @@
-config=mc_SU11_cfg.py
-
-QCD_Pt-20to30_EMEnriched:/QCD_Pt-20to30_EMEnriched_TuneZ2_7TeV-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM
-QCD_Pt-30to80_EMEnriched:/QCD_Pt-30to80_EMEnriched_TuneZ2_7TeV-pythia/Summer11-PU_S4_START42_V11-v1/AODSIM
-QCD_Pt-80to170_EMEnriched:/QCD_Pt-80to170_EMEnriched_TuneZ2_7TeV-pythia6/Summer11-PU_S4_START42_V11-v1/AODSIM

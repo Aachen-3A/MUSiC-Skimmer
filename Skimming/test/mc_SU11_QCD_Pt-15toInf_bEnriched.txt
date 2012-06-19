@@ -1,7 +1,0 @@
-config=mc_SU11_NoEmBC_cfg.py
-
-QCD_Pt-15to30_bEnriched:/QCD_Pt-15to30_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Summer11-PU_S3_START42_V11-v2/AODSIM
-QCD_Pt-30to50_bEnriched:/QCD_Pt-30to50_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Summer11-PU_S3_START42_V11-v2/AODSIM
-QCD_Pt-50to150_bEnriched:/QCD_Pt-50to150_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Summer11-PU_S3_START42_V11-v1/AODSIM
-QCD_Pt-150_bEnriched:/QCD_Pt-150_bEnriched_TuneZ2_7TeV-pythia6-evtgen/Summer11-PU_S3_START42_V11-v2/AODSIM
-

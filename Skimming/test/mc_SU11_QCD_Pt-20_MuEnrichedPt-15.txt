@@ -1,3 +1,0 @@
-config=mc_SU11_NoEmBCb_cfg.py
-
-QCD_Pt-20_MuEnrichedPt-15_PU_S4:/QCD_Pt-20_MuEnrichedPt-15_TuneZ2_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/AODSIM

@@ -1,0 +1,4 @@
+config = mc_FA11_cfg.py
+
+DYToLL_M-50_1jEnh2_2jEnh35_3jEnh40_4jEnh50-PU_S6_SP:/DYToLL_M-50_1jEnh2_2jEnh35_3jEnh40_4jEnh50_7TeV-sherpa/Fall11-PU_S6_START44_V9B-v1/AODSIM
+WToLNu_1jEnh2_2jEnh35_3jEnh40_4jEnh50-PU_S6_SP:/WToLNu_1jEnh2_2jEnh35_3jEnh40_4jEnh50_7TeV-sherpa/Fall11-PU_S6_START44_V9B-v1/AODSIM
