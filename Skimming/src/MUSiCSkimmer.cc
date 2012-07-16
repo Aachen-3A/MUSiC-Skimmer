@@ -697,28 +697,26 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
 
    // loop over all PU info object in an event and get the number of
    // primary vertices for in-time and out-of-time pile-up
+   // See also:
+   // https://twiki.cern.ch/twiki/bin/view/CMS/Pileup_2011_Reweighting
    //
-   int nPrimaryVertices       = 0;
-   int nPrimaryVerticesLastBX = 0;
-   int nPrimaryVerticesNextBX = 0;
-
    for( PUiter = PUInfo->begin(); PUiter != PUInfo->end(); ++PUiter ) {
-      int BX  = (*PUiter).getBunchCrossing();
-      int num = (*PUiter).getPU_NumInteractions();
+      int BX      = (*PUiter).getBunchCrossing();
+      int num     = (*PUiter).getPU_NumInteractions();
 
       if( BX == -1 ) {
-         nPrimaryVerticesLastBX = num;
+         EvtView->setUserRecord< int >( "NumVerticesPULastBX", num );
       } else if( BX == 0 ) {
-         nPrimaryVertices = num;
+         EvtView->setUserRecord< int >( "NumVerticesPU", num );
+         // The true number of interactions (i.e., the mean used in the Poisson
+         // distribution) should be the same for in-time and out-of-time
+         // pile-up as the actual number is drawn from the same Poisson distribution.
+         //
+         EvtView->setUserRecord< int >( "NumVerticesPUTrue", (*PUiter).getTrueNumInteractions() );
       } else if( BX == 1 ) {
-         nPrimaryVerticesNextBX = num;
+         EvtView->setUserRecord< int >( "NumVerticesPUNextBX", num );
       }
    }
-
-   EvtView->setUserRecord< int >( "NumVerticesPU",       nPrimaryVertices );
-   EvtView->setUserRecord< int >( "NumVerticesPULastBX", nPrimaryVerticesLastBX );
-   EvtView->setUserRecord< int >( "NumVerticesPUNextBX", nPrimaryVerticesNextBX );
-
 }
 
 // ------------ reading the Generator Jets ------------
