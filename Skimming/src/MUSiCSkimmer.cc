@@ -1460,7 +1460,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
          // Store the number of *expected* crossed layers before the first trajectory's hit.
          // If this number is 0, this is the number of missing hits in that trajectory.
          //
-         part->setUserRecord< int >( "NMissingHits: ", ele->gsfTrack()->trackerExpectedHitsInner().numberOfHits() );
+         part->setUserRecord< int >( "NinnerLayerLostHits", ele->gsfTrack()->trackerExpectedHitsInner().numberOfHits() );
 
          //store PAT matching info if MC
          if( MC ){
