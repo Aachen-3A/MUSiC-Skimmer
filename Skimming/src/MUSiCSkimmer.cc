@@ -356,6 +356,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    //set process name
    GenEvtView->setUserRecord<std::string>("Process", fProcess);
    RecEvtView->setUserRecord<std::string>("Process", fProcess);
+
    // Generator stuff
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
@@ -372,6 +373,16 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
    // store Rec Objects only if requested
    if (!fGenOnly) {
+      // Median pt per area for each event.
+      // See also:
+      // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection#Rho_for_2011_Effective_Areas
+      // https://twiki.cern.ch/twiki/bin/view/CMS/Vgamma2011PhotonID#Recommended_cuts
+      //
+      edm::Handle< double > rho25;
+      iEvent.getByLabel( "kt6PFJets", "rho", rho25 );
+
+      RecEvtView->setUserRecord< double >( "rho25", *rho25 );
+
       //get the calo geometry
       edm::ESHandle< CaloGeometry > geo;
       iSetup.get< CaloGeometryRecord >().get( geo );

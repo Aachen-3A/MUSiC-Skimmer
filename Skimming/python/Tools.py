@@ -69,6 +69,8 @@ def prepare( runOnGen, runOnData ):
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ], outputModules = [] )
 
+        addRhoVariable( process )
+
         addCSCHaloFilter( process )
         addHCALnoiseFilter( process )
         addHCALLaserEventFilter( process )
@@ -311,6 +313,20 @@ def configurePFnoPU( process, postfix ):
     getattr( process, patMETsPFlowNoPU ).metSource = cms.InputTag( 'pfMetNoPileUp' )
 
     process.p += getattr( process, patMETsPFlowNoPU )
+
+
+# Median jet pt per area for each event.
+# See also:
+# https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection#Rho_for_2011_Effective_Areas
+# https://twiki.cern.ch/twiki/bin/view/CMS/Vgamma2011PhotonID#Recommended_cuts
+#
+def addRhoVariable( process ):
+    process.load( 'RecoJets.Configuration.RecoPFJets_cff' )
+    process.kt6PFJets25 = process.kt6PFJets.clone( doRhoFastjet = True )
+    process.kt6PFJets25.Rho_EtaMax = cms.double( 2.5 )
+    process.fjSequence25 = cms.Sequence( process.kt6PFJets25 )
+
+    process.p += process.fjSequence25
 
 
 def addScrapingFilter( process ):
