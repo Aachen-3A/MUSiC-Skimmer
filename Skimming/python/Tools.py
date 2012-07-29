@@ -58,7 +58,7 @@ def prepare( runOnGen, runOnData ):
         # Keep the following functions in the right order as they will add modules to the path!
         #
         configureJEC( process, runOnData )
-	configureTaus( process )
+        configureTaus( process )
         configurePAT( process, runOnData )
         process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
@@ -69,7 +69,15 @@ def prepare( runOnGen, runOnData ):
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ], outputModules = [] )
 
+        addCSCHaloFilter( process )
         addHCALnoiseFilter( process )
+        addHCALLaserEventFilter( process )
+        addECALDeadCellFilter( process )
+        addTrackingFailureFilter( process )
+        addEEBadSCFilter( process )
+        addMuonPFCandidateFilter( process )
+        addECALLaserCorrFilter( process )
+
 
     if not runOnData:
        process.p += process.patJetPartons
@@ -82,8 +90,6 @@ def prepare( runOnGen, runOnData ):
         #
         addKinematicsFilter( process )
         addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
-
-    #configureTaus( process )
 
     process.Skimmer.filters.AllFilters.paths = process.Skimmer.filterlist
     process.Skimmer.filters.AllFilters.process = process.name_()
@@ -240,9 +246,19 @@ def configurePF( process, runOnData, postfix ):
                        postfix = postfix,
                        outputModules = []
                        )
-    pfTools.adaptPFTaus(process,"hpsPFTau",postfix=postfix)
-    getattr(process,"pfTaus"+postfix).discriminators = cms.VPSet(cms.PSet(discriminator = cms.InputTag("pfTausBaseDiscriminationByDecayModeFinding"+postfix),selectionCut = cms.double(0.5)))
-    process.patJetsPFlow.jetSource = "pfJetsPFlow"
+
+    pfTools.adaptPFTaus( process, 'hpsPFTau', postfix = postfix )
+
+    getattr( process, 'pfTaus' + postfix ).discriminators = cms.VPSet(
+        cms.PSet( discriminator = cms.InputTag( 'pfTausBaseDiscriminationByDecayModeFinding' + postfix ),
+            selectionCut = cms.double( 0.5 )
+            )
+        )
+
+    # Set the jetSource to all jets, i.e. jets that have identified as taus have
+    # *not* been removed from the collection (we do it on our own in MUSiC).
+    #
+    process.patJetsPFlow.jetSource = 'pfJetsPFlow'
     process.patMuonsPFlow.embedHighLevelSelection = False
     process.patElectronsPFlow.embedHighLevelSelection = False
 
@@ -406,6 +422,82 @@ def addKinematicsFilter( process ):
 
     process.p_kinematicsfilter = cms.Path( process.totalKinematicsFilter )
     process.Skimmer.filterlist.append( 'p_kinematicsfilter' )
+
+
+def addCSCHaloFilter( process ):
+    process.load( 'RecoMET.METAnalyzers.CSCHaloFilter_cfi' )
+
+    process.p_cschalofilter = cms.Path( process.CSCTightHaloFilter )
+    process.Skimmer.filterlist.append( 'p_cschalofilter' )
+
+
+def addHCALLaserEventFilter( process ):
+    process.load( 'RecoMET.METFilters.hcalLaserEventFilter_cfi' )
+    process.hcalLaserEventFilter.vetoByRunEventNumber = cms.untracked.bool( False )
+    process.hcalLaserEventFilter.vetoByHBHEOccupancy  = cms.untracked.bool( True )
+
+    process.p_hcallasereventfilter = cms.Path( process.hcalLaserEventFilter )
+    process.Skimmer.filterlist.append( 'p_hcallasereventfilter' )
+
+
+def addECALDeadCellFilter( process ):
+    process.load( 'RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi' )
+    process.EcalDeadCellTriggerPrimitiveFilter.tpDigiCollection = cms.InputTag( 'ecalTPSkimNA' )
+
+    process.load( 'RecoMET.METFilters.EcalDeadCellBoundaryEnergyFilter_cfi' )
+    process.EcalDeadCellBoundaryEnergyFilter.taggingMode                    = cms.bool( False )
+    process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyDeadCellsEB      = cms.untracked.double( 10 )
+    process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyDeadCellsEE      = cms.untracked.double( 10 )
+    process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyGapEB            = cms.untracked.double( 100 )
+    process.EcalDeadCellBoundaryEnergyFilter.cutBoundEnergyGapEE            = cms.untracked.double( 100 )
+    process.EcalDeadCellBoundaryEnergyFilter.enableGap                      = cms.untracked.bool( False )
+    process.EcalDeadCellBoundaryEnergyFilter.limitDeadCellToChannelStatusEB = cms.vint32( 12, 14 )
+    process.EcalDeadCellBoundaryEnergyFilter.limitDeadCellToChannelStatusEE = cms.vint32( 12, 14 )
+
+    # Use BE+TP filter
+    process.p_ecaldeadcellfilter = cms.Path( process.EcalDeadCellTriggerPrimitiveFilter * process.EcalDeadCellBoundaryEnergyFilter )
+    process.Skimmer.filterlist.append( 'p_ecaldeadcellfilter' )
+
+
+def addTrackingFailureFilter( process ):
+    process.goodVertices = cms.EDFilter(
+        'VertexSelector',
+        filter = cms.bool( False ),
+        src = cms.InputTag( 'offlinePrimaryVertices' ),
+        cut = cms.string( '!isFake && ndof > 4 && abs(z) <= 24 && position.rho < 2' )
+        )
+
+    process.load( 'RecoMET.METFilters.trackingFailureFilter_cfi' )
+
+    process.p_trackingfailurefilter = cms.Path( process.goodVertices * process.trackingFailureFilter )
+    process.Skimmer.filterlist.append( 'p_trackingfailurefilter' )
+
+
+def addEEBadSCFilter( process ):
+    process.load('RecoMET.METFilters.eeBadScFilter_cfi')
+
+    process.p_eebadscfilter = cms.Path( process.eeBadScFilter )
+    process.Skimmer.filterlist.append( 'p_ebadscfilter' )
+
+
+def addMuonPFCandidateFilter( process ):
+    process.load( 'RecoMET.METFilters.inconsistentMuonPFCandidateFilter_cfi' )
+    process.load( 'RecoMET.METFilters.greedyMuonPFCandidateFilter_cfi' )
+
+    process.p_muonpfcandidatefilter = cms.Path( process.greedyMuonPFCandidateFilter * process.inconsistentMuonPFCandidateFilter )
+    process.Skimmer.filterlist.append( 'p_muonpfcandidatefilter' )
+
+
+# Make sure you check out this user code:
+#   cvs co -r Seema11Apr12_52X_V1 -d SandBox/Skims UserCode/seema/SandBox/Skims
+# For info & code see this Twiki page:
+#   https://twiki.cern.ch/twiki/bin/view/CMS/SusyRA2NJetsInData2011#EB_or_EE_Xtals_with_large_laser
+#
+def addECALLaserCorrFilter( process ):
+    process.load( 'SandBox.Skims.ecalLaserCorrFilter_cfi' )
+
+    process.p_ecallasercorrfilter = cms.Path( process.ecalLaserCorrFilter )
+    process.Skimmer.filterlist.append( 'ecallasercorrfilter' )
 
 
 def configureTaus( process ):
