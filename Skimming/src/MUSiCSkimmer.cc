@@ -253,6 +253,10 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       
       trigger.triggers_names = one_trigger.getParameter< vector< string > >("HLTriggers");
 
+      if( not fGenOnly and trigger.triggers_names.size() == 0 ) {
+         throw cms::Exception( "Trigger error" ) << "No Trigger names found in configuration! This is only in 'GenOnly' mode allowed." << endl;
+      }
+
       triggers.push_back( trigger );
    }
 
