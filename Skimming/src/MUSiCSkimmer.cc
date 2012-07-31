@@ -147,9 +147,12 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fTauRecoLabel = iConfig.getUntrackedParameter< string >( "TauRecoLabel" );
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
+   m_inputTagIsoValElectronsPFId = iConfig.getParameter< vector< InputTag > >( "IsoValElectronPF" );
+
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
    freducedEndcapRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedEndcapRecHitCollection");
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
+   m_inputTagIsoValPhotonsPFId = iConfig.getParameter< vector< InputTag > >( "IsoValPhotonPF" );
 
 
    //get the PSet that contains all jet PSets
@@ -1605,6 +1608,17 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
             pxlEle->setUserRecord< bool >( electronID->first, electronID->second > 0.5 );
          }
 
+         // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
+         //
+         pat::ElectronRef eleRef( electronHandle, numEleAll );
+
+         if( eleRef.isNull() ){
+            throw cms::Exception( "Reference Error" ) << "Could not create valid edm::Ref() to PAT electron "
+                                                      << "(no. " << numEleAll << ")!";
+         }
+
+         particleFlowBasedIsolation( iEvent, m_inputTagIsoValElectronsPFId, eleRef, *pxlEle );
+
          // Store PAT matching info if MC. FIXME: Do we still use this?
          if( MC ) {
             map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( patEle->genLepton() );
@@ -1861,6 +1875,17 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
          for( vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID ){
             pxlPhoton->setUserRecord< bool >( photonID->first, photonID->second );
          }
+
+         // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
+         //
+         pat::PhotonRef phoRef( photonHandle, numGammaAll );
+
+         if( phoRef.isNull() ){
+            throw cms::Exception( "Reference Error" ) << "Could not create valid edm::Ref() to PAT photon "
+                                                      << "(no. " << numGammaAll << ")!";
+         }
+
+         particleFlowBasedIsolation( iEvent, m_inputTagIsoValPhotonsPFId, phoRef, *pxlPhoton );
 
          // Store PAT matching info if MC. FIXME: Do we still use this?
          if( MC ) {
@@ -2149,6 +2174,35 @@ double MUSiCSkimmer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
    return sum;
 
 }
+
+
+// Accessing ParticleFlow based isolation:
+// (See also: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation)
+//
+template< typename T >
+void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
+                                               const vector< InputTag > &inputTagIsoValPFId,
+                                               const Ref< T > &ref,
+                                               pxl::Particle &part ) const {
+
+   const size_t numIsoVals = inputTagIsoValPFId.size();
+
+   // typedef in MUSiCSkimmer.h
+   IsoDepositVals isoValPFId( numIsoVals );
+
+   for( size_t i = 0; i < numIsoVals; ++i ) {
+      iEvent.getByLabel( inputTagIsoValPFId.at( i ), isoValPFId.at( i ) );
+   }
+
+   const double pfIsoCharged = ( *isoValPFId.at( 0 ) )[ ref ];
+   const double pfIsoPhoton  = ( *isoValPFId.at( 1 ) )[ ref ];
+   const double pfIsoNeutral = ( *isoValPFId.at( 2 ) )[ ref ];
+
+   part.setUserRecord< double >( "PFIso03ChargedHadron", pfIsoCharged );
+   part.setUserRecord< double >( "PFIso03NeutralHadron", pfIsoNeutral );
+   part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MUSiCSkimmer);

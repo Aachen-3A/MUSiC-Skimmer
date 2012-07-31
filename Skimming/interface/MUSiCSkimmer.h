@@ -171,6 +171,13 @@ public:
    std::string getEventClass(pxl::EventView* EvtView);
 
    double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
+   // Generic function to write ParticleFlow based isolation into (PXL) photons and
+   // electrons. Could be extended to other particles as well.
+   //
+   template< typename T > void particleFlowBasedIsolation( const edm::Event &iEvent,
+                                                           const std::vector< edm::InputTag > &inputTagIsoValPFId,
+                                                           const edm::Ref< T > &ref,
+                                                           pxl::Particle &part ) const;
 
    // ----------member data ---------------------------
 
@@ -195,8 +202,13 @@ public:
    std::string fMuonRecoLabel;
    // Electron
    std::string fElectronRecoLabel;
+   // for PF isolation
+   typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
+   std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;
    // Photon
    std::string fGammaRecoLabel;
+   // for PF isolation
+   std::vector< edm::InputTag > m_inputTagIsoValPhotonsPFId;
    // Jets
    std::vector< jet_def > jet_infos;
    //JetIDs

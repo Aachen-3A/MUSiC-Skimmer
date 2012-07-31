@@ -65,6 +65,7 @@ def prepare( runOnGen, runOnData ):
         postfix = 'PFlow'
         configurePF( process, runOnData, postfix )
         configurePFnoPU( process, postfix )
+        configurePFIso( process )
 
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ], outputModules = [] )
@@ -313,6 +314,22 @@ def configurePFnoPU( process, postfix ):
     getattr( process, patMETsPFlowNoPU ).metSource = cms.InputTag( 'pfMetNoPileUp' )
 
     process.p += getattr( process, patMETsPFlowNoPU )
+
+
+# Following the "recipe":
+# https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
+# http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/test/pfIsolation_cfg.py?revision=1.2&view=markup
+# http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/test/PFIsoReaderDemo.cc?view=markup
+#
+def configurePFIso( process ):
+    from CommonTools.ParticleFlow.Tools import pfIsolation
+
+    process.eleIsoSequence = pfIsolation.setupPFElectronIso( process, 'cleanPatElectrons' )
+    process.phoIsoSequence = pfIsolation.setupPFPhotonIso( process, 'cleanPatPhotons' )
+
+    process.p += process.pfParticleSelectionSequence
+    process.p += process.eleIsoSequence
+    process.p += process.phoIsoSequence
 
 
 # Median jet pt per area for each event.

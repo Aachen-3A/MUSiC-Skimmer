@@ -25,7 +25,19 @@ Skimmer = cms.EDAnalyzer(
     TauRecoLabel = cms.untracked.string( "patTausPFlow" ),
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
+    # for PF isolation
+    IsoValElectronPF = cms.VInputTag( cms.InputTag( 'elPFIsoValueCharged03PFIdPFIso' ),
+                                      cms.InputTag( 'elPFIsoValueGamma03PFIdPFIso'   ),
+                                      cms.InputTag( 'elPFIsoValueNeutral03PFIdPFIso' ),
+                                      ),
+
     GammaRecoLabel = cms.untracked.string("cleanPatPhotons"),
+    # for PF isolation
+    IsoValPhotonPF = cms.VInputTag( cms.InputTag( 'phPFIsoValueCharged03PFIdPFIso' ),
+                                    cms.InputTag( 'phPFIsoValueGamma03PFIdPFIso'   ),
+                                    cms.InputTag( 'phPFIsoValueNeutral03PFIdPFIso' ),
+                                    ),
+
     #ECAL RecHits for supercluster information
     reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
