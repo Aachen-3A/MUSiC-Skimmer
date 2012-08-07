@@ -38,6 +38,8 @@ Skimmer = cms.EDAnalyzer(
                                     cms.InputTag( 'phPFIsoValueNeutral03PFIdPFIso' ),
                                     ),
 
+    particleFlowTag = cms.InputTag( 'particleFlow' ),
+
     #ECAL RecHits for supercluster information
     reducedBarrelRecHitCollection = cms.InputTag("reducedEcalRecHitsEB"),
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),

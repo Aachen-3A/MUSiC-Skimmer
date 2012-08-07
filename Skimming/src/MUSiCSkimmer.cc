@@ -59,6 +59,7 @@ Implementation:
 //for Electron ID
 #include "AnalysisDataFormats/Egamma/interface/ElectronID.h"
 #include "AnalysisDataFormats/Egamma/interface/ElectronIDAssociation.h"
+#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
 
 //for electron-isolation
 #include "DataFormats/Candidate/src/classes.h"
@@ -154,6 +155,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fGammaRecoLabel = iConfig.getUntrackedParameter<string>("GammaRecoLabel");
    m_inputTagIsoValPhotonsPFId = iConfig.getParameter< vector< InputTag > >( "IsoValPhotonPF" );
 
+   m_particleFlowTag = iConfig.getParameter< InputTag >( "particleFlowTag" );
 
    //get the PSet that contains all jet PSets
    ParameterSet jets_pset = iConfig.getParameter< ParameterSet >( "jets" );
@@ -2176,14 +2178,15 @@ double MUSiCSkimmer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
 }
 
 
-// Accessing ParticleFlow based isolation:
+// Accessing ParticleFlow based isolation (both methods):
 // (See also: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation)
 //
 template< typename T >
 void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
                                                const vector< InputTag > &inputTagIsoValPFId,
                                                const Ref< T > &ref,
-                                               pxl::Particle &part ) const {
+                                               pxl::Particle &part,
+                                               const bool &useIsolator ) const {
 
    const size_t numIsoVals = inputTagIsoValPFId.size();
 
@@ -2201,6 +2204,40 @@ void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
    part.setUserRecord< double >( "PFIso03ChargedHadron", pfIsoCharged );
    part.setUserRecord< double >( "PFIso03NeutralHadron", pfIsoNeutral );
    part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
+
+   if( useIsolator ) {
+      // We need the PFCandidates ...
+      //
+      Handle< reco::PFCandidateCollection > pfCandidates;
+      iEvent.getByLabel( m_particleFlowTag, pfCandidates );
+      const PFCandidateCollection thePFCollection = *pfCandidates;
+
+      // ... and the vertices.
+      //
+      Handle< reco::VertexCollection > vertices;
+      iEvent.getByLabel( fVertexRecoLabel, vertices );
+
+      // Primary Vertex
+      const reco::VertexRef vtxRef( vertices, 0 );
+
+      // Initialise isolator.
+      //
+      PFIsolationEstimator isolator;
+      isolator.initializeElectronIsolation( kTRUE );
+      isolator.setConeSize( 0.3 );
+
+      // Analysing electrons:
+      //
+      if( ref->isElectron() ) isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
+
+      // Analysing photons:
+      //
+      if( ref->isPhoton() ) isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
+
+      part.setUserRecord< double >( "PFIso03ChargedHadronFromIsolator", isolator.getIsolationCharged() );
+      part.setUserRecord< double >( "PFIso03NeutralHadronFromIsolator", isolator.getIsolationNeutral() );
+      part.setUserRecord< double >( "PFIso03PhotonFromIsolator",        isolator.getIsolationPhoton()  );
+   }
 }
 
 

@@ -177,7 +177,8 @@ public:
    template< typename T > void particleFlowBasedIsolation( const edm::Event &iEvent,
                                                            const std::vector< edm::InputTag > &inputTagIsoValPFId,
                                                            const edm::Ref< T > &ref,
-                                                           pxl::Particle &part ) const;
+                                                           pxl::Particle &part,
+                                                           const bool &useIsolator = true ) const;
 
    // ----------member data ---------------------------
 
@@ -209,6 +210,7 @@ public:
    std::string fGammaRecoLabel;
    // for PF isolation
    std::vector< edm::InputTag > m_inputTagIsoValPhotonsPFId;
+   edm::InputTag m_particleFlowTag;
    // Jets
    std::vector< jet_def > jet_infos;
    //JetIDs
