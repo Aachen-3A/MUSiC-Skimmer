@@ -203,6 +203,8 @@ public:
    std::string fMuonRecoLabel;
    // Electron
    std::string fElectronRecoLabel;
+   // GSF Electrons for vetoing.
+   edm::InputTag m_gsfElectronsTag;
    // for PF isolation
    typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
    std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;
@@ -222,6 +224,9 @@ public:
    edm::InputTag freducedEndcapRecHitCollection;
    //HCAL noise
    edm::InputTag hcal_noise_label;
+
+   // Conversions for vetoing.
+   edm::InputTag m_conversionsTag;
 
    //all triggers
    std::vector< trigger_group > triggers;

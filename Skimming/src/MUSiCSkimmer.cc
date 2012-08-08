@@ -60,6 +60,7 @@ Implementation:
 #include "AnalysisDataFormats/Egamma/interface/ElectronID.h"
 #include "AnalysisDataFormats/Egamma/interface/ElectronIDAssociation.h"
 #include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 
 //for electron-isolation
 #include "DataFormats/Candidate/src/classes.h"
@@ -148,6 +149,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fTauRecoLabel = iConfig.getUntrackedParameter< string >( "TauRecoLabel" );
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
+   m_gsfElectronsTag = iConfig.getParameter< InputTag >( "gsfElectronsTag" );
    m_inputTagIsoValElectronsPFId = iConfig.getParameter< vector< InputTag > >( "IsoValElectronPF" );
 
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
@@ -229,6 +231,8 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    //HCAL noise
    hcal_noise_label = iConfig.getParameter< InputTag >( "HCALNoise" );
 
+   // Conversions
+   m_conversionsTag = iConfig.getParameter< InputTag >( "conversionsTag" );
 
    //get the PSet that contains all trigger PSets
    ParameterSet trigger_pset = iConfig.getParameter< ParameterSet >( "triggers" );
@@ -1409,6 +1413,9 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
    Handle< EcalRecHitCollection > endcapRecHits;
    iEvent.getByLabel( freducedEndcapRecHitCollection, endcapRecHits );
 
+   Handle< reco::ConversionCollection > conversionsHandle;
+   iEvent.getByLabel( m_conversionsTag, conversionsHandle );
+
    for( vector< pat::Electron>::const_iterator patEle = patElectrons.begin(); patEle != patElectrons.end(); ++patEle ) {
       if( Ele_cuts( patEle ) ) {
          if( fDebug > 1 ) {
@@ -1610,6 +1617,12 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
             pxlEle->setUserRecord< bool >( electronID->first, electronID->second > 0.5 );
          }
 
+         // Conversion veto for electron ID.
+         // https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
+         //
+         const bool hasMatchedConversion = ConversionTools::hasMatchedConversion( *patEle, conversionsHandle, the_beamspot );
+         pxlEle->setUserRecord< bool >( "hasMatchedConversion", hasMatchedConversion );
+
          // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
          //
          pat::ElectronRef eleRef( electronHandle, numEleAll );
@@ -1744,6 +1757,12 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
    Handle< EcalRecHitCollection > endcapRecHits;
    iEvent.getByLabel( freducedEndcapRecHitCollection, endcapRecHits );
 
+   Handle< reco::ConversionCollection > conversionsHandle;
+   iEvent.getByLabel( m_conversionsTag, conversionsHandle );
+
+   Handle< reco::GsfElectronCollection > electronsHandle;
+   iEvent.getByLabel( m_gsfElectronsTag, electronsHandle );
+
    int numGammaRec = 0;
    int numGammaAll = 0;
    for( vector< pat::Photon >::const_iterator patPhoton = patPhotons.begin(); patPhoton != patPhotons.end(); ++patPhoton ) {
@@ -1877,6 +1896,18 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
          for( vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID ){
             pxlPhoton->setUserRecord< bool >( photonID->first, photonID->second );
          }
+
+         // Conversion safe electron veto for photon ID.
+         // ("Conversion-safe" since it explicitly checks for the presence of a
+         // reconstructed conversion.)
+         // See also:
+         // https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
+         //
+         const bool hasMatchedPromptElectron = ConversionTools::hasMatchedPromptElectron( SCRef,
+                                                                                          electronsHandle,
+                                                                                          conversionsHandle,
+                                                                                          the_beamspot );
+         pxlPhoton->setUserRecord< bool >( "hasMatchedPromptElectron", hasMatchedPromptElectron );
 
          // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
          //

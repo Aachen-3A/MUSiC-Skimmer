@@ -25,6 +25,8 @@ Skimmer = cms.EDAnalyzer(
     TauRecoLabel = cms.untracked.string( "patTausPFlow" ),
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
+    # Needed for electron vetoing.
+    gsfElectronsTag = cms.InputTag( 'gsfElectrons' ),
     # for PF isolation
     IsoValElectronPF = cms.VInputTag( cms.InputTag( 'elPFIsoValueCharged03PFIdPFIso' ),
                                       cms.InputTag( 'elPFIsoValueGamma03PFIdPFIso'   ),
@@ -80,7 +82,9 @@ Skimmer = cms.EDAnalyzer(
             IDs = cms.vstring( 'LOOSE', 'TIGHT' )
             ),
         ),
-    
+
+    conversionsTag = cms.InputTag( 'allConversions' ),
+
     triggers = cms.PSet(
         #REMARK: The names of the following PSets will be used as the trigger identifier in the PXL output
         HLT = cms.PSet(
