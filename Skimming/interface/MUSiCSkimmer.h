@@ -186,6 +186,7 @@ public:
    // Generator 
    std::string fgenParticleCandidatesLabel;
    std::string fMETMCLabel;
+   double m_rhoFastJet;
    std::string fVertexRecoLabel;
    //Tau
    std::string fTauRecoLabel;

@@ -380,8 +380,9 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       //
       edm::Handle< double > rho25;
       iEvent.getByLabel( "kt6PFJets", "rho", rho25 );
+      m_rhoFastJet = *rho25;
 
-      RecEvtView->setUserRecord< double >( "rho25", *rho25 );
+      RecEvtView->setUserRecord< double >( "rho25", m_rhoFastJet );
 
       //get the calo geometry
       edm::ESHandle< CaloGeometry > geo;
