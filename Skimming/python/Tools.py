@@ -54,6 +54,13 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
     process.Skimmer.EleEffAreaTargetLabel = eleEffAreaTarget
 
     if not runOnGen:
+        # Needed for 2012 H/E and isolation definition.
+        #
+        process.CaloTowerConstituentsMapBuilder = \
+            cms.ESProducer( 'CaloTowerConstituentsMapBuilder',
+                            MapFile = cms.untracked.string( 'Geometry/CaloTopology/data/CaloTowerEEGeometric.map.gz' )
+                            )
+
         addScrapingFilter( process )
 
         # Keep the following functions in the right order as they will add modules to the path!

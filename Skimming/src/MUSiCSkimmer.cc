@@ -395,6 +395,20 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          analyzeFilter( iEvent, iSetup, RecEvtView, *filt );
       }
 
+      // Initalise the helper for 2012 H/E definition and HCAL isolation.
+      // Somehow this is quite ugly.
+      //
+      ElectronHcalHelper::Configuration hcalCfg;
+
+      hcalCfg.hOverEConeSize = 0.15;
+      hcalCfg.useTowers      = true;
+      hcalCfg.hcalTowers     = edm::InputTag( "towerMaker" );
+      hcalCfg.hOverEPtMin    = 0;
+
+      m_hcalHelper = new ElectronHcalHelper( hcalCfg );
+      m_hcalHelper->checkSetup( iSetup );
+      m_hcalHelper->readEvent( iEvent );
+
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTaus( iEvent, RecEvtView, IsMC, genmap );
@@ -1667,6 +1681,21 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
          const bool hasMatchedConversion = ConversionTools::hasMatchedConversion( *patEle, conversionsHandle, the_beamspot );
          pxlEle->setUserRecord< bool >( "hasMatchedConversion", hasMatchedConversion );
 
+         // 2012 definition of H/E and related HCAL isolation.
+         // See also:
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012
+         //
+         vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
+
+         const double hcalDepth1 = m_hcalHelper->hcalESumDepth1BehindClusters( hcalTowersBehindClusters );
+         const double hcalDepth2 = m_hcalHelper->hcalESumDepth2BehindClusters( hcalTowersBehindClusters );
+         const double HoverE2012 = ( hcalDepth1 + hcalDepth2 ) / SCenergy;
+
+         const double HCALIsoConeDR03_2012 = patEle->dr03HcalTowerSumEt() + ( HoEm - HoverE2012 ) * SCenergy / cosh( SCRef->eta() );
+
+         pxlEle->setUserRecord< double >( "HoverE2012",           HoverE2012           );
+         pxlEle->setUserRecord< double >( "HCALIsoConeDR03_2012", HCALIsoConeDR03_2012 );
+
          // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
          //
          pat::ElectronRef eleRef( electronHandle, numEleAll );
@@ -1952,6 +1981,21 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                                                                           conversionsHandle,
                                                                                           the_beamspot );
          pxlPhoton->setUserRecord< bool >( "hasMatchedPromptElectron", hasMatchedPromptElectron );
+
+         // 2012 definition of H/E and related HCAL isolation.
+         // See also:
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012
+         //
+         const vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
+
+         const double hcalDepth1 = m_hcalHelper->hcalESumDepth1BehindClusters( hcalTowersBehindClusters );
+         const double hcalDepth2 = m_hcalHelper->hcalESumDepth2BehindClusters( hcalTowersBehindClusters );
+         const double HoverE2012 = ( hcalDepth1 + hcalDepth2 ) / SCRef->energy();
+
+         const double HCALIsoConeDR03_2012 = patPhoton->hcalTowerSumEtConeDR03() + ( HoEm - HoverE2012 ) * SCRef->energy() / cosh( SCRef->eta() );
+
+         pxlPhoton->setUserRecord< double >( "HoverE2012"           , HoverE2012           );
+         pxlPhoton->setUserRecord< double >( "HCALIsoConeDR03_2012" , HCALIsoConeDR03_2012 );
 
          // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
          //

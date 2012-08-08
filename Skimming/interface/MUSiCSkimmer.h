@@ -63,6 +63,7 @@ class ParticleMatcher;
 
 // HLT stuff.
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
 
 // Jet selectors (need to be included here, otherwise there are (namespace) problems).
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
@@ -198,6 +199,8 @@ public:
    std::string fgenParticleCandidatesLabel;
    std::string fMETMCLabel;
    double m_rhoFastJet;
+   // HCAL Helper for "new" H/E and HCAL isolation.
+   ElectronHcalHelper *m_hcalHelper;
    std::string fVertexRecoLabel;
    //Tau
    std::string fTauRecoLabel;
