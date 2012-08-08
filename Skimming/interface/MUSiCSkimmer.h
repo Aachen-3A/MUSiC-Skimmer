@@ -138,10 +138,10 @@ public:
    virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
-                                     bool &MC,
+                                     const bool &MC,
                                      EcalClusterLazyTools &lazyTools,
                                      std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                                     edm::ESHandle< CaloGeometry > &geo
+                                     const edm::ESHandle< CaloGeometry > &geo
                                      );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);

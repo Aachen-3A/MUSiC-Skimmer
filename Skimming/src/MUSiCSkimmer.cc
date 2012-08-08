@@ -1387,175 +1387,240 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
 
 // ------------ reading Reconstructed Electrons ------------
 
-void MUSiCSkimmer::analyzeRecElectrons( const edm::Event &iEvent,
+void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                         pxl::EventView *RecView,
-                                        bool &MC,
+                                        const bool &MC,
                                         EcalClusterLazyTools &lazyTools,
-                                        std::map< const reco::Candidate*, pxl::Particle*> &genmap,
-                                        edm::ESHandle< CaloGeometry > &geo
+                                        map< const reco::Candidate*, pxl::Particle*> &genmap,
+                                        const ESHandle< CaloGeometry > &geo
                                         ) {
-   int numEleRec = 0;   
+   int numEleRec = 0;
    int numEleAll = 0;   // for matching
 
-   edm::Handle<std::vector<pat::Electron> > electronHandle;
-   iEvent.getByLabel(fElectronRecoLabel, electronHandle);
-   const std::vector<pat::Electron> &electrons = *electronHandle;
+   Handle< vector< pat::Electron > > electronHandle;
+   iEvent.getByLabel( fElectronRecoLabel, electronHandle );
+   const vector< pat::Electron > &patElectrons = *electronHandle;
 
-   edm::Handle< EcalRecHitCollection > barrelRecHits;
+   Handle< EcalRecHitCollection > barrelRecHits;
    iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits );
 
-   edm::Handle< EcalRecHitCollection > endcapRecHits;
+   Handle< EcalRecHitCollection > endcapRecHits;
    iEvent.getByLabel( freducedEndcapRecHitCollection, endcapRecHits );
 
-   for (std::vector<pat::Electron>::const_iterator ele = electrons.begin(); ele != electrons.end(); ++ele ) {
-      if (Ele_cuts(ele)) {
-         if (fDebug > 1) {
-            cout << "Electron Energy scale corrected: " << ele->isEnergyScaleCorrected() << endl;
+   for( vector< pat::Electron>::const_iterator patEle = patElectrons.begin(); patEle != patElectrons.end(); ++patEle ) {
+      if( Ele_cuts( patEle ) ) {
+         if( fDebug > 1 ) {
+            cout << "Electron Energy scale corrected: " << patEle->isEnergyScaleCorrected() << endl;
          }
-         edm::Handle< EcalRecHitCollection > recHits;
 
-         bool isBarrel = ele->isEB();
-         bool isEndcap = ele->isEE();
+         Handle< EcalRecHitCollection > recHits;
+
+         const bool isBarrel = patEle->isEB();
+         const bool isEndcap = patEle->isEE();
 
          if( isBarrel ) recHits = barrelRecHits;
          if( isEndcap ) recHits = endcapRecHits;
 
-         pxl::Particle* part = RecView->create<pxl::Particle>();
-         part->setName("Ele");
-         part->setCharge(ele->charge());
+         pxl::Particle *pxlEle = RecView->create< pxl::Particle >();
+         pxlEle->setName( "Ele" );
+         pxlEle->setCharge( patEle->charge() );
+         pxlEle->setP4( patEle->px(), patEle->py(), patEle->pz(), patEle->ecalEnergy() );
 
-         //make a new LorentzVector with defined energy, and direction, mass 0
-         TLorentzVector temp;
-         temp.SetE( ele->caloEnergy() );
-         temp.SetPz( ele->caloEnergy() );
-         temp.SetTheta( ele->theta() );
-         temp.SetPhi( ele->phi() );
+         pxlEle->setUserRecord< bool >( "isBarrel", isBarrel );
+         pxlEle->setUserRecord< bool >( "isEndcap", isEndcap );
+         pxlEle->setUserRecord< bool >( "isGap", patEle->isEBGap() || patEle->isEEGap() || patEle->isEBEEGap() );
 
-         part->setP4( temp.Px(), temp.Py(),temp.Pz(), temp.E() );
+         //
+         // Electron variables orientated to
+         // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
+         //
 
-         part->setUserRecord< bool >( "isBarrel", isBarrel );
-         part->setUserRecord< bool >( "isEndcap", isEndcap );
+         pxlEle->setUserRecord< double >( "PErr",   patEle->trackMomentumError() );
+         pxlEle->setUserRecord< double >( "SCeta",  patEle->caloPosition().eta() );
+         pxlEle->setUserRecord< double >( "SCEErr", patEle->ecalEnergyError() );
 
-         //reconstruction algorithm was (at least) driven by ECAL
-         part->setUserRecord< bool >( "ecalDriven", ele->ecalDrivenSeed() );
+         // Variables for isolation:
+         //
+         // Track iso deposit with electron footprint removed.
+         pxlEle->setUserRecord< double >( "TrkIso03", patEle->dr03TkSumPt() );
+         pxlEle->setUserRecord< double >( "TrkIso04", patEle->dr04TkSumPt() ); // (Identical to trackIso()!)
+         // ECAL iso deposit with electron footprint removed.
+         pxlEle->setUserRecord< double >( "ECALIso03", patEle->dr03EcalRecHitSumEt() );
+         pxlEle->setUserRecord< double >( "ECALIso04", patEle->dr04EcalRecHitSumEt() ); // (Identical to ecalIso()!)
+         // dr03HcalDepth1TowerSumEt()+dr03HcalDepth2TowerSumEt().
+         pxlEle->setUserRecord< double >( "HCALIso03", patEle->dr03HcalTowerSumEt() );
+         // dr04HcalDepth1TowerSumEt()+dr04HcalDepth2TowerSumEt().
+         pxlEle->setUserRecord< double >( "HCALIso04", patEle->dr04HcalTowerSumEt() ); // (Identical to hcalIso()!)
+         // HCAL depth 1 iso deposit with electron footprint removed.
+         pxlEle->setUserRecord< double >( "HCALIso03d1", patEle->dr03HcalDepth1TowerSumEt() );
+         pxlEle->setUserRecord< double >( "HCALIso04d1", patEle->dr04HcalDepth1TowerSumEt() );
+         // HCAL depth 2 iso deposit with electron footprint removed.
+         pxlEle->setUserRecord< double >( "HCALIso03d2", patEle->dr03HcalDepth2TowerSumEt() );
+         pxlEle->setUserRecord< double >( "HCALIso04d2", patEle->dr04HcalDepth2TowerSumEt() );
 
-         part->setUserRecord<double>("Vtx_X", ele->vx());
-         part->setUserRecord<double>("Vtx_Y", ele->vy());
-         part->setUserRecord<double>("Vtx_Z", ele->vz());
-         part->setUserRecord<float>("EoP", ele->eSuperClusterOverP()); //used for CutBasedElectronID
-         part->setUserRecord<float>("HoEm", ele->hadronicOverEm()); //used for CutBasedElectronID
-         part->setUserRecord<float>("DEtaSCVtx", ele->deltaEtaSuperClusterTrackAtVtx()); //used for CutBasedElectronID
-         part->setUserRecord<float>("DPhiSCVtx", ele->deltaPhiSuperClusterTrackAtVtx()); //used for CutBasedElectronID
-         //! the seed cluster eta - track eta at calo from outermost state
-         part->setUserRecord<double>("DEtaSeedTrk", ele->deltaEtaSeedClusterTrackAtCalo()); //ok
-         part->setUserRecord<double>("DPhiSeedTrk", ele->deltaPhiSeedClusterTrackAtCalo()); //ok
+         // Track-cluster matching variables.
+         //
+         // The supercluster eta - track eta position at calo extrapolated from innermost track state.
+         pxlEle->setUserRecord< double >( "DEtaSCVtx", patEle->deltaEtaSuperClusterTrackAtVtx() );
+         // The supercluster phi - track phi position at calo extrapolated from the innermost track state.
+         pxlEle->setUserRecord< double >( "DPhiSCVtx", patEle->deltaPhiSuperClusterTrackAtVtx() );
+         // The electron cluster eta - track eta position at calo extrapolated from the outermost state.
+         pxlEle->setUserRecord< double >( "DEtaSCCalo", patEle->deltaEtaEleClusterTrackAtCalo() );
+         // The seed cluster eta - track eta at calo from outermost state.
+         pxlEle->setUserRecord< double >( "DEtaSeedTrk", patEle->deltaEtaSeedClusterTrackAtCalo() );
+         // The seed cluster phi - track phi position at calo extrapolated from the outermost track state.
+         pxlEle->setUserRecord< double >( "DPhiSeedTrk", patEle->deltaPhiSeedClusterTrackAtCalo() );
+         // The seed cluster energy / track momentum at the PCA to the beam spot.
+         pxlEle->setUserRecord< double >( "ESCSeedOverP", patEle->eSeedClusterOverP() );
+         // The seed cluster energy / track momentum at calo extrapolated from the outermost track state.
+         pxlEle->setUserRecord< double >( "ESCSeedPout", patEle->eSeedClusterOverPout() );
+         // The supercluster energy / track momentum at the PCA to the beam spot.
+         pxlEle->setUserRecord< double >( "EoP", patEle->eSuperClusterOverP() );
+         // The electron cluster energy / track momentum at calo extrapolated from the outermost track state.
+         pxlEle->setUserRecord< double >( "ESCOverPout", patEle->eEleClusterOverPout() );
 
-         // the super cluster energy corrected by EnergyScaleFactor
-         part->setUserRecord<float>("SCE", ele->caloEnergy()); //ok
-         part->setUserRecord< double >( "SCeta", ele->caloPosition().eta() );
-         // the errors on the supercluster energy
-         part->setUserRecord<float>("SCEErr", ele->ecalEnergyError()); //ok
+         // Calorimeter information.
+         //
+         pxlEle->setUserRecord< double >( "sigmaIetaIeta", patEle->sigmaIetaIeta() );
+         // Energy inside 1x5 in etaxphi around the seed Xtal.
+         pxlEle->setUserRecord< double >( "e1x5", patEle->e1x5() );
+         // Energy inside 2x5 in etaxphi around the seed Xtal (max bwt the 2 possible sums).
+         pxlEle->setUserRecord< double >( "e2x5", patEle->e2x5Max() );
+         // Energy inside 5x5 in etaxphi around the seed Xtal.
+         pxlEle->setUserRecord< double >( "e5x5", patEle->e5x5() );
+         // hcal over ecal seed cluster energy using first hcal depth (hcal is energy of towers within dR = 0.15).
+         pxlEle->setUserRecord< double >( "HCALOverECALd1", patEle->hcalDepth1OverEcal() );
+         // hadronicOverEm() = hcalDepth1OverEcal() + hcalDepth2OverEcal()
+         const double HoEm = patEle->hadronicOverEm();
+         pxlEle->setUserRecord< double >( "HoEm", HoEm );
+         // Number of basic clusters inside the supercluster - 1.
+         pxlEle->setUserRecord< double >( "NumBrems", patEle->numberOfBrems() );
 
-         // the errors on the track momentum
-         part->setUserRecord<float>("PErr", ele->trackMomentumError());	 
-         part->setUserRecord<double>("TrackerP", ele->gsfTrack()->p()); //ok
-         //the seed cluster energy / track momentum at calo from outermost state
-         part->setUserRecord<double>("ESCSeedPout", ele->eSeedClusterOverPout()); //ok
-         part->setUserRecord<int>("TrackerVHits", ele->gsfTrack()->numberOfValidHits()); //ok
-         part->setUserRecord<int>("TrackerLHits", ele->gsfTrack()->numberOfLostHits()); //ok
-         part->setUserRecord<int>("Class", ele->classification()); //ok
+         // Track information
+         //
+         // The brem fraction from gsf fit:
+         // (track momentum in - track momentum out) / track momentum in
+         pxlEle->setUserRecord< double >( "fbrem", patEle->fbrem() );
+         pxlEle->setUserRecord< double >( "pin",   patEle->trackMomentumAtVtx().R() );
+         pxlEle->setUserRecord< double >( "pout",  patEle->trackMomentumOut().R() );
 
-         // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
-         // (i.e. the impact parameter)
-         part->setUserRecord< double >( "Dsz", ele->gsfTrack()->dsz( the_vertex ) );
-         part->setUserRecord< double >( "Dxy", ele->gsfTrack()->dxy( the_vertex ) );
+         const reco::GsfTrackRef gsfTrack = patEle->gsfTrack();
+         pxlEle->setUserRecord< double >( "TrackerP", gsfTrack->p() );
 
-         part->setUserRecord< double >( "DszBS", ele->gsfTrack()->dsz( the_beamspot ) );
-         part->setUserRecord< double >( "DxyBS", ele->gsfTrack()->dxy( the_beamspot ) );
+         pxlEle->setUserRecord< double >( "GSFNormChi2", gsfTrack->normalizedChi2() );
+         // Save distance to the primary vertex and the beam spot, respectively (i.e. the impact parameter).
+         pxlEle->setUserRecord< double >( "Dz",  gsfTrack->dz( the_vertex ) );
+         pxlEle->setUserRecord< double >( "Dsz", gsfTrack->dsz( the_vertex ) );
+         pxlEle->setUserRecord< double >( "Dxy", gsfTrack->dxy( the_vertex ) );
+
+         pxlEle->setUserRecord< double >( "DzBS",  gsfTrack->dz( the_beamspot ) );
+         pxlEle->setUserRecord< double >( "DszBS", gsfTrack->dsz( the_beamspot ) );
+         pxlEle->setUserRecord< double >( "DxyBS", gsfTrack->dxy( the_beamspot ) );
 
          // Store the number of *expected* crossed layers before the first trajectory's hit.
-         // If this number is 0, this is the number of missing hits in that trajectory.
-         //
-         part->setUserRecord< int >( "NinnerLayerLostHits", ele->gsfTrack()->trackerExpectedHitsInner().numberOfHits() );
+         // If this number is 0, this is the number of missing hits in that trajectory. (This is for conversion rejection.)
+         pxlEle->setUserRecord< int >( "NinnerLayerLostHits", gsfTrack->trackerExpectedHitsInner().numberOfHits() );
+         pxlEle->setUserRecord< int >( "TrackerVHits", gsfTrack->numberOfValidHits() );
+         pxlEle->setUserRecord< int >( "TrackerLHits", gsfTrack->numberOfLostHits() );
 
-         //store PAT matching info if MC
-         if( MC ){
-            std::map<const reco::Candidate*, pxl::Particle*>::const_iterator it = genmap.find( ele->genLepton() );
-            if( it != genmap.end() ){
-               part->linkSoft( it->second, "pat-match" );
-            }
-            }
-         
+         // True if the electron track had an ecalDriven seed (regardless of the
+         // result of the tracker driven seed finding algorithm).
+         pxlEle->setUserRecord< bool >( "ecalDriven", patEle->ecalDrivenSeed() );
+         // True if ecalDrivenSeed is true AND the electron passes the cut based
+         // preselection.
+         pxlEle->setUserRecord< bool >( "ecalDrivenEle", patEle->ecalDriven() );
+
+         // Conversion rejection variables.
+         //
+         // Difference of cot(angle) with the conversion partner track.
+         pxlEle->setUserRecord< double >( "convDcot", patEle->convDcot() );
+         // Distance to the conversion partner.
+         pxlEle->setUserRecord< double >( "convDist", patEle->convDist() );
+         // Signed conversion radius.
+         pxlEle->setUserRecord< double >( "convRadius", patEle->convRadius() );
+
+         // Vertex coordinates.
+         //
+         pxlEle->setUserRecord< double >( "Vtx_X", patEle->vx() );
+         pxlEle->setUserRecord< double >( "Vtx_Y", patEle->vy() );
+         pxlEle->setUserRecord< double >( "Vtx_Z", patEle->vz() );
+
+         // Electron classification: UNKNOWN=-1, GOLDEN=0, BIGBREM=1, OLDNARROW=2, SHOWERING=3, GAP=4.
+         pxlEle->setUserRecord< int >( "Class", patEle->classification() );
+
+         // Additional cluster variables for (spike) cleaning:
+         //
          // Get the supercluster (ref) of the Electron
          // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
          // a SuperClusterCollection is a std::vector<SuperCluster>
          // although we get a vector of SuperClusters an electron is only made out of ONE SC
          // therefore only the first element of the vector should be available!
-         const reco::SuperClusterRef SCRef = ele->superCluster();
+         const reco::SuperClusterRef SCRef = patEle->superCluster();
 
-         //use EcalClusterLazyTools to store ClusterShapeVariables
-         part->setUserRecord< double >( "e1x5",  ele->e1x5() );
-         part->setUserRecord< double >( "e2x5",  ele->e2x5Max() );
-         part->setUserRecord< double >( "e5x5",  ele->e5x5() );
+         const double SCenergy = SCRef->energy();
+         pxlEle->setUserRecord< double >( "SCE", SCenergy );
 
-         std::pair<DetId, float> max_hit = lazyTools.getMaximum( *SCRef );
-         DetId seedID = max_hit.first;
-         double eMax = max_hit.second;
-         part->setUserRecord< double >( "Emax", eMax );
-         part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
-         double e3x3 = lazyTools.e3x3( *SCRef );
-         part->setUserRecord< double >( "e3x3",  e3x3 );
-         part->setUserRecord< double >( "r19", eMax / e3x3 );
-         part->setUserRecord< double >( "SwissCross", -1 );
-         part->setUserRecord< double >( "SwissCrossNoBorder", -1 );
+         // Get highest energy entry (seed) and SC ID.
+         // Use EcalClusterLazyTools to store ClusterShapeVariables.
+         //
+         const pair< DetId, float > max_hit = lazyTools.getMaximum( *SCRef );
+         const DetId seedID = max_hit.first;
+         const double eMax  = max_hit.second;
+         const double e3x3  = lazyTools.e3x3( *SCRef ); // Energy in 3x3 around most energetic hit.
+
+         pxlEle->setUserRecord< double >( "Emax", eMax );
+         pxlEle->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
+         pxlEle->setUserRecord< double >( "e3x3", e3x3 );
+         pxlEle->setUserRecord< double >( "r19",  eMax / e3x3 );
+
+         // These are the covariances, if you want the sigmas, you have to sqrt them.
+         const vector< float > covariances = lazyTools.covariances( *SCRef, 4.7 );
+         pxlEle->setUserRecord< double >( "covEtaEta", covariances[0] );
+         pxlEle->setUserRecord< double >( "covEtaPhi", covariances[1] );
+         pxlEle->setUserRecord< double >( "covPhiPhi", covariances[2] );
+
+         // SwissCross
+         //
+         double swissCross         = -1.0;
+         double swissCrossNoBorder = -1.0;
 
          if( isBarrel || isEndcap ) {
-            part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *recHits, 0, false ) );
-            part->setUserRecord< double >( "SwissCrossNoBorder", EcalTools::swissCross( seedID, *recHits, 0, true ) );
+            swissCross         = EcalTools::swissCross( seedID, *recHits, 0, false );
+            swissCrossNoBorder = EcalTools::swissCross( seedID, *recHits, 0, true );
 
             EcalRecHitCollection::const_iterator recHit_it = recHits->find( seedID );
             if( recHit_it != recHits->end() ) {
-               const EcalRecHit &seedRecHit = *recHit_it;
-               unsigned int recoFlag = seedRecHit.recoFlag();
-               part->setUserRecord< unsigned int >( "recoFlag", recoFlag );
+               pxlEle->setUserRecord< unsigned int >( "recoFlag", recHit_it->recoFlag() );
             }
          }
 
-         std::vector<float> covariances = lazyTools.covariances(*SCRef, 4.7 );
-         part->setUserRecord<double>("EtaEta", covariances[0] ); //used for CutBasedElectronID
-         part->setUserRecord<double>("EtaPhi", covariances[1] );
-         part->setUserRecord<double>("PhiPhi", covariances[2] );
+         pxlEle->setUserRecord< double >( "SwissCross",         swissCross );
+         pxlEle->setUserRecord< double >( "SwissCrossNoBorder", swissCrossNoBorder );
 
-         part->setUserRecord< double >( "iEta_iEta", ele->scSigmaIEtaIEta() );
+         // Save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/Photon-Candidates (in final selection).
+         pxlEle->setUserRecord< unsigned int >( "seedId", seedID.rawId() );
+         pxlEle->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
+         pxlEle->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
 
-         //save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/Photon-Candidates (in final selection)
-         part->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
-         part->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
-         part->setUserRecord<unsigned int>("seedId", seedID.rawId()); 
-         //additional data used for cutBasedElectronId in CMSSW 2_0_X
-         part->setUserRecord<double>("pin", ele->trackMomentumAtVtx().R() ); //used for CutBasedElectronID	 
-         part->setUserRecord<double>( "pout", ele->trackMomentumOut().R() ); //used for CutBasedElectronID	
-         //store ID information
-         const vector< pair< string, float > > &electronIDs = ele->electronIDs();
+         // Store ID information. ID is a string that typically starts with 'eid'.
+         const vector< pair< string, float > > &electronIDs = patEle->electronIDs();
          for( vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID ){
-            part->setUserRecord<bool>( electronID->first, electronID->second > 0.5 );
+            pxlEle->setUserRecord< bool >( electronID->first, electronID->second > 0.5 );
          }
-         //save official isolation information
-         part->setUserRecord<double>("CaloIso", ele->caloIso());
-         part->setUserRecord<double>("TrkIso", ele->trackIso());
-         part->setUserRecord<double>("ECALIso", ele->ecalIso());
-         part->setUserRecord<double>("HCALIso", ele->hcalIso());
 
-         part->setUserRecord< double >( "TrkIso03", ele->dr03TkSumPt() );
-         part->setUserRecord< double >( "ECALIso03", ele->dr03EcalRecHitSumEt() );
-         part->setUserRecord< double >( "HCALIso03d1", ele->dr03HcalDepth1TowerSumEt() );
-         part->setUserRecord< double >( "HCALIso03d2", ele->dr03HcalDepth2TowerSumEt() );
+         // Store PAT matching info if MC. FIXME: Do we still use this?
+         if( MC ) {
+            map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( patEle->genLepton() );
+            if( it != genmap.end() ){
+               pxlEle->linkSoft( it->second, "pat-match" );
+            }
+         }
 
          numEleRec++;
       }
       numEleAll++;
    }
-   RecView->setUserRecord<int>("NumEle", numEleRec);
+   RecView->setUserRecord< int >( "NumEle", numEleRec );
 }
 
 // ------------ reading Reconstructed Jets ------------
