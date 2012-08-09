@@ -208,6 +208,7 @@ public:
    // for PF isolation
    typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
    std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;
+   std::string m_eleEffAreaTargetLabel;
    // Photon
    std::string fGammaRecoLabel;
    // for PF isolation

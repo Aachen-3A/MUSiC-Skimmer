@@ -27,6 +27,8 @@ Skimmer = cms.EDAnalyzer(
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
     # Needed for electron vetoing.
     gsfElectronsTag = cms.InputTag( 'gsfElectrons' ),
+    # Default value for effective area correction. Changed in config file!
+    EleEffAreaTargetLabel = cms.untracked.string( 'NoCorr' ),
     # for PF isolation
     IsoValElectronPF = cms.VInputTag( cms.InputTag( 'elPFIsoValueCharged03PFIdPFIso' ),
                                       cms.InputTag( 'elPFIsoValueGamma03PFIdPFIso'   ),

@@ -64,6 +64,7 @@ Implementation:
 
 //for electron-isolation
 #include "DataFormats/Candidate/src/classes.h"
+#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
 
 //for Trigger Bits
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
@@ -151,6 +152,7 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
    m_gsfElectronsTag = iConfig.getParameter< InputTag >( "gsfElectronsTag" );
    m_inputTagIsoValElectronsPFId = iConfig.getParameter< vector< InputTag > >( "IsoValElectronPF" );
+   m_eleEffAreaTargetLabel = iConfig.getUntrackedParameter< string >( "EleEffAreaTargetLabel" );
 
    freducedBarrelRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedBarrelRecHitCollection");
    freducedEndcapRecHitCollection = iConfig.getParameter<edm::InputTag>("reducedEndcapRecHitCollection");
@@ -2235,6 +2237,29 @@ void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
    part.setUserRecord< double >( "PFIso03ChargedHadron", pfIsoCharged );
    part.setUserRecord< double >( "PFIso03NeutralHadron", pfIsoNeutral );
    part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
+
+   // PU corrected isolation for electrons, according to:
+   // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation#Example_for_photons
+   // http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/ElectronIsoAnalyzer.cc
+   //
+   if( ref->isElectron() ) {
+      ElectronEffectiveArea::ElectronEffectiveAreaTarget eleEffAreaTarget;
+      if     ( m_eleEffAreaTargetLabel == "NoCorr"     ) eleEffAreaTarget = ElectronEffectiveArea::kEleEANoCorr;
+      else if( m_eleEffAreaTargetLabel == "Data2011"   ) eleEffAreaTarget = ElectronEffectiveArea::kEleEAData2011;
+      else if( m_eleEffAreaTargetLabel == "Data2012"   ) eleEffAreaTarget = ElectronEffectiveArea::kEleEAData2012;
+      else if( m_eleEffAreaTargetLabel == "Summer11MC" ) eleEffAreaTarget = ElectronEffectiveArea::kEleEASummer11MC;
+      else if( m_eleEffAreaTargetLabel == "Fall11MC"   ) eleEffAreaTarget = ElectronEffectiveArea::kEleEAFall11MC;
+      else throw cms::Exception( "Configuration" ) << "Unknown effective area " << m_eleEffAreaTargetLabel << endl;
+
+      const ElectronEffectiveArea::ElectronEffectiveAreaType eleEffAreaGammaPlusNeutralHad = ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03;
+
+      const double absEta           = fabs( ref->superCluster()->eta() );
+      const double effArea          = ElectronEffectiveArea::GetElectronEffectiveArea( eleEffAreaGammaPlusNeutralHad, absEta, eleEffAreaTarget );
+      const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * m_rhoFastJet );
+
+      part.setUserRecord< double >( "EffectiveArea",      effArea          );
+      part.setUserRecord< double >( "PFIso03PUCorrected", PFIsoPUCorrected );
+   }
 
    if( useIsolator ) {
       // We need the PFCandidates ...

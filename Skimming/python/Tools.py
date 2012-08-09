@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def prepare( runOnGen, runOnData ):
+def prepare( runOnGen, runOnData, eleEffAreaTarget ):
     process = cms.Process( 'PAT' )
 
     # Initialize MessageLogger and output report.
@@ -51,6 +51,10 @@ def prepare( runOnGen, runOnData ):
     # help of edm::TriggerResult.
     #
     process.Skimmer.filterlist = cms.vstring()
+
+    # Set effective electron area for corrections.
+    #
+    process.Skimmer.EleEffAreaTargetLabel = eleEffAreaTarget
 
     if not runOnGen:
         addScrapingFilter( process )

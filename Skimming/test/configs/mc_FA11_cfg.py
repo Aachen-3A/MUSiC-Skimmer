@@ -1,6 +1,14 @@
 runOnData = False
 #run on GEN sample
 runOnGen = False
+# Choose the type of effective area correction you want to use.
+# Possible values:
+#     NoCorr
+#     Data2011
+#     Data2012
+#     Summer11MC
+#     Fall11MC
+eleEffAreaTarget = cms.untracked.string( 'Fall11MC' )
 
 if runOnGen and runOnData :
     print "runOnData and runOnGen can't be true at the same time!"
@@ -9,7 +17,7 @@ if runOnGen and runOnData :
 
 import MUSiCProject.Skimming.Tools as Tools
 
-process = Tools.prepare( runOnGen, runOnData )
+process = Tools.prepare( runOnGen, runOnData, eleEffAreaTarget )
 
 import FWCore.ParameterSet.Config as cms
 
