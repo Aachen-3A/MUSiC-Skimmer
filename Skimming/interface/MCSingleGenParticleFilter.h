@@ -11,13 +11,16 @@
 // Inherits from EDFilter
 //
 
-#include <memory>
+namespace edm {
+   class Event;
+   class EventSetup;
+   class ParameterSet;
+}
+
+#include <vector>
 
 #include "FWCore/Framework/interface/EDFilter.h"
-#include "FWCore/Framework/interface/Event.h"
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/InputTag.h"
 
 //
 // class decleration

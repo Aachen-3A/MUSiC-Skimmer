@@ -1,6 +1,15 @@
 #include "MUSiCProject/Skimming/interface/MCSmartSingleGenParticleFilter.h"
 
+#include <iostream>
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+
+#include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
 using namespace edm;
 using namespace std;
@@ -172,6 +181,8 @@ bool MCSmartSingleGenParticleFilter::filter( Event& iEvent, const EventSetup& iS
 
    return accepted;
 }
+
+#include "FWCore/Framework/interface/MakerMacros.h"
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MCSmartSingleGenParticleFilter);

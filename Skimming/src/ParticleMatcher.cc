@@ -1,5 +1,8 @@
 #include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
 
+#include "TMatrixT.h"
+#include "MUSiCProject/Pxl/interface/Pxl.h"
+
 using namespace std;
 using namespace pxl;
 

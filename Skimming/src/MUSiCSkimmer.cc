@@ -1,127 +1,112 @@
 // -*- C++ -*-
 //
-// Package:    MUSiCSkimmer
+// Package:    MUSiCProject
 // Class:      MUSiCSkimmer
-// 
-/**\class MUSiCSkimmer MUSiCSkimmer.cc PaxDemo/MUSiCSkimmer/src/MUSiCSkimmer.cc
-
-Description: <one line class summary>
-
-Implementation:
-<Notes on implementation>
-*/
 //
-// Original Author:  
+//\class MUSiCSkimmer MUSiCProject/Skimming/src/MUSiCSkimmer.cc
+//
+//Description: Data and MC Skimmer for the Model Unspecific Search in CMS
+//
+//Implementation:
+//
+// Original Authors: Carsten Hof, Philipp Biallass, Holger Pieta, Paul Papacz
 //         Created:  Mo Okt 30 12:03:52 CET 2006
 // $Id$
 //
 //
-// own header file
+// Own header file.
 #include "MUSiCProject/Skimming/interface/MUSiCSkimmer.h"
 
-// system include files
-#include <memory>
-#include <sstream>
+// System include files.
 #include <iostream>
-#include <map>
-#include <vector>
-#include <algorithm>
-// include Message Logger for Debug
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "TLorentzVector.h"
-#include "TVector3.h"
 
-// user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h" 
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
+// Message Logger for Debug etc.
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
+// Exceptions. Do *not* use edm::LogError(), use cms::Exception() instead!
 #include "FWCore/Utilities/interface/Exception.h"
 
-// necessary objects:
+// Necessary objects.
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-// for electron shapes:
-#include "DataFormats/CaloRecHit/interface/CaloCluster.h"
-
-//for GenParticles
+// For GenParticles.
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "DataFormats/METReco/interface/GenMET.h"
+#include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
-//for TrackingVertex
-#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
-#include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
-
-//for muon-isolation
-#include "DataFormats/CaloTowers/interface/CaloTower.h"
-#include "DataFormats/TrackReco/interface/Track.h"
-
-//for Electron ID
-#include "AnalysisDataFormats/Egamma/interface/ElectronID.h"
-#include "AnalysisDataFormats/Egamma/interface/ElectronIDAssociation.h"
-#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
-#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
-
-//for electron-isolation
-#include "DataFormats/Candidate/src/classes.h"
-#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
-
-//for Trigger Bits
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/Common/interface/TriggerResults.h"
-#include "FWCore/Common/interface/TriggerNames.h"
-#include "DataFormats/HLTReco/interface/TriggerEvent.h"
-
-//For L1 and Hlt objects
-#include "DataFormats/Common/interface/RefToBase.h"
-
-#include "DataFormats/Candidate/interface/CandMatchMap.h"
-#include "DataFormats/Candidate/interface/Candidate.h"
-
-//math stuff from Physics tools
-#include "DataFormats/Math/interface/deltaR.h"
-
-//PAT related stuff
-#include "DataFormats/PatCandidates/interface/Electron.h"
-#include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/Photon.h"
-#include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/PatCandidates/interface/Tau.h"
-#include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
-#include "DataFormats/MuonReco/interface/MuonSelectors.h"
-
-//test
-#include "DataFormats/Common/interface/Ptr.h"
-
-//ECAL
-#include "DataFormats/EgammaReco/interface/SuperCluster.h"
-#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
-#include "DataFormats/EcalDetId/interface/EBDetId.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalTools.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
-#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
-#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
-#include "Geometry/CaloTopology/interface/CaloTopology.h"
-#include "Geometry/CaloEventSetup/interface/CaloTopologyRecord.h"
-#include "Geometry/Records/interface/CaloGeometryRecord.h"
-
-// special stuff for sim truth of converted photons
-#include "SimDataFormats/Track/interface/SimTrack.h"
+// Special stuff for sim truth of converted photons.
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 #include "SimDataFormats/Vertex/interface/SimVertex.h"
 #include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
+
+// Pile-Up information.
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
-//Jet Flavour
-#include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
+// PDF stuff.
+#include "SimDataFormats/GeneratorProducts/interface/PdfInfo.h"
 
-//Muon refits
-#include "DataFormats/MuonReco/interface/MuonCocktails.h"
-
+// PAT related stuff.
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
+
+// EGamma stuff.
+#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
+#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "DataFormats/EgammaReco/interface/SuperCluster.h"
+#include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
+#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
+#include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
+#include "DataFormats/ParticleFlowReco/interface/PFBlockElementSuperClusterFwd.h"
+
+// For Muon stuff.
+#include "DataFormats/MuonReco/interface/MuonCocktails.h"
+#include "DataFormats/MuonReco/interface/MuonIsolation.h"
+#include "DataFormats/TrackReco/interface/TrackToTrackMap.h"
+
+// Jet stuff.
+#include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "PhysicsTools/SelectorUtils/interface/Selector.h"
+#include "PhysicsTools/SelectorUtils/interface/strbitset.h"
+
+// ECAL + HCAL
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerFwd.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalTools.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
+
+// For Trigger Bits:
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
+
+// Misc.
+#include "DataFormats/Common/interface/RefToBase.h"
+#include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+
+// Math stuff from Physics tools.
+#include "DataFormats/Math/interface/deltaR.h"
+
+// Private ParticleMatcher.
+#include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
 
 using namespace std;
 using namespace edm;
@@ -2296,6 +2281,7 @@ void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
    }
 }
 
+#include "FWCore/Framework/interface/MakerMacros.h"
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MUSiCSkimmer);

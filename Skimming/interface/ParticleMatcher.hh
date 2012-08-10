@@ -9,11 +9,17 @@ matching particle has a distance large than the given limits for DeltaR, DeltaPt
 declared to have no match. For unmatched particles Match UserRecord is set to -1.
 */
 
-#include "MUSiCProject/Pxl/interface/Pxl.h"
-#include "MUSiCProject/Skimming/interface/collection_def.h"
-#include <iostream> 
-#include "TMatrixT.h"
+#include <string>
 #include <vector>
+
+#include "MUSiCProject/Skimming/interface/collection_def.h"
+
+namespace pxl {
+	class EventView;
+	class Particle;
+}
+
+template< class T > class TMatrixT;
 
 class ParticleMatcher {
 
