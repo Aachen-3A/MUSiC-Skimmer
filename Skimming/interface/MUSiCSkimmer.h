@@ -187,7 +187,6 @@ public:
    // ----------member data ---------------------------
 
    int fNumEvt;// used to count the number of events
-   int fDebug; 
    std::string fFileName; 
    std::string fProcess;
    bool fGenOnly;

@@ -1,12 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-def prepare( runOnGen, runOnData, eleEffAreaTarget ):
+def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
     process = cms.Process( 'PAT' )
 
-    # Initialize MessageLogger and output report.
-    #
-    process.load( 'FWCore.MessageLogger.MessageLogger_cfi' )
-    process.MessageLogger.cerr.FwkReport.limit = 100
+    configureMessenger( process, verbosity )
 
     import FWCore.Framework.test.cmsExceptionsFatalOption_cff
     process.options = cms.untracked.PSet(
@@ -541,3 +538,27 @@ def configureTaus( process ):
     # rerun PFTau reco
     process.load( 'RecoTauTag.Configuration.RecoPFTauTag_cff' )
     process.p += process.PFTau
+
+
+# Initialize MessageLogger and output report.
+#
+def configureMessenger( process, verbosity = 0 ):
+    process.load( 'FWCore.MessageLogger.MessageLogger_cfi' )
+    process.MessageLogger.cerr.threshold = 'INFO'
+    process.MessageLogger.cerr.default.limit = -1
+    process.MessageLogger.cerr.FwkReport.limit = 100
+
+    process.MessageLogger.categories.append( 'TRIGGERINFO' )
+    process.MessageLogger.categories.append( 'PDFINFO' )
+
+    if verbosity > 0:
+        process.MessageLogger.categories.append( 'EventInfo' )
+        process.MessageLogger.categories.append( 'FilterInfo' )
+        process.MessageLogger.categories.append( 'TriggerInfo' )
+        process.MessageLogger.categories.append( 'PDFInfo' )
+
+    if verbosity > 1:
+        process.MessageLogger.categories.append( 'MUSiCSkimmer' )
+
+    if verbosity > 2:
+        process.MessageLogger.cerr.INFO = cms.untracked.PSet( limit = cms.untracked.int32( -1 ) )

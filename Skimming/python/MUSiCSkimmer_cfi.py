@@ -6,8 +6,6 @@ Skimmer = cms.EDAnalyzer(
     FileName =  cms.untracked.string("test_run.pxlio"),
     #symbolic name of the processed data
     Process = cms.untracked.string("test_run"),
-    # Debugging: 0 = off, 1 = human readable, 2 = insane
-    debug = cms.untracked.int32( 0 ),
     # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
     GenOnly = cms.untracked.bool( False ),
     # UseSIM true means to use SIM info for finding converted photons

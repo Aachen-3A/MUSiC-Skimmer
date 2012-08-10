@@ -120,8 +120,6 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    fProcess = iConfig.getUntrackedParameter<string>("Process");
    // Gen-Only or also Rec-information
    fGenOnly = iConfig.getUntrackedParameter<bool>("GenOnly");
-   // Debugging
-   fDebug = iConfig.getUntrackedParameter<int>("debug");
    // Use SIM info
    fUseSIM = iConfig.getUntrackedParameter<bool>("UseSIM");
    // name of the LHgrid for pdf weights
@@ -167,9 +165,9 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
       if (jet.isPF) num_IDs = PFJetIDSelectionFunctor::N_QUALITY;
       else num_IDs = JetIDSelectionFunctor::N_QUALITY;
       if( num_IDs < id_names.size() ){
-         cout << "Less JetIDs available than requested, using only available." << endl;
+         edm::LogWarning( "JetIDs" ) << "Less JetIDs available (" << num_IDs << ") than requested (" << id_names.size() << "), using only available.";
       } else if( num_IDs > id_names.size() ){
-         cout << "More JetIDs available than requested, using only requested." << endl;
+         edm::LogWarning( "JetIDs" ) << "More JetIDs available (" << num_IDs << ") than requested (" << id_names.size() << "), using only requested.";
          num_IDs = id_names.size();
       }
 
@@ -318,6 +316,10 @@ MUSiCSkimmer::~MUSiCSkimmer()
 // ------------ method called to for each event  ------------
 
 void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+   edm::LogInfo( "MUSiCSkimmer|EventInfo" ) << "Run " << iEvent.id().run()
+                                            << ", EventID = " << iEvent.id().event()
+                                            << ", is MC = " << !iEvent.isRealData();
+
    // set event counter   
    fNumEvt++; 
    // Owner of all Pxl Objects 
@@ -332,9 +334,6 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    event.setUserRecord< unsigned int >( "BX", iEvent.bunchCrossing() );
    event.setUserRecord< unsigned int >( "Orbit", iEvent.orbitNumber() );
 
-   if (fDebug > 0) {
-      cout << "Run " << iEvent.id().run() << "   EventID = " << iEvent.id().event() << " is MC = " << !iEvent.isRealData() << endl;  
-   }
    // create two ePaxEventViews for Generator/Reconstructed Objects
    pxl::EventView* GenEvtView = event.createIndexed<pxl::EventView>("Gen");
    pxl::EventView* RecEvtView = event.createIndexed<pxl::EventView>("Rec");
@@ -415,26 +414,30 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       Matcher->matchObjects(GenEvtView, RecEvtView, jet_infos, met_name);
    }
 
-   if (fDebug > 0 && !fGenOnly) {
-      cout << "UserRecord  " <<  "   e   " << "  mu   " << " Gamma ";
+   if( not fGenOnly ) {
+      stringstream info;
+      info << "UserRecord     e     mu    Gamma ";
       for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
-         cout << jet_info->name << " ";
+         info << jet_info->name << " ";
       }
-      cout << "  MET  " << endl;
-      cout << "Found (MC): " << setw(4) << GenEvtView->findUserRecord<int>("NumEle") 
-           << setw(7) << GenEvtView->findUserRecord<int>("NumMuon")
-           << setw(7) << GenEvtView->findUserRecord<int>("NumGamma");
+      info << "  MET  " << endl;
+      if( IsMC ) {
+         info << "Found (MC): " << setw( 4 ) << GenEvtView->findUserRecord< int >( "NumEle" )
+                                << setw( 7 ) << GenEvtView->findUserRecord< int >( "NumMuon" )
+                                << setw( 7 ) << GenEvtView->findUserRecord< int >( "NumGamma" );
+         for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+            info << setw( 4 ) << GenEvtView->findUserRecord< int >( "Num" + jet_info->name ) << " ";
+         }
+         info << setw( 7 ) << GenEvtView->findUserRecord< int >( "NumMET" ) << endl;
+      }
+      info << "     (Rec): " << setw( 4 ) << RecEvtView->findUserRecord< int >( "NumEle" )
+                             << setw( 7 ) << RecEvtView->findUserRecord< int >( "NumMuon" )
+                             << setw( 7 ) << RecEvtView->findUserRecord< int >( "NumGamma" );
       for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
-         cout << setw(4) << GenEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
+         info << setw( 4 ) << RecEvtView->findUserRecord< int >( "Num" + jet_info->name ) << " ";
       } 
-      cout << setw(7) << GenEvtView->findUserRecord<int>("NumMET") << endl;
-      cout << "     (Rec): " << setw(4) << RecEvtView->findUserRecord<int>("NumEle")    
-           << setw(7) << RecEvtView->findUserRecord<int>("NumMuon") 
-           << setw(7) << RecEvtView->findUserRecord<int>("NumGamma");
-      for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
-         cout << setw(4) << RecEvtView->findUserRecord<int>( "Num"+jet_info->name ) << " ";
-      } 
-      cout << setw(7) << RecEvtView->findUserRecord<int>("NumMET") << endl;
+      info << setw( 7 ) << RecEvtView->findUserRecord< int >( "NumMET" ) << endl;
+      edm::LogVerbatim( "MUSiCSkimmer|EventInfo" ) << info.str();
    }   
    fePaxFile.writeEvent(&event);
 }
@@ -500,22 +503,24 @@ void MUSiCSkimmer::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventVie
       fpdf_vec.push_back( pdf );
    }
 
-   
-
-   if (fDebug > 0) {
-      cout << "Event Scale (i.e. pthat): " << (genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0) << ", EventWeight: " << genEvtInfo->weight() << endl;
-      if( genEvtInfo->hasPDF() ){
-         cout << "PDFInfo: " << endl 
-              << "========" << endl;
-         cout << "Momentum of first incoming parton: (id/flavour = "  << genEvtInfo->pdf()->id.first  << ") "
-              << genEvtInfo->pdf()->x.first  << endl
-              << "Momentum of second incoming parton: (id/flavour = " << genEvtInfo->pdf()->id.second << ") "
-              << genEvtInfo->pdf()->x.second << endl
-              << "Scale = " << genEvtInfo->pdf()->scalePDF << endl;
-      } else {
-         cout << "No PDFInfo in this event." << endl;
-      }
+   stringstream info;
+   info << "Event Scale (i.e. pthat) = "
+        << ( genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0 )
+        << ", EventWeight = " << genEvtInfo->weight() << endl;
+   if( genEvtInfo->hasPDF() ){
+      info << "PDFInfo: " << endl
+           << "========" << endl;
+      info << "Momentum of first incoming parton: (id/flavour = "
+           << genEvtInfo->pdf()->id.first  << ") "
+           << genEvtInfo->pdf()->x.first  << endl
+           << "Momentum of second incoming parton: (id/flavour = "
+           << genEvtInfo->pdf()->id.second << ") "
+           << genEvtInfo->pdf()->x.second << endl
+           << "Scale = " << genEvtInfo->pdf()->scalePDF << endl;
+   } else {
+      info << "No PDFInfo in this event." << endl;
    }
+   edm::LogVerbatim( "MUSiCSkimmer|PDFInfo" ) << info.str();
 }
 
 // ------------ reading the Generator Stuff ------------
@@ -692,7 +697,7 @@ void MUSiCSkimmer::analyzeGenInfo( const edm::Event& iEvent, pxl::EventView* Evt
       }
    } //end of loop over generated particles
 
-   if (fDebug > 1)  cout << "MC Found:  " << numMuonMC <<  " mu  " << numEleMC << " e  " << numGammaMC << " gamma" << endl;
+   edm::LogInfo( "MUSiCSkimmer|GenInfo" ) << "MC Found: " << numMuonMC <<  " muon(s), " << numEleMC << " electron(s), " << numGammaMC << " gamma(s)";
    EvtView->setUserRecord<int>("NumMuon", numMuonMC);
    EvtView->setUserRecord<int>("NumEle", numEleMC);
    EvtView->setUserRecord<int>("NumGamma", numGammaMC);
@@ -778,7 +783,7 @@ void MUSiCSkimmer::analyzeGenJets( const edm::Event &iEvent, pxl::EventView *Evt
       }
    }
    EvtView->setUserRecord< int >( "Num"+jet_info.name, numJetMC );
-   if( fDebug > 1 ) cout << "Found MC Jets:  "  << numJetMC << " of Type " << jet_info.name << endl;
+   edm::LogInfo( "MUSiCSkimmer|GenInfo" ) << "MC Found: " << numJetMC << " jet(s) of type: " << jet_info.name;
 }
 
 // ------------ reading the Generator MET ------------
@@ -802,25 +807,30 @@ void MUSiCSkimmer::analyzeGenMET(const edm::Event& iEvent, pxl::EventView* EvtVi
    part->setUserRecord<double>("HadE", genmet.hadEnergy());
    part->setUserRecord<double>("InvE", genmet.invisibleEnergy());
 
+   edm::LogInfo( "MUSiCSkimmer|GenInfo" ) << "GenMET before muon corr: Px = " << genmet.px()
+                                          << ", Py = " << genmet.py()
+                                          << ", Pt = " << part->getPt();
 
-   if (fDebug > 1) cout << "GenMET before muon corr: Px = " << genmet.px() << "   Py = " << genmet.py() << "   Pt = " << part->getPt() << endl;
    // Perform Muon Corrections!
    // loop over muons and subtract them
    if (EvtView->findUserRecord<int>("NumMuon") > 0) { 
       vector<pxl::Particle*> GenMuons;
       pxl::ParticleFilter::apply( EvtView->getObjectOwner(), GenMuons, pxl::ParticlePtEtaNameCriterion("Muon") );
       for (vector<pxl::Particle*>::const_iterator muon = GenMuons.begin(); muon != GenMuons.end(); ++muon) {
-         if (fDebug > 1) cout << "Correcting with " << (*muon)->getName() << " px = " << (*muon)->getPx() 
-                              << " Py = " << (*muon)->getPy() << endl;
+         edm::LogInfo( "MUSiCSkimmer|GenInfo" ) << "Correcting with " << (*muon)->getName()
+                                                << ", Px = " << (*muon)->getPx()
+                                                << ", Py = " << (*muon)->getPy();
          *part -= **muon;
       }
       //reset eta-info after muon corrections
       //part->setP4(part->getPx(), part->getPy(), 0., sqrt(part->getPx()*part->getPx()+part->getPy()*part->getPy()));  
-      if (fDebug > 1) cout << "GenMET after muon corr: Px = " << part->getPx() << "   Py = " << part->getPy() << "   Pt = " << part->getPt() << endl;     
+      edm::LogInfo( "MUSiCSkimmer|GenInfo" ) << "GenMET after muon corr: Px = " << part->getPx()
+                                             << ", Py = " << part->getPy()
+                                             << ", Pt = " << part->getPt();
    }
    if (METMC_cuts(part)) numMETMC++;
    EvtView->setUserRecord<int>("NumMET", numMETMC);
-   if (numMETMC && fDebug > 1) cout << "Event contains MET" << endl;
+   if( numMETMC ) edm::LogInfo( "MUSiCSkimmer|GenInfo" ) << "Event contains MET";
    //cout << " Our GenMET: " << part->getPt() << endl;
 }
 
@@ -931,7 +941,8 @@ void MUSiCSkimmer::initializeTrigger( const edm::Event &event,
 
    //the trigger config has actually changed, so read in the new one
    if( changed ){
-      cout << "TRIGGER INFO: HLT table changed in run " << event.run() << ", building new trigger map for process " << process << endl;
+      edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: HLT table changed in run " << event.run()
+                                                 << ", building new trigger map for process " << process;
       //reset the map
       trigger.trigger_infos.clear();
 
@@ -949,7 +960,8 @@ void MUSiCSkimmer::initializeTrigger( const edm::Event &event,
             trigger.trigger_infos.push_back( trg );
          } else {
             //the number is invalid, the trigger path is not in the config
-            cout << "TRIGGER WARNING: In run " << event.run() << " trigger " << *trg_name << " not found in HLT config, not added to trigger map (so not used)." << endl;
+            edm::LogWarning( "TRIGGERWARNING" ) << "In run " << event.run() << " trigger "<< *trg_name
+                                                << " not found in HLT config, not added to trigger map (so not used).";
          }
       }
    }
@@ -975,13 +987,12 @@ void MUSiCSkimmer::analyzeFilter( const edm::Event &iEvent,
       if( wasrun && !error ){
         EvtView->setUserRecord< bool >( filter.name + "_" + filt->name, filterResultsHandle->accept( filt->ID ) );
 
-        if( fDebug > 0 && filterResultsHandle->accept( filt->ID ) )
-           cout << endl << "Event in process: '" << filter.process << "' passed filter: '" << filt->name << "'." << endl;
+        if( filterResultsHandle->accept( filt->ID ) )
+           edm::LogInfo( "MUSiCSkimmer|FilterInfo" ) << "Event in process: '" << filter.process << "' passed filter: '" << filt->name << "'.";
       } else {
          //either error or was not run
-         if( !wasrun ) cout << "FILTER WARNING: Filter: " << filt->name << " in process " << filter.process << " was not executed!" << endl;
-         if( error )   cout << "FILTER WARNING: An error occured during execution of Filter: " << filt->name << " in process " << filter.process << endl;
-         cout << "FILTER WARNING: Run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
+         if( !wasrun ) edm::LogWarning( "FilterWarning" ) << "Filter: " << filt->name << " in process " << filter.process << " was not executed!";
+         if( error )   edm::LogWarning( "FilterWarning" ) << "An error occured during execution of Filter: " << filt->name << " in process " << filter.process;
       }
    }
 }
@@ -1029,30 +1040,29 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
             EvtView->setUserRecord< bool >( trigger.name+"_"+trig->name, triggerResultsHandle->accept( trig->ID ) );
 
             //debug output
-            if( fDebug > 0 && triggerResultsHandle->accept( trig->ID ) )
-               cout << endl << "Trigger: " << trig->name << " in menu " << trigger.process << " fired" << endl;
+            if( triggerResultsHandle->accept( trig->ID ) )
+               edm::LogInfo( "MUSiCSkimmer|TriggerInfo" ) << "Trigger: " << trig->name << " in menu " << trigger.process << " fired" << endl;
          } else {
             //prescaled!
             //switch it off
             trig->active = false;
-            cout << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process << " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
+            edm::LogWarning( "TRIGGERWARNING" ) << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
+                                                << " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
+                                                << " - Event " << iEvent.id().event();
          }
       } else {
          //either error or was not run
-         if( !wasrun ) cout << "TRIGGER WARNING: Trigger: " << trig->name << " in menu " << trigger.process << " was not executed!" << endl;
-         if( error ) cout << "TRIGGER WARNING: An error occured during execution of Trigger: " << trig->name << " in menu " << trigger.process << endl;
-         cout << "TRIGGER WARNING: Run " << iEvent.run() << " - LS " << iEvent.luminosityBlock() << " - Event " << iEvent.id().event() << endl;
+         if( !wasrun ) edm::LogWarning( "TRIGGERWARNING" ) << "Trigger: " << trig->name << " in menu " << trigger.process << " was not executed!";
+         if( error )   edm::LogWarning( "TRIGGERWARNING" ) << "An error occured during execution of Trigger: " << trig->name << " in menu " << trigger.process;
       }
 
-      //begin cout of saved information for debugging
-      if( fDebug > 1 ){
-         cout << "triggerName: " << trig->name << "  triggerIndex: " << trig->ID << endl;
-         cout << " Trigger path status:"
-              << " WasRun=" << wasrun
-              << " Accept=" << triggerResultsHandle->accept( trig->ID )
-              << " Error=" << error
-              << " Prescale=" << prescale << endl;
-      }
+      edm::LogInfo( "MUSiCSkimmer|TriggerInfo" ) << "triggerName: " << trig->name << "  triggerIndex: " << trig->ID << endl
+                                                 << " Trigger path status:"
+                                                 << " WasRun   = " << wasrun
+                                                 << " Accept   = " << triggerResultsHandle->accept( trig->ID )
+                                                 << " Error    = " << error
+                                                 << " Prescale = " << prescale;
+
       if( fStoreL3Objects ){
          const vector<string> &moduleLabels( trigger.config.moduleLabels( trig->ID ) );
          const unsigned int moduleIndex( triggerResultsHandle->index( trig->ID) );
@@ -1072,7 +1082,8 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                assert( nI==nK );
                size_t n( max( nI,nK ) );
                if( n > 5 ){
-                  cout << "Storing only 5 L3 objects for label/type " << moduleLabel << "/" << trigger.config.moduleType( moduleLabel ) << endl;
+                  edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "Storing only 5 L3 objects for label/type "
+                                                             << moduleLabel << "/" << trigger.config.moduleType( moduleLabel );
                   n = 5;
                }
                const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
@@ -1082,11 +1093,9 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                   part->setName( moduleLabel );
                   part->setP4( TO.px(), TO.py(), TO.pz(), TO.energy() );
                   part->setUserRecord< double >( "ID", TO.id() );
-                  if( fDebug > 0 )
-                     cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-                          << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
-                          << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass()
-                          << endl;
+                  edm::LogVerbatim( "MUSiCSkimmer|TriggerInfo" )  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+                                                                  << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
+                                                                  << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
                }
             }
          }
@@ -1375,7 +1384,7 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
       }
    }
    RecView->setUserRecord<int>("NumMuon", numMuonRec);
-   if (fDebug > 1) cout << "Rec Muons: " << numMuonRec << endl; 
+   edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "Rec Muons: " << numMuonRec;
 }
 
 // ------------ reading Reconstructed Electrons ------------
@@ -1405,9 +1414,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
 
    for( vector< pat::Electron>::const_iterator patEle = patElectrons.begin(); patEle != patElectrons.end(); ++patEle ) {
       if( Ele_cuts( patEle ) ) {
-         if( fDebug > 1 ) {
-            cout << "Electron Energy scale corrected: " << patEle->isEnergyScaleCorrected() << endl;
-         }
+         edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "Electron Energy scale corrected: " << patEle->isEnergyScaleCorrected() << endl;
 
          Handle< EcalRecHitCollection > recHits;
 
@@ -1634,6 +1641,8 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
       numEleAll++;
    }
    RecView->setUserRecord< int >( "NumEle", numEleRec );
+
+   edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "Rec Eles: " << numEleRec;
 }
 
 // ------------ reading Reconstructed Jets ------------
@@ -1690,6 +1699,7 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          const vector< pair< string, float > > &btags = jet->getPairDiscri();
          for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
             part->setUserRecord< float >( btag->first, btag->second );
+            edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "BTag name: " << btag->first << ", value: " << btag->second;
          }
          //jet IDs
          for( jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID ){
@@ -1697,13 +1707,10 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
             part->setUserRecord< bool >( ID->first, (*(ID->second))( *jet, ret ) );
          }
 
-         if (fDebug > 1) {
-            const std::vector<std::pair<std::string, float> > & bTags = jet->getPairDiscri();
-            part->print(0);
-            for (vector<pair<string, float> >::const_iterator btag = bTags.begin(); btag != bTags.end(); ++btag) {
-               cout << "Name: " << btag->first << "   value: " << btag->second << endl;
-            }
-         }
+         stringstream info;
+         part->print( 0, info );
+         edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "PXL Jet Info: " << info.str();
+
          //store PAT matching info if MC
          if (MC) {
             // to be compared with Generator Flavor:
@@ -1721,7 +1728,7 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
       }
    }
    RecView->setUserRecord< int >( "Num"+jet_info.name, numJetRec );
-   if( fDebug > 1 ) cout << "Found Rec Jets:  " << numJetRec << " of Type " << jet_info.name << endl;
+   edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "Found Rec Jets:  " << numJetRec << " of Type " << jet_info.name;
 }
 
 // ------------ reading Reconstructed Gammas ------------
@@ -1920,7 +1927,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
    }
    RecView->setUserRecord< int >( "NumGamma", numGammaRec );
 
-   if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
+   edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "Rec Gammas: " << numGammaRec;
 }
 
 
@@ -1958,7 +1965,7 @@ void MUSiCSkimmer::endJob() {
       if (loc != string::npos) pdfSet = pdfSet.substr(0,loc);
       pdfSet.append("/");
       pdfSet.append(fLHgridName);
-      cout << "PDF set - " << pdfSet.data() << endl;
+      edm::LogInfo( "MUSiCSkimmer|PDFINFO" ) << "PDF set - " << pdfSet.data();
       initpdfset_((char *)pdfSet.data(), pdfSet.size());
 
       //load the best fit PDF

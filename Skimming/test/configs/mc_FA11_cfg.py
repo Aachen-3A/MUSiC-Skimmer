@@ -1,6 +1,9 @@
 runOnData = False
 #run on GEN sample
 runOnGen = False
+
+import FWCore.ParameterSet.Config as cms
+
 # Choose the type of effective area correction you want to use.
 # Possible values:
 #     NoCorr
@@ -10,6 +13,9 @@ runOnGen = False
 #     Fall11MC
 eleEffAreaTarget = cms.untracked.string( 'Fall11MC' )
 
+# Verbosity: 0 = normal messaging, 1 = human readable, 2 = insane, 3 = INFO from all modules
+verbosityLvl = 0
+
 if runOnGen and runOnData :
     print "runOnData and runOnGen can't be true at the same time!"
     import sys
@@ -17,9 +23,7 @@ if runOnGen and runOnData :
 
 import MUSiCProject.Skimming.Tools as Tools
 
-process = Tools.prepare( runOnGen, runOnData, eleEffAreaTarget )
-
-import FWCore.ParameterSet.Config as cms
+process = Tools.prepare( runOnGen, runOnData, eleEffAreaTarget, verbosityLvl )
 
 # source
 process.source = cms.Source(
