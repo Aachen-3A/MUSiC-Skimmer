@@ -147,10 +147,10 @@ public:
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
    virtual void analyzeRecGammas( const edm::Event &iEvent,
                                   pxl::EventView *RecView,
-                                  bool &MC,
+                                  const bool &MC,
                                   EcalClusterLazyTools &lazyTools,
                                   std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                                  edm::ESHandle< CaloGeometry > &geo
+                                  const edm::ESHandle< CaloGeometry > &geo
                                   );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 

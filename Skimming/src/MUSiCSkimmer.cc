@@ -60,9 +60,6 @@ Implementation:
 #include "AnalysisDataFormats/Egamma/interface/ElectronID.h"
 #include "AnalysisDataFormats/Egamma/interface/ElectronIDAssociation.h"
 
-//Photon pi0 rejection
-#include "DataFormats/EgammaCandidates/interface/PhotonPi0DiscriminatorAssociation.h"
-
 //for electron-isolation
 #include "DataFormats/Candidate/src/classes.h"
 
@@ -1713,126 +1710,171 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
 
 // ------------ reading Reconstructed Gammas ------------
 
-void MUSiCSkimmer::analyzeRecGammas( const edm::Event &iEvent,
+void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                      pxl::EventView *RecView,
-                                     bool &MC,
+                                     const bool &MC,
                                      EcalClusterLazyTools &lazyTools,
-                                     std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                                     edm::ESHandle< CaloGeometry > &geo
-                                     ){
-   // get Photon Collection     
-   edm::Handle<std::vector<pat::Photon> > photonHandle;
-   iEvent.getByLabel(fGammaRecoLabel, photonHandle);
-   const std::vector<pat::Photon>& photons = *photonHandle;
+                                     map< const reco::Candidate*, pxl::Particle* > &genmap,
+                                     const ESHandle< CaloGeometry > &geo
+                                     ) {
+   // Get Photon Collection.
+   Handle< vector< pat::Photon > > photonHandle;
+   iEvent.getByLabel( fGammaRecoLabel, photonHandle );
+   const vector< pat::Photon > &patPhotons = *photonHandle;
 
-   edm::Handle< EcalRecHitCollection > barrelRecHits;
+   Handle< EcalRecHitCollection > barrelRecHits;
    iEvent.getByLabel( freducedBarrelRecHitCollection, barrelRecHits );
 
-   edm::Handle< EcalRecHitCollection > endcapRecHits;
+   Handle< EcalRecHitCollection > endcapRecHits;
    iEvent.getByLabel( freducedEndcapRecHitCollection, endcapRecHits );
 
    int numGammaRec = 0;
-   for (std::vector<pat::Photon>::const_iterator photon = photons.begin(); photon != photons.end(); ++photon) {  
-      if ( Gamma_cuts(photon) ) { 
+   int numGammaAll = 0;
+   for( vector< pat::Photon >::const_iterator patPhoton = patPhotons.begin(); patPhoton != patPhotons.end(); ++patPhoton ) {
+      if( Gamma_cuts( patPhoton ) ) {
+         Handle< EcalRecHitCollection > recHits;
 
-         edm::Handle< EcalRecHitCollection > recHits;
-
-         bool isBarrel = photon->isEB();
-         bool isEndcap = photon->isEE();
+         const bool isBarrel = patPhoton->isEB();
+         const bool isEndcap = patPhoton->isEE();
 
          if( isBarrel ) recHits = barrelRecHits;
          if( isEndcap ) recHits = endcapRecHits;
 
-         pxl::Particle* part = RecView->create<pxl::Particle>();
-         part->setName("Gamma");
-         part->setCharge(0);
-         part->setP4(photon->px(), photon->py(), photon->pz(), photon->energy());         
-         /// Whether or not the SuperCluster has a matched pixel seed
-         part->setUserRecord<bool>("HasSeed", photon->hasPixelSeed());
-         //get the SC and the seed
-         const reco::SuperClusterRef SCRef = photon->superCluster();
-         std::pair<DetId, float> max_hit = lazyTools.getMaximum( *SCRef );
-         DetId seedID = max_hit.first;
-         double eMax = max_hit.second;
-         // Find the entry in the map corresponding to the seed BasicCluster of the SuperCluster
-         part->setUserRecord<double>("rawEnergy",  SCRef->rawEnergy() );
-         part->setUserRecord<double>("preshowerEnergy",  SCRef->preshowerEnergy() );
-         //use EcalClusterLazyTools to store ClusterShapeVariables
-         double e3x3 = photon->e3x3();
-         part->setUserRecord< double >("e3x3",  e3x3 );
-         part->setUserRecord< double >( "e5x5",  photon->e5x5() );
+         pxl::Particle *pxlPhoton = RecView->create< pxl::Particle >();
+         pxlPhoton->setName( "Gamma" );
+         pxlPhoton->setCharge( 0 );
+         pxlPhoton->setP4( patPhoton->px(), patPhoton->py(), patPhoton->pz(), patPhoton->energy() );
 
-         part->setUserRecord< double >( "SwissCross", -1 );
-         part->setUserRecord< double >( "SwissCrossNoBorder", -1 );
+         pxlPhoton->setUserRecord< bool >( "isBarrel", isBarrel );
+         pxlPhoton->setUserRecord< bool >( "isEndcap", isEndcap );
+         pxlPhoton->setUserRecord< bool >( "Gap", patPhoton->isEBGap() || patPhoton->isEEGap() || patPhoton->isEBEEGap() );
 
-         if( isBarrel || isEndcap ) {
-            part->setUserRecord< double >( "SwissCross", EcalTools::swissCross( seedID, *recHits, 0, false ) );
-            part->setUserRecord< double >( "SwissCrossNoBorder", EcalTools::swissCross( seedID, *recHits, 0, true ) );
-            EcalRecHitCollection::const_iterator recHit_it = recHits->find( seedID );
-            if( recHit_it != recHits->end() ) {
-               const EcalRecHit &seedRecHit = *recHit_it;
-               unsigned int recoFlag = seedRecHit.recoFlag();
-               part->setUserRecord< unsigned int >( "recoFlag", recoFlag );
-            }
-         }
-
-         std::vector< float > covariances = lazyTools.covariances( *SCRef );
-         part->setUserRecord<double>("EtaEta", covariances[0] ); 
-         part->setUserRecord<double>("EtaPhi", covariances[1] );
-         part->setUserRecord<double>("PhiPhi", covariances[2] );
-         part->setUserRecord< double >( "Emax", eMax );
-         part->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
-         part->setUserRecord<double>("r9", e3x3 /( SCRef->rawEnergy() + SCRef->preshowerEnergy() ) );
-         part->setUserRecord< double >( "r19", lazyTools.eMax( *SCRef ) / e3x3 );
-         part->setUserRecord< double >( "iEta_iEta", photon->sigmaIetaIeta() );
-         //save eta/phi and DetId info from seed-cluster to prevent dublication of Electron/Photon-Candidates (in final selection) adn to reject converted photons
-         part->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
-         part->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
-         part->setUserRecord<unsigned int>("seedId", seedID.rawId()); 
-         //set hadronic over electromagnetic energy fraction
-         part->setUserRecord<float>("HoEm", photon->hadronicOverEm());
-         //save official isolation information
-         // this is the BAD PAT isolation!!!
-         part->setUserRecord<double>("HCALIso", photon->hcalIso());
-         part->setUserRecord<double>("ECALIso", photon->ecalIso());
-         part->setUserRecord<double>("TrkIso", photon->trackIso());
-         part->setUserRecord<double>("CaloIso", photon->caloIso());
-         part->setUserRecord<int>("TrackNum", photon->nTrkSolidConeDR04());
-         // use egamma isolation based on RecHits:
-         part->setUserRecord<float>("ID_HCALIso", photon->hcalTowerSumEtConeDR04());
-         part->setUserRecord<float>("ID_ECALIso", photon->ecalRecHitSumEtConeDR04());
-         part->setUserRecord<float>("ID_TrkIso", photon->trkSumPtHollowConeDR04());	  
-         //store information about converted state
-         part->setUserRecord<bool>("Converted", photon->hasConversionTracks());
-         //if (photon->isConvertedPhoton() == true) {cout << "is Converted!" << endl;}
-         // store photon-Id
-         const vector< pair< string, bool > > &photonIDs = photon->photonIDs();
-         for( vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID ){
-            part->setUserRecord<bool>( photonID->first, photonID->second );
-         }
-         // is near a gap ! isEEGap == always false not yet implemented ... CMSSW_2_1_9 
-         part->setUserRecord<bool>("Gap", photon->isEBGap() || photon->isEEGap() || photon->isEBEEGap());
-
-         // store Gamma info corrected for primary vertex (this changes direction but leaves energy of SC unchanged 
-         pat::Photon localPho(*photon);
+         // Store Photon info corrected for primary vertex (this changes direction but leaves energy of SC unchanged).
+         pat::Photon localPho( *patPhoton );
          // Set event vertex
          localPho.setVertex( the_vertex );
-         part->setUserRecord<double>("PhysEta", localPho.eta());
-         part->setUserRecord<double>("PhysPhi", localPho.phi());
-         part->setUserRecord<double>("PhysPt", localPho.pt());
+         pxlPhoton->setUserRecord< double >( "PhysEta", localPho.eta() );
+         pxlPhoton->setUserRecord< double >( "PhysPhi", localPho.phi() );
+         pxlPhoton->setUserRecord< double >( "PhysPt",  localPho.pt()  );
 
-         //store PAT matching info
-         if (MC) {
-            std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( photon->genPhoton() );
-            if( it != genmap.end() ){
-               part->linkSoft( it->second, "pat-match" );
+         //
+         // Photon variables orientated to
+         // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
+         //
+
+         // Isolation variables.
+         //
+         // Sum of track pT in a hollow cone of outer radius, inner radius.
+         pxlPhoton->setUserRecord< double >( "ID_TrkIso03", patPhoton->trkSumPtHollowConeDR03() );
+         pxlPhoton->setUserRecord< double >( "ID_TrkIso",   patPhoton->trkSumPtHollowConeDR04() );
+         // Sum of track pT in a cone of dR.
+         pxlPhoton->setUserRecord< double >( "ID_TrkIsoSolid03", patPhoton->trkSumPtSolidConeDR03() );
+         pxlPhoton->setUserRecord< double >( "ID_TrkIsoSolid",   patPhoton->trkSumPtSolidConeDR04() ); // (Identical to TrkIso()!)
+         // EcalRecHit isolation.
+         pxlPhoton->setUserRecord< double >( "ID_ECALIso03", patPhoton->ecalRecHitSumEtConeDR03() );
+         pxlPhoton->setUserRecord< double >( "ID_ECALIso",   patPhoton->ecalRecHitSumEtConeDR04() ); // (Identical to ecalIso()!)
+         // HcalDepth1Tower isolation.
+         pxlPhoton->setUserRecord< double >( "ID_HCALIso03", patPhoton->hcalTowerSumEtConeDR03() );
+         pxlPhoton->setUserRecord< double >( "ID_HCALIso",   patPhoton->hcalTowerSumEtConeDR04() ); // (Identical to hcalIso()!)
+         // Number of tracks in a cone of dR.
+         pxlPhoton->setUserRecord< int >( "TrackNum03", patPhoton->nTrkSolidConeDR03() );
+         pxlPhoton->setUserRecord< int >( "TrackNum",   patPhoton->nTrkSolidConeDR04() );
+
+         // Calorimeter information.
+         //
+         pxlPhoton->setUserRecord< double >( "iEta_iEta", patPhoton->sigmaIetaIeta() );
+         pxlPhoton->setUserRecord< double >( "r9",        patPhoton->r9() );
+         const double HoEm = patPhoton->hadronicOverEm();
+         pxlPhoton->setUserRecord< double >( "HoEm", HoEm );
+
+         // Whether or not the SuperCluster has a matched pixel seed (electron veto).
+         pxlPhoton->setUserRecord< bool >( "HasSeed", patPhoton->hasPixelSeed() );
+
+         // Store information about converted state.
+         pxlPhoton->setUserRecord< bool >( "Converted", patPhoton->hasConversionTracks() );
+
+         // Additional cluster variables for (spike) cleaning:
+         //
+         // Get the supercluster (ref) of the Electron
+         // a SuperClusterRef is a edm::Ref<SuperClusterCollection>
+         // a SuperClusterCollection is a std::vector<SuperCluster>
+         // although we get a vector of SuperClusters an electron is only made out of ONE SC
+         // therefore only the first element of the vector should be available!
+         const reco::SuperClusterRef SCRef = patPhoton->superCluster();
+
+         pxlPhoton->setUserRecord< double >( "etaWidth", SCRef->etaWidth() );
+         pxlPhoton->setUserRecord< double >( "phiWidth", SCRef->phiWidth() );
+         // Set hadronic over electromagnetic energy fraction.
+
+         // Raw uncorrected energy (sum of energies of component BasicClusters).
+         pxlPhoton->setUserRecord< double >( "rawEnergy", SCRef->rawEnergy() );
+         // Energy deposited in preshower.
+         pxlPhoton->setUserRecord< double >( "preshowerEnergy", SCRef->preshowerEnergy() );
+
+         // Get highest energy entry (seed) and SC ID.
+         // Use EcalClusterLazyTools to store ClusterShapeVariables.
+         //
+         const pair< DetId, float > max_hit = lazyTools.getMaximum( *SCRef );
+         const DetId seedID = max_hit.first;
+         const double eMax = max_hit.second;
+         const double e3x3 = patPhoton->e3x3();
+
+         pxlPhoton->setUserRecord< double >( "Emax", eMax );
+         pxlPhoton->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
+         pxlPhoton->setUserRecord< double >( "e3x3", e3x3 );
+         pxlPhoton->setUserRecord< double >( "e5x5", patPhoton->e5x5() );
+         pxlPhoton->setUserRecord< double >( "r19",  eMax / e3x3 );
+
+         // SwissCross
+         //
+         double swissCross         = -1.0;
+         double swissCrossNoBorder = -1.0;
+
+         if( isBarrel || isEndcap ) {
+            swissCross         = EcalTools::swissCross( seedID, *recHits, 0, false );
+            swissCrossNoBorder = EcalTools::swissCross( seedID, *recHits, 0, true );
+
+            EcalRecHitCollection::const_iterator recHit_it = recHits->find( seedID );
+            if( recHit_it != recHits->end() ) {
+               pxlPhoton->setUserRecord< unsigned int >( "recoFlag", recHit_it->recoFlag() );
             }
          }
-         //FIXME Pi0 stuff still missing --> seems not be working in CMSSW_2_1_X
+
+         pxlPhoton->setUserRecord< double >( "SwissCross",         swissCross );
+         pxlPhoton->setUserRecord< double >( "SwissCrossNoBorder", swissCrossNoBorder );
+
+         // These are the covariances, if you want the sigmas, you have to sqrt them.
+         const vector< float > covariances = lazyTools.covariances( *SCRef, 4.7 );
+         pxlPhoton->setUserRecord< double >( "covEtaEta", covariances[0] );
+         pxlPhoton->setUserRecord< double >( "covEtaPhi", covariances[1] );
+         pxlPhoton->setUserRecord< double >( "covPhiPhi", covariances[2] );
+
+         // Save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/patPhoton-Candidates (in final selection)
+         // and to reject converted photons.
+         //
+         pxlPhoton->setUserRecord< unsigned int >( "seedId", seedID.rawId() );
+         pxlPhoton->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
+         pxlPhoton->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
+
+         // Store ID information.
+         const vector< pair< string, bool > > &photonIDs = patPhoton->photonIDs();
+         for( vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID ){
+            pxlPhoton->setUserRecord< bool >( photonID->first, photonID->second );
+         }
+
+         // Store PAT matching info if MC. FIXME: Do we still use this?
+         if( MC ) {
+            std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( patPhoton->genPhoton() );
+            if( it != genmap.end() ){
+               pxlPhoton->linkSoft( it->second, "pat-match" );
+            }
+         }
          numGammaRec++;
-      }	 
+      }
+      numGammaAll++;
    }
-   RecView->setUserRecord<int>("NumGamma", numGammaRec);
+   RecView->setUserRecord< int >( "NumGamma", numGammaRec );
+
    if (fDebug > 1) cout << "Rec Gamma: " << numGammaRec << endl;
 }
 
