@@ -72,6 +72,7 @@
 // For Muon stuff.
 #include "DataFormats/MuonReco/interface/MuonCocktails.h"
 #include "DataFormats/MuonReco/interface/MuonIsolation.h"
+#include "DataFormats/MuonReco/interface/MuonPFIsolation.h"
 #include "DataFormats/TrackReco/interface/TrackToTrackMap.h"
 
 // Jet stuff.
@@ -1243,6 +1244,15 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<double>("Vtx_Y", muon->vy());
          part->setUserRecord<double>("Vtx_Z", muon->vz()); 
 
+         // Particle-Flow muons out-of-the-box.
+         part->setUserRecord< bool >( "isPFMuon", muon->isPFMuon() );
+         if( muon->isPFMuon() ) {
+            part->setUserRecord< double >( "PFpx", muon->pfP4().Px() );
+            part->setUserRecord< double >( "PFpy", muon->pfP4().Py() );
+            part->setUserRecord< double >( "PFpz", muon->pfP4().Pz() );
+            part->setUserRecord< double >( "PFE",  muon->pfP4().E()  );
+         }
+
          //store PAT matching info if MC
          if (MC){
             std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genmap.find( muon->genLepton() );
@@ -1255,6 +1265,9 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<bool>("isGlobalMuon", muon->isGlobalMuon());
          part->setUserRecord<bool>("isTrackerMuon", muon->isTrackerMuon());
          part->setUserRecord<bool>("isStandAloneMuon", muon->isStandAloneMuon());
+
+         // Absolute transverse impact parameter.
+         part->setUserRecord< double >( "dB", muon->dB() );
 
          //save info about quality of track-fit for combined muon (muon system + tracker)
          reco::TrackRef muontrack = muon->globalTrack();
@@ -1279,6 +1292,7 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          // Store the number of tracker layers with measurement.
          //
          part->setUserRecord< int >( "TrackerLayersWithMeas", muontrack->hitPattern().trackerLayersWithMeasurement() );
+         part->setUserRecord< int >( "PixelLayersWithMeas",   muontrack->hitPattern().pixelLayersWithMeasurement() );
 
          //store the number of muon stations containing segments
          part->setUserRecord< int > ( "NMachedStations", muon->numberOfMatchedStations() );
@@ -1314,6 +1328,9 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
          part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
 
+         part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
+         part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
+
          // TODO: Depricated, see above.
          // Store information for "cocktail" high energy refit.
          reco::TrackRef pmcTrack = muon::tevOptimized( *muon, tevMap1, tevMap2, tevMap3 );
@@ -1338,10 +1355,16 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
             part->setUserRecord< int >( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
             part->setUserRecord< int >( "VHitsMuonSysCocktail", pmcTrack->hitPattern().numberOfValidMuonHits() );
 
+            part->setUserRecord< double >( "DzCocktail",    pmcTrack->dz( the_vertex ) );
             part->setUserRecord< double >( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
             part->setUserRecord< double >( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
+
+            part->setUserRecord< double >( "DzBSCocktail",  pmcTrack->dz( the_vertex ) );
             part->setUserRecord< double >( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
             part->setUserRecord< double >( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
+
+            part->setUserRecord< int >( "TrackerLayersWithMeasCocktail", muontrack->hitPattern().trackerLayersWithMeasurement() );
+            part->setUserRecord< int >( "PixelLayersWithMeasCocktail",   muontrack->hitPattern().pixelLayersWithMeasurement() );
          } else {
             part->setUserRecord< bool >( "validCocktail", false );
          }
@@ -1378,7 +1401,34 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<bool>("isGood", muon::isGoodMuon( *muon, muon::GlobalMuonPromptTight ) );
          part->setUserRecord<bool>("lastStationTight", muon::isGoodMuon( *muon, muon::TMLastStationTight ) ); 
          part->setUserRecord<float>("SegComp", muon::segmentCompatibility( *muon ) );
+         part->setUserRecord< bool >( "TMOneStationTight", muon::isGoodMuon( *muon, muon::TMOneStationTight ) );
 
+         // Particle Flow based Isolation (available for samples processed with CMSSW_4_4_X+ otherwise 0).
+         const reco::MuonPFIsolation muonPFIso03 = muon->pfIsolationR03();
+         const reco::MuonPFIsolation muonPFIso04 = muon->pfIsolationR04();
+
+         // Sum Pt of the charged Hadrons.
+         part->setUserRecord< double >( "PFIsoR03ChargedHadrons", muonPFIso03.sumChargedHadronPt );
+         part->setUserRecord< double >( "PFIsoR04ChargedHadrons", muonPFIso04.sumChargedHadronPt );
+         // Sum Pt of all charged particles (including PF electrons and muons).
+         part->setUserRecord< double >( "PFIsoR03ChargeParticles", muonPFIso03.sumChargedParticlePt );
+         part->setUserRecord< double >( "PFIsoR04ChargeParticles", muonPFIso04.sumChargedParticlePt );
+         // Sum Et of the neutral hadrons.
+         part->setUserRecord< double >( "PFIsoR03NeutralHadrons", muonPFIso03.sumNeutralHadronEt );
+         part->setUserRecord< double >( "PFIsoR04NeutralHadrons", muonPFIso04.sumNeutralHadronEt );
+         // Sum Et of PF photons.
+         part->setUserRecord< double >( "PFIsoR03Photons", muonPFIso03.sumPhotonEt );
+         part->setUserRecord< double >( "PFIsoR04Photons", muonPFIso04.sumPhotonEt );
+         // Sum Pt of the charged particles in the cone of interest but with particles not originating from the primary vertex(for PU corrections).
+         part->setUserRecord< double >( "PFIsoR03PU", muonPFIso03.sumPUPt );
+         part->setUserRecord< double >( "PFIsoR04PU", muonPFIso04.sumPUPt );
+         // TODO: The following two are not available before CMSSW_5_X_Y.
+         // Sum of the neutral hadron Et with a higher threshold for the candidates(1 GeV instead of 0.5).
+         //part->setUserRecord< double >( "PFIso03NeutralHadronsHighThres", muonPFIso03.sumNeutralHadronEtHighThreshold );
+         //part->setUserRecord< double >( "PFIso04NeutralHadronsHighThres", muonPFIso04.sumNeutralHadronEtHighThreshold );
+         // Sum of the PF photons Et with higher threshold (1 GeV instead of 0.5).
+         //part->setUserRecord< double >( "PFIso03PhotonsHighThres", muonPFIso03.sumPhotonEtHighThreshold );
+         //part->setUserRecord< double >( "PFIso04PhotonsHighThres", muonPFIso04.sumPhotonEtHighThreshold );
 
          numMuonRec++;
       }
