@@ -1720,7 +1720,7 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
          if (jet_info.isPF) {
             part->setUserRecord<double>("chargedHadronEnergyFraction",jet->chargedHadronEnergyFraction());
-            part->setUserRecord<double>("neutralHadronEnergyFraction", ( jet->neutralHadronEnergy() + jet->HFHadronEnergy() ) / jet->energy());
+            part->setUserRecord< double >( "neutralHadronEnergyFraction", jet->neutralHadronEnergyFraction() );
             part->setUserRecord<double>("chargedEmEnergyFraction", jet->chargedEmEnergyFraction());
             part->setUserRecord<double>("neutralEmEnergyFraction", jet->neutralEmEnergyFraction());
             part->setUserRecord<double>("chargedMultiplicity", jet->chargedMultiplicity());
