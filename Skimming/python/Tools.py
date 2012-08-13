@@ -493,7 +493,7 @@ def addEEBadSCFilter( process ):
     process.load('RecoMET.METFilters.eeBadScFilter_cfi')
 
     process.p_eebadscfilter = cms.Path( process.eeBadScFilter )
-    process.Skimmer.filterlist.append( 'p_ebadscfilter' )
+    process.Skimmer.filterlist.append( 'p_eebadscfilter' )
 
 
 def addMuonPFCandidateFilter( process ):
@@ -513,7 +513,7 @@ def addECALLaserCorrFilter( process ):
     process.load( 'SandBox.Skims.ecalLaserCorrFilter_cfi' )
 
     process.p_ecallasercorrfilter = cms.Path( process.ecalLaserCorrFilter )
-    process.Skimmer.filterlist.append( 'ecallasercorrfilter' )
+    process.Skimmer.filterlist.append( 'p_ecallasercorrfilter' )
 
 
 def configureTaus( process ):
