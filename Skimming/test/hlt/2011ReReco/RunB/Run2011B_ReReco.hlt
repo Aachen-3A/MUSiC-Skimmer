@@ -25,19 +25,15 @@
 -F ~WP90
 -F ~L1ETM
 -F ~HBHENoiseFiltered
+-F ~QuadJet
 
--F ~MediumIsoPFTau35_Trk20_MET70
 -F ~Jet800
 -F ~L1FastJet
 -F ~NoJetID
--F ~DoubleEle10_CaloIdL_TrkIdVL_Ele
 -F ~DoubleMu5_IsoMu
-
 -F ~Mu15_DoublePhoton
 -F ~Mu5_DoubleEle
 -F ~DoubleMu5_Ele
--F ~Mu5_Ele8_CaloIdT_TrkIdVL_Ele
-
 -F ~Mu100
 -F ~Mu200
 -F ~Photon200
@@ -45,8 +41,6 @@
 -F ~Photon400
 -F ~Mu50
 -F ~Mu60
--F ~Photon48_CaloIdL_Photon38
--F ~Photon44_CaloIdL_Photon34
 -F ~DoublePhoton80
 -F ~IsoMu34_eta2p1
 -F ~DoubleMu45
@@ -57,6 +51,11 @@
 -F ~DoublePhoton60
 -F ~DoublePhoton70
 -F ~MET400
+-F ~MediumIsoPFTau35_Trk20_MET70
+-F ~Photon48_CaloIdL_Photon38
+-F ~Photon44_CaloIdL_Photon34
 -F ~Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau25
--F ~Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_Ele17
--F ~Ele65_CaloIdVT_TrkIdT
+-F ~MediumIsoPFTau35_Trk20_MET70
+-F ~DoubleIsoPFTau55_Trk5_eta2p1
+-F ~DoubleEle10_CaloIdL_TrkIdVL_Ele
+-F ~Mu5_Ele8_CaloIdT_TrkIdVL_Ele

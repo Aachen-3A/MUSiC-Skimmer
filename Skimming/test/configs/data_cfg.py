@@ -75,11 +75,9 @@ if runOnData:
     'HLT_IsoMu30_eta2p1_v3',
     'HLT_IsoMu30_eta2p1_v6',
     'HLT_IsoMu30_eta2p1_v7',
-    'HLT_IsoMu34_eta2p1_v1',
 
     # Single Ele:
     #
-    'HLT_Ele25_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL_v5',
     'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
     'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v2',
     'HLT_Ele27_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3',
@@ -88,19 +86,21 @@ if runOnData:
     'HLT_Ele32_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v3',
     'HLT_Ele42_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_v1',
 
+    'HLT_Ele45_CaloIdVT_TrkIdT_v1',
+    'HLT_Ele45_CaloIdVT_TrkIdT_v2',
+    'HLT_Ele45_CaloIdVT_TrkIdT_v3',
     'HLT_Ele52_CaloIdVT_TrkIdT_v1',
     'HLT_Ele52_CaloIdVT_TrkIdT_v2',
     'HLT_Ele52_CaloIdVT_TrkIdT_v3',
+    'HLT_Ele65_CaloIdVT_TrkIdT_v1',
+    'HLT_Ele65_CaloIdVT_TrkIdT_v2',
+    'HLT_Ele65_CaloIdVT_TrkIdT_v3',
+    'HLT_Ele65_CaloIdVT_TrkIdT_v4',
     'HLT_Ele80_CaloIdVT_TrkIdT_v2',
     'HLT_Ele80_CaloIdVT_TrkIdT_v3',
 
     # Tau
     #
-    # Single Tau
-    'HLT_MediumIsoPFTau35_Trk20_v1',
-    'HLT_MediumIsoPFTau35_Trk20_v5',
-    'HLT_MediumIsoPFTau35_Trk20_v6',
-
     # Double Tau
     'HLT_IsoPFTau40_IsoPFTau30_Trk5_eta2p1_v2',
 
@@ -118,8 +118,6 @@ if runOnData:
     'HLT_DoubleIsoPFTau45_Trk5_eta2p1_v3',
     'HLT_DoubleIsoPFTau45_Trk5_eta2p1_v7',
     'HLT_DoubleIsoPFTau45_Trk5_eta2p1_v8',
-    'HLT_DoubleIsoPFTau55_Trk5_eta2p1_v4',
-    'HLT_DoubleIsoPFTau55_Trk5_eta2p1_v5',
 
     # Tau + MET
     'HLT_IsoPFTau35_Trk20_MET45_v1',
@@ -131,9 +129,6 @@ if runOnData:
     'HLT_IsoPFTau35_Trk20_MET60_v4',
     'HLT_IsoPFTau35_Trk20_MET60_v6',
     'HLT_IsoPFTau35_Trk20_MET70_v2',
-    'HLT_IsoPFTau45_Trk20_MET60_v2',
-    'HLT_IsoPFTau45_Trk20_MET60_v3',
-    'HLT_IsoPFTau45_Trk20_MET60_v4',
 
     'HLT_MediumIsoPFTau35_Trk20_MET60_v1',
     'HLT_MediumIsoPFTau35_Trk20_MET60_v5',
@@ -156,6 +151,7 @@ if runOnData:
     'HLT_IsoMu15_LooseIsoPFTau20_v3',
     'HLT_IsoMu15_LooseIsoPFTau20_v4',
     'HLT_IsoMu15_LooseIsoPFTau20_v6',
+
     'HLT_IsoMu15_TightIsoPFTau20_v2',
     'HLT_IsoMu15_TightIsoPFTau20_v3',
     'HLT_IsoMu15_TightIsoPFTau20_v4',
@@ -164,9 +160,11 @@ if runOnData:
     'HLT_IsoMu15_eta2p1_LooseIsoPFTau20_v1',
     'HLT_IsoMu15_eta2p1_LooseIsoPFTau20_v5',
     'HLT_IsoMu15_eta2p1_LooseIsoPFTau20_v6',
+
     'HLT_IsoMu15_eta2p1_MediumIsoPFTau20_v1',
     'HLT_IsoMu15_eta2p1_MediumIsoPFTau20_v5',
     'HLT_IsoMu15_eta2p1_MediumIsoPFTau20_v6',
+
     'HLT_IsoMu15_eta2p1_TightIsoPFTau20_v1',
     'HLT_IsoMu15_eta2p1_TightIsoPFTau20_v5',
     'HLT_IsoMu15_eta2p1_TightIsoPFTau20_v6',
@@ -182,13 +180,12 @@ if runOnData:
     'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v8',
     'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v9',
     'HLT_Ele15_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TightIsoPFTau20_v2',
+
     'HLT_Ele18_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v2',
     'HLT_Ele18_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v3',
     'HLT_Ele18_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau20_v1',
     'HLT_Ele18_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TightIsoPFTau20_v2',
-    'HLT_Ele18_CaloIdVT_TrkIdT_MediumIsoPFTau20_v1',
-    'HLT_Ele18_CaloIdVT_TrkIdT_MediumIsoPFTau20_v5',
-    'HLT_Ele18_CaloIdVT_TrkIdT_MediumIsoPFTau20_v6',
+
     'HLT_Ele20_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau20_v1',
     'HLT_Ele20_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau20_v5',
     'HLT_Ele20_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau20_v6',
@@ -196,8 +193,6 @@ if runOnData:
     # Single Photon:
     #
     'HLT_Photon20_CaloIdVL_IsoL_v1',
-    'HLT_Photon30_CaloIdVL_IsoL_v8',
-    'HLT_Photon30_CaloIdVL_v7',
     'HLT_Photon50_CaloIdVL_IsoL_v1',
     'HLT_Photon75_CaloIdVL_IsoL_v1',
     'HLT_Photon75_CaloIdVL_IsoL_v2',
@@ -250,18 +245,13 @@ if runOnData:
     'HLT_DoubleMu7_v1',
     'HLT_DoubleMu7_v2',
 
-    'HLT_Mu13_Mu8_v2',
-    'HLT_Mu13_Mu8_v3',
-    'HLT_Mu13_Mu8_v4',
-    'HLT_Mu13_Mu8_v6',
-    'HLT_Mu13_Mu8_v7',
-    'HLT_Mu17_Mu8_v10',
-    'HLT_Mu17_Mu8_v11',
     'HLT_Mu17_Mu8_v2',
     'HLT_Mu17_Mu8_v3',
     'HLT_Mu17_Mu8_v4',
     'HLT_Mu17_Mu8_v6',
     'HLT_Mu17_Mu8_v7',
+    'HLT_Mu17_Mu8_v10',
+    'HLT_Mu17_Mu8_v11',
     'HLT_Mu17_TkMu8_v3',
     'HLT_Mu17_TkMu8_v4',
 
@@ -273,24 +263,25 @@ if runOnData:
     'HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v4',
     'HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v5',
     'HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v6',
-    'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v10',
+
     'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v5',
     'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v6',
     'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v7',
     'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v8',
     'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v9',
+    'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v10',
+
     'HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2',
     'HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v3',
     'HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v4',
     'HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v5',
 
+    'HLT_Ele32_CaloIdT_CaloIsoT_TrkIdT_TrkIsoT_Ele17_v1',
+
     # Double Photon:
     #
-    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v1',
-    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v2',
-    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v3',
-    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v4',
-    'HLT_Photon26_CaloIdXL_IsoXL_Photon18_CaloIdXL_IsoXL_v1',
+    'HLT_Photon26_IsoVL_Photon18_v1',
+    'HLT_Photon26_IsoVL_Photon18_v2',
     'HLT_Photon26_IsoVL_Photon18_IsoVL_v1',
     'HLT_Photon26_IsoVL_Photon18_IsoVL_v2',
     'HLT_Photon26_IsoVL_Photon18_IsoVL_v3',
@@ -298,30 +289,45 @@ if runOnData:
     'HLT_Photon26_IsoVL_Photon18_IsoVL_v5',
     'HLT_Photon26_IsoVL_Photon18_IsoVL_v6',
     'HLT_Photon26_IsoVL_Photon18_IsoVL_v7',
-    'HLT_Photon26_IsoVL_Photon18_v1',
-    'HLT_Photon26_IsoVL_Photon18_v2',
+
+    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v1',
+    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v2',
+    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v3',
+    'HLT_Photon26_CaloIdL_IsoVL_Photon18_v4',
+    'HLT_Photon26_CaloIdXL_IsoXL_Photon18_CaloIdXL_IsoXL_v1',
+
     'HLT_Photon32_CaloIdL_Photon26_CaloIdL_v1',
     'HLT_Photon32_CaloIdL_Photon26_CaloIdL_v2',
     'HLT_Photon32_CaloIdL_Photon26_CaloIdL_v3',
+
+    'HLT_Photon36_CaloIdL_IsoVL_Photon22_v1',
+    'HLT_Photon36_CaloIdL_IsoVL_Photon22_v2',
+    'HLT_Photon36_CaloIdL_IsoVL_Photon22_v3',
+    'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_v1',
+    'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_v2',
+    'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_v3',
     'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_IsoVL_v1',
     'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_IsoVL_v2',
     'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_IsoVL_v3',
     'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_IsoVL_v4',
     'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_IsoVL_v6',
     'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_IsoVL_v7',
-    'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_v1',
-    'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_v2',
-    'HLT_Photon36_CaloIdL_IsoVL_Photon22_CaloIdL_v3',
-    'HLT_Photon36_CaloIdL_IsoVL_Photon22_v1',
-    'HLT_Photon36_CaloIdL_IsoVL_Photon22_v2',
-    'HLT_Photon36_CaloIdL_IsoVL_Photon22_v3',
+
+    'HLT_Photon36_IsoVL_Photon22_v1',
+    'HLT_Photon36_IsoVL_Photon22_v2',
+    'HLT_Photon36_IsoVL_Photon22_v3',
+
     'HLT_Photon36_CaloIdL_Photon22_CaloIdL_v1',
     'HLT_Photon36_CaloIdL_Photon22_CaloIdL_v2',
     'HLT_Photon36_CaloIdL_Photon22_CaloIdL_v3',
     'HLT_Photon36_CaloIdL_Photon22_CaloIdL_v4',
-    'HLT_Photon36_IsoVL_Photon22_v1',
-    'HLT_Photon36_IsoVL_Photon22_v2',
-    'HLT_Photon36_IsoVL_Photon22_v3',
+
+    'HLT_Photon40_CaloIdL_Photon28_CaloIdL_v1',
+    'HLT_Photon40_CaloIdL_Photon28_CaloIdL_v2',
+    'HLT_Photon40_CaloIdL_Photon28_CaloIdL_v3',
+
+    'HLT_Photon44_CaloIdL_Photon34_CaloIdL_v1',
+    'HLT_Photon44_CaloIdL_Photon34_CaloIdL_v2',
 
     # Single Mu + Single Ele:
     #
@@ -331,14 +337,17 @@ if runOnData:
     'HLT_Mu8_Ele17_CaloIdL_v4',
     'HLT_Mu8_Ele17_CaloIdL_v5',
     'HLT_Mu8_Ele17_CaloIdL_v6',
+
     'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v1',
     'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v3',
     'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v4',
     'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v7',
     'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v8',
+
     'HLT_Mu10_Ele10_CaloIdL_v2',
     'HLT_Mu10_Ele10_CaloIdL_v3',
     'HLT_Mu10_Ele10_CaloIdL_v4',
+
     'HLT_Mu17_Ele8_CaloIdL_v1',
     'HLT_Mu17_Ele8_CaloIdL_v2',
     'HLT_Mu17_Ele8_CaloIdL_v3',
@@ -346,6 +355,7 @@ if runOnData:
     'HLT_Mu17_Ele8_CaloIdL_v5',
     'HLT_Mu17_Ele8_CaloIdL_v6',
     'HLT_Mu17_Ele8_CaloIdL_v8',
+
     'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v1',
     'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v3',
     'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v4',

@@ -27,17 +27,12 @@
 -F ~SC17
 -F ~Quad
 
--F ~DoubleEle10_CaloIdL_TrkIdVL_Ele
 -F ~Mu15_DoublePhoton
 -F ~Mu5_DoubleEle
--F ~Mu5_Ele8_CaloIdL_TrkIdVL_Ele
 -F ~Mu8_Photon
 -F ~Mu15_Photon
 -F ~DoubleMu5_Ele
--F ~Photon26_CaloIdL_IsoVL_Photon18_CaloIdL_IsoVL
 -F ~DoubleMu5_IsoMu
--F ~Photon20_CaloIdVT_IsoT_Ele
--F ~Mu5_Ele8_CaloIdT_TrkIdVL_Ele
 
 -F ~Jet370
 -F ~Jet800
@@ -47,7 +42,6 @@
 -F ~Mu100
 -F ~Mu200
 -F ~MET400
--F ~Ele45_CaloIdVT_TrkIdT
 -F ~IsoMu15_v
 -F ~Ele100
 -F ~Photon125
@@ -60,7 +54,14 @@
 -F ~DoublePhoton60
 -F ~DoublePhoton50
 -F ~DoublePhoton80
--F ~Photon40_CaloIdL_Photon28_CaloIdL
--F ~Photon44_CaloIdL_Photon34
--F ~Photon48_CaloIdL_Photon38
 -F ~HLT_IsoMu30_v
+-F ~Photon26_CaloIdL_IsoVL_Photon18_CaloIdL_IsoVL
+-F ~Photon48_CaloIdL_Photon38_CaloIdL
+-F ~IsoMu34_eta2p1_v
+-F ~Mu5_Ele8_CaloIdT_TrkIdVL_Ele8_CaloIdL_TrkIdVL
+-F ~Ele20_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_MediumIsoPFTau20
+-F ~Mu5_Ele8_CaloIdL_TrkIdVL_Ele
+-F ~IsoPFTau45_Trk20_MET60
+-F ~DoubleEle10_CaloIdL_TrkIdVL_Ele
+-F ~Mu5_Ele8_CaloIdL_TrkIdVL_Ele
+-F ~Photon20_CaloIdVT_IsoT_Ele
