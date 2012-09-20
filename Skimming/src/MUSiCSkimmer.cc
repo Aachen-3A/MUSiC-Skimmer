@@ -1444,22 +1444,6 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
    const std::vector<pat::Muon>& muons = *muonHandle;
 
-   // TODO: The following method is depricated and should be replaced with
-   // pat::muon::muonTrackFromMap( MuonTrackType ). The new method is only
-   // available for samples reprocessed with CMSSW 4_4_X+. So it should be
-   // implemented once Summer11 samples are not used anymore.
-   //
-   //get basic info for the refits
-   Handle <reco::TrackToTrackMap> tevMapH1;
-   Handle <reco::TrackToTrackMap> tevMapH2;
-   Handle <reco::TrackToTrackMap> tevMapH3;
-   iEvent.getByLabel("tevMuons", "default", tevMapH1);
-   const reco::TrackToTrackMap tevMap1 = *(tevMapH1.product());
-   iEvent.getByLabel("tevMuons", "firstHit", tevMapH2);
-   const reco::TrackToTrackMap tevMap2 = *(tevMapH2.product());
-   iEvent.getByLabel("tevMuons", "picky", tevMapH3);
-   const reco::TrackToTrackMap tevMap3 = *(tevMapH3.product());
-
    // count muons   
    int numMuonRec = 0;
    // loop over all pat::Muon's but only store GLOBAL MUONs
@@ -1566,9 +1550,9 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
          part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
 
-         // TODO: Depricated, see above.
          // Store information for "cocktail" high energy refit.
-         reco::TrackRef pmcTrack = muon::tevOptimized( *muon, tevMap1, tevMap2, tevMap3 );
+         reco::Muon::MuonTrackTypePair trackPair = muon::tevOptimized( *muon );
+         reco::TrackRef pmcTrack = trackPair.first;
          if( pmcTrack.isAvailable() ) {
             part->setUserRecord< bool >( "validCocktail", true );
             // Same as above but for cocktail
