@@ -26,7 +26,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     else:
         process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
 
-    process.load( 'Configuration.StandardSequences.GeometryPilot2_cff' )
+    process.load( 'Configuration.Geometry.GeometryPilot2_cff' )
     process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
 
     # Create an empty path because modules will be added by calling the
