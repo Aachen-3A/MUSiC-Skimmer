@@ -19,6 +19,7 @@
 
 // System include files.
 #include <iostream>
+#include <algorithm>    // std::set_intersection, std::set_difference
 
 // Message Logger for Debug etc.
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -232,11 +233,16 @@ MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
          trigger.results = InputTag( one_trigger.getParameter< string >( "results" ), "", trigger.process );
          trigger.event   = InputTag( one_trigger.getParameter< string >( "event" ),   "", trigger.process );
       }
-      
-      trigger.triggers_names = one_trigger.getParameter< vector< string > >("HLTriggers");
+
+      vstring const tmp_triggers = one_trigger.getParameter< vstring >( "HLTriggers" );
+      trigger.triggers_names = sstring( tmp_triggers.begin(), tmp_triggers.end() );
+
+      vstring const tmp_streams = one_trigger.getParameter< vstring >( "datastreams" );
+      trigger.datastreams = sstring( tmp_streams.begin(), tmp_streams.end() );
 
       if( not fGenOnly and trigger.triggers_names.size() == 0 ) {
-         throw cms::Exception( "Trigger error" ) << "No Trigger names found in configuration! This is only in 'GenOnly' mode allowed." << endl;
+         edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "No Trigger names found in configuration! "
+                                                    << "Using all (unprescaled) triggers in given datastreams.";
       }
 
       triggers.push_back( trigger );
@@ -264,7 +270,8 @@ MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
 
       filter.results = InputTag( one_filter.getParameter< string >( "results" ), "" );
 
-      filter.triggers_names = one_filter.getParameter< vector< string > >( "paths" );
+      vstring const tmp_paths = one_filter.getParameter< vstring >( "paths" );
+      filter.triggers_names = sstring( tmp_paths.begin(), tmp_paths.end() );
 
       filters.push_back( filter );
    }
@@ -409,7 +416,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
       //Trigger bits
       for( vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg ){
-         analyzeTrigger( iEvent, iSetup, RecEvtView, *trg );
+         analyzeTrigger( iEvent, iSetup, IsMC, RecEvtView, *trg );
       }
 
       //Filters more info see above.
@@ -981,43 +988,125 @@ void MUSiCSkimmer::analyzeRecRecoPFMET( edm::Event const &iEvent,
 }
 
 
-void MUSiCSkimmer::initializeTrigger( const edm::Event &event,
-                                      const edm::EventSetup &setup,
-                                      trigger_group &trigger,
-                                      const std::string &process
-                                      ) {
-   //read the new trigger config, test for error and whether something has changed
-   bool changed;
-   if( ! trigger.config.init( event.getRun(), setup, process, changed ) ){
-      throw cms::Exception( "TRIGGER ERROR" ) << "Initialization of trigger config failed.";
-   }
+std::map< std::string, bool > MUSiCSkimmer::initializeTrigger( edm::Event const &event,
+                                                               edm::EventSetup const &setup,
+                                                               trigger_group &trigger
+                                                               ) const {
+   // Store if the wanted datastreams were available in this trigger config.
+   // In some case, some of the "standard" datastreams (e.g. SingleMu) are not
+   // available. Such events should not be considered in later analysis. So we
+   // want to store that information.
+   std::map< std::string, bool > DSMap;
 
-   //the trigger config has actually changed, so read in the new one
-   if( changed ){
-      edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: HLT table changed in run " << event.run()
-                                                 << ", building new trigger map for process " << process;
-      //reset the map
-      trigger.trigger_infos.clear();
+   //reset the map
+   trigger.trigger_infos.clear();
 
-      for( vector<string>::const_iterator trg_name = trigger.triggers_names.begin(); trg_name != trigger.triggers_names.end(); ++trg_name ){
-         //get the number of the trigger path
-         unsigned int index = trigger.config.triggerIndex( *trg_name );
+   edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: Using trigger config '" << trigger.config.tableName() << "'";
 
-         //check if that's a valid number
-         if( index < trigger.config.size() ){
-            //it is, so store the name and the number
-            trigger_def trg;
-            trg.name = *trg_name;
-            trg.ID = index;
-            trg.active = true;
-            trigger.trigger_infos.push_back( trg );
-         } else {
-            //the number is invalid, the trigger path is not in the config
-            edm::LogWarning( "TRIGGERWARNING" ) << "In run " << event.run() << " trigger "<< *trg_name
-                                                << " not found in HLT config, not added to trigger map (so not used).";
+   // If the trigger list in the config is empty (Skimmer.triggers.HLT.HLTriggers)
+   // then get all (unprescaled) triggers from the given datastreams in this HLT config for each run.
+   if( trigger.triggers_names.empty() ) {
+
+      // If the list of datastreams in the config is empty, get all (unprescaled) triggers.
+      if( trigger.datastreams.empty() ) {
+         edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "No datastreams found in configuration! "
+                                                    << "Using all (unprescaled) triggers in HLT config.";
+        trigger.triggers_names = sstring( trigger.config.triggerNames().begin(),
+                                          trigger.config.triggerNames().end()
+                                          );
+      } else {
+         // Get all the datastreams (aka. datasets) that are available in
+         // the current HLT config. (Covert them to a set of strings.)
+         sstring const DSInThisConfig = sstring( trigger.config.datasetNames().begin(),
+                                                 trigger.config.datasetNames().end()
+                                                 );
+
+         // Get the intersection of the available and the wanted (from the config:
+         // Skimmer.triggers.HLT.datastreams) datastreams. Try to write only
+         // the datastreams that are in the HLT config and that we really want:
+         sstring DSintersect;
+         std::set_intersection( trigger.datastreams.begin(),
+                                trigger.datastreams.end(),
+                                DSInThisConfig.begin(),
+                                DSInThisConfig.end(),
+                                std::inserter( DSintersect, DSintersect.begin() )
+                                );
+
+         if( DSintersect.empty() ) {
+            throw cms::Exception( "Trigger Error" ) << "Cound not find any of the datastreams specified in "
+                                                    << "'Skimmer.triggers.HLT.datastreams'! "
+                                                    << "Please investigate!";
+         }
+
+         for( sstring::const_iterator DS = trigger.datastreams.begin(); DS != trigger.datastreams.end(); ++DS ) {
+            bool const found = DSintersect.find( *DS ) != DSintersect.end();
+            DSMap[ *DS ] = found;
+         }
+
+         // Get the difference of the available and the wanted (from the config:
+         // Skimmer.triggers.HLT.datastreams) datastreams. These datastreams
+         // have not been found, but we potentially wanted them:
+         sstring DSdifference;
+         std::set_difference( trigger.datastreams.begin(),
+                              trigger.datastreams.end(),
+                              DSInThisConfig.begin(),
+                              DSInThisConfig.end(),
+                              std::inserter( DSdifference, DSdifference.begin() )
+                              );
+
+         // If any of the datastreams were not found in the HLT config prompt a warning.
+         if( not DSdifference.empty() ) {
+            // If any of the datastreams have not been found in the HLT config prompt a warning.
+            for( sstring::const_iterator DS = DSdifference.begin(); DS != DSdifference.end(); ++DS ) {
+               edm::LogWarning( "TRIGGERWARNING" ) << "In run " << event.run() << " dataset " << *DS
+                                                   << " not found in HLT config (so not used).";
+            }
+         }
+
+         // Get the datasetContent, i.e., HLT path names, from the list of datastreams.
+         for( sstring::const_iterator DS = DSintersect.begin(); DS != DSintersect.end(); ++DS ) {
+            vstring const &triggerPaths = trigger.config.datasetContent( *DS );
+            for( vstring::const_iterator triggerPath = triggerPaths.begin(); triggerPath != triggerPaths.end(); ++triggerPath ) {
+               trigger.triggers_names.insert( *triggerPath );
+            }
+         }
+
+         // Remove all Trigger names that do not begin with the string given
+         // by the PSet name in MUSiCSkimmer_cfi.py, e.g., "HLT".
+         sstring::const_iterator triggerPath = trigger.triggers_names.begin();
+         while( triggerPath != trigger.triggers_names.end() ) {
+            size_t const pos = ( *triggerPath ).find( trigger.name );
+
+            if( pos != 0 ) {
+               // Erasing the element invalidates the iterator, so incemet it
+               // AFTER passing it to the function!
+               // (set::erase is different from vector::erase!)
+               trigger.triggers_names.erase( triggerPath++ );
+            } else ++triggerPath;
          }
       }
    }
+
+   for( sstring::const_iterator trg_name = trigger.triggers_names.begin(); trg_name != trigger.triggers_names.end(); ++trg_name ) {
+      //get the number of the trigger path
+      unsigned int index = trigger.config.triggerIndex( *trg_name );
+
+      //check if that's a valid number
+      if( index < trigger.config.size() ){
+         //it is, so store the name and the number
+         trigger_def trg;
+         trg.name = *trg_name;
+         trg.ID = index;
+         trg.active = true;
+         trigger.trigger_infos.push_back( trg );
+      } else {
+         //the number is invalid, the trigger path is not in the config
+         edm::LogWarning( "TRIGGERWARNING" ) << "In run " << event.run() << " trigger "<< *trg_name
+                                             << " not found in HLT config, not added to trigger map (so not used).";
+      }
+   }
+
+   return DSMap;
 }
 
 
@@ -1026,7 +1115,17 @@ void MUSiCSkimmer::analyzeFilter( const edm::Event &iEvent,
                                   pxl::EventView *EvtView,
                                   trigger_group &filter
                                   ) {
-   initializeTrigger( iEvent, iSetup, filter, filter.process );
+   // Check if the trigger config, test for error and read it, if something changed!
+   bool changed = true;
+   if( not filter.config.init( iEvent.getRun(), iSetup, filter.process, changed ) ) {
+      throw cms::Exception( "FILTERS ERROR" ) << "Initialization of filter config failed.";
+   }
+
+   if( changed ) {
+      edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
+                                                 << ", building new trigger map for process " << filter.process;
+      initializeTrigger( iEvent, iSetup, filter );
+   }
 
    edm::Handle< edm::TriggerResults > filterResultsHandle;
    iEvent.getByLabel( filter.results, filterResultsHandle );
@@ -1053,6 +1152,7 @@ void MUSiCSkimmer::analyzeFilter( const edm::Event &iEvent,
 
 void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
                                    const edm::EventSetup &iSetup,
+                                   const bool &isMC,
                                    pxl::EventView* EvtView,
                                    trigger_group &trigger
                                    ){
@@ -1069,8 +1169,24 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
       process = trigger.results.process();
       iEvent.getByLabel( trigger.results, triggerResultsHandle );
    }
-   //initialize the trigger config
-   initializeTrigger( iEvent, iSetup, trigger, process );
+
+   // Check if the trigger config, test for error and read it, if something changed!
+   bool changed = true;
+   if( not trigger.config.init( iEvent.getRun(), iSetup, process, changed ) ) {
+      throw cms::Exception( "TRIGGER ERROR" ) << "Initialization of trigger config failed.";
+   }
+
+   std::map< std::string, bool > availableDS;
+   if( changed ) {
+      edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
+                                                 << ", building new trigger map for process " << process;
+      // Initialize the trigger config.
+      availableDS = initializeTrigger( iEvent, iSetup, trigger );
+   }
+
+   for( std::map< std::string, bool >::const_iterator DS = availableDS.begin(); DS != availableDS.end(); ++DS ) {
+      EvtView->setUserRecord< bool >( "DS_" + (*DS).first, (*DS).second );
+   }
 
    //loop over selected trigger names
    for( vector< trigger_def >::iterator trig = trigger.trigger_infos.begin(); trig != trigger.trigger_infos.end(); ++trig ){
@@ -1085,8 +1201,12 @@ void MUSiCSkimmer::analyzeTrigger( const edm::Event &iEvent,
       //check that the trigger was run and not in error
       if( wasrun && !error ){
          //get the current prescale value
-         prescale = trigger.config.prescaleValue( iEvent, iSetup, trig->name );
-         
+
+         // In MC L1 and HLT prescales are always = 1!
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideHighLevelTrigger?rev=118#HLT_Prescales
+         if( isMC ) prescale = 1;
+         else       prescale = trigger.config.prescaleValue( iEvent, iSetup, trig->name );
+
          //we can only use unprescaled triggers
          if( prescale == 1 ) {
             //unprescaled, so store it

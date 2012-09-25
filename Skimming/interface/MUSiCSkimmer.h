@@ -49,6 +49,7 @@ class PFIsolationEstimator;
 
 // STL
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -97,6 +98,8 @@ public:
   
 
  private:
+   typedef std::set< std::string > sstring;
+   typedef std::vector< std::string > vstring;
    typedef std::vector< edm::InputTag > VInputTag;
    // for PF isolation
    typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
@@ -114,7 +117,9 @@ public:
       edm::InputTag results;
       edm::InputTag event;
       HLTConfigProvider config;
-      std::vector< std::string > triggers_names;
+      // std::set because duplicates make no sense here.
+      sstring triggers_names;
+      sstring datastreams;
       std::vector< trigger_def > trigger_infos;
    };
 
@@ -135,12 +140,11 @@ public:
                                ) const;
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
-   
-   virtual void initializeTrigger( const edm::Event &event,
-                                   const edm::EventSetup &setup,
-                                   trigger_group &trigger,
-                                   const std::string &process
-                                   );
+
+   virtual std::map< std::string, bool > initializeTrigger( edm::Event const &event,
+                                                            edm::EventSetup const &setup,
+                                                            trigger_group &trigger
+                                                            ) const;
 
    virtual void analyzeFilter( const edm::Event &iEvent,
                                const edm::EventSetup &iSetup,
@@ -150,6 +154,7 @@ public:
 
    virtual void analyzeTrigger( const edm::Event &iEvent,
                                 const edm::EventSetup &iSetup,
+                                const bool &isMC,
                                 pxl::EventView *EvtView,
                                 trigger_group &trigger
                                 );

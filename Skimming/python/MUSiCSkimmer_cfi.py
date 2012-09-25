@@ -95,10 +95,28 @@ Skimmer = cms.EDAnalyzer(
             results = cms.string('TriggerResults'),
             event   = cms.string('hltTriggerSummaryAOD'),
 
-            # Triggers must be defined in the actual *cfg.py.
-            # Examples in $CMSSW_BASE/src/MUSiCProject/Skimming/test/configs
-            #
-            HLTriggers = cms.vstring()
+            # A list of triggers can be defined in the actual *cfg.py.
+            # Otherwise all unprescaled triggers from the HLT config will
+            # be used for each run.
+            HLTriggers = cms.vstring(),
+            # Only triggers from datastreams whose name is given in the following list
+            # will be considered. Make sure to update this list regularly.
+            datastreams = cms.vstring( 'BTag',
+                                       'DoubleElectron',
+                                       'DoubleMu',
+                                       'DoublePhoton',
+                                       'Jet',
+                                       'JetHT',
+                                       'MET',
+                                       'METBTag',
+                                       'MuEG',
+                                       'Photon',
+                                       'SingleElectron',
+                                       'SingleMu',
+                                       'SinglePhoton',
+                                       'Tau',
+                                       'TauPlusX',
+                                       ),
             ),
         StoreL3Objects = cms.untracked.bool(False)
         ),
