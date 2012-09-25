@@ -526,13 +526,8 @@ def addMuonPFCandidateFilter( process ):
     process.Skimmer.filterlist.append( 'p_muonpfcandidatefilter' )
 
 
-# Make sure you check out this user code:
-#   cvs co -r Seema11Apr12_52X_V1 -d SandBox/Skims UserCode/seema/SandBox/Skims
-# For info & code see this Twiki page:
-#   https://twiki.cern.ch/twiki/bin/view/CMS/SusyRA2NJetsInData2011#EB_or_EE_Xtals_with_large_laser
-#
 def addECALLaserCorrFilter( process ):
-    process.load( 'SandBox.Skims.ecalLaserCorrFilter_cfi' )
+    process.load( 'RecoMET.METFilters.ecalLaserCorrFilter_cfi' )
 
     process.p_ecallasercorrfilter = cms.Path( process.ecalLaserCorrFilter )
     process.Skimmer.filterlist.append( 'p_ecallasercorrfilter' )
