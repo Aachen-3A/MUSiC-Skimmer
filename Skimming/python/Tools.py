@@ -449,7 +449,11 @@ def addHCALnoiseFilter( process ):
         minNumIsolatedNoiseChannels = cms.int32( 9999 ),
         minIsolatedNoiseSumE = cms.double( 9999 ),
         minIsolatedNoiseSumEt = cms.double( 9999 ),
-        useTS4TS5 = cms.bool( True )
+        useTS4TS5 = cms.bool( True ),
+        IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(True),
+        jetlabel = cms.InputTag('ak5PFJets'),
+        maxjetindex = cms.int32(0),
+        maxNHF = cms.double(0.9)
         )
 
     process.p += process.HBHENoiseFilterResultProducer
