@@ -227,11 +227,11 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
 #
 def configureJEC( process, runOnData ):
     if runOnData:
-        jecGlobalTag = cms.string( 'GR_R_52_V7C::All' )
-        jecVersion = 7
+        jecGlobalTag = cms.string( 'GR_R_53_V5::All' )
+        jecVersion = 5
     else:
-        jecGlobalTag = cms.string( 'START52_V11::All' )
-        jecVersion = 11
+        jecGlobalTag = cms.string( 'START53_V7::All' )
+        jecVersion = 7
     GlobalTag = process.GlobalTag.globaltag
     version = int( str( GlobalTag ).split( 'V' )[1].split( ':' )[0] )
     if version < jecVersion:
