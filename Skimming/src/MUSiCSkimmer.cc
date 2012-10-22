@@ -1309,7 +1309,7 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord< int >( "PixelLayersWithMeas",   muontrack->hitPattern().pixelLayersWithMeasurement() );
 
          //store the number of muon stations containing segments
-         part->setUserRecord< int > ( "NMachedStations", muon->numberOfMatchedStations() );
+         part->setUserRecord< int > ( "NMatchedStations", muon->numberOfMatchedStations() );
 
          // Store the pt and error from the global track.
          // ( qoverpError() is the same as error(0) for a track. )
