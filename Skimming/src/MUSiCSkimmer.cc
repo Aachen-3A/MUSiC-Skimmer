@@ -1506,8 +1506,14 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
          pxlEle->setUserRecord< double >( "SCeta",  patEle->caloPosition().eta() );
          pxlEle->setUserRecord< double >( "SCEErr", patEle->ecalEnergyError() );
 
-         // Variables for isolation:
+         // Isolation variables:
          //
+         // The following are there to have the same variable naming for all
+         // particles with isolation.
+         pxlEle->setUserRecord< double >( "CaloIso", patEle->caloIso() );
+         pxlEle->setUserRecord< double >( "TrkIso",  patEle->trackIso() );
+         pxlEle->setUserRecord< double >( "ECALIso", patEle->ecalIso() );
+         pxlEle->setUserRecord< double >( "HCALIso", patEle->hcalIso() );
          // Track iso deposit with electron footprint removed.
          pxlEle->setUserRecord< double >( "TrkIso03", patEle->dr03TkSumPt() );
          pxlEle->setUserRecord< double >( "TrkIso04", patEle->dr04TkSumPt() ); // (Identical to trackIso()!)
@@ -1871,23 +1877,29 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
          // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
          //
 
-         // Isolation variables.
+         // Isolation variables:
          //
+         // The following are there to have the same variable naming for all
+         // particles with isolation.
+         pxlPhoton->setUserRecord< double >( "CaloIso", patPhoton->caloIso() );
+         pxlPhoton->setUserRecord< double >( "TrkIso",  patPhoton->trackIso() );
+         pxlPhoton->setUserRecord< double >( "ECALIso", patPhoton->ecalIso() );
+         pxlPhoton->setUserRecord< double >( "HCALIso", patPhoton->hcalIso() );
          // Sum of track pT in a hollow cone of outer radius, inner radius.
-         pxlPhoton->setUserRecord< double >( "ID_TrkIso03", patPhoton->trkSumPtHollowConeDR03() );
-         pxlPhoton->setUserRecord< double >( "ID_TrkIso",   patPhoton->trkSumPtHollowConeDR04() );
+         pxlPhoton->setUserRecord< double >( "TrkIsoHollow03", patPhoton->trkSumPtHollowConeDR03() );
+         pxlPhoton->setUserRecord< double >( "TrkIsoHollow04", patPhoton->trkSumPtHollowConeDR04() );
          // Sum of track pT in a cone of dR.
-         pxlPhoton->setUserRecord< double >( "ID_TrkIsoSolid03", patPhoton->trkSumPtSolidConeDR03() );
-         pxlPhoton->setUserRecord< double >( "ID_TrkIsoSolid",   patPhoton->trkSumPtSolidConeDR04() ); // (Identical to TrkIso()!)
+         pxlPhoton->setUserRecord< double >( "TrkIso03", patPhoton->trkSumPtSolidConeDR03() );
+         pxlPhoton->setUserRecord< double >( "TrkIso04", patPhoton->trkSumPtSolidConeDR04() ); // (Identical to trackIso()!)
          // EcalRecHit isolation.
-         pxlPhoton->setUserRecord< double >( "ID_ECALIso03", patPhoton->ecalRecHitSumEtConeDR03() );
-         pxlPhoton->setUserRecord< double >( "ID_ECALIso",   patPhoton->ecalRecHitSumEtConeDR04() ); // (Identical to ecalIso()!)
+         pxlPhoton->setUserRecord< double >( "ECALIso03", patPhoton->ecalRecHitSumEtConeDR03() );
+         pxlPhoton->setUserRecord< double >( "ECALIso04", patPhoton->ecalRecHitSumEtConeDR04() ); // (Identical to ecalIso()!)
          // HcalDepth1Tower isolation.
-         pxlPhoton->setUserRecord< double >( "ID_HCALIso03", patPhoton->hcalTowerSumEtConeDR03() );
-         pxlPhoton->setUserRecord< double >( "ID_HCALIso",   patPhoton->hcalTowerSumEtConeDR04() ); // (Identical to hcalIso()!)
+         pxlPhoton->setUserRecord< double >( "HCALIso03", patPhoton->hcalTowerSumEtConeDR03() );
+         pxlPhoton->setUserRecord< double >( "HCALIso04", patPhoton->hcalTowerSumEtConeDR04() ); // (Identical to hcalIso()!)
          // Number of tracks in a cone of dR.
          pxlPhoton->setUserRecord< int >( "TrackNum03", patPhoton->nTrkSolidConeDR03() );
-         pxlPhoton->setUserRecord< int >( "TrackNum",   patPhoton->nTrkSolidConeDR04() );
+         pxlPhoton->setUserRecord< int >( "TrackNum04", patPhoton->nTrkSolidConeDR04() );
 
          // Calorimeter information.
          //
