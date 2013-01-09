@@ -227,16 +227,17 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
 #
 def configureJEC( process, runOnData ):
     if runOnData:
-        jecGlobalTag = cms.string( 'GR_R_53_V5::All' )
-        jecVersion = 5
+        # Newest GT for PromptReco data.
+        # This is only a place holder for the GT which is defined by the Ecal
+        # laser correction filter in music_crab.py
+        jecGlobalTag = cms.string( 'GR_R_53_V6::All' )
     else:
-        jecGlobalTag = cms.string( 'START53_V7::All' )
-        jecVersion = 7
+        # Newest GT for CMSSW_5_3_x MC.
+        jecGlobalTag = cms.string( 'START53_V16::All' )
+
     GlobalTag = process.GlobalTag.globaltag
-    version = int( str( GlobalTag ).split( 'V' )[1].split( ':' )[0] )
-    if version < jecVersion:
-        process.GlobalTag.globaltag = jecGlobalTag
-        print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
+    process.GlobalTag.globaltag = jecGlobalTag
+    print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
 
 
 # PF2PAT and MET corrections build up on each other, so everything is defined in this one function.
