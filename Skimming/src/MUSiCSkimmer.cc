@@ -2389,16 +2389,21 @@ void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
       // Initialise isolator.
       //
       PFIsolationEstimator isolator;
-      isolator.initializeElectronIsolation( kTRUE );
       isolator.setConeSize( 0.3 );
 
       // Analysing electrons:
       //
-      if( ref->isElectron() ) isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
+      if( ref->isElectron() ) {
+         isolator.initializeElectronIsolation( kTRUE );
+         isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
+      }
 
       // Analysing photons:
       //
-      if( ref->isPhoton() ) isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
+      if( ref->isPhoton() ) {
+         isolator.initializePhotonIsolation( kTRUE );
+         isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
+      }
 
       part.setUserRecord< double >( "PFIso03ChargedHadronFromIsolator", isolator.getIsolationCharged() );
       part.setUserRecord< double >( "PFIso03NeutralHadronFromIsolator", isolator.getIsolationNeutral() );
