@@ -1290,6 +1290,12 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          reco::TrackRef trackerTrack = muon->innerTrack();
          reco::TrackRef outerTrack = muon->outerTrack();
 
+         // Need chi^2 and n.d.f. to calculate fit probability.
+         part->setUserRecord< double >( "chi2", muontrack->chi2() );
+         part->setUserRecord< double >( "ndof", muontrack->ndof() );
+
+         // Keep normalized chi^2 for backward compatibility.
+         // TODO: Remove 'NormChi2' variable, once everything is switched to those above.
          part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2());
 
          // Store info from HitPattern of the global tracker.
