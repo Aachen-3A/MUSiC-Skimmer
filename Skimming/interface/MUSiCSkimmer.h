@@ -146,7 +146,8 @@ public:
                                      const bool &MC,
                                      EcalClusterLazyTools &lazyTools,
                                      std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                                     const edm::ESHandle< CaloGeometry > &geo
+                                     const edm::ESHandle< CaloGeometry > &geo,
+                                     const double &rhoFastJet25
                                      );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
    virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
@@ -155,7 +156,8 @@ public:
                                   const bool &MC,
                                   EcalClusterLazyTools &lazyTools,
                                   std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                                  const edm::ESHandle< CaloGeometry > &geo
+                                  const edm::ESHandle< CaloGeometry > &geo,
+                                  const double &rhoFastJet25
                                   );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
@@ -182,6 +184,7 @@ public:
    template< typename T > void particleFlowBasedIsolation( const edm::Event &iEvent,
                                                            const std::vector< edm::InputTag > &inputTagIsoValPFId,
                                                            const edm::Ref< T > &ref,
+                                                           const double &rhoFastJet25,
                                                            pxl::Particle &part,
                                                            const bool &useIsolator = true ) const;
 
@@ -198,7 +201,6 @@ public:
    // Generator 
    std::string fgenParticleCandidatesLabel;
    std::string fMETMCLabel;
-   double m_rhoFastJet;
    // HCAL Helper for "new" H/E and HCAL isolation.
    ElectronHcalHelper *m_hcalHelper;
    std::string fVertexRecoLabel;
