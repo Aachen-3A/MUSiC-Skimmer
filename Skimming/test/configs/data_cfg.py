@@ -245,6 +245,11 @@ if runOnData:
     'HLT_DoubleMu7_v1',
     'HLT_DoubleMu7_v2',
 
+    'HLT_Mu13_Mu8_v2',
+    'HLT_Mu13_Mu8_v3',
+    'HLT_Mu13_Mu8_v4',
+    'HLT_Mu13_Mu8_v6',
+    'HLT_Mu13_Mu8_v7',
     'HLT_Mu17_Mu8_v2',
     'HLT_Mu17_Mu8_v3',
     'HLT_Mu17_Mu8_v4',
