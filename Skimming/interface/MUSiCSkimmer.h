@@ -45,6 +45,7 @@ class CaloGeometry;
 class ElectronHcalHelper;
 class EcalClusterLazyTools;
 class ParticleMatcher;
+class PFIsolationEstimator;
 
 // STL
 #include <map>
@@ -75,6 +76,9 @@ class ParticleMatcher;
 // Private collection defintions.
 #include "MUSiCProject/Skimming/interface/collection_def.h"
 
+// EGamma stuff.
+#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
+
 // PXL stuff
 // Has to be included as the last header otherwise there will be a warning concerning the
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
@@ -93,6 +97,8 @@ public:
   
 
  private:
+   // for PF isolation
+   typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
    //information about one single trigger
    struct trigger_def {
       std::string name;
@@ -147,6 +153,8 @@ public:
                                      EcalClusterLazyTools &lazyTools,
                                      std::map< const reco::Candidate*, pxl::Particle* > &genmap,
                                      const edm::ESHandle< CaloGeometry > &geo,
+                                     const edm::Handle< reco::VertexCollection > &vertices,
+                                     const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
                                      const double &rhoFastJet25
                                      );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
@@ -157,6 +165,8 @@ public:
                                   EcalClusterLazyTools &lazyTools,
                                   std::map< const reco::Candidate*, pxl::Particle* > &genmap,
                                   const edm::ESHandle< CaloGeometry > &geo,
+                                  const edm::Handle< reco::VertexCollection > &vertices,
+                                  const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
                                   const double &rhoFastJet25
                                   );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
@@ -181,12 +191,16 @@ public:
    // Generic function to write ParticleFlow based isolation into (PXL) photons and
    // electrons. Could be extended to other particles as well.
    //
-   template< typename T > void particleFlowBasedIsolation( const edm::Event &iEvent,
-                                                           const std::vector< edm::InputTag > &inputTagIsoValPFId,
-                                                           const edm::Ref< T > &ref,
-                                                           const double &rhoFastJet25,
-                                                           pxl::Particle &part,
-                                                           const bool &useIsolator = true ) const;
+   template< typename T >
+   void particleFlowBasedIsolation( IsoDepositVals const &isoValPFId,
+                                    PFIsolationEstimator *isolator,
+                                    edm::Handle< reco::VertexCollection > const &vertices,
+                                    edm::Handle< reco::PFCandidateCollection > const &pfCandidates,
+                                    edm::Ref< T > const &ref,
+                                    double const &rhoFastJet25,
+                                    pxl::Particle &part,
+                                    bool const useIsolator = true
+                                    ) const;
 
    // ----------member data ---------------------------
 
@@ -213,8 +227,6 @@ public:
    std::string fElectronRecoLabel;
    // GSF Electrons for vetoing.
    edm::InputTag m_gsfElectronsTag;
-   // for PF isolation
-   typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
    std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;
    std::string m_eleEffAreaTargetLabel;
    // Photon
@@ -252,6 +264,12 @@ public:
       evolvepdf_(mx, mQ, f);
       return f[fl+6];
    };
+
+   PFIsolationEstimator* m_eleIsolator;
+   PFIsolationEstimator* m_phoIsolator;
+
+   ElectronEffectiveArea::ElectronEffectiveAreaTarget m_eleEffAreaTarget;
+   ElectronEffectiveArea::ElectronEffectiveAreaType m_eleEffAreaType;
 
    //cuts
    double min_muon_pt,

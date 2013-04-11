@@ -61,7 +61,6 @@
 
 // EGamma stuff.
 #include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
-#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
@@ -299,7 +298,27 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
    PV_maxZ = cut_pset.getParameter< double >( "PV_maxZ" );
    PV_maxR = cut_pset.getParameter< double >( "PV_maxR" );
 
+   // Initialise isolators.
+   // Alternative way to compute PF based isolation for photons and electrons.
+   m_eleIsolator = new PFIsolationEstimator();
+   m_eleIsolator->setConeSize( 0.3 );
+   m_eleIsolator->initializeElectronIsolation( kTRUE );
 
+   m_phoIsolator = new PFIsolationEstimator();
+   m_phoIsolator->setConeSize( 0.3 );
+   m_phoIsolator->initializePhotonIsolation( kTRUE );
+
+   // PU corrected isolation for electrons, according to:
+   // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation#Example_for_photons
+   // http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/ElectronIsoAnalyzer.cc
+   if     ( m_eleEffAreaTargetLabel == "NoCorr"     ) m_eleEffAreaTarget = ElectronEffectiveArea::kEleEANoCorr;
+   else if( m_eleEffAreaTargetLabel == "Data2011"   ) m_eleEffAreaTarget = ElectronEffectiveArea::kEleEAData2011;
+   else if( m_eleEffAreaTargetLabel == "Data2012"   ) m_eleEffAreaTarget = ElectronEffectiveArea::kEleEAData2012;
+   else if( m_eleEffAreaTargetLabel == "Summer11MC" ) m_eleEffAreaTarget = ElectronEffectiveArea::kEleEASummer11MC;
+   else if( m_eleEffAreaTargetLabel == "Fall11MC"   ) m_eleEffAreaTarget = ElectronEffectiveArea::kEleEAFall11MC;
+   else throw cms::Exception( "Configuration" ) << "Unknown effective area " << m_eleEffAreaTargetLabel << endl;
+
+   m_eleEffAreaType = ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03;
 
    Matcher = new ParticleMatcher();
    fNumEvt=0;
@@ -309,6 +328,8 @@ MUSiCSkimmer::MUSiCSkimmer(const edm::ParameterSet& iConfig) : fFileName(iConfig
 
 MUSiCSkimmer::~MUSiCSkimmer()
 {
+   delete m_eleIsolator;
+   delete m_phoIsolator;
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
    delete Matcher;
@@ -366,6 +387,15 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    }
    // store Rec Objects only if requested
    if (!fGenOnly) {
+      // We need the PFCandidates later for isolation computation, so get it here once
+      // per event!
+      Handle< reco::PFCandidateCollection > pfCandidates;
+      iEvent.getByLabel( m_particleFlowTag, pfCandidates );
+
+      // Same for the vertices.
+      Handle< reco::VertexCollection > vertices;
+      iEvent.getByLabel( fVertexRecoLabel, vertices );
+
       // Median pt per area for each event.
       // See also:
       // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection#Rho_for_2011_Effective_Areas
@@ -415,7 +445,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTaus( iEvent, RecEvtView, IsMC, genmap );
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
-      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, *rho25 );
+      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
       }
@@ -423,7 +453,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
          analyzeRecMET( iEvent, RecEvtView, *MET_info );
       }
       analyzeHCALNoise(iEvent, RecEvtView);
-      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, *rho25 );
+      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
    }
 
    if (IsMC && !fGenOnly){
@@ -1467,6 +1497,8 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                         EcalClusterLazyTools &lazyTools,
                                         map< const reco::Candidate*, pxl::Particle*> &genmap,
                                         const ESHandle< CaloGeometry > &geo,
+                                        const Handle< reco::VertexCollection > &vertices,
+                                        const Handle< reco::PFCandidateCollection > &pfCandidates,
                                         const double &rhoFastJet25
                                         ) {
    int numEleRec = 0;
@@ -1484,6 +1516,15 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
 
    Handle< reco::ConversionCollection > conversionsHandle;
    iEvent.getByLabel( m_conversionsTag, conversionsHandle );
+
+   const unsigned int numIsoVals = m_inputTagIsoValElectronsPFId.size();
+
+   // typedef in MUSiCSkimmer.h
+   IsoDepositVals eleIsoValPFId( numIsoVals );
+
+   for( unsigned int i = 0; i < numIsoVals; ++i ) {
+      iEvent.getByLabel( m_inputTagIsoValElectronsPFId.at( i ), eleIsoValPFId.at( i ) );
+   }
 
    for( vector< pat::Electron>::const_iterator patEle = patElectrons.begin(); patEle != patElectrons.end(); ++patEle ) {
       if( Ele_cuts( patEle ) ) {
@@ -1720,7 +1761,14 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                                       << "(no. " << numEleAll << ")!";
          }
 
-         particleFlowBasedIsolation( iEvent, m_inputTagIsoValElectronsPFId, eleRef, rhoFastJet25, *pxlEle );
+         particleFlowBasedIsolation( eleIsoValPFId,
+                                     m_eleIsolator,
+                                     vertices,
+                                     pfCandidates,
+                                     eleRef,
+                                     rhoFastJet25,
+                                     *pxlEle
+                                     );
 
          // Store PAT matching info if MC. FIXME: Do we still use this?
          if( MC ) {
@@ -1834,6 +1882,8 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                      EcalClusterLazyTools &lazyTools,
                                      map< const reco::Candidate*, pxl::Particle* > &genmap,
                                      const ESHandle< CaloGeometry > &geo,
+                                     const Handle< reco::VertexCollection > &vertices,
+                                     const Handle< reco::PFCandidateCollection > &pfCandidates,
                                      const double &rhoFastJet25
                                      ) {
    // Get Photon Collection.
@@ -1852,6 +1902,15 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
 
    Handle< reco::GsfElectronCollection > electronsHandle;
    iEvent.getByLabel( m_gsfElectronsTag, electronsHandle );
+
+   const unsigned int numIsoVals = m_inputTagIsoValPhotonsPFId.size();
+
+   // typedef in MUSiCSkimmer.h
+   IsoDepositVals phoIsoValPFId( numIsoVals );
+
+   for( unsigned int i = 0; i < numIsoVals; ++i ) {
+      iEvent.getByLabel( m_inputTagIsoValPhotonsPFId.at( i ), phoIsoValPFId.at( i ) );
+   }
 
    int numGammaRec = 0;
    int numGammaAll = 0;
@@ -2029,7 +2088,14 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                                       << "(no. " << numGammaAll << ")!";
          }
 
-         particleFlowBasedIsolation( iEvent, m_inputTagIsoValPhotonsPFId, phoRef, rhoFastJet25, *pxlPhoton );
+         particleFlowBasedIsolation( phoIsoValPFId,
+                                     m_phoIsolator,
+                                     vertices,
+                                     pfCandidates,
+                                     phoRef,
+                                     rhoFastJet25,
+                                     *pxlPhoton
+                                     );
 
          // Store PAT matching info if MC. FIXME: Do we still use this?
          if( MC ) {
@@ -2324,22 +2390,17 @@ double MUSiCSkimmer::IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, 
 // (See also: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation)
 //
 template< typename T >
-void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
-                                               const vector< InputTag > &inputTagIsoValPFId,
-                                               const Ref< T > &ref,
-                                               const double &rhoFastJet25,
+void MUSiCSkimmer::particleFlowBasedIsolation( IsoDepositVals const &isoValPFId,
+                                               PFIsolationEstimator *isolator,
+                                               Handle< reco::VertexCollection > const &vertices,
+                                               Handle< reco::PFCandidateCollection > const &pfCandidates,
+                                               Ref< T > const &ref,
+                                               double const &rhoFastJet25,
                                                pxl::Particle &part,
-                                               const bool &useIsolator ) const {
-
-   const size_t numIsoVals = inputTagIsoValPFId.size();
-
-   // typedef in MUSiCSkimmer.h
-   IsoDepositVals isoValPFId( numIsoVals );
-
-   for( size_t i = 0; i < numIsoVals; ++i ) {
-      iEvent.getByLabel( inputTagIsoValPFId.at( i ), isoValPFId.at( i ) );
-   }
-
+                                               bool const useIsolator
+                                               ) const {
+   // The first method works but is NOT recommended for photons!
+   // Instead use the alternative method with PFIsolationEstimator.
    const double pfIsoCharged = ( *isoValPFId.at( 0 ) )[ ref ];
    const double pfIsoPhoton  = ( *isoValPFId.at( 1 ) )[ ref ];
    const double pfIsoNeutral = ( *isoValPFId.at( 2 ) )[ ref ];
@@ -2349,65 +2410,29 @@ void MUSiCSkimmer::particleFlowBasedIsolation( const Event &iEvent,
    part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
 
    // PU corrected isolation for electrons, according to:
-   // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation#Example_for_photons
    // http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/ElectronIsoAnalyzer.cc
-   //
    if( ref->isElectron() ) {
-      ElectronEffectiveArea::ElectronEffectiveAreaTarget eleEffAreaTarget;
-      if     ( m_eleEffAreaTargetLabel == "NoCorr"     ) eleEffAreaTarget = ElectronEffectiveArea::kEleEANoCorr;
-      else if( m_eleEffAreaTargetLabel == "Data2011"   ) eleEffAreaTarget = ElectronEffectiveArea::kEleEAData2011;
-      else if( m_eleEffAreaTargetLabel == "Data2012"   ) eleEffAreaTarget = ElectronEffectiveArea::kEleEAData2012;
-      else if( m_eleEffAreaTargetLabel == "Summer11MC" ) eleEffAreaTarget = ElectronEffectiveArea::kEleEASummer11MC;
-      else if( m_eleEffAreaTargetLabel == "Fall11MC"   ) eleEffAreaTarget = ElectronEffectiveArea::kEleEAFall11MC;
-      else throw cms::Exception( "Configuration" ) << "Unknown effective area " << m_eleEffAreaTargetLabel << endl;
+      const double absEta  = fabs( ref->superCluster()->eta() );
+      const double effArea = ElectronEffectiveArea::GetElectronEffectiveArea( m_eleEffAreaType, absEta, m_eleEffAreaTarget );
 
-      const ElectronEffectiveArea::ElectronEffectiveAreaType eleEffAreaGammaPlusNeutralHad = ElectronEffectiveArea::kEleGammaAndNeutralHadronIso03;
-
-      const double absEta           = fabs( ref->superCluster()->eta() );
-      const double effArea          = ElectronEffectiveArea::GetElectronEffectiveArea( eleEffAreaGammaPlusNeutralHad, absEta, eleEffAreaTarget );
       const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * rhoFastJet25 );
 
       part.setUserRecord< double >( "EffectiveArea",      effArea          );
       part.setUserRecord< double >( "PFIso03PUCorrected", PFIsoPUCorrected );
    }
 
+   // This is the recommended method for photons!
    if( useIsolator ) {
-      // We need the PFCandidates ...
-      //
-      Handle< reco::PFCandidateCollection > pfCandidates;
-      iEvent.getByLabel( m_particleFlowTag, pfCandidates );
       const PFCandidateCollection thePFCollection = *pfCandidates;
-
-      // ... and the vertices.
-      //
-      Handle< reco::VertexCollection > vertices;
-      iEvent.getByLabel( fVertexRecoLabel, vertices );
 
       // Primary Vertex
       const reco::VertexRef vtxRef( vertices, 0 );
 
-      // Initialise isolator.
-      //
-      PFIsolationEstimator isolator;
-      isolator.setConeSize( 0.3 );
+      isolator->fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
 
-      // Analysing electrons:
-      //
-      if( ref->isElectron() ) {
-         isolator.initializeElectronIsolation( kTRUE );
-         isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
-      }
-
-      // Analysing photons:
-      //
-      if( ref->isPhoton() ) {
-         isolator.initializePhotonIsolation( kTRUE );
-         isolator.fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
-      }
-
-      part.setUserRecord< double >( "PFIso03ChargedHadronFromIsolator", isolator.getIsolationCharged() );
-      part.setUserRecord< double >( "PFIso03NeutralHadronFromIsolator", isolator.getIsolationNeutral() );
-      part.setUserRecord< double >( "PFIso03PhotonFromIsolator",        isolator.getIsolationPhoton()  );
+      part.setUserRecord< double >( "PFIso03ChargedHadronFromIsolator", isolator->getIsolationCharged() );
+      part.setUserRecord< double >( "PFIso03NeutralHadronFromIsolator", isolator->getIsolationNeutral() );
+      part.setUserRecord< double >( "PFIso03PhotonFromIsolator",        isolator->getIsolationPhoton()  );
    }
 }
 
