@@ -48,21 +48,23 @@ Skimmer = cms.EDAnalyzer(
     #HCAL noise
     HCALNoise = cms.InputTag( 'HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult' ),
 
-    METs = cms.PSet(
-        # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the METs
-        caloMET = cms.PSet(
-                MCLabel = cms.InputTag( "genMetCalo" ),
-                RecoLabel = cms.InputTag("patMETs")
-                ),
-        pfMET = cms.PSet(
-                MCLabel = cms.InputTag( "genMetCalo" ),
-                RecoLabel = cms.InputTag("patMETsPFlow") #patMETsPFlow")
-                ),
-        pfMETNoPU = cms.PSet(
-                MCLabel = cms.InputTag( 'genMetCalo' ),
-                RecoLabel = cms.InputTag( 'patMETsPFlowNoPU' )
-                )
-        ),
+    genMETTags = cms.VInputTag( cms.InputTag( 'genMetCalo' ),
+                                cms.InputTag( 'genMetTrue' ),
+                                ),
+
+    patMETTags = cms.VInputTag( cms.InputTag( 'patMETs' ),
+                                cms.InputTag( 'patMETsPFlow' ),
+                                cms.InputTag( 'patMETsPFlowNoPU' ),
+                                ),
+
+    # In CMSSW 4_X_Y it is not forseen to get Type-I,-II corrected pat::MET, so
+    # we use reco::PFMET instead (same functuality for us).
+    recoPFMETTags = cms.VInputTag( cms.InputTag( 'pfType1CorrectedMetNoType0' ),
+                                   cms.InputTag( 'pfType1p2CorrectedMetNoType0' ),
+                                   cms.InputTag( 'pfType1CorrectedMet' ),
+                                   cms.InputTag( 'pfType1p2CorrectedMet' ),
+                                   ),
+
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
         AK5 = cms.PSet(

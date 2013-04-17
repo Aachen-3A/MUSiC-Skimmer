@@ -71,8 +71,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
         process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
         postfix = 'PFlow'
-        configurePF( process, runOnData, postfix )
-        configurePFnoPU( process, postfix )
+        configurePFandMET( process, runOnData, postfix )
         configurePFIso( process )
 
         import PhysicsTools.PatAlgos.tools.coreTools
@@ -88,7 +87,6 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
         addEEBadSCFilter( process )
         addMuonPFCandidateFilter( process )
         addECALLaserCorrFilter( process )
-
 
     if not runOnData:
        process.p += process.patJetPartons
@@ -234,15 +232,10 @@ def configureJEC( process, runOnData ):
         process.GlobalTag.globaltag = jecGlobalTag
         print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
 
-    process.load( 'JetMETCorrections.Configuration.DefaultJEC_cff' )
-    process.load( 'RecoJets.Configuration.RecoPFJets_cff' )
-    process.kt6PFJets.doRhoFastjet = True                          # Turn-on the FastJet density calculation
-    process.ak5PFJets.doAreaFastjet = True                         # Turn-on the FastJet jet area calculation for ak5PFJets
 
-    process.p += process.kt6PFJets * process.ak5PFJets
-
-
-def configurePF( process, runOnData, postfix ):
+# PF2PAT and MET corrections build up on each other, so everything is defined in this one function.
+#
+def configurePFandMET( process, runOnData, postfix ):
     defaultPostfix = 'PFlow'
     if not postfix:
         postfix = defaultPostfix
@@ -258,12 +251,49 @@ def configurePF( process, runOnData, postfix ):
                        outputModules = []
                        )
 
+    # Additional updates for Jet Energy Corrections, see also:
+    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU (r114)
+
+    # Create good primary vertices to be used for PF association
+    from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
+    process.goodOfflinePrimaryVertices = cms.EDFilter(
+        'PrimaryVertexObjectFilter',
+        filterParams = pvSelector.clone( minNdof = cms.double( 4.0 ), maxZ = cms.double( 24.0 ) ),
+        src = cms.InputTag( 'offlinePrimaryVertices' )
+        )
+
+    process.pfPileUpPFlow.Enable = True
+    process.pfPileUpPFlow.Vertices = 'goodOfflinePrimaryVertices'
+    process.pfPileUpPFlow.checkClosestZVertex = cms.bool( False )
+
+    process.pfJetsPFlow.doAreaFastjet = True
+    process.pfJetsPFlow.doRhoFastjet = False
+
+    process.patJetCorrFactorsPFlow.rho = cms.InputTag( 'kt6PFJets' + postfix, 'rho' )
+
+    # Compute the mean pt per unit area ("rho") using KT6 Jets with the active areas method.
+    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
+    process.kt6PFJetsPFlow = kt4PFJets.clone(
+        rParam = cms.double( 0.6 ),
+        src = cms.InputTag( 'pfNoElectron' + postfix ),
+        doAreaFastjet = cms.bool( True ),
+        doRhoFastjet = cms.bool( True )
+        )
+
+    getattr( process, 'patPF2PATSequence' + postfix ).replace( getattr( process, 'pfNoElectron' + postfix ),
+                                                               getattr( process, 'pfNoElectron' + postfix ) * process.kt6PFJetsPFlow )
+    process.patseq = cms.Sequence(
+       process.goodOfflinePrimaryVertices*
+       getattr( process, 'patPF2PATSequence' + postfix )
+       )
+
+    # Updates for PF Taus.
     pfTools.adaptPFTaus( process, 'hpsPFTau', postfix = postfix )
 
     getattr( process, 'pfTaus' + postfix ).discriminators = cms.VPSet(
         cms.PSet( discriminator = cms.InputTag( 'pfTausBaseDiscriminationByDecayModeFinding' + postfix ),
-            selectionCut = cms.double( 0.5 )
-            )
+                  selectionCut = cms.double( 0.5 )
+                  )
         )
 
     # Set the jetSource to all jets, i.e. jets that have identified as taus have
@@ -273,55 +303,42 @@ def configurePF( process, runOnData, postfix ):
     process.patMuonsPFlow.embedHighLevelSelection = False
     process.patElectronsPFlow.embedHighLevelSelection = False
 
-
-def configurePFnoPU( process, postfix ):
-    defaultPostfix = 'PFlow'
-    if not postfix:
-        postfix = defaultPostfix
-        print "WARNING: No postfix provided, setting to: '%s'" %postfix
-    from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
-
-    # Create good primary vertices to be used for PF association
-    process.goodOfflinePrimaryVertices = cms.EDFilter(
-        'PrimaryVertexObjectFilter',
-        filterParams = pvSelector.clone( minNdof = cms.double( 4.0 ), maxZ = cms.double( 24.0 ) ),
-        src = cms.InputTag( 'offlinePrimaryVertices' )
-        )
-
-    process.pfPileUpPFlow.Enable = True
-    process.pfPileUpPFlow.Vertices = 'goodOfflinePrimaryVertices'
-    process.pfJetsPFlow.doAreaFastjet = True
-    process.pfJetsPFlow.doRhoFastjet = False
-    process.patJetCorrFactorsPFlow.rho = cms.InputTag( 'kt6PFJetsPFlow', 'rho' )
-
-    # Compute the mean pt per unit area ("rho") using KT6 Jets with the active areas method.
-    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
-    process.kt6PFJetsPFlow = kt4PFJets.clone(
-        rParam = cms.double(0.6),
-        src = cms.InputTag( 'pfNoElectron' + postfix ),
-        doAreaFastjet = cms.bool( True ),
-        doRhoFastjet = cms.bool( True )
-        )
-
-    getattr( process, 'patPF2PATSequence' + postfix ).replace( getattr( process, 'pfNoElectron' + postfix ), getattr( process, 'pfNoElectron' + postfix ) * process.kt6PFJetsPFlow )
-    process.patseq = cms.Sequence(
-       process.goodOfflinePrimaryVertices*
-       getattr( process, 'patPF2PATSequence' + postfix )
-       )
-    process.p += process.patseq
-
     # METnoPU (stolen from: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/lucieg/METsWithPU/METsAnalyzer/python/pfMetNoPileUp_cff.py)
     process.pfMetNoPileUp       = getattr( process, 'pfMET' + postfix ).clone()
     process.pfMetNoPileUp.alias = 'pfMetNoPileUp'
     process.pfMetNoPileUp.src   = cms.InputTag( 'pfNoPileUp' + postfix )
 
-    process.p += process.pfMetNoPileUp
-
     patMETsPFlowNoPU = 'patMETs' + postfix + 'NoPU'
     setattr( process, patMETsPFlowNoPU, getattr( process, 'patMETs' + postfix ).clone() )
     getattr( process, patMETsPFlowNoPU ).metSource = cms.InputTag( 'pfMetNoPileUp' )
 
+    # Type-I and Type-II MET corrections.
+    # Basically following the recipe from but we want one collection for each combination of corrections:
+    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis (r80)
+    process.load( 'JetMETCorrections.Type1MET.pfMETCorrections_cff' )
+    if runOnData:
+       process.pfJetMETcorr.jetCorrLabel = cms.string( 'ak5PFL1FastL2L3Residual' )
+    else:
+       process.pfJetMETcorr.jetCorrLabel = cms.string( 'ak5PFL1FastL2L3' )
+
+    # Create collections without Type-0 corrections:
+    process.pfType1CorrectedMetNoType0 = process.pfType1CorrectedMet.clone()
+    process.pfType1CorrectedMetNoType0.applyType0Corrections = cms.bool( False )
+    process.producePFMETCorrections += process.pfType1CorrectedMetNoType0
+
+    process.pfType1p2CorrectedMetNoType0 = process.pfType1p2CorrectedMet.clone()
+    process.pfType1p2CorrectedMetNoType0.applyType0Corrections = cms.bool( False )
+    process.producePFMETCorrections += process.pfType1p2CorrectedMetNoType0
+
+    # To have Type-0 corrected collections, we use the pfMetNoPileUp as input:
+    process.pfType1CorrectedMet.src   = cms.InputTag( 'pfMetNoPileUp' )
+    process.pfType1p2CorrectedMet.src = cms.InputTag( 'pfMetNoPileUp' )
+
+    # The order is important here!
+    process.p += process.patseq
+    process.p += process.pfMetNoPileUp
     process.p += getattr( process, patMETsPFlowNoPU )
+    process.p += process.producePFMETCorrections
 
 
 # Following the "recipe":
@@ -346,12 +363,15 @@ def configurePFIso( process ):
 # https://twiki.cern.ch/twiki/bin/view/CMS/Vgamma2011PhotonID#Recommended_cuts
 #
 def addRhoVariable( process ):
-    process.load( 'RecoJets.Configuration.RecoPFJets_cff' )
-    process.kt6PFJets25 = process.kt6PFJets.clone( doRhoFastjet = True )
-    process.kt6PFJets25.Rho_EtaMax = cms.double( 2.5 )
-    process.fjSequence25 = cms.Sequence( process.kt6PFJets25 )
+    from RecoJets.Configuration.RecoPFJets_cff import kt6PFJets
+    process.kt6PFJets50 = kt6PFJets.clone( doRhoFastjet = True )
+    process.kt6PFJets50.Rho_EtaMax = cms.double( 5.0 )
 
-    process.p += process.fjSequence25
+    process.kt6PFJets25 = kt6PFJets.clone( doRhoFastjet = True )
+    process.kt6PFJets25.Rho_EtaMax = cms.double( 2.5 )
+
+    process.fjSequence = cms.Sequence( process.kt6PFJets25 + process.kt6PFJets50 )
+    process.p += process.fjSequence
 
 
 def addScrapingFilter( process ):

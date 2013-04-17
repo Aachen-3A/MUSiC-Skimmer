@@ -97,6 +97,7 @@ public:
   
 
  private:
+   typedef std::vector< edm::InputTag > VInputTag;
    // for PF isolation
    typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
    //information about one single trigger
@@ -123,7 +124,15 @@ public:
    virtual void analyzeGenInfo( const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
    virtual void analyzeGenJets( const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
-   virtual void analyzeGenMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info );
+
+   virtual void analyzeGenMETs( edm::Event const &iEvent,
+                                pxl::EventView *EvtView
+                                ) const;
+
+   virtual void analyzeGenMET( edm::Event const &iEvent,
+                               edm::InputTag const &genMETTag,
+                               pxl::EventView *EvtView
+                               ) const;
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
    
@@ -158,7 +167,21 @@ public:
                                      const double &rhoFastJet25
                                      );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
-   virtual void analyzeRecMET(const edm::Event&, pxl::EventView*, const collection_def &MET_info);
+
+   virtual void analyzeRecMETs( edm::Event const &iEvent,
+                                pxl::EventView *RecEvtView
+                                ) const;
+
+   virtual void analyzeRecPatMET( edm::Event const &iEvent,
+                                  edm::InputTag const &patMETTag,
+                                  pxl::EventView *RecEvtView
+                                  ) const;
+
+   virtual void analyzeRecRecoPFMET( edm::Event const &iEvent,
+                                     edm::InputTag const &recoPFMETTag,
+                                     pxl::EventView *RecEvtView
+                                     ) const;
+
    virtual void analyzeRecGammas( const edm::Event &iEvent,
                                   pxl::EventView *RecView,
                                   const bool &MC,
@@ -185,7 +208,6 @@ public:
    bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
    bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
    bool MET_cuts(const pxl::Particle* met) const;
-   std::string getEventClass(pxl::EventView* EvtView);
 
    double IsoGenSum (const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
    // Generic function to write ParticleFlow based isolation into (PXL) photons and
@@ -201,6 +223,11 @@ public:
                                     pxl::Particle &part,
                                     bool const useIsolator = true
                                     ) const;
+
+   void printEventContent( pxl::EventView const *GenEvtView,
+                           pxl::EventView const *RecEvtView,
+                           bool const &IsMC
+                           ) const;
 
    // ----------member data ---------------------------
 
@@ -239,7 +266,10 @@ public:
    //JetIDs
    typedef std::vector< std::pair< std::string, Selector<pat::Jet>* > > jet_id_list;
    // MET labels
-   std::vector< collection_def > MET_infos;
+   VInputTag const m_genMETTags;
+   VInputTag const m_patMETTags;
+   VInputTag const m_recoPFMETTags;
+
    // Cluster
    edm::InputTag freducedBarrelRecHitCollection;
    edm::InputTag freducedEndcapRecHitCollection;

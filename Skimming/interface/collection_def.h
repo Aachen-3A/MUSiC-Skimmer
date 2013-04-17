@@ -12,13 +12,6 @@ template< class T > class Selector;
 
 #include "FWCore/Utilities/interface/InputTag.h"
 
-//holds everything used to analyze a collection
-struct collection_def{
-   std::string   name;
-   edm::InputTag MCLabel;
-   edm::InputTag RecoLabel;
-};
-
 struct jet_def{
    std::string   name;
    edm::InputTag MCLabel;
