@@ -1375,6 +1375,15 @@ void MUSiCSkimmer::analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *Rec
          for ( std::vector< pat::Tau::IdPair >::const_iterator it = tau->tauIDs().begin(); it != tau->tauIDs().end(); ++it ) {
             part->setUserRecord < float >( it->first, it->second );
          }
+
+         // Information from jet used to reconstruct the tau:
+         // (Uncorrected jet pt.)
+         PFJetRef const &tauJet = tau->pfJetRef();
+         part->setUserRecord< double >( "tauJetpx", tauJet->px() );
+         part->setUserRecord< double >( "tauJetpy", tauJet->py() );
+         part->setUserRecord< double >( "tauJetpz", tauJet->pz() );
+         part->setUserRecord< double >( "tauJetE",  tauJet->energy() );
+
          numTauRec++;
       }
    }
