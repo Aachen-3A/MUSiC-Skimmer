@@ -19,6 +19,8 @@ Skimmer = cms.EDAnalyzer(
     genParticleCandidatesLabel = cms.untracked.string( "genParticles" ),
     #vertices with beam spot constraint
     VertexRecoLabel = cms.untracked.string("offlinePrimaryVerticesWithBS"),
+    # Get all tracks in the event (and count them).
+    recoTracksTag = cms.InputTag( 'generalTracks' ),
     #the following is all PAT
     TauRecoLabel = cms.untracked.string( "patTausPFlow" ),
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),

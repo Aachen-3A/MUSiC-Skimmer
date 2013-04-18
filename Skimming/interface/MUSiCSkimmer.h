@@ -159,6 +159,11 @@ public:
                                 trigger_group &trigger
                                 );
    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
+
+   virtual void analyzeRecTracks( edm::Event const &iEvent,
+                                  pxl::EventView *RecEvtView
+                                  ) const;
+
    virtual void analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle*> &genmap );
    virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
@@ -249,6 +254,7 @@ public:
    std::string fMETMCLabel;
    // HCAL Helper for "new" H/E and HCAL isolation.
    ElectronHcalHelper *m_hcalHelper;
+   edm::InputTag const m_recoTracksTag;
    std::string fVertexRecoLabel;
    //Tau
    std::string fTauRecoLabel;

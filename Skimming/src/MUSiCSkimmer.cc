@@ -121,6 +121,8 @@ using namespace edm;
 MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
    fFileName( iConfig.getUntrackedParameter< string >( "FileName" ) ),
 
+   m_recoTracksTag( iConfig.getParameter< InputTag >( "recoTracksTag" ) ),
+
    m_genMETTags(    iConfig.getParameter< VInputTag >( "genMETTags" ) ),
    m_patMETTags(    iConfig.getParameter< VInputTag >( "patMETTags" ) ),
    m_recoPFMETTags( iConfig.getParameter< VInputTag >( "recoPFMETTags" ) ),
@@ -441,6 +443,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
+      analyzeRecTracks( iEvent, RecEvtView );
       analyzeRecTaus( iEvent, RecEvtView, IsMC, genmap );
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
@@ -1346,6 +1349,18 @@ void MUSiCSkimmer::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* 
    }
    EvtView->setUserRecord<int>("NumVertices", numVertices); 
 }
+
+
+void MUSiCSkimmer::analyzeRecTracks( edm::Event const &iEvent,
+                                     pxl::EventView *RecEvtView
+                                     ) const {
+   edm::Handle< reco::TrackCollection > tracksHandle;
+   iEvent.getByLabel( m_recoTracksTag, tracksHandle );
+
+   // Store the number of tracks in each event!
+   RecEvtView->setUserRecord< unsigned int >( "Num" + m_recoTracksTag.label(), tracksHandle->size() );
+}
+
 
 // ------------ reading Reconstructed Taus------------
 
