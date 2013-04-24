@@ -164,7 +164,15 @@ public:
                                   pxl::EventView *RecEvtView
                                   ) const;
 
-   virtual void analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle*> &genmap );
+   virtual void analyzeRecTaus( edm::Event const &iEvent,
+                                pxl::EventView *RecEvtView
+                                ) const;
+
+   virtual void analyzeRecPatTaus( edm::Event const &iEvent,
+                                   edm::InputTag const &tauTag,
+                                   pxl::EventView *RecEvtView
+                                   ) const;
+
    virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
@@ -256,13 +264,13 @@ public:
    ElectronHcalHelper *m_hcalHelper;
    edm::InputTag const m_recoTracksTag;
    std::string fVertexRecoLabel;
-   //Tau
-   std::string fTauRecoLabel;
    std::string fPFTauDiscriminator;
    // Muon
    std::string fMuonRecoLabel;
    // Electron
    std::string fElectronRecoLabel;
+   // Taus
+   VInputTag const m_patTauTags;
    // GSF Electrons for vetoing.
    edm::InputTag m_gsfElectronsTag;
    std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;

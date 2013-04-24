@@ -22,9 +22,13 @@ Skimmer = cms.EDAnalyzer(
     # Get all tracks in the event (and count them).
     recoTracksTag = cms.InputTag( 'generalTracks' ),
     #the following is all PAT
-    TauRecoLabel = cms.untracked.string( "patTausPFlow" ),
     MuonRecoLabel = cms.untracked.string("cleanPatMuons"),
     ElectronRecoLabel = cms.untracked.string("cleanPatElectrons"),
+
+    # Use these taus (list of possible pat::Taus):
+    patTauTags = cms.VInputTag( cms.InputTag( 'patTausPFlow' ),
+                                ),
+
     # Needed for electron vetoing.
     gsfElectronsTag = cms.InputTag( 'gsfElectrons' ),
     # Default value for effective area correction. Changed in config file!

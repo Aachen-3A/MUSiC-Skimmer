@@ -123,6 +123,8 @@ MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
 
    m_recoTracksTag( iConfig.getParameter< InputTag >( "recoTracksTag" ) ),
 
+   m_patTauTags( iConfig.getParameter< VInputTag >( "patTauTags" ) ),
+
    m_genMETTags(    iConfig.getParameter< VInputTag >( "genMETTags" ) ),
    m_patMETTags(    iConfig.getParameter< VInputTag >( "patMETTags" ) ),
    m_recoPFMETTags( iConfig.getParameter< VInputTag >( "recoPFMETTags" ) ),
@@ -144,7 +146,6 @@ MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
    //fTruthVertexLabel = iConfig.getUntrackedParameter<string>("TruthVertexLabel");
    fgenParticleCandidatesLabel  = iConfig.getUntrackedParameter<string>("genParticleCandidatesLabel");
    fVertexRecoLabel = iConfig.getUntrackedParameter<string>("VertexRecoLabel");
-   fTauRecoLabel = iConfig.getUntrackedParameter< string >( "TauRecoLabel" );
    fMuonRecoLabel = iConfig.getUntrackedParameter<string>("MuonRecoLabel");
    fElectronRecoLabel = iConfig.getUntrackedParameter<string>("ElectronRecoLabel");
    m_gsfElectronsTag = iConfig.getParameter< InputTag >( "gsfElectronsTag" );
@@ -444,7 +445,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTracks( iEvent, RecEvtView );
-      analyzeRecTaus( iEvent, RecEvtView, IsMC, genmap );
+      analyzeRecTaus( iEvent, RecEvtView );
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
@@ -1364,24 +1365,47 @@ void MUSiCSkimmer::analyzeRecTracks( edm::Event const &iEvent,
 
 // ------------ reading Reconstructed Taus------------
 
-void MUSiCSkimmer::analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap ) {
-   // get pat::Tau's from event
-   edm::Handle< std::vector< pat::Tau > > tauHandle;
-   iEvent.getByLabel( fTauRecoLabel, tauHandle );
-   const std::vector< pat::Tau > &taus = *tauHandle;
+void MUSiCSkimmer::analyzeRecTaus( edm::Event const &iEvent,
+                                   pxl::EventView *RecEvtView
+                                   ) const {
+   for( VInputTag::const_iterator patTauTag = m_patTauTags.begin();
+        patTauTag != m_patTauTags.end();
+        ++patTauTag
+        ) {
+      analyzeRecPatTaus( iEvent, *patTauTag, RecEvtView );
+   }
+}
 
-   int numTauRec = 0;
-   for( std::vector< pat::Tau >::const_iterator tau = taus.begin(); tau != taus.end(); ++tau ) {
+
+void MUSiCSkimmer::analyzeRecPatTaus( edm::Event const &iEvent,
+                                      edm::InputTag const &tauTag,
+                                      pxl::EventView *RecEvtView
+                                      ) const {
+   // Get the wanted pat::Tau's from event:
+   edm::Handle< pat::TauCollection > tauHandle;
+   iEvent.getByLabel( tauTag, tauHandle );
+   pat::TauCollection const &taus = *tauHandle;
+
+   int numPatTaus = 0;
+   for( pat::TauCollection::const_iterator tau = taus.begin();
+        tau != taus.end();
+        ++tau
+        ) {
       if( Tau_cuts( *tau ) ) {
-         pxl::Particle *part = RecView->create< pxl::Particle >();
-         part->setName( "Tau" );
+         pxl::Particle *part = RecEvtView->create< pxl::Particle >();
+         // The label defines the name of this pxl object!
+         part->setName( tauTag.label() );
          part->setCharge( tau->charge() );
          part->setP4( tau->px(), tau->py(), tau->pz(), tau->energy() );
          part->setUserRecord< float >( "PhiPhi", tau->phiphiMoment() );
          part->setUserRecord< float >( "EtaPhi", tau->etaphiMoment() );
          part->setUserRecord< float >( "EtaEta", tau->etaetaMoment() );
          //Pt of the Leading Charged Hadron of the Jet
-         part->setUserRecord< float >( "LeadingHadronPt",    tau->leadPFChargedHadrCand()->pt() );
+         reco::PFCandidateRef const &leadPFChargedHadrCand = tau->leadPFChargedHadrCand();
+         if( leadPFChargedHadrCand.isNonnull() )
+            part->setUserRecord< double >( "LeadingHadronPt", leadPFChargedHadrCand->pt() );
+         else
+            part->setUserRecord< double >( "LeadingHadronPt", -1.0 );
          part->setUserRecord< float >( "PfAllParticleIso",   tau->userIsolation( "pat::PfAllParticleIso" ) );
          part->setUserRecord< float >( "PfChargedHadronIso", tau->userIsolation( "pat::PfChargedHadronIso" ) );
          part->setUserRecord< float >( "PfNeutralHadronIso", tau->userIsolation( "pat::PfNeutralHadronIso" ) );
@@ -1399,12 +1423,13 @@ void MUSiCSkimmer::analyzeRecTaus( const edm::Event &iEvent, pxl::EventView *Rec
          part->setUserRecord< double >( "tauJetpz", tauJet->pz() );
          part->setUserRecord< double >( "tauJetE",  tauJet->energy() );
 
-         numTauRec++;
+         numPatTaus++;
       }
    }
 
-   RecView->setUserRecord< int >( "NumTau", numTauRec );
+   RecEvtView->setUserRecord< int >( "Num" + tauTag.label(), numPatTaus );
 }
+
 // ------------ reading Reconstructed Muons ------------
 
 void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map< const reco::Candidate*, pxl::Particle*> & genmap ) {
@@ -2624,7 +2649,16 @@ void MUSiCSkimmer::printEventContent( pxl::EventView const *GenEvtView,
       }
 
       // Header:
-      info << "Rec: " << ele + s + muo + s + tau + s + gam + s;
+      info << "Rec: " << ele + s + muo + s;
+
+      for( VInputTag::const_iterator patTau = m_patTauTags.begin();
+           patTau != m_patTauTags.end();
+           ++patTau
+           ) {
+         info << (*patTau).label() + s;
+      }
+
+      info << gam + s;
 
       for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ) {
          info << jet_info->name + s;
@@ -2643,7 +2677,16 @@ void MUSiCSkimmer::printEventContent( pxl::EventView const *GenEvtView,
       info << "     ";
       info << setw( ele.size() ) << RecEvtView->findUserRecord< int >( "NumEle" ) << s;
       info << setw( muo.size() ) << RecEvtView->findUserRecord< int >( "NumMuon" ) << s;
-      info << setw( tau.size() ) << RecEvtView->findUserRecord< int >( "NumTau" ) << s;
+
+      for( VInputTag::const_iterator patTau = m_patTauTags.begin();
+           patTau != m_patTauTags.end();
+           ++patTau
+           ) {
+         info << setw( (*patTau).label().size() );
+         info << RecEvtView->findUserRecord< int >( "Num" + (*patTau).label() );
+         info << s;
+      }
+
       info << setw( gam.size() ) << RecEvtView->findUserRecord< int >( "NumGamma" ) << s;
 
       for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ) {

@@ -287,9 +287,10 @@ def configurePFandMET( process, runOnData, postfix ):
        getattr( process, 'patPF2PATSequence' + postfix )
        )
 
-    # Updates for PF Taus.
+    # Switch to HPS Taus with PF2PAT.
     pfTools.adaptPFTaus( process, 'hpsPFTau', postfix = postfix )
 
+    # Use at least one discriminator for taus to reduce the collection
     getattr( process, 'pfTaus' + postfix ).discriminators = cms.VPSet(
         cms.PSet( discriminator = cms.InputTag( 'pfTausBaseDiscriminationByDecayModeFinding' + postfix ),
                   selectionCut = cms.double( 0.5 )
