@@ -28,22 +28,5 @@
 -F ~SC17
 -F ~Quad
 -F ~NoHE
--F ~WCandPt80
 
--F ~DoubleMediumIsoPFTau
-
--F ~DoubleEle33
--F ~DoubleEle10
--F ~Ele15_Ele8_Ele5
-
--F ~DoublePhoton40
--F ~DoublePhoton43
--F ~DoublePhoton48
--F ~DoublePhoton70
--F ~DoublePhoton80
--F ~Photon36
-
--F ~Jet370
-
--F ~Track50_dEdx3p6
--F ~Track60_dEdx3p7
+-F ~dEdx3p

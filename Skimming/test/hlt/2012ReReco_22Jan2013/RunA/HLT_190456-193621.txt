@@ -1,5 +1,5 @@
 Script called with the parameters:
-/.automount/home/home__home1/institut_3a/duchardt/CMSSW/CMSSW_5_3_3_patch3/bin/slc5_amd64_gcc462/getHLT.py -f 190456 -l 193621 -me33 -J -F Mu -F Ele -F Tau -F Photon -F Jet -F MET -F ~DiPFJet -F ~Triple -F ~BTag -F ~Central -F ~PFMHT -F ~CEP -F ~Acoplanarity -F ~L2 -F ~R9Id -F ~HEVT -F ~R014 -F ~MR150 -F ~Mass -F ~HFL -F ~HFT -F ~WP70 -F ~WP80 -F ~WP90 -F ~HBHENoiseFiltered -F ~HBHENoiseCleaned -F ~SC17 -F ~Quad -F ~NoHE -F ~DoubleMediumIsoPFTau -F ~DoubleEle33 -F ~DoubleEle10 -F ~Ele15_Ele8_Ele5 -F ~DoublePhoton40 -F ~DoublePhoton43 -F ~DoublePhoton48 -F ~DoublePhoton70 -F ~DoublePhoton80 -F ~Photon36 -F ~Jet370 -F ~Track50_dEdx3p6 -F ~Track60_dEdx3p7
+/.automount/home/home__home1/institut_3a/duchardt/CMSSW/CMSSW_5_3_3_patch3/bin/slc5_amd64_gcc462/getHLT.py -j /.automount/home/home__home1/institut_3a/duchardt/CMSSW/CMSSW_5_3_3_patch3/src/MUSiCProject/Skimming/test/lumi/json_DCSONLY_22Jan2013.txt -f 190456 -l 193621 -m e33 -F Mu -F Ele -F Tau -F Photon -F Jet -F MET -F ~DiPFJet -F ~Triple -F ~BTag -F ~Central -F ~PFMHT -F ~CEP -F ~Acoplanarity -F ~L2 -F ~R9Id -F ~HEVT -F ~R014 -F ~MR150 -F ~Mass -F ~HFL -F ~HFT -F ~WP70 -F ~WP80 -F ~WP90 -F ~HBHENoiseFiltered -F ~HBHENoiseCleaned -F ~SC17 -F ~Quad -F ~NoHE -F ~dEdx3p -J
 
 Number of ranges: 3
 
@@ -9,24 +9,37 @@ Range: 190456-190738
 
 Tau:
 ----
+HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v2
+HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_Prong1_v2
 HLT_LooseIsoPFTau35_Trk20_Prong1_MET70_v2
 HLT_LooseIsoPFTau35_Trk20_Prong1_MET75_v2
 
 Jet:
 ----
+HLT_Jet370_NoJetID_v12
 HLT_PFJet320_v3
 HLT_PFJet400_v3
 
 DoubleElectron:
 ---------------
+HLT_DoubleEle10_CaloIdL_TrkIdVL_Ele10_CaloIdT_TrkIdVL_v9
+HLT_Ele15_Ele8_Ele5_CaloIdL_TrkIdVL_v3
 HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v15
 HLT_Ele27_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele15_CaloIdT_CaloIsoVL_trackless_v4
 
 Photon:
 -------
+HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3
+HLT_DoubleEle33_CaloIdL_v11
+HLT_DoubleEle33_CaloIdT_v7
+HLT_DoublePhoton40_CaloIdL_Rsq0p035_v1
+HLT_DoublePhoton40_CaloIdL_Rsq0p06_v1
+HLT_DoublePhoton70_v3
+HLT_DoublePhoton80_v4
 HLT_Photon135_v4
 HLT_Photon150_v1
 HLT_Photon160_v1
+HLT_Photon36_CaloId10_Iso50_Photon22_CaloId10_Iso50_v3
 
 SingleMu:
 ---------
@@ -75,24 +88,37 @@ Range: 190782-191411
 
 Tau:
 ----
+HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v3
+HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_Prong1_v3
 HLT_LooseIsoPFTau35_Trk20_Prong1_MET70_v3
 HLT_LooseIsoPFTau35_Trk20_Prong1_MET75_v3
 
 Jet:
 ----
+HLT_Jet370_NoJetID_v13
 HLT_PFJet320_v4
 HLT_PFJet400_v4
 
 DoubleElectron:
 ---------------
+HLT_DoubleEle10_CaloIdL_TrkIdVL_Ele10_CaloIdT_TrkIdVL_v10
+HLT_Ele15_Ele8_Ele5_CaloIdL_TrkIdVL_v4
 HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v16
 HLT_Ele27_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele15_CaloIdT_CaloIsoVL_trackless_v5
 
 Photon:
 -------
+HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4
+HLT_DoubleEle33_CaloIdL_v12
+HLT_DoubleEle33_CaloIdT_v8
+HLT_DoublePhoton40_CaloIdL_Rsq0p035_v2
+HLT_DoublePhoton40_CaloIdL_Rsq0p06_v2
+HLT_DoublePhoton70_v4
+HLT_DoublePhoton80_v5
 HLT_Photon135_v5
 HLT_Photon150_v2
 HLT_Photon160_v2
+HLT_Photon36_CaloId10_Iso50_Photon22_CaloId10_Iso50_v4
 
 SingleMu:
 ---------
@@ -141,24 +167,37 @@ Range: 191691-193621
 
 Tau:
 ----
+HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v4
+HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_Prong1_v4
 HLT_LooseIsoPFTau35_Trk20_Prong1_MET70_v4
 HLT_LooseIsoPFTau35_Trk20_Prong1_MET75_v4
 
 Jet:
 ----
+HLT_Jet370_NoJetID_v13
 HLT_PFJet320_v5
 HLT_PFJet400_v5
 
 DoubleElectron:
 ---------------
+HLT_DoubleEle10_CaloIdL_TrkIdVL_Ele10_CaloIdT_TrkIdVL_v11
+HLT_Ele15_Ele8_Ele5_CaloIdL_TrkIdVL_v5
 HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v17
 HLT_Ele27_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele15_CaloIdT_CaloIsoVL_trackless_v6
 
 Photon:
 -------
+HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5
+HLT_DoubleEle33_CaloIdL_v13
+HLT_DoubleEle33_CaloIdT_v9
+HLT_DoublePhoton40_CaloIdL_Rsq0p035_v3
+HLT_DoublePhoton40_CaloIdL_Rsq0p06_v3
+HLT_DoublePhoton70_v5
+HLT_DoublePhoton80_v6
 HLT_Photon135_v6
 HLT_Photon150_v3
 HLT_Photon160_v3
+HLT_Photon36_CaloId10_Iso50_Photon22_CaloId10_Iso50_v5
 
 SingleMu:
 ---------
@@ -204,11 +243,44 @@ HLT_Mu22_TkMu8_v4
 
 All unprescaled triggers for all run ranges:
 --------------------------------------------
+'HLT_DoubleEle10_CaloIdL_TrkIdVL_Ele10_CaloIdT_TrkIdVL_v10',
+'HLT_DoubleEle10_CaloIdL_TrkIdVL_Ele10_CaloIdT_TrkIdVL_v11',
+'HLT_DoubleEle10_CaloIdL_TrkIdVL_Ele10_CaloIdT_TrkIdVL_v9',
+'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v3',
+'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v4',
+'HLT_DoubleEle33_CaloIdL_GsfTrkIdVL_v5',
+'HLT_DoubleEle33_CaloIdL_v11',
+'HLT_DoubleEle33_CaloIdL_v12',
+'HLT_DoubleEle33_CaloIdL_v13',
+'HLT_DoubleEle33_CaloIdT_v7',
+'HLT_DoubleEle33_CaloIdT_v8',
+'HLT_DoubleEle33_CaloIdT_v9',
+'HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v2',
+'HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v3',
+'HLT_DoubleMediumIsoPFTau25_Trk5_eta2p1_Jet30_v4',
+'HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_Prong1_v2',
+'HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_Prong1_v3',
+'HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_Prong1_v4',
 'HLT_DoubleMu5_IsoMu5_v16',
 'HLT_DoubleMu5_IsoMu5_v17',
+'HLT_DoublePhoton40_CaloIdL_Rsq0p035_v1',
+'HLT_DoublePhoton40_CaloIdL_Rsq0p035_v2',
+'HLT_DoublePhoton40_CaloIdL_Rsq0p035_v3',
+'HLT_DoublePhoton40_CaloIdL_Rsq0p06_v1',
+'HLT_DoublePhoton40_CaloIdL_Rsq0p06_v2',
+'HLT_DoublePhoton40_CaloIdL_Rsq0p06_v3',
+'HLT_DoublePhoton70_v3',
+'HLT_DoublePhoton70_v4',
+'HLT_DoublePhoton70_v5',
+'HLT_DoublePhoton80_v4',
+'HLT_DoublePhoton80_v5',
+'HLT_DoublePhoton80_v6',
 'HLT_Ele100_CaloIdVT_TrkIdT_v10',
 'HLT_Ele100_CaloIdVT_TrkIdT_v8',
 'HLT_Ele100_CaloIdVT_TrkIdT_v9',
+'HLT_Ele15_Ele8_Ele5_CaloIdL_TrkIdVL_v3',
+'HLT_Ele15_Ele8_Ele5_CaloIdL_TrkIdVL_v4',
+'HLT_Ele15_Ele8_Ele5_CaloIdL_TrkIdVL_v5',
 'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v15',
 'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v16',
 'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v17',
@@ -252,6 +324,8 @@ All unprescaled triggers for all run ranges:
 'HLT_IsoMu34_eta2p1_v9',
 'HLT_IsoMu40_eta2p1_v6',
 'HLT_IsoMu40_eta2p1_v7',
+'HLT_Jet370_NoJetID_v12',
+'HLT_Jet370_NoJetID_v13',
 'HLT_LooseIsoPFTau35_Trk20_Prong1_MET70_v2',
 'HLT_LooseIsoPFTau35_Trk20_Prong1_MET70_v3',
 'HLT_LooseIsoPFTau35_Trk20_Prong1_MET70_v4',
@@ -291,3 +365,6 @@ All unprescaled triggers for all run ranges:
 'HLT_Photon160_v1',
 'HLT_Photon160_v2',
 'HLT_Photon160_v3',
+'HLT_Photon36_CaloId10_Iso50_Photon22_CaloId10_Iso50_v3',
+'HLT_Photon36_CaloId10_Iso50_Photon22_CaloId10_Iso50_v4',
+'HLT_Photon36_CaloId10_Iso50_Photon22_CaloId10_Iso50_v5',

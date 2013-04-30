@@ -1,0 +1,32 @@
+-F Mu
+-F Ele
+-F Tau
+-F Photon
+-F Jet
+-F MET
+
+-F ~DiPFJet
+-F ~Triple
+-F ~BTag
+-F ~Central
+-F ~PFMHT
+-F ~CEP
+-F ~Acoplanarity
+-F ~L2
+-F ~R9Id
+-F ~HEVT
+-F ~R014
+-F ~MR150
+-F ~Mass
+-F ~HFL
+-F ~HFT
+-F ~WP70
+-F ~WP80
+-F ~WP90
+-F ~HBHENoiseFiltered
+-F ~HBHENoiseCleaned
+-F ~SC17
+-F ~Quad
+-F ~NoHE
+
+-F ~dEdx3p

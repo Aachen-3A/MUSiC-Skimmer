@@ -1,0 +1,17 @@
+config = data_cfg.py
+
+Data_198022_198230_SingleMu:/SingleMu/Run2012C-22Jan2013-v1/AOD;DCS-198022-198230.json
+Data_198022_198230_SingleElectron:/SingleElectron/Run2012C-22Jan2013-v1/AOD;DCS-198022-198230.json
+
+Data_198231_199608_SingleMu:/SingleMu/Run2012C-22Jan2013-v1/AOD;DCS-198231-199608.json
+Data_198231_199608_SingleElectron:/SingleElectron/Run2012C-22Jan2013-v1/AOD;DCS-198231-199608.json
+
+Data_199609_202504_SingleMu:/SingleMu/Run2012C-22Jan2013-v1/AOD;DCS-199609-202504.json
+Data_199609_202504_SingleElectron:/SingleElectron/Run2012C-22Jan2013-v1/AOD;DCS-199609-202504.json
+
+Data_202505_202794_SingleMu:/SingleMu/Run2012C-22Jan2013-v1/AOD;DCS-202505-202794.json
+Data_202505_202794_SingleElectron:/SingleElectron/Run2012C-22Jan2013-v1/AOD;DCS-202505-202794.json
+
+Data_202795_203742_SingleMu:/SingleMu/Run2012C-22Jan2013-v1/AOD;DCS-202795-203742.json
+Data_202795_203742_SingleElectron:/SingleElectron/Run2012C-22Jan2013-v1/AOD;DCS-202795-203742.json
+
