@@ -227,10 +227,8 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
 #
 def configureJEC( process, runOnData ):
     if runOnData:
-        # Newest GT for PromptReco data.
-        # This is only a place holder for the GT which is defined by the Ecal
-        # laser correction filter in music_crab.py
-        jecGlobalTag = cms.string( 'GR_R_53_V6::All' )
+        # Newest GT for the ReReco-22Jan2013 data.
+        jecGlobalTag = cms.string( 'FT_53_V21_AN3::All' )
     else:
         # Newest GT for CMSSW_5_3_x MC.
         jecGlobalTag = cms.string( 'START53_V16::All' )
