@@ -84,6 +84,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         addEEBadSCFilter( process )
         addMuonPFCandidateFilter( process )
         addECALLaserCorrFilter( process )
+        addCoherentNoiseRelativeFilter( process )
+        addCoherentNoiseAbsoluteFilter( process )
 
         if not runOnFast:
             # These do not work on FASTSIM samples.
@@ -534,6 +536,59 @@ def addECALLaserCorrFilter( process ):
 
     process.p_ecallasercorrfilter = cms.Path( process.ecalLaserCorrFilter )
     process.Skimmer.filterlist.append( 'p_ecallasercorrfilter' )
+
+
+# The following two filters are for rejecting events found in data with coherent noise in the
+# strip tracker. Find more information, necessary tags and code snippets on:
+# https://twiki.cern.ch/twiki/bin/view/CMS/TrackingPOGFilters#Events_with_coherent_noise_in_th
+#
+def addCoherentNoiseRelativeFilter( process ):
+    # Compare the number of strip clusters to the number of pixel clusters. Introduce a cut on the
+    # maximal number of strip clusters relative to the number of pixel clusters.
+    #
+    process.coherentNoiseRelativeFilter = cms.EDFilter( 'ByClusterSummaryMultiplicityPairEventFilter',
+        multiplicityConfig = cms.PSet(
+            firstMultiplicityConfig = cms.PSet(
+                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
+                subDetEnum = cms.int32(5),
+                subDetVariable = cms.string( 'pHits' )
+            ),
+            secondMultiplicityConfig = cms.PSet(
+                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
+                subDetEnum = cms.int32(0),
+                subDetVariable = cms.string( 'cHits' )
+            ),
+        ),
+        cut = cms.string( '( mult2 > 20000+7*mult1 )' )
+    )
+
+    process.p_coherentnoiserelativefilter = cms.Path( ~process.coherentNoiseRelativeFilter )
+    process.Skimmer.filterlist.append( 'p_coherentnoiserelativefilter' )
+
+
+def addCoherentNoiseAbsoluteFilter( process ):
+    # Compare the number of strip clusters to the number of pixel clusters. Apply a cut on the
+    # maximal number of strip clusters relative to the number of pixel clusters, if the number of
+    # strip clusters is above an absolute threshold.
+    #
+    process.coherentNoiseAbsoluteFilter = cms.EDFilter( 'ByClusterSummaryMultiplicityPairEventFilter',
+        multiplicityConfig = cms.PSet(
+            firstMultiplicityConfig = cms.PSet(
+                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
+                subDetEnum = cms.int32(5),
+                subDetVariable = cms.string( 'pHits' )
+            ),
+            secondMultiplicityConfig = cms.PSet(
+                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
+                subDetEnum = cms.int32(0),
+                subDetVariable = cms.string( 'cHits' )
+            ),
+        ),
+        cut = cms.string( '( mult2 > 50000 ) && ( mult2 > 20000+7*mult1 )' )
+    )
+
+    process.p_coherentnoiseabsolutefilter = cms.Path( ~process.coherentNoiseAbsoluteFilter )
+    process.Skimmer.filterlist.append( 'p_coherentnoiseabsolutefilter' )
 
 
 def configureTaus( process ):
