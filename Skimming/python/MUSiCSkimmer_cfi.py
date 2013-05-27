@@ -8,6 +8,8 @@ Skimmer = cms.EDAnalyzer(
     Process = cms.untracked.string("test_run"),
     # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
     GenOnly = cms.untracked.bool( False ),
+    # Are we running on a FASTSIM sample?
+    FastSim = cms.bool( False ),
     # UseSIM true means to use SIM info for finding converted photons
     UseSIM = cms.untracked.bool( False ),
     # name of the LHgrid for pdf weights

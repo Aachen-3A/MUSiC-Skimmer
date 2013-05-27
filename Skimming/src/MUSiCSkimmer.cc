@@ -121,6 +121,8 @@ using namespace edm;
 MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
    fFileName( iConfig.getUntrackedParameter< string >( "FileName" ) ),
 
+   m_fastSim( iConfig.getParameter< bool >( "FastSim" ) ),
+
    m_recoTracksTag( iConfig.getParameter< InputTag >( "recoTracksTag" ) ),
 
    m_patTauTags( iConfig.getParameter< VInputTag >( "patTauTags" ) ),
@@ -454,7 +456,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
       analyzeRecMETs( iEvent, RecEvtView );
 
-      analyzeHCALNoise(iEvent, RecEvtView);
+      if( not m_fastSim ) analyzeHCALNoise( iEvent, RecEvtView );
       analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
    }
 

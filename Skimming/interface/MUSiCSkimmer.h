@@ -252,6 +252,7 @@ public:
    int fNumEvt;// used to count the number of events
    std::string fFileName; 
    std::string fProcess;
+   bool const m_fastSim;
    bool fGenOnly;
    bool fUseSIM;
    std::string fLHgridName;

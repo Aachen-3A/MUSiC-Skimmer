@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
+def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False ):
     process = cms.Process( 'PAT' )
 
     configureMessenger( process, verbosity )
@@ -38,6 +38,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
     process.p = cms.Path()
 
     process.load( 'MUSiCProject.Skimming.MUSiCSkimmer_cfi' )
+
+    process.Skimmer.FastSim = runOnFast
 
     # Several filters are used while running over data or MC.
     # In order to be flexible, events *not* passing these filtes we do not want
@@ -79,14 +81,18 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity = 0 ):
 
         addRhoVariable( process )
 
-        addCSCHaloFilter( process )
-        addHCALnoiseFilter( process )
         addHCALLaserEventFilter( process )
         addECALDeadCellFilter( process )
         addTrackingFailureFilter( process )
         addEEBadSCFilter( process )
         addMuonPFCandidateFilter( process )
         addECALLaserCorrFilter( process )
+
+        if not runOnFast:
+            # These do not work on FASTSIM samples.
+            # Not that bad, because these filters are more important for data!
+            addCSCHaloFilter( process )
+            addHCALnoiseFilter( process )
 
     if not runOnData:
        process.p += process.patJetPartons
