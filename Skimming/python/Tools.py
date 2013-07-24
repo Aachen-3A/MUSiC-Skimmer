@@ -67,7 +67,6 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         configureJEC( process, runOnData )
         configureTaus( process )
         configurePAT( process, runOnData )
-        process.metJESCorAK5CaloJet.inputUncorMetLabel = 'metNoHF'
 
         postfix = 'PFlow'
         configurePFandMET( process, runOnData, postfix )
