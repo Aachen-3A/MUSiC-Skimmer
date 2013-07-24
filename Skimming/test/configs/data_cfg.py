@@ -30,7 +30,7 @@ process.source = cms.Source(
     'PoolSource',
     skipEvents = cms.untracked.uint32( 0 ),
     fileNames = cms.untracked.vstring(
-        '/store/data/Run2011A/METBTag/AOD/May10ReReco-v1/0000/D4C112A8-697C-E011-9625-0018F3D0960A.root'
+        '/store/data/Run2012A/SingleMu/RAW-RECO/MuTau-13Jul2012-v1/00000/D06AB2D0-92D0-E111-8BC5-00266CFFBC3C.root'
         )
     )
 

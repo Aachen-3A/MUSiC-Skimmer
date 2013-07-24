@@ -30,20 +30,20 @@ process.source = cms.Source(
     'PoolSource',
     skipEvents = cms.untracked.uint32( 0 ),
     fileNames = cms.untracked.vstring(
-        #'/store/mc/Fall11/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola/AODSIM/PU_S6_START42_V14B-v1/0000/16DC5C61-BF07-E111-88BB-0030487D5EB3.root'
-        '/store/mc/Fall11/DYToTauTau_M-20_CT10_TuneZ2_7TeV-powheg-pythia-tauola/AODSIM/PU_S6-START44_V5-v1/0001/4031B29A-0306-E111-9E34-0030487D8661.root'
+        '/store/mc/Summer12/TTJets_TuneZ2star_8TeV-madgraph-tauola/AODSIM/PU_S8_START52_V9-v1/0000/8EF198B4-FBC1-E111-8882-003048FFD728.root'
         )
     )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( 100 ) )
 
-# This is used for QCD samples only, and the filters only write a flag in the
-# event if they fired or not. The actual selection must happen in the
-# classification, i.e. you have to set in the config file which flag you want to
-# consider.
-#
+
 if not runOnGen:
     if not runOnData:
+        # This is used for QCD samples only, and the filters only write a flag in the
+        # event if they fired or not. The actual selection must happen in the
+        # classification, i.e. you have to set in the config file which flag you want to
+        # consider.
+        #
         # remove events with electrons that come from b or c hadrons
         Tools.addBCtoEFilter( process )
 
@@ -61,5 +61,6 @@ if not runOnGen:
 
         # remove events with a muon of more than 15 GeV
         Tools.addMuGenFilter( process, pt = 15 )
+
 
 print 'INFO: Using global tag:', process.GlobalTag.globaltag
