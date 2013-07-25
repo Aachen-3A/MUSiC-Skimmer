@@ -62,7 +62,6 @@ Skimmer = cms.EDAnalyzer(
 
     patMETTags = cms.VInputTag( cms.InputTag( 'patMETs' ),
                                 cms.InputTag( 'patMETsPFlow' ),
-                                cms.InputTag( 'patMETsPFlowNoPU' ),
                                 ),
 
     # In CMSSW 4_X_Y it was necessary to access reco::PFMET. Since this is not needed
