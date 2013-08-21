@@ -2121,6 +2121,9 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
          // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
          //
 
+         // Pseudorapidity using supercluster information.
+         pxlPhoton->setUserRecord< double >( "SCeta", patPhoton->caloPosition().eta() );
+
          // Isolation variables:
          //
          // The following are there to have the same variable naming for all
