@@ -329,7 +329,7 @@ def configurePFIso( process ):
     process.p += process.phoIsoSequence
 
 
-# Median jet pt per area for each event.
+# Median jet pt per area for each event. Needed for 2011 data with CMSSW_4_X_Y.
 # See also:
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection#Rho_for_2011_Effective_Areas
 # https://twiki.cern.ch/twiki/bin/view/CMS/Vgamma2011PhotonID#Recommended_cuts

@@ -182,7 +182,7 @@ public:
                                      const edm::ESHandle< CaloGeometry > &geo,
                                      const edm::Handle< reco::VertexCollection > &vertices,
                                      const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
-                                     const double &rhoFastJet25
+                                     const double &rho
                                      );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
 
@@ -208,7 +208,7 @@ public:
                                   const edm::ESHandle< CaloGeometry > &geo,
                                   const edm::Handle< reco::VertexCollection > &vertices,
                                   const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
-                                  const double &rhoFastJet25
+                                  const double &rho
                                   );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
@@ -237,7 +237,7 @@ public:
                                     edm::Handle< reco::VertexCollection > const &vertices,
                                     edm::Handle< reco::PFCandidateCollection > const &pfCandidates,
                                     edm::Ref< T > const &ref,
-                                    double const &rhoFastJet25,
+                                    double const &rho,
                                     pxl::Particle &part,
                                     bool const useIsolator = true
                                     ) const;

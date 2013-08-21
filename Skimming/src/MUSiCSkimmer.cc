@@ -408,13 +408,17 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       iEvent.getByLabel( "kt6PFJets25", "rho", rho25 );
       RecEvtView->setUserRecord< double >( "rho25", *rho25 );
 
+      // For 2012 see also:
+      // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection?rev=12#Rho_for_2012_Effective_Areas
+      // http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/RecoJets/JetProducers/python/PFJetParameters_cfi.py?revision=1.10&view=markup
+      //
       edm::Handle< double > rho44;
-      iEvent.getByLabel( "kt6PFJets44", "rho", rho44 );
+      iEvent.getByLabel( "kt6PFJets", "rho", rho44 );
       RecEvtView->setUserRecord< double >( "rho44", *rho44 );
 
-      edm::Handle< double > rho;
-      iEvent.getByLabel( "kt6PFJets50", "rho", rho );
-      RecEvtView->setUserRecord< double >( "rho", *rho );
+      edm::Handle< double > rho50;
+      iEvent.getByLabel( "kt6PFJets50", "rho", rho50 );
+      RecEvtView->setUserRecord< double >( "rho50", *rho50 );
 
       //get the calo geometry
       edm::ESHandle< CaloGeometry > geo;
@@ -453,7 +457,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecTracks( iEvent, RecEvtView );
       analyzeRecTaus( iEvent, RecEvtView );
       analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
-      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
+      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho44 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
       }
@@ -461,7 +465,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecMETs( iEvent, RecEvtView );
 
       if( not m_fastSim ) analyzeHCALNoise( iEvent, RecEvtView );
-      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
+      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho44 );
    }
 
    if (IsMC && !fGenOnly){
@@ -1666,7 +1670,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                         const ESHandle< CaloGeometry > &geo,
                                         const Handle< reco::VertexCollection > &vertices,
                                         const Handle< reco::PFCandidateCollection > &pfCandidates,
-                                        const double &rhoFastJet25
+                                        const double &rho
                                         ) {
    int numEleRec = 0;
    int numEleAll = 0;   // for matching
@@ -1937,7 +1941,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                      vertices,
                                      pfCandidates,
                                      eleRef,
-                                     rhoFastJet25,
+                                     rho,
                                      *pxlEle
                                      );
 
@@ -2055,7 +2059,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                      const ESHandle< CaloGeometry > &geo,
                                      const Handle< reco::VertexCollection > &vertices,
                                      const Handle< reco::PFCandidateCollection > &pfCandidates,
-                                     const double &rhoFastJet25
+                                     const double &rho
                                      ) {
    // Get Photon Collection.
    Handle< vector< pat::Photon > > photonHandle;
@@ -2270,7 +2274,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                      vertices,
                                      pfCandidates,
                                      phoRef,
-                                     rhoFastJet25,
+                                     rho,
                                      *pxlPhoton
                                      );
 
@@ -2558,7 +2562,7 @@ void MUSiCSkimmer::particleFlowBasedIsolation( IsoDepositVals const &isoValPFId,
                                                Handle< reco::VertexCollection > const &vertices,
                                                Handle< reco::PFCandidateCollection > const &pfCandidates,
                                                Ref< T > const &ref,
-                                               double const &rhoFastJet25,
+                                               double const &rho,
                                                pxl::Particle &part,
                                                bool const useIsolator
                                                ) const {
@@ -2578,7 +2582,7 @@ void MUSiCSkimmer::particleFlowBasedIsolation( IsoDepositVals const &isoValPFId,
       const double absEta  = fabs( ref->superCluster()->eta() );
       const double effArea = ElectronEffectiveArea::GetElectronEffectiveArea( m_eleEffAreaType, absEta, m_eleEffAreaTarget );
 
-      const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * rhoFastJet25 );
+      const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * rho );
 
       part.setUserRecord< double >( "EffectiveArea",      effArea          );
       part.setUserRecord< double >( "PFIso03PUCorrected", PFIsoPUCorrected );
