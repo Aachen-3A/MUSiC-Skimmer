@@ -1669,8 +1669,12 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
          part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
 
-         // Store information for "cocktail" high energy refit.
-         reco::Muon::MuonTrackTypePair trackPair = muon::tevOptimized( *muon );
+         // Store information for "cocktail" high energy refit. These are needed
+         // for the HighPT Muon ID, for more details see:
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
+         //
+         // Get the optimal cocktail muon track using the improved version of Tune P.
+         reco::Muon::MuonTrackTypePair trackPair = muon::tevOptimized( *muon, 200, 17., 40., 0.25 );
          reco::TrackRef pmcTrack = trackPair.first;
          if( pmcTrack.isAvailable() ) {
             part->setUserRecord< bool >( "validCocktail", true );
@@ -1697,12 +1701,12 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
             part->setUserRecord< double >( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
             part->setUserRecord< double >( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
 
-            part->setUserRecord< double >( "DzBSCocktail",  pmcTrack->dz( the_vertex ) );
+            part->setUserRecord< double >( "DzBSCocktail",  pmcTrack->dz( the_beamspot ) );
             part->setUserRecord< double >( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
             part->setUserRecord< double >( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
 
-            part->setUserRecord< int >( "TrackerLayersWithMeasCocktail", muontrack->hitPattern().trackerLayersWithMeasurement() );
-            part->setUserRecord< int >( "PixelLayersWithMeasCocktail",   muontrack->hitPattern().pixelLayersWithMeasurement() );
+            part->setUserRecord< int >( "TrackerLayersWithMeasCocktail", pmcTrack->hitPattern().trackerLayersWithMeasurement() );
+            part->setUserRecord< int >( "PixelLayersWithMeasCocktail",   pmcTrack->hitPattern().pixelLayersWithMeasurement() );
          } else {
             part->setUserRecord< bool >( "validCocktail", false );
          }
