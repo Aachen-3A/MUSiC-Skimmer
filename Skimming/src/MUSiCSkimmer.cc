@@ -1483,13 +1483,11 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<bool>("isTrackerMuon", muon->isTrackerMuon());
          part->setUserRecord<bool>("isStandAloneMuon", muon->isStandAloneMuon());
 
-         // Absolute transverse impact parameter.
-         part->setUserRecord< double >( "dB", muon->dB() );
-
          //save info about quality of track-fit for combined muon (muon system + tracker)
          reco::TrackRef muontrack = muon->globalTrack();
          reco::TrackRef trackerTrack = muon->innerTrack();
          reco::TrackRef outerTrack = muon->outerTrack();
+         reco::TrackRef muonBestTrack = muon->muonBestTrack();
 
          // Need chi^2 and n.d.f. to calculate fit probability.
          part->setUserRecord< double >( "chi2", muontrack->chi2() );
@@ -1544,9 +1542,16 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord< double >( "ptTracker",          trackerTrack->pt() );
 
          // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
-         // (i.e. the impact parameter)
+         // (i.e. the absolute longitudinal and transverse impact parameter).
+         //
          part->setUserRecord< double >( "Dsz", muontrack->dsz( the_vertex ) );
          part->setUserRecord< double >( "Dxy", muontrack->dxy( the_vertex ) );
+
+         part->setUserRecord< double >( "DzBT",  muonBestTrack->dz( the_vertex ) );
+         part->setUserRecord< double >( "DxyBT", muonBestTrack->dxy( the_vertex ) );
+         // dB returns almost the same value as DxyBT, but is more accurate. For more details see:
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
+         part->setUserRecord< double >( "dB",    muon->dB() );
 
          part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
          part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
