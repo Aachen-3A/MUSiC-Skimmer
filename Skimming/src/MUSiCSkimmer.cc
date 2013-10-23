@@ -408,6 +408,10 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       iEvent.getByLabel( "kt6PFJets25", "rho", rho25 );
       RecEvtView->setUserRecord< double >( "rho25", *rho25 );
 
+      edm::Handle< double > rho44;
+      iEvent.getByLabel( "kt6PFJets44", "rho", rho44 );
+      RecEvtView->setUserRecord< double >( "rho44", *rho44 );
+
       edm::Handle< double > rho;
       iEvent.getByLabel( "kt6PFJets50", "rho", rho );
       RecEvtView->setUserRecord< double >( "rho", *rho );

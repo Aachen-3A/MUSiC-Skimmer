@@ -377,7 +377,12 @@ def addRhoVariable( process ):
     process.kt6PFJets25 = kt6PFJets.clone( doRhoFastjet = True )
     process.kt6PFJets25.Rho_EtaMax = cms.double( 2.5 )
 
-    process.fjSequence = cms.Sequence( process.kt6PFJets25 + process.kt6PFJets50 )
+    process.kt6PFJets44 = kt6PFJets.clone( doRhoFastjet = True )
+
+    process.fjSequence = cms.Sequence( process.kt6PFJets25 +
+                                       process.kt6PFJets50 +
+                                       process.kt6PFJets44
+                                       )
     process.p += process.fjSequence
 
 
