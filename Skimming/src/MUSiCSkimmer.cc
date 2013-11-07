@@ -459,7 +459,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTracks( iEvent, RecEvtView );
       analyzeRecTaus( iEvent, RecEvtView );
-      analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap);
+      analyzeRecMuons( iEvent, RecEvtView, IsMC, genmap, vertices->at( 0 ) );
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho44 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
@@ -1552,7 +1552,12 @@ void MUSiCSkimmer::analyzeRecPatTaus( edm::Event const &iEvent,
 
 // ------------ reading Reconstructed Muons ------------
 
-void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* RecView, const bool& MC, std::map< const reco::Candidate*, pxl::Particle*> & genmap ) {
+void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
+                                    pxl::EventView *RecView,
+                                    bool const &MC,
+                                    std::map< reco::Candidate const*, pxl::Particle* > &genmap,
+                                    reco::Vertex const &PV
+                                    ) const {
    // get pat::Muon's from event
    edm::Handle<std::vector<pat::Muon> > muonHandle;
    iEvent.getByLabel(fMuonRecoLabel, muonHandle);
@@ -1592,6 +1597,13 @@ void MUSiCSkimmer::analyzeRecMuons( const edm::Event& iEvent, pxl::EventView* Re
          part->setUserRecord<bool>("isGlobalMuon", muon->isGlobalMuon());
          part->setUserRecord<bool>("isTrackerMuon", muon->isTrackerMuon());
          part->setUserRecord<bool>("isStandAloneMuon", muon->isStandAloneMuon());
+
+         // Access all Tight-Muon-ID or High-Pt-Muon-ID cuts at once. For details see:
+         // http://cmslxr.fnal.gov/lxr/source/DataFormats/MuonReco/src/MuonSelectors.cc
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
+         part->setUserRecord< bool >( "isTightMuon", muon::isTightMuon( *muon, PV ) );
+         part->setUserRecord< bool >( "isHighPtMuon", muon::isHighPtMuon( *muon, PV, reco::improvedTuneP ) );
 
          //save info about quality of track-fit for combined muon (muon system + tracker)
          reco::TrackRef muontrack = muon->globalTrack();

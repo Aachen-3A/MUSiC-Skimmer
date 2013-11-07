@@ -187,7 +187,13 @@ public:
                                    pxl::EventView *RecEvtView
                                    ) const;
 
-   virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
+   virtual void analyzeRecMuons( edm::Event const &iEvent,
+                                 pxl::EventView *RecView,
+                                 bool const &MC,
+                                 std::map< reco::Candidate const*, pxl::Particle* > &genmap,
+                                 reco::Vertex const &PV
+                                 ) const;
+
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
                                      const bool &MC,
