@@ -6,6 +6,8 @@ Skimmer = cms.EDAnalyzer(
     FileName =  cms.untracked.string("test_run.pxlio"),
     #symbolic name of the processed data
     Process = cms.untracked.string("test_run"),
+    # Dataset of the processed data or MC.
+    Dataset = cms.untracked.string( 'test_run' ),
     # GenOnly true mean no Rec-info in event, check for GenJets and GenMET
     GenOnly = cms.untracked.bool( False ),
     # Are we running on a FASTSIM sample?

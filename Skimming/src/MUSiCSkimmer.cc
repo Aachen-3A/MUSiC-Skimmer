@@ -136,6 +136,8 @@ MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
    //now do what ever initialization is needed
    // Get Physics process
    fProcess = iConfig.getUntrackedParameter<string>("Process");
+   // Get dataset name.
+   fDataset = iConfig.getUntrackedParameter< string >( "Dataset" );
    // Gen-Only or also Rec-information
    fGenOnly = iConfig.getUntrackedParameter<bool>("GenOnly");
    // Use SIM info
@@ -358,6 +360,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    event.setUserRecord< unsigned int >( "EventNum", iEvent.id().event() );
    event.setUserRecord< unsigned int >( "BX", iEvent.bunchCrossing() );
    event.setUserRecord< unsigned int >( "Orbit", iEvent.orbitNumber() );
+   event.setUserRecord< std::string >( "Dataset", fDataset );
 
    // create two ePaxEventViews for Generator/Reconstructed Objects
    pxl::EventView* GenEvtView = event.createIndexed<pxl::EventView>("Gen");
