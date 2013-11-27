@@ -109,6 +109,7 @@ public:
       unsigned int ID;
       bool active;
    };
+   typedef std::vector< trigger_def > vtrigger_def;
    //information about one trigger group
    struct trigger_group {
       std::string   name;
@@ -120,7 +121,11 @@ public:
       // std::set because duplicates make no sense here.
       sstring triggers_names;
       sstring datastreams;
-      std::vector< trigger_def > trigger_infos;
+      vtrigger_def trigger_infos;
+      // Map the triggers to the corresponding datastream.
+      std::map< string, sstring > triggers_by_datastream;
+      // Map the trigger_def objects to the corresponding datastream.
+      std::map< string, vtrigger_def > trigger_infos_by_datastream;
    };
 
 
@@ -141,10 +146,19 @@ public:
 
    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
 
+   virtual void initializeFilter( edm::Event const &event,
+                                  edm::EventSetup const &setup,
+                                  trigger_group &filter
+                                  ) const;
+
    virtual std::map< std::string, bool > initializeTrigger( edm::Event const &event,
                                                             edm::EventSetup const &setup,
                                                             trigger_group &trigger
                                                             ) const;
+
+   virtual void getTriggers( std::string const DS,
+                             trigger_group &trigger
+                             ) const;
 
    virtual void analyzeFilter( const edm::Event &iEvent,
                                const edm::EventSetup &iSetup,
@@ -300,8 +314,12 @@ public:
    // Conversions for vetoing.
    edm::InputTag m_conversionsTag;
 
-   //all triggers
+   // All triggers.
    std::vector< trigger_group > triggers;
+   // Are the datastreams in the HLT menu?
+   std::map< std::string, bool > availableDS;
+
+   // All filters.
    std::vector< trigger_group > filters;
 
    bool fStoreL3Objects;
