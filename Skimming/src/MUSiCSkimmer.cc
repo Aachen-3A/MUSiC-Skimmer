@@ -1995,10 +1995,14 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
          part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
          part->setUserRecord< bool >( "isPFJet", jet->isPFJet() );
          if (jet_info.isPF) {
-            part->setUserRecord<double>("chargedHadronEnergyFraction",jet->chargedHadronEnergyFraction());
+            part->setUserRecord< double >( "chargedHadronEnergyFraction", jet->chargedHadronEnergyFraction() );
+            part->setUserRecord< double >( "chargedHadronEnergy",         jet->chargedHadronEnergy() );
             part->setUserRecord< double >( "neutralHadronEnergyFraction", jet->neutralHadronEnergyFraction() );
-            part->setUserRecord<double>("chargedEmEnergyFraction", jet->chargedEmEnergyFraction());
-            part->setUserRecord<double>("neutralEmEnergyFraction", jet->neutralEmEnergyFraction());
+            part->setUserRecord< double >( "neutralHadronEnergy",         jet->neutralHadronEnergy() );
+            part->setUserRecord< double >( "chargedEmEnergyFraction",     jet->chargedEmEnergyFraction() );
+            part->setUserRecord< double >( "chargedEmEnergy",             jet->chargedEmEnergy() );
+            part->setUserRecord< double >( "neutralEmEnergyFraction",     jet->neutralEmEnergyFraction() );
+            part->setUserRecord< double >( "neutralEmEnergy",             jet->neutralEmEnergy() );
             part->setUserRecord<double>("chargedMultiplicity", jet->chargedMultiplicity());
             part->setUserRecord<double>("nconstituents", jet->numberOfDaughters());
          } else {
