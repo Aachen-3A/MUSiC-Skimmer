@@ -162,9 +162,9 @@ def configurePAT( process, runOnData ):
         process.patJets.embedGenJetMatch = False
         process.patJets.embedGenPartonMatch = False
 
-        process.patJetCorrFactors.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
+        process.patJetCorrFactors.levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
     else:
-        process.patJetCorrFactors.levels = cms.vstring( 'L1Offset', 'L2Relative', 'L3Absolute' )
+        process.patJetCorrFactors.levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute' )
 
     process.p += process.patDefaultSequence
 
