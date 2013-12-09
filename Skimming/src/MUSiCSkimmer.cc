@@ -61,7 +61,7 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 
 // EGamma stuff.
-#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
+#include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"

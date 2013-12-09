@@ -78,7 +78,7 @@ class PFIsolationEstimator;
 #include "MUSiCProject/Skimming/interface/collection_def.h"
 
 // EGamma stuff.
-#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
+#include "EgammaAnalysis/ElectronTools/interface/ElectronEffectiveArea.h"
 
 // PXL stuff
 // Has to be included as the last header otherwise there will be a warning concerning the
