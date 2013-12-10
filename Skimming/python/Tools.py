@@ -274,6 +274,7 @@ def configurePFandMET( process, runOnData, postfix ):
                        typeIMetCorrections = True,
                        runOnMC = not runOnData,
                        postfix = postfix,
+                       pvCollection = cms.InputTag( 'goodOfflinePrimaryVertices' ),
                        outputModules = []
                        )
     process.pfPileUpPFlow.checkClosestZVertex = False
