@@ -66,10 +66,25 @@ Skimmer = cms.EDAnalyzer(
                                 cms.InputTag( 'patMETsPFlow' ),
                                 ),
 
-    # In CMSSW 4_X_Y it was necessary to access reco::PFMET. Since this is not needed
-    # at the moment an empty list is given.
-    # This structure can be reused (or removed consistently) in the future.
-    recoPFMETTags = cms.VInputTag(),
+    # PFMET with different corrections applied.
+    recoPFMETTags = cms.VInputTag( cms.InputTag( 'pfMetT0rt' ),
+                                   cms.InputTag( 'pfMetT0rtT1' ),
+                                   cms.InputTag( 'pfMetT0rtT2' ),
+                                   cms.InputTag( 'pfMetT0rtTxy' ),
+                                   cms.InputTag( 'pfMetT0rtT1T2' ),
+                                   cms.InputTag( 'pfMetT0rtT1Txy' ),
+                                   cms.InputTag( 'pfMetT0rtT2Txy' ),
+                                   cms.InputTag( 'pfMetT0rtT1T2Txy' ),
+                                   cms.InputTag( 'pfMetT0pc' ),
+                                   cms.InputTag( 'pfMetT0pcT1' ),
+                                   cms.InputTag( 'pfMetT0pcTxy' ),
+                                   # Recommended for 2012 data (PFMET + Type-0PC + Type-I + xy-Shift)
+                                   cms.InputTag( 'pfMetT0pcT1Txy' ),
+                                   cms.InputTag( 'pfMetT1' ),
+                                   cms.InputTag( 'pfMetT1T2' ),
+                                   cms.InputTag( 'pfMetT1Txy' ),
+                                   cms.InputTag( 'pfMetT1T2Txy' ),
+                                   ),
 
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets

@@ -69,7 +69,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         configurePAT( process, runOnData )
 
         postfix = 'PFlow'
-        configurePFandMET( process, runOnData, postfix )
+        configurePFJet( process, runOnData, postfix )
+        configurePFMET( process, runOnData )
         configurePFIso( process )
 
         import PhysicsTools.PatAlgos.tools.coreTools
@@ -241,16 +242,16 @@ def configureJEC( process, runOnData ):
     print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
 
 
-# PF2PAT and MET corrections build up on each other, so everything is defined in this one function.
+# PF2PAT configuration for jets.
 #
-def configurePFandMET( process, runOnData, postfix ):
+def configurePFJet( process, runOnData, postfix ):
     defaultPostfix = 'PFlow'
     if not postfix:
         postfix = defaultPostfix
         print "WARNING: No postfix provided, setting to: '%s'" %postfix
 
-    # PFnoPU, see also:
-    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
+    # PFnoPU (jets with charged hadron subtraction), see also:
+    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=116#JetEnCorPFnoPU2012
     #
     # 1. Create good primary vertices to be used for PF association.
     #
@@ -271,7 +272,6 @@ def configurePFandMET( process, runOnData, postfix ):
                        runPF2PAT = True,
                        jetAlgo = 'AK5',
                        jetCorrections = ( 'AK5PFchs', jetCorrFactors ),
-                       typeIMetCorrections = True,
                        runOnMC = not runOnData,
                        postfix = postfix,
                        pvCollection = cms.InputTag( 'goodOfflinePrimaryVertices' ),
@@ -288,22 +288,80 @@ def configurePFandMET( process, runOnData, postfix ):
 
     process.p += process.patseq
 
-    # Type 0+1 MET corrections. Type 2 is not recommended for general use.
-    # See also:
-    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis?rev=130#Type_I_0_with_PF2PAT
-    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingET        --> approval talk
-    #
-    getattr( process, 'patType1CorrectedPFMet' + postfix ).srcType1Corrections = cms.VInputTag(
-        cms.InputTag( 'patPFJetMETtype1p2Corr' + postfix, 'type1' ),
-        cms.InputTag( 'patPFMETtype0Corr' + postfix )
-        )
-
     # Set the jetSource to all jets, i.e. jets that have identified as taus have
     # *not* been removed from the collection (we do it on our own in MUSiC).
     #
     process.patJetsPFlow.jetSource = 'pfJetsPFlow'
     process.patMuonsPFlow.embedHighLevelSelection = False
     process.patElectronsPFlow.embedHighLevelSelection = False
+
+
+# Apply MET corrections following:
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis?rev=170#How_to_apply_the_MET_corrections
+# https://github.com/TaiSakuma/WorkBookMet/blob/master/corrMet_cfg.py
+# https://github.com/TaiSakuma/WorkBookMet/blob/master/printMet_corrMet.py
+#
+def configurePFMET( process, runOnData ):
+
+   process.load( 'JetMETCorrections.Type1MET.correctionTermsPfMetType1Type2_cff' )
+
+   if runOnData:
+      process.corrPfMetType1.jetCorrLabel = cms.string( 'ak5PFL1FastL2L3Residual' )
+   else:
+      process.corrPfMetType1.jetCorrLabel = cms.string( 'ak5PFL1FastL2L3' )
+
+   process.load( 'JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff' )
+
+   process.load( 'JetMETCorrections.Type1MET.correctionTermsPfMetType0RecoTrack_cff' )
+
+   process.load( 'JetMETCorrections.Type1MET.correctionTermsPfMetShiftXY_cff' )
+
+   if runOnData:
+      process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
+   else:
+      process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
+
+   process.load( 'JetMETCorrections.Type1MET.correctedMet_cff' )
+
+   process.p += process.correctionTermsPfMetType1Type2
+   process.p += process.correctionTermsPfMetType0RecoTrack
+   process.p += process.correctionTermsPfMetType0PFCandidate
+   process.p += process.correctionTermsPfMetShiftXY
+
+   # pfMET + Type-0(track)
+   process.p += process.pfMetT0rt
+   # PFMET + Type-0(track) + Type-I
+   process.p += process.pfMetT0rtT1
+   # PFMET + Type-0(track) + Type-II
+   process.p += process.pfMetT0rtT2
+   # PFMET + Type-0(track) + xy-shift
+   process.p += process.pfMetT0rtTxy
+   # PFMET + Type-0(track) + Type-I + Type-II
+   process.p += process.pfMetT0rtT1T2
+   # PFMET + Type-0(track) + Type-I + xy-shift
+   process.p += process.pfMetT0rtT1Txy
+   # PFMET + Type-0(track) + Type-II + xy-shift
+   process.p += process.pfMetT0rtT2Txy
+   # PFMET + Type-0(track) + Type-I + Type-II + xy-shift
+   process.p += process.pfMetT0rtT1T2Txy
+
+   # PFMET + Type-0(pfcand)
+   process.p += process.pfMetT0pc
+   # PFMET + Type-0(pfcand) + Type-I
+   process.p += process.pfMetT0pcT1
+   # PFMET + Type-0(pfcand) + xy-shift
+   process.p += process.pfMetT0pcTxy
+   # PFMET + Type-0(pfcand) + Type-I + xy-shift
+   process.p += process.pfMetT0pcT1Txy
+
+   # PFMET + Type-I
+   process.p += process.pfMetT1
+   # PFMET + Type-I + Type-II
+   process.p += process.pfMetT1T2
+   # PFMET + Type-I + xy-shift
+   process.p += process.pfMetT1Txy
+   # PFMET + Type-I + Type-II + xy-shift
+   process.p += process.pfMetT1T2Txy
 
 
 # Following the "recipe":
