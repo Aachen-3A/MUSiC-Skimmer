@@ -224,15 +224,17 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
 
 
 # See also:
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012?r=116
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=116#JetEnCor2012Summer13
+# https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC?rev=59
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=449#Winter13_2012_A_B_C_D_datasets_r
 #
 def configureJEC( process, runOnData ):
     if runOnData:
         # Newest GT for the ReReco-22Jan2013 data.
-        jecGlobalTag = cms.string( 'FT_53_V21_AN3::All' )
+        jecGlobalTag = cms.string( 'FT_53_V21_AN6::All' )
     else:
-        # Newest GT for CMSSW_5_3_x MC.
-        jecGlobalTag = cms.string( 'START53_V16::All' )
+        # Newest GT for CMSSW >= CMSSW_5_3_8_patch3 MC.
+        jecGlobalTag = cms.string( 'START53_V27::All' )
 
     GlobalTag = process.GlobalTag.globaltag
     process.GlobalTag.globaltag = jecGlobalTag
