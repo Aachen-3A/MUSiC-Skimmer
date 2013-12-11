@@ -11,7 +11,7 @@ import FWCore.ParameterSet.Config as cms
 #     Data2012
 #     Summer11MC
 #     Fall11MC
-eleEffAreaTarget = cms.untracked.string( 'Data2011' )
+eleEffAreaTarget = cms.untracked.string( 'Data2012' )
 
 # Verbosity: 0 = normal messaging, 1 = human readable, 2 = insane, 3 = INFO from all modules
 verbosityLvl = 0
