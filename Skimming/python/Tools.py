@@ -84,6 +84,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         addEEBadSCFilter( process )
         addMuonPFCandidateFilter( process )
         addECALLaserCorrFilter( process )
+        addLogErrorTooManyClustersFilter( process )
         addCoherentNoiseRelativeFilter( process )
         addCoherentNoiseAbsoluteFilter( process )
 
@@ -586,6 +587,30 @@ def addECALLaserCorrFilter( process ):
 
     process.p_ecallasercorrfilter = cms.Path( process.ecalLaserCorrFilter )
     process.Skimmer.filterlist.append( 'p_ecallasercorrfilter' )
+
+
+# Filter to reject events with aborted track reconstruction. Find details
+# and code snippets on:
+# https://twiki.cern.ch/twiki/bin/view/CMS/TrackingPOGFilters#Filters
+#
+def addLogErrorTooManyClustersFilter( process ):
+    # Configuration to select events with the 'TooManyClusters' error in
+    # seeding modules of the track reconstruction. This filter does not
+    # protect from other modules issuing a 'TooManyClusters' error.
+    #
+    process.logErrorTooManyClustersFilter = cms.EDFilter( 'LogErrorEventFilter',
+        src = cms.InputTag( 'logErrorHarvester' ),
+        maxErrorFractionInLumi = cms.double( 1.0 ),
+        maxErrorFractionInRun  = cms.double( 1.0 ),
+        maxSavedEventsPerLumiAndError = cms.uint32( 100000 ),
+        categoriesToWatch = cms.vstring( 'TooManyClusters' ),
+        modulesToIgnore = cms.vstring( 'SeedGeneratorFromRegionHitsEDProducer:regionalCosmicTrackerSeeds',
+                                       'PhotonConversionTrajectorySeedProducerFromSingleLeg:photonConvTrajSeedFromSingleLeg'
+        )
+    )
+
+    process.p_logerrortoomanyclustersfilter = cms.Path( ~process.logErrorTooManyClustersFilter )
+    process.Skimmer.filterlist.append( 'p_logerrortoomanyclustersfilter' )
 
 
 # The following two filters are for rejecting events found in data with coherent noise in the
