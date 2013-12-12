@@ -2211,6 +2211,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
 
          pxlPhoton->setUserRecord< double >( "Emax", eMax );
          pxlPhoton->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
+         pxlPhoton->setUserRecord< double >( "e1x5", patPhoton->e1x5() );
          pxlPhoton->setUserRecord< double >( "e3x3", e3x3 );
          pxlPhoton->setUserRecord< double >( "e5x5", patPhoton->e5x5() );
          pxlPhoton->setUserRecord< double >( "r19",  eMax / e3x3 );
