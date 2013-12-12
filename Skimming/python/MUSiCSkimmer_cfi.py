@@ -153,7 +153,11 @@ Skimmer = cms.EDAnalyzer(
         vertex_minNDOF = cms.double( 3 ),
         vertex_maxZ = cms.double( 30 ),
         vertex_maxR = cms.double( 3 ),
-        PV_minNDOF = cms.double( 5 ),
+        # These cuts come from:
+        # https://twiki.cern.ch/twiki/bin/viewauth/CMSPublic/WorkBookChapter8?rev=27
+        # See also:
+        # CMS PAS TRK-10-005
+        PV_minNDOF = cms.double( 4 ),
         PV_maxZ = cms.double( 24 ),
         PV_maxR = cms.double( 2 )
         )
