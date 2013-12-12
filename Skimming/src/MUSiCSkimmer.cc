@@ -1928,7 +1928,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
 
          // 2012 definition of H/E and related HCAL isolation.
          // See also:
-         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11
          //
          vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
 
@@ -1936,10 +1936,16 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
          const double hcalDepth2 = m_hcalHelper->hcalESumDepth2BehindClusters( hcalTowersBehindClusters );
          const double HoverE2012 = ( hcalDepth1 + hcalDepth2 ) / SCenergy;
 
-         const double HCALIsoConeDR03_2012 = patEle->dr03HcalTowerSumEt() + ( HoEm - HoverE2012 ) * SCenergy / cosh( SCRef->eta() );
+         const double HCALIsoConeDR03_2012 = patEle->dr03HcalTowerSumEt() +
+                                             ( HoEm - HoverE2012 ) *
+                                             SCenergy / cosh( SCRef->eta() );
+         const double HCALIsoConeDR04_2012 = patEle->dr04HcalTowerSumEt() +
+                                             ( HoEm - HoverE2012 ) *
+                                             SCenergy / cosh( SCRef->eta() );
 
          pxlEle->setUserRecord< double >( "HoverE2012",           HoverE2012           );
          pxlEle->setUserRecord< double >( "HCALIsoConeDR03_2012", HCALIsoConeDR03_2012 );
+         pxlEle->setUserRecord< double >( "HCALIsoConeDR04_2012", HCALIsoConeDR04_2012 );
 
          // Default PF based isolation for charged leptons:
          pxlEle->setUserRecord< double >( "chargedHadronIso", patEle->chargedHadronIso() );
@@ -2260,7 +2266,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
 
          // 2012 definition of H/E and related HCAL isolation.
          // See also:
-         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11
          //
          const vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
 
@@ -2268,10 +2274,17 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
          const double hcalDepth2 = m_hcalHelper->hcalESumDepth2BehindClusters( hcalTowersBehindClusters );
          const double HoverE2012 = ( hcalDepth1 + hcalDepth2 ) / SCRef->energy();
 
-         const double HCALIsoConeDR03_2012 = patPhoton->hcalTowerSumEtConeDR03() + ( HoEm - HoverE2012 ) * SCRef->energy() / cosh( SCRef->eta() );
+         const double HCALIsoConeDR03_2012 = patPhoton->hcalTowerSumEtConeDR03() +
+                                             ( HoEm - HoverE2012 ) *
+                                             SCRef->energy() / cosh( SCRef->eta() );
+
+         const double HCALIsoConeDR04_2012 = patPhoton->hcalTowerSumEtConeDR04() +
+                                             ( HoEm - HoverE2012 ) *
+                                             SCRef->energy() / cosh( SCRef->eta() );
 
          pxlPhoton->setUserRecord< double >( "HoverE2012"           , HoverE2012           );
          pxlPhoton->setUserRecord< double >( "HCALIsoConeDR03_2012" , HCALIsoConeDR03_2012 );
+         pxlPhoton->setUserRecord< double >( "HCALIsoConeDR04_2012" , HCALIsoConeDR04_2012 );
 
          // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
          //
