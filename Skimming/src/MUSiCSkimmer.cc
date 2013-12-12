@@ -1725,6 +1725,12 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
          pxlEle->setName( "Ele" );
          pxlEle->setCharge( patEle->charge() );
          pxlEle->setP4( patEle->px(), patEle->py(), patEle->pz(), patEle->ecalEnergy() );
+         // For the sake of completeness write the HEEP definition of Et.
+         // According to:
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HEEPElectronID?rev=64#Et
+         pxlEle->setUserRecord< double >( "SCEt", patEle->caloEnergy() *
+                                           std::sin( patEle->p4().theta() )
+                                           );
 
          pxlEle->setUserRecord< bool >( "isBarrel", isBarrel );
          pxlEle->setUserRecord< bool >( "isEndcap", isEndcap );
