@@ -29,9 +29,6 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     process.load( 'Configuration.StandardSequences.GeometryPilot2_cff' )
     process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
 
-    # do we need this ?
-    #process.content = cms.EDAnalyzer( 'EventContentAnalyzer' )
-
     # Create an empty path because modules will be added by calling the
     # functions below.
     #
@@ -250,20 +247,11 @@ def configurePFandMET( process, runOnData, postfix ):
         postfix = defaultPostfix
         print "WARNING: No postfix provided, setting to: '%s'" %postfix
 
-    from PhysicsTools.PatAlgos.tools import pfTools
-    pfTools.usePF2PAT( process,
-                       runPF2PAT = True,
-                       jetAlgo = 'AK5',
-                       jetCorrections = ( 'AK5PFchs', process.patJetCorrFactors.levels ),
-                       runOnMC = not runOnData,
-                       postfix = postfix,
-                       outputModules = []
-                       )
-
-    # Additional updates for Jet Energy Corrections, see also:
-    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU (r114)
-
-    # Create good primary vertices to be used for PF association
+    # PFnoPU, see also:
+    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
+    #
+    # 1. Create good primary vertices to be used for PF association.
+    #
     from PhysicsTools.SelectorUtils.pvSelector_cfi import pvSelector
     process.goodOfflinePrimaryVertices = cms.EDFilter(
         'PrimaryVertexObjectFilter',
@@ -271,26 +259,25 @@ def configurePFandMET( process, runOnData, postfix ):
         src = cms.InputTag( 'offlinePrimaryVertices' )
         )
 
-    process.pfPileUpPFlow.Enable = True
-    process.pfPileUpPFlow.Vertices = 'goodOfflinePrimaryVertices'
-    process.pfPileUpPFlow.checkClosestZVertex = cms.bool( False )
+    # 2. Create the "top-down projection" for the PF2PAT sequence.
+    #
+    from PhysicsTools.PatAlgos.tools import pfTools
 
-    process.pfJetsPFlow.doAreaFastjet = True
-    process.pfJetsPFlow.doRhoFastjet = False
+    jetCorrFactors = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute' )
+    if runOnData: jetCorrFactors = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
+    pfTools.usePF2PAT( process,
+                       runPF2PAT = True,
+                       jetAlgo = 'AK5',
+                       jetCorrections = ( 'AK5PFchs', jetCorrFactors ),
+                       typeIMetCorrections = True,
+                       runOnMC = not runOnData,
+                       postfix = postfix,
+                       outputModules = []
+                       )
+    process.pfPileUpPFlow.checkClosestZVertex = False
 
-    process.patJetCorrFactorsPFlow.rho = cms.InputTag( 'kt6PFJets' + postfix, 'rho' )
-
-    # Compute the mean pt per unit area ("rho") using KT6 Jets with the active areas method.
-    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
-    process.kt6PFJetsPFlow = kt4PFJets.clone(
-        rParam = cms.double( 0.6 ),
-        src = cms.InputTag( 'pfNoElectron' + postfix ),
-        doAreaFastjet = cms.bool( True ),
-        doRhoFastjet = cms.bool( True )
-        )
-
-    getattr( process, 'patPF2PATSequence' + postfix ).replace( getattr( process, 'pfNoElectron' + postfix ),
-                                                               getattr( process, 'pfNoElectron' + postfix ) * process.kt6PFJetsPFlow )
+    # 3. Add them all to the sequence.
+    #
     process.patseq = cms.Sequence(
        process.goodOfflinePrimaryVertices*
        getattr( process, 'patPF2PATSequence' + postfix )
@@ -298,6 +285,18 @@ def configurePFandMET( process, runOnData, postfix ):
 
     # Switch to HPS Taus with PF2PAT.
     pfTools.adaptPFTaus( process, 'hpsPFTau', postfix = postfix )
+
+    process.p += process.patseq
+
+    # Type 0+1 MET corrections. Type 2 is not recommended for general use.
+    # See also:
+    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis?rev=130#Type_I_0_with_PF2PAT
+    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingET        --> approval talk
+    #
+    getattr( process, 'patType1CorrectedPFMet' + postfix ).srcType1Corrections = cms.VInputTag(
+        cms.InputTag( 'patPFJetMETtype1p2Corr' + postfix, 'type1' ),
+        cms.InputTag( 'patPFMETtype0Corr' + postfix )
+        )
 
     # Use at least one discriminator for taus to reduce the collection
     getattr( process, 'pfTaus' + postfix ).discriminators = cms.VPSet(
@@ -312,43 +311,6 @@ def configurePFandMET( process, runOnData, postfix ):
     process.patJetsPFlow.jetSource = 'pfJetsPFlow'
     process.patMuonsPFlow.embedHighLevelSelection = False
     process.patElectronsPFlow.embedHighLevelSelection = False
-
-    # METnoPU (stolen from: http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/lucieg/METsWithPU/METsAnalyzer/python/pfMetNoPileUp_cff.py)
-    process.pfMetNoPileUp       = getattr( process, 'pfMET' + postfix ).clone()
-    process.pfMetNoPileUp.alias = 'pfMetNoPileUp'
-    process.pfMetNoPileUp.src   = cms.InputTag( 'pfNoPileUp' + postfix )
-
-    patMETsPFlowNoPU = 'patMETs' + postfix + 'NoPU'
-    setattr( process, patMETsPFlowNoPU, getattr( process, 'patMETs' + postfix ).clone() )
-    getattr( process, patMETsPFlowNoPU ).metSource = cms.InputTag( 'pfMetNoPileUp' )
-
-    # Type-I and Type-II MET corrections.
-    # Basically following the recipe from but we want one collection for each combination of corrections:
-    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis (r80)
-    process.load( 'JetMETCorrections.Type1MET.pfMETCorrections_cff' )
-    if runOnData:
-       process.pfJetMETcorr.jetCorrLabel = cms.string( 'ak5PFL1FastL2L3Residual' )
-    else:
-       process.pfJetMETcorr.jetCorrLabel = cms.string( 'ak5PFL1FastL2L3' )
-
-    # Create collections without Type-0 corrections:
-    process.pfType1CorrectedMetNoType0 = process.pfType1CorrectedMet.clone()
-    process.pfType1CorrectedMetNoType0.applyType0Corrections = cms.bool( False )
-    process.producePFMETCorrections += process.pfType1CorrectedMetNoType0
-
-    process.pfType1p2CorrectedMetNoType0 = process.pfType1p2CorrectedMet.clone()
-    process.pfType1p2CorrectedMetNoType0.applyType0Corrections = cms.bool( False )
-    process.producePFMETCorrections += process.pfType1p2CorrectedMetNoType0
-
-    # To have Type-0 corrected collections, we use the pfMetNoPileUp as input:
-    process.pfType1CorrectedMet.src   = cms.InputTag( 'pfMetNoPileUp' )
-    process.pfType1p2CorrectedMet.src = cms.InputTag( 'pfMetNoPileUp' )
-
-    # The order is important here!
-    process.p += process.patseq
-    process.p += process.pfMetNoPileUp
-    process.p += getattr( process, patMETsPFlowNoPU )
-    process.p += process.producePFMETCorrections
 
 
 # Following the "recipe":
