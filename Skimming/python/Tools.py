@@ -225,13 +225,16 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
                path += getattr( process, jet_name+'RecoJetFlavourPhysics' )
 
 
+# See also:
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012?r=116
+#
 def configureJEC( process, runOnData ):
     if runOnData:
-        jecGlobalTag = cms.string( 'GR_R_44_V15::All' )
-        jecVersion = 15
+        jecGlobalTag = cms.string( 'GR_R_52_V7C::All' )
+        jecVersion = 7
     else:
-        jecGlobalTag = cms.string( 'START44_V5::All' )
-        jecVersion = 5
+        jecGlobalTag = cms.string( 'START52_V11::All' )
+        jecVersion = 11
     GlobalTag = process.GlobalTag.globaltag
     version = int( str( GlobalTag ).split( 'V' )[1].split( ':' )[0] )
     if version < jecVersion:
