@@ -1,4 +1,5 @@
 generator = SHERPA
+CME = 8
 config = mc_SU12_cfg.py
 
 DYJets_0p0_1p2_2p10_3p15_4p15-PU_S10_SP:/DYJets_0p0_1p2_2p10_3p15_4p15_CT10_8TeV-sherpa/Summer12_DR53X-PU_S10_START53_V7C-v2/AODSIM

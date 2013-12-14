@@ -1,4 +1,5 @@
 generator = PYTHIA6
+CME = 8
 config = mc_SU12_cfg.py
 
 DYToBB_M_50-PU_S10_P6:/DYToBB_M_50_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

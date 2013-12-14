@@ -1,4 +1,5 @@
 generator = MCATNLO
+CME = 8
 config = mc_SU12_cfg.py
 
 TT-PU_S10_MC:/TT_8TeV-mcatnlo/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

@@ -1,4 +1,5 @@
 generator = HERWIG
+CME = 8
 config = mc_SU12_cfg.py
 
 SingleTop_stchannelComb-aMCatNLO-PU_S10_HW:/SingleTop_stchannelComb_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM

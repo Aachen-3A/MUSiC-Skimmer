@@ -1,4 +1,5 @@
 generator = POWHEG
+CME = 8
 config = mc_SU12_cfg.py
 
 DYToEE_M-1000-PU_S10_PH:/DYToEE_M-1000_CT10_TuneZ2star_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

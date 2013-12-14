@@ -1,4 +1,5 @@
 generator = HERWIG6
+CME = 8
 config = mc_SU12_cfg.py
 
 QCD_Pt-1000-PU_S10_HW:/QCD_Pt-1000_CTEQ6L1_8TeV_herwig6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM

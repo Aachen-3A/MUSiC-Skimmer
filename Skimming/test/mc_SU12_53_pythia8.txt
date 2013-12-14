@@ -1,4 +1,5 @@
 generator = PYTHIA8
+CME = 8
 config = mc_SU12_cfg.py
 
 QCD_Pt-0to15-PU_S8_P8:/QCD_Pt-0to15_Tune4C_8TeV_pythia8/Summer12_DR53X-PU_S8_START53_V7A-v1/AODSIM

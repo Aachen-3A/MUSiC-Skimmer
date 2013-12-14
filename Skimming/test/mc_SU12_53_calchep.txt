@@ -1,4 +1,5 @@
 generator = CALCHEP
+CME = 8
 config = mc_SU12_cfg.py
 
 DYJetsToEE-MuMu_PtZ-100To300-PU_S10_CA:/DYJetsToEE-MuMu_PtZ-100To300_TuneZ2_8TeV-calchep-pythia/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

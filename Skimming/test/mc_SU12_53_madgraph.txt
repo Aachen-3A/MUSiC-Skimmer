@@ -1,4 +1,5 @@
 generator = MADGRAPH
+CME = 8
 config = mc_SU12_cfg.py
 
 DY1JetsToLL_M-10To50-PU_S10_MG:/DY1JetsToLL_M-10To50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

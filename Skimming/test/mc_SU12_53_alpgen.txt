@@ -1,4 +1,5 @@
 generator = ALPGEN
+CME = 8
 config = mc_SU12_cfg.py
 
 QCD4Jets_Pt-100to180-PU_S10_AG:/QCD4Jets_Pt-100to180_TuneZ2Star_8TeV-alpgen/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM

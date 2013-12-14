@@ -1,4 +1,5 @@
 generator = COMPHEP
+CME = 8
 config = mc_SU12_cfg.py
 
 TToBENu_t-channel-PU_S10_CO:/TToBENu_t-channel_TuneZ2star_8TeV-comphep/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

@@ -1,4 +1,5 @@
 generator = LPAIR
+CME = 8
 config = mc_SU12_cfg.py
 
 GamGamTauTau_Elastic_Pt25-PU_S10_LP:/GamGamTauTau_Elastic_Pt25_8TeV_lpair/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

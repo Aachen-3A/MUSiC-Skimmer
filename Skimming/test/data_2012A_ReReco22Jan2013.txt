@@ -1,3 +1,5 @@
+DCSOnly = https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions12/8TeV/DCSOnly/json_DCSONLY.txt
+CME = 8
 config = data_cfg.py
 
 Data_190456_190738_SingleMu:/SingleMu/Run2012A-22Jan2013-v1/AOD;DCS-190456-190738.json
