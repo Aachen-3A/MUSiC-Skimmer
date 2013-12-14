@@ -1,0 +1,5 @@
+generator = HERWIGPP
+config = mc_SU12_cfg.py
+
+ZJetsToLL_Pt-100-PU_S10_HP:/ZJetsToLL_Pt-100_8TeV-herwigpp/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZJetsToNuNu_Pt-100-PU_S10_HP:/ZJetsToNuNu_Pt-100_8TeV-herwigpp/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

@@ -1,0 +1,7 @@
+generator = COMPHEP
+config = mc_SU12_cfg.py
+
+TToBENu_t-channel-PU_S10_CO:/TToBENu_t-channel_TuneZ2star_8TeV-comphep/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+TToBLNu_s-channel-PU_S10_CO:/TToBLNu_s-channel_TuneZ2star_8TeV-comphep/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+TToBMuNu_t-channel-PU_S10_CO:/TToBMuNu_t-channel_TuneZ2star_8TeV-comphep/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+TToBTauNu_t-channel-PU_S10_CO:/TToBTauNu_t-channel_TuneZ2star_8TeV-comphep/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM

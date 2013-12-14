@@ -1,0 +1,8 @@
+generator = SHERPA
+config = mc_SU12_cfg.py
+
+DYJets_0p0_1p2_2p10_3p15_4p15-PU_S10_SP:/DYJets_0p0_1p2_2p10_3p15_4p15_CT10_8TeV-sherpa/Summer12_DR53X-PU_S10_START53_V7C-v2/AODSIM
+DiPhotonJetsBox_M60-PU_S10_SP:/DiPhotonJetsBox_M60_8TeV-sherpa/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+TTJets_DileptDecays-PU_S10_SP:/TTJets_DileptDecays_8TeV-sherpa/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM
+TTJets_SemiLeptDecays-PU_S10_SP:/TTJets_SemiLeptDecays_8TeV-sherpa/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM
+WJets_0p1_1p2_2p10_3p20_4p20_5p20-PU_S10_SP:/WJets_0p1_1p2_2p10_3p20_4p20_5p20_CT10_8TeV-sherpa/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
