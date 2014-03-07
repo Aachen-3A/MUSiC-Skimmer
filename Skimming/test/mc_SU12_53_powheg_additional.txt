@@ -1,0 +1,16 @@
+generator = POWHEG
+CME = 8
+config = mc_SU12_cfg.py
+
+ZZTo2e2mu-PU_S10_PH:/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo2e2mu_ext-PU_S10_PH:/ZZTo2e2mu_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+ZZTo2e2tau-PU_S10_PH:/ZZTo2e2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo2e2tau_ext-PU_S10_PH:/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+ZZTo2mu2tau-PU_S10_PH:/ZZTo2mu2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo2mu2tau_ext-PU_S10_PH:/ZZTo2mu2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+ZZTo4e-PU_S10_PH:/ZZTo4e_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo4e_ext-PU_S10_PH:/ZZTo4e_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+ZZTo4mu-PU_S10_PH:/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo4mu_ext-PU_S10_PH:/ZZTo4mu_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+ZZTo4tau-PU_S10_PH:/ZZTo4tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo4tau_ext-PU_S10_PH:/ZZTo4tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM

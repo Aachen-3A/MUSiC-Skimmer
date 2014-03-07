@@ -1,0 +1,7 @@
+generator = PYTHIA6
+CME = 8
+config = mc_SU12_cfg.py
+
+GluGluToZZTo2L2L-gg2zz-PU_S10_P6:/GluGluToZZTo2L2L_TuneZ2star_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+GluGluToZZTo4L-gg2zz-PU_S10_P6:/GluGluToZZTo4L_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+ZZTo4L-PU_S10_P6:/ZZTo4L_TuneZ2star_8TeV_pythia6_tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
