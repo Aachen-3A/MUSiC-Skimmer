@@ -1,0 +1,10 @@
+generator = PYTHIA6
+CME = 8
+config = mc_SU12_cfg.py
+
+DiPhotonBorn_Pt-10To25-PU_S10_P6:/DiPhotonBorn_Pt-10To25_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+DiPhotonBorn_Pt-250ToInf-PU_S10_P6:/DiPhotonBorn_Pt-250ToInf_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+DiPhotonBorn_Pt-25To250-PU_S10_P6:/DiPhotonBorn_Pt-25To250_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+DiPhotonBox_Pt-250ToInf_ext-PU_S10_P6:/DiPhotonBox_Pt-250ToInf_8TeV_ext-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+DiPhotonBox_Pt-25To250_ext-PU_S10_P6:/DiPhotonBox_Pt-25To250_8TeV_ext-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
+

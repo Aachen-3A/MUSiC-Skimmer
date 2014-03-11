@@ -1,0 +1,6 @@
+generator = MADGRAPH
+CME = 8
+config = mc_SU12_cfg.py
+
+TBZToLL_4F-PU_S10_MG:/TBZToLL_4F_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM
+
