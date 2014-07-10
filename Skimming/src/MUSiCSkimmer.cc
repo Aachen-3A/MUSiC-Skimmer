@@ -62,6 +62,7 @@
 
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
+//#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
@@ -84,7 +85,7 @@
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
-#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
+//#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerFwd.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
@@ -327,14 +328,24 @@ MUSiCSkimmer::MUSiCSkimmer(edm::ParameterSet const &iConfig ) :
 
    Matcher = new ParticleMatcher();
    fNumEvt=0;
+
+      ElectronHcalHelper::Configuration hcalCfg;
+
+      hcalCfg.hOverEConeSize = 0.15;
+      hcalCfg.useTowers      = true;
+      //hcalCfg.hcalTowers     = edm::InputTag( "towerMaker" ); //old way to access the collection
+      hcalCfg.hcalTowers     = consumes< CaloTowerCollection >( edm::InputTag( "towerMaker" ) );
+      hcalCfg.hOverEPtMin    = 0;
+
+      m_hcalHelper = new ElectronHcalHelper( hcalCfg );
 }
 
 // ------------ MIS Destructor  ------------
 
 MUSiCSkimmer::~MUSiCSkimmer()
 {
-   delete m_eleIsolator;
-   delete m_phoIsolator;
+  // delete m_eleIsolator;
+  // delete m_phoIsolator;
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
    delete Matcher;
@@ -381,9 +392,9 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
    if (IsMC) {
       analyzeGenInfo(iEvent, GenEvtView, genmap);
       analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
-      for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
-         analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
-      }
+      //for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
+      //   analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
+      //}
 
       analyzeGenMETs( iEvent, GenEvtView );
 
@@ -411,17 +422,14 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       iEvent.getByLabel( "kt6PFJets25", "rho", rho25 );
       RecEvtView->setUserRecord< double >( "rho25", *rho25 );
 
-      // For 2012 see also:
-      // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection?rev=12#Rho_for_2012_Effective_Areas
-      // http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/RecoJets/JetProducers/python/PFJetParameters_cfi.py?revision=1.10&view=markup
-      //
       edm::Handle< double > rho44;
-      iEvent.getByLabel( "kt6PFJets", "rho", rho44 );
+      iEvent.getByLabel( "kt6PFJets44", "rho", rho44 );
+      //iEvent.getByLabel( "kt6PFJets", "rho", rho44 );
       RecEvtView->setUserRecord< double >( "rho44", *rho44 );
 
-      edm::Handle< double > rho50;
-      iEvent.getByLabel( "kt6PFJets50", "rho", rho50 );
-      RecEvtView->setUserRecord< double >( "rho50", *rho50 );
+      edm::Handle< double > rho;
+      iEvent.getByLabel( "kt6PFJets50", "rho", rho );
+      RecEvtView->setUserRecord< double >( "rho", *rho );
 
       //get the calo geometry
       edm::ESHandle< CaloGeometry > geo;
@@ -444,31 +452,32 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       // Initalise the helper for 2012 H/E definition and HCAL isolation.
       // Somehow this is quite ugly.
       //
-      ElectronHcalHelper::Configuration hcalCfg;
+      //ElectronHcalHelper::Configuration hcalCfg;
 
-      hcalCfg.hOverEConeSize = 0.15;
-      hcalCfg.useTowers      = true;
-      hcalCfg.hcalTowers     = edm::InputTag( "towerMaker" );
-      hcalCfg.hOverEPtMin    = 0;
+      //hcalCfg.hOverEConeSize = 0.15;
+      //hcalCfg.useTowers      = true;
+      ////hcalCfg.hcalTowers     = edm::InputTag( "towerMaker" ); //old way to access the collection
+      //hcalCfg.hcalTowers     = consumes< CaloTowerCollection > (edm::InputTag( "towerMaker" ) );
+      //hcalCfg.hOverEPtMin    = 0;
 
-      m_hcalHelper = new ElectronHcalHelper( hcalCfg );
-      m_hcalHelper->checkSetup( iSetup );
-      m_hcalHelper->readEvent( iEvent );
+      //m_hcalHelper = new ElectronHcalHelper( hcalCfg );
+      //m_hcalHelper->checkSetup( iSetup );
+      //m_hcalHelper->readEvent( iEvent );
 
       // Reconstructed stuff
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTracks( iEvent, RecEvtView );
       analyzeRecTaus( iEvent, RecEvtView );
       analyzeRecMuons( iEvent, RecEvtView, IsMC, genmap, vertices->at( 0 ) );
-      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho44 );
+      analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
       }
 
       analyzeRecMETs( iEvent, RecEvtView );
 
-      if( not m_fastSim ) analyzeHCALNoise( iEvent, RecEvtView );
-      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho44 );
+      //if( not m_fastSim ) analyzeHCALNoise( iEvent, RecEvtView );
+      analyzeRecGammas( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
    }
 
    if (IsMC && !fGenOnly){
@@ -967,6 +976,7 @@ void MUSiCSkimmer::analyzeRecPatMET( edm::Event const &iEvent,
                                      ) const {
    edm::Handle< pat::METCollection > METHandle;
    iEvent.getByLabel( patMETTag, METHandle );
+   //iEvent.getByLabel( "patMETs", METHandle );
 
    // There should be only one MET in the event, so take the first element.
    pat::METCollection::const_iterator met = (*METHandle).begin();
@@ -1003,34 +1013,6 @@ void MUSiCSkimmer::analyzeRecRecoPFMET( edm::Event const &iEvent,
    if( MET_cuts( part ) ) numRecoPFMET++;
    RecEvtView->setUserRecord< int >( "Num" + recoPFMETTag.label(), numRecoPFMET );
 }
-
-
-void MUSiCSkimmer::initializeFilter( edm::Event const &event,
-                                     edm::EventSetup const &setup,
-                                     trigger_group &filter
-                                     ) const {
-   // Store the wanted filters and if the event has passed them.
-   // This is uses edm::TriggerResults, so a trigger_def object is needed.
-   for( sstring::const_iterator flt_name = filter.triggers_names.begin(); flt_name != filter.triggers_names.end(); ++flt_name ) {
-      // Get the number of the filter path.
-      unsigned int index = filter.config.triggerIndex( *flt_name );
-
-      // Check if that's a valid number.
-      if( index < filter.config.size() ){
-         trigger_def flt;
-         flt.name = *flt_name;
-         flt.ID = index;
-         flt.active = true;
-         filter.trigger_infos.push_back( flt );
-      } else {
-         // The number is invalid, the filter path is not in the config.
-         edm::LogWarning( "MUSiCSkimmer|TriggerWarning" ) << "In run " << event.run() << " filter "<< *flt_name
-                                                          << " not found in config, not added to filter list (so not used).";
-      }
-   }
-}
-
-
 std::map< std::string, bool > MUSiCSkimmer::initializeTrigger( edm::Event const &event,
                                                                edm::EventSetup const &setup,
                                                                trigger_group &trigger
@@ -1186,6 +1168,30 @@ std::map< std::string, bool > MUSiCSkimmer::initializeTrigger( edm::Event const 
    return DSMap;
 }
 
+void MUSiCSkimmer::initializeFilter( edm::Event const &event,
+                                     edm::EventSetup const &setup,
+                                     trigger_group &filter
+                                     ) const {
+   // Store the wanted filters and if the event has passed them.
+   // This is uses edm::TriggerResults, so a trigger_def object is needed.
+   for( sstring::const_iterator flt_name = filter.triggers_names.begin(); flt_name != filter.triggers_names.end(); ++flt_name ) {
+      // Get the number of the filter path.
+      unsigned int index = filter.config.triggerIndex( *flt_name );
+
+      // Check if that's a valid number.
+      if( index < filter.config.size() ){
+         trigger_def flt;
+         flt.name = *flt_name;
+         flt.ID = index;
+         flt.active = true;
+         filter.trigger_infos.push_back( flt );
+      } else {
+         // The number is invalid, the filter path is not in the config.
+         edm::LogWarning( "MUSiCSkimmer|TriggerWarning" ) << "In run " << event.run() << " filter "<< *flt_name
+                                                          << " not found in config, not added to filter list (so not used).";
+      }
+   }
+}
 
 void MUSiCSkimmer::getTriggers( std::string const DS,
                                 trigger_group &trigger
@@ -1521,7 +1527,7 @@ void MUSiCSkimmer::analyzeRecPatTaus( edm::Event const &iEvent,
          part->setUserRecord< float >( "EtaPhi", tau->etaphiMoment() );
          part->setUserRecord< float >( "EtaEta", tau->etaetaMoment() );
          //Pt of the Leading Charged Hadron of the Jet
-         reco::PFCandidateRef const &leadPFChargedHadrCand = tau->leadPFChargedHadrCand();
+         reco::PFCandidatePtr const &leadPFChargedHadrCand = tau->leadPFChargedHadrCand();
          if( leadPFChargedHadrCand.isNonnull() )
             part->setUserRecord< double >( "LeadingHadronPt", leadPFChargedHadrCand->pt() );
          else
@@ -1530,26 +1536,6 @@ void MUSiCSkimmer::analyzeRecPatTaus( edm::Event const &iEvent,
          part->setUserRecord< float >( "PfChargedHadronIso", tau->userIsolation( "pat::PfChargedHadronIso" ) );
          part->setUserRecord< float >( "PfNeutralHadronIso", tau->userIsolation( "pat::PfNeutralHadronIso" ) );
          part->setUserRecord< float >( "PfGammaIso",         tau->userIsolation( "pat::PfGammaIso" ) );
-
-         // Store variables to cross-check tau decay modes.
-         reco::PFCandidateRefVector const &signalPFGammaCands = tau->signalPFGammaCands();
-         if( signalPFGammaCands.isNonnull() )
-            part->setUserRecord< int >( "NumPFGammaCands", signalPFGammaCands.size() );
-         else
-            part->setUserRecord< int >( "NumPFGammaCands", -1 );
-
-         reco::PFCandidateRefVector const &signalPFChargedHadrCands = tau->signalPFChargedHadrCands();
-         if( signalPFChargedHadrCands.isNonnull() )
-            part->setUserRecord< int >( "NumPFChargedHadrCands", signalPFChargedHadrCands.size() );
-         else
-            part->setUserRecord< int >( "NumPFChargedHadrCands", -1 );
-
-         reco::TrackRefVector const &signalTracks = tau->signalTracks();
-         if( signalTracks.isNonnull() )
-            part->setUserRecord< int >( "NumSignalTracks", signalTracks.size() );
-         else
-            part->setUserRecord< int >( "NumSignalTracks", -1 );
-
          //Saving all discriminators
          for ( std::vector< pat::Tau::IdPair >::const_iterator it = tau->tauIDs().begin(); it != tau->tauIDs().end(); ++it ) {
             part->setUserRecord < float >( it->first, it->second );
@@ -1623,7 +1609,7 @@ void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
          part->setUserRecord< bool >( "isTightMuon", muon::isTightMuon( *muon, PV ) );
-         part->setUserRecord< bool >( "isHighPtMuon", muon::isHighPtMuon( *muon, PV, reco::improvedTuneP ) );
+         //part->setUserRecord< bool >( "isHighPtMuon", muon::isHighPtMuon( *muon, PV, reco::improvedTuneP ) );
 
          //save info about quality of track-fit for combined muon (muon system + tracker)
          reco::TrackRef muontrack = muon->globalTrack();
@@ -1811,6 +1797,7 @@ void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
    edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "Rec Muons: " << numMuonRec;
 }
 
+
 // ------------ reading Reconstructed Electrons ------------
 
 void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
@@ -1821,7 +1808,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                         const ESHandle< CaloGeometry > &geo,
                                         const Handle< reco::VertexCollection > &vertices,
                                         const Handle< reco::PFCandidateCollection > &pfCandidates,
-                                        const double &rho
+                                        const double &rhoFastJet25
                                         ) {
    int numEleRec = 0;
    int numEleAll = 0;   // for matching
@@ -2065,13 +2052,29 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
          const bool hasMatchedConversion = ConversionTools::hasMatchedConversion( *patEle, conversionsHandle, the_beamspot );
          pxlEle->setUserRecord< bool >( "hasMatchedConversion", hasMatchedConversion );
 
-         // 2012 definition of H/E and related HCAL isolation for CMSSW_5_X_Y.
+         // 2012 definition of H/E and related HCAL isolation.
          // See also:
-         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11#New_H_E_in_CMSSW_5_X_Y
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11
          //
          pxlEle->setUserRecord< double >( "HoverE2012"          , patEle->hcalOverEcalBc()             );
          pxlEle->setUserRecord< double >( "HCALIsoConeDR03_2012", patEle->dr03HcalDepth1TowerSumEtBc() );
          pxlEle->setUserRecord< double >( "HCALIsoConeDR04_2012", patEle->dr04HcalDepth1TowerSumEtBc() );
+         //vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
+
+         //const double hcalDepth1 = m_hcalHelper->hcalESumDepth1BehindClusters( hcalTowersBehindClusters );
+         //const double hcalDepth2 = m_hcalHelper->hcalESumDepth2BehindClusters( hcalTowersBehindClusters );
+         //const double HoverE2012 = ( hcalDepth1 + hcalDepth2 ) / SCenergy;
+
+         //const double HCALIsoConeDR03_2012 = patEle->dr03HcalTowerSumEt() +
+         //                                    ( HoEm - HoverE2012 ) *
+         //                                    SCenergy / cosh( SCRef->eta() );
+         //const double HCALIsoConeDR04_2012 = patEle->dr04HcalTowerSumEt() +
+         //                                    ( HoEm - HoverE2012 ) *
+         //                                    SCenergy / cosh( SCRef->eta() );
+
+         //pxlEle->setUserRecord< double >( "HoverE2012",           HoverE2012           );
+         //pxlEle->setUserRecord< double >( "HCALIsoConeDR03_2012", HCALIsoConeDR03_2012 );
+         //pxlEle->setUserRecord< double >( "HCALIsoConeDR04_2012", HCALIsoConeDR04_2012 );
 
          // Default PF based isolation for charged leptons:
          pxlEle->setUserRecord< double >( "chargedHadronIso", patEle->chargedHadronIso() );
@@ -2092,7 +2095,7 @@ void MUSiCSkimmer::analyzeRecElectrons( const Event &iEvent,
                                      vertices,
                                      pfCandidates,
                                      eleRef,
-                                     rho,
+                                     rhoFastJet25,
                                      *pxlEle
                                      );
 
@@ -2123,10 +2126,10 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
    const std::vector< pat::Jet > &RecJets = *jetHandle;
 
    //generator flavour matching only available in MC. Surprise!
-   edm::Handle< reco::JetFlavourMatchingCollection > physicsFlavour;
-   if( MC ){
-      iEvent.getByLabel( jet_info.name+"RecoJetFlavourPhysics", physicsFlavour );
-   }
+   //edm::Handle< reco::JetFlavourMatchingCollection > physicsFlavour;
+   //if( MC ){
+   //   iEvent.getByLabel( jet_info.name+"RecoJetFlavourPhysics", physicsFlavour );
+   //}
 
 
    // loop over the jets
@@ -2148,16 +2151,21 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
             part->setUserRecord< double >( "neutralEmEnergy",             jet->neutralEmEnergy() );
             part->setUserRecord<double>("chargedMultiplicity", jet->chargedMultiplicity());
             part->setUserRecord<double>("nconstituents", jet->numberOfDaughters());
+
+            for( jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID ){
+               pat::strbitset ret = ID->second->getBitTemplate();
+               part->setUserRecord< bool >( ID->first, (*(ID->second))( *jet, ret ) );
+         }
          } else {
-            part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
-            part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-            part->setUserRecord<int>("N90", jet->n90());
-            part->setUserRecord<int>("N60", jet->n60());
-            std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
-            part->setUserRecord<int>("NCaloRefs", caloRefs.size());
-            part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
-            part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
-            part->setUserRecord<double>("TowersArea", jet->towersArea());
+//            part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
+//            part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
+//            part->setUserRecord<int>("N90", jet->n90());
+//            part->setUserRecord<int>("N60", jet->n60());
+//            //std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
+//            //part->setUserRecord<int>("NCaloRefs", caloRefs.size());
+//            part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
+//            part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
+//            part->setUserRecord<double>("TowersArea", jet->towersArea());
          }
 
          //calculate the kinematics with a new vertex
@@ -2175,28 +2183,25 @@ void MUSiCSkimmer::analyzeRecJets( const edm::Event &iEvent, pxl::EventView *Rec
             edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "BTag name: " << btag->first << ", value: " << btag->second;
          }
          //jet IDs
-         for( jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID ){
-            pat::strbitset ret = ID->second->getBitTemplate();
-            part->setUserRecord< bool >( ID->first, (*(ID->second))( *jet, ret ) );
-         }
+
 
          stringstream info;
          part->print( 0, info );
          edm::LogInfo( "MUSiCSkimmer|RecInfo" ) << "PXL Jet Info: " << info.str();
 
          //store PAT matching info if MC
-         if (MC) {
-            // to be compared with Generator Flavor:
-            part->setUserRecord< int >( "algoFlavour", jet->partonFlavour() );
-            //make a ref, then get the flavour
-            RefToBase< reco::Jet > jetRef( RefToBaseProd< reco::Jet >( jetHandle ), jet_index );
-            part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
+         //if (MC) {
+         //   // to be compared with Generator Flavor:
+         //   part->setUserRecord< int >( "algoFlavour", jet->partonFlavour() );
+         //   //make a ref, then get the flavour
+         //   RefToBase< reco::Jet > jetRef( RefToBaseProd< reco::Jet >( jetHandle ), jet_index );
+         //   part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
 
-            std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
-            if( it != genjetmap.end() ){
-               part->linkSoft( it->second, "pat-match" );
-            }
-         }
+         //   std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
+         //   if( it != genjetmap.end() ){
+         //      part->linkSoft( it->second, "pat-match" );
+         //   }
+         //}
          numJetRec++;
       }
    }
@@ -2214,7 +2219,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                      const ESHandle< CaloGeometry > &geo,
                                      const Handle< reco::VertexCollection > &vertices,
                                      const Handle< reco::PFCandidateCollection > &pfCandidates,
-                                     const double &rho
+                                     const double &rhoFastJet25
                                      ) {
    // Get Photon Collection.
    Handle< vector< pat::Photon > > photonHandle;
@@ -2275,9 +2280,6 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
          // Photon variables orientated to
          // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
          //
-
-         // Pseudorapidity using supercluster information.
-         pxlPhoton->setUserRecord< double >( "SCeta", patPhoton->caloPosition().eta() );
 
          // Isolation variables:
          //
@@ -2398,12 +2400,11 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                                                                           the_beamspot );
          pxlPhoton->setUserRecord< bool >( "hasMatchedPromptElectron", hasMatchedPromptElectron );
 
-         // 2012 definition of H/E and related HCAL isolation for CMSSW_5_X_Y.
+         // 2012 definition of H/E and related HCAL isolation.
          // See also:
-         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11#New_H_E_in_CMSSW_5_X_Y
+         // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11
          //
-         const vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
-
+         //const vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
          const double HoverE2012           = patPhoton->hadTowOverEm();
 
          const double HCALIsoConeDR03_2012 = patPhoton->hcalTowerSumEtConeDR03() +
@@ -2432,7 +2433,7 @@ void MUSiCSkimmer::analyzeRecGammas( const Event &iEvent,
                                      vertices,
                                      pfCandidates,
                                      phoRef,
-                                     rho,
+                                     rhoFastJet25,
                                      *pxlPhoton
                                      );
 
@@ -2720,30 +2721,30 @@ void MUSiCSkimmer::particleFlowBasedIsolation( IsoDepositVals const &isoValPFId,
                                                Handle< reco::VertexCollection > const &vertices,
                                                Handle< reco::PFCandidateCollection > const &pfCandidates,
                                                Ref< T > const &ref,
-                                               double const &rho,
+                                               double const &rhoFastJet25,
                                                pxl::Particle &part,
                                                bool const useIsolator
                                                ) const {
    // The first method works but is NOT recommended for photons!
    // Instead use the alternative method with PFIsolationEstimator.
-   const double pfIsoCharged = ( *isoValPFId.at( 0 ) )[ ref ];
-   const double pfIsoPhoton  = ( *isoValPFId.at( 1 ) )[ ref ];
-   const double pfIsoNeutral = ( *isoValPFId.at( 2 ) )[ ref ];
+   //const double pfIsoCharged = ( *isoValPFId.at( 0 ) )[ ref ];
+   //const double pfIsoPhoton  = ( *isoValPFId.at( 1 ) )[ ref ];
+   //const double pfIsoNeutral = ( *isoValPFId.at( 2 ) )[ ref ];
 
-   part.setUserRecord< double >( "PFIso03ChargedHadron", pfIsoCharged );
-   part.setUserRecord< double >( "PFIso03NeutralHadron", pfIsoNeutral );
-   part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
+   //part.setUserRecord< double >( "PFIso03ChargedHadron", pfIsoCharged );
+   //part.setUserRecord< double >( "PFIso03NeutralHadron", pfIsoNeutral );
+   //part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
 
    // PU corrected isolation for electrons, according to:
    // http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/ElectronIsoAnalyzer.cc
    if( ref->isElectron() ) {
-      const double absEta  = fabs( ref->superCluster()->eta() );
-      const double effArea = ElectronEffectiveArea::GetElectronEffectiveArea( m_eleEffAreaType, absEta, m_eleEffAreaTarget );
+      //const double absEta  = fabs( ref->superCluster()->eta() );
+      //const double effArea = ElectronEffectiveArea::GetElectronEffectiveArea( m_eleEffAreaType, absEta, m_eleEffAreaTarget );
 
-      const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * rho );
+      //const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * rhoFastJet25 );
 
-      part.setUserRecord< double >( "EffectiveArea",      effArea          );
-      part.setUserRecord< double >( "PFIso03PUCorrected", PFIsoPUCorrected );
+      //part.setUserRecord< double >( "EffectiveArea",      effArea          );
+      //part.setUserRecord< double >( "PFIso03PUCorrected", PFIsoPUCorrected );
    }
 
    // This is the recommended method for photons!
@@ -2792,12 +2793,12 @@ void MUSiCSkimmer::printEventContent( pxl::EventView const *GenEvtView,
          info << "     ";
          info << setw( ele.size() ) << GenEvtView->findUserRecord< int >( "NumEle" ) << s;
          info << setw( muo.size() ) << GenEvtView->findUserRecord< int >( "NumMuon" ) << s;
-         info << setw( tau.size() ) << GenEvtView->findUserRecord< int >( "NumTau" ) << s;
+         //info << setw( tau.size() ) << GenEvtView->findUserRecord< int >( "NumTau" ) << s;
          info << setw( gam.size() ) << GenEvtView->findUserRecord< int >( "NumGamma" ) << s;
 
-         for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ) {
-            info << setw( ( jet_info->name ).size() ) << GenEvtView->findUserRecord< int >( "Num" + jet_info->name ) << s;
-         }
+         //for( std::vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ) {
+         //   info << setw( ( jet_info->name ).size() ) << GenEvtView->findUserRecord< int >( "Num" + jet_info->name ) << s;
+         //}
 
          for( VInputTag::const_iterator genMET = m_genMETTags.begin(); genMET != m_genMETTags.end(); ++genMET ) {
             info << setw( (*genMET).label().size() ) << GenEvtView->findUserRecord< int >( "Num" + (*genMET).label() ) << s;
@@ -2835,14 +2836,14 @@ void MUSiCSkimmer::printEventContent( pxl::EventView const *GenEvtView,
       info << setw( ele.size() ) << RecEvtView->findUserRecord< int >( "NumEle" ) << s;
       info << setw( muo.size() ) << RecEvtView->findUserRecord< int >( "NumMuon" ) << s;
 
-      for( VInputTag::const_iterator patTau = m_patTauTags.begin();
-           patTau != m_patTauTags.end();
-           ++patTau
-           ) {
-         info << setw( (*patTau).label().size() );
-         info << RecEvtView->findUserRecord< int >( "Num" + (*patTau).label() );
-         info << s;
-      }
+      //for( VInputTag::const_iterator patTau = m_patTauTags.begin();
+      //     patTau != m_patTauTags.end();
+      //     ++patTau
+      //     ) {
+      //   info << setw( (*patTau).label().size() );
+      //   info << RecEvtView->findUserRecord< int >( "Num" + (*patTau).label() );
+      //   info << s;
+      //}
 
       info << setw( gam.size() ) << RecEvtView->findUserRecord< int >( "NumGamma" ) << s;
 

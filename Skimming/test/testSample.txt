@@ -1,0 +1,5 @@
+generator = MADGRAPH
+CME = 13
+config = mc_SP14_cfg.py
+
+WJetsToLNu_HT-100to200_13TeV_MG:/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM

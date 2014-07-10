@@ -79,6 +79,7 @@ class PFIsolationEstimator;
 
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEffectiveArea.h"
+//#include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
 
 // PXL stuff
 // Has to be included as the last header otherwise there will be a warning concerning the
@@ -123,9 +124,9 @@ public:
       sstring datastreams;
       vtrigger_def trigger_infos;
       // Map the triggers to the corresponding datastream.
-      std::map< string, sstring > triggers_by_datastream;
+      std::map< std::string, sstring > triggers_by_datastream;
       // Map the trigger_def objects to the corresponding datastream.
-      std::map< string, vtrigger_def > trigger_infos_by_datastream;
+      std::map< std::string, vtrigger_def > trigger_infos_by_datastream;
    };
 
 
@@ -155,10 +156,10 @@ public:
                                                             edm::EventSetup const &setup,
                                                             trigger_group &trigger
                                                             ) const;
-
    virtual void getTriggers( std::string const DS,
                              trigger_group &trigger
                              ) const;
+
 
    virtual void analyzeFilter( const edm::Event &iEvent,
                                const edm::EventSetup &iSetup,
@@ -194,6 +195,7 @@ public:
                                  reco::Vertex const &PV
                                  ) const;
 
+   //virtual void analyzeRecMuons( const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap );
    virtual void analyzeRecElectrons( const edm::Event &iEvent,
                                      pxl::EventView *RecView,
                                      const bool &MC,
@@ -202,7 +204,7 @@ public:
                                      const edm::ESHandle< CaloGeometry > &geo,
                                      const edm::Handle< reco::VertexCollection > &vertices,
                                      const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
-                                     const double &rho
+                                     const double &rhoFastJet25
                                      );
    virtual void analyzeRecJets( const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info );
 
@@ -228,7 +230,7 @@ public:
                                   const edm::ESHandle< CaloGeometry > &geo,
                                   const edm::Handle< reco::VertexCollection > &vertices,
                                   const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
-                                  const double &rho
+                                  const double &rhoFastJet25
                                   );
    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
@@ -257,7 +259,7 @@ public:
                                     edm::Handle< reco::VertexCollection > const &vertices,
                                     edm::Handle< reco::PFCandidateCollection > const &pfCandidates,
                                     edm::Ref< T > const &ref,
-                                    double const &rho,
+                                    double const &rhoFastJet25,
                                     pxl::Particle &part,
                                     bool const useIsolator = true
                                     ) const;
@@ -273,6 +275,7 @@ public:
    std::string fFileName; 
    std::string fProcess;
    std::string fDataset;
+
    bool const m_fastSim;
    bool fGenOnly;
    bool fUseSIM;
@@ -326,6 +329,7 @@ public:
    std::map< std::string, bool > availableDS;
 
    // All filters.
+
    std::vector< trigger_group > filters;
 
    bool fStoreL3Objects;

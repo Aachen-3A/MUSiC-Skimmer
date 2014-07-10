@@ -29,11 +29,14 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     process.load( 'Configuration.Geometry.GeometryPilot2_cff' )
     process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
 
+    # do we need this ?
+    #process.content = cms.EDAnalyzer( 'EventContentAnalyzer' )
+
     # Create an empty path because modules will be added by calling the
     # functions below.
-    #
-    process.p = cms.Path()
 
+
+    process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
     process.load( 'MUSiCProject.Skimming.MUSiCSkimmer_cfi' )
 
     process.Skimmer.FastSim = runOnFast
@@ -64,14 +67,14 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
 
         # Keep the following functions in the right order as they will add modules to the path!
         #
-        configureJEC( process, runOnData )
+        #configureJEC( process, runOnData )
         configureTaus( process )
         configurePAT( process, runOnData )
 
         postfix = 'PFlow'
         configurePFJet( process, runOnData, postfix )
         configurePFMET( process, runOnData )
-        configurePFIso( process )
+        #configurePFIso( process )
 
         import PhysicsTools.PatAlgos.tools.coreTools
         PhysicsTools.PatAlgos.tools.coreTools.removeMCMatching( process, [ 'All' ], outputModules = [] )
@@ -83,19 +86,16 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         addTrackingFailureFilter( process )
         addEEBadSCFilter( process )
         addMuonPFCandidateFilter( process )
-        addECALLaserCorrFilter( process )
-        addLogErrorTooManyClustersFilter( process )
-        addCoherentNoiseRelativeFilter( process )
-        addCoherentNoiseAbsoluteFilter( process )
+        #addECALLaserCorrFilter( process )
 
-        if not runOnFast:
+        #if not runOnFast:
             # These do not work on FASTSIM samples.
             # Not that bad, because these filters are more important for data!
-            addCSCHaloFilter( process )
-            addHCALnoiseFilter( process )
+            #addCSCHaloFilter( process )
+            #addHCALnoiseFilter( process )
 
     if not runOnData:
-       process.p += process.patJetPartons
+       process.patJetPartons
 
     if not runOnData:
         # This is done to fix a bug in Pythia in SU11 and FA11 samples.
@@ -104,7 +104,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         # https://hypernews.cern.ch/HyperNews/CMS/get/generators/1228.html
         #
         addKinematicsFilter( process )
-        addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
+        #addFlavourMatching( process, process.Skimmer, process.p, runOnGen )
+        addFlavourMatching( process, process.Skimmer, runOnGen )
 
     process.Skimmer.filters.AllFilters.paths = process.Skimmer.filterlist
     process.Skimmer.filters.AllFilters.process = process.name_()
@@ -168,11 +169,12 @@ def configurePAT( process, runOnData ):
     else:
         process.patJetCorrFactors.levels = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute' )
 
-    process.p += process.patDefaultSequence
+    #process.p += process.patDefaultSequence
+    process.patDefaultSequence
 
 
 #adds flavour information for all Gen and Rec-Jets used in skimmer
-def addFlavourMatching( process, skimmer, path, runOnGen ):
+def addFlavourMatching( process, skimmer, runOnGen ):
     for jet_name,jet_def in skimmer.jets.parameters_().items():
         if isinstance( jet_def, cms.PSet ):
 
@@ -184,7 +186,7 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
                                    coneSizeToAssociate = cms.double( 0.3 )
                                    )
                      )
-            path += getattr( process, jet_name+'GenJetPartonAssociation' )
+            #path += getattr( process, jet_name+'GenJetPartonAssociation' )
 
             setattr( process,
                      jet_name+'GenJetFlavourAlgo',
@@ -193,7 +195,7 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
                                    physicsDefinition = cms.bool( False )
                                    )
                      )
-            path += getattr( process, jet_name+'GenJetFlavourAlgo' )
+            #path += getattr( process, jet_name+'GenJetFlavourAlgo' )
 
             setattr( process,
                      jet_name+'GenJetFlavourPhysics',
@@ -202,7 +204,7 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
                                    physicsDefinition = cms.bool( True )
                                    )
                      )
-            path += getattr( process, jet_name+'GenJetFlavourPhysics' )
+            #path += getattr( process, jet_name+'GenJetFlavourPhysics' )
 
             if not runOnGen:
                setattr( process,
@@ -213,7 +215,7 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
                                     coneSizeToAssociate = cms.double( 0.3 )
                                     )
                         )
-               path += getattr( process, jet_name+'RecoJetPartonAssociation' )
+               #path += getattr( process, jet_name+'RecoJetPartonAssociation' )
 
                setattr( process,
                         jet_name+'RecoJetFlavourPhysics',
@@ -222,25 +224,26 @@ def addFlavourMatching( process, skimmer, path, runOnGen ):
                                     physicsDefinition = cms.bool( True )
                                     )
                         )
-               path += getattr( process, jet_name+'RecoJetFlavourPhysics' )
-
+               #path += getattr( process, jet_name+'RecoJetFlavourPhysics' )
 
 # See also:
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=116#JetEnCor2012Summer13
 # https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC?rev=59
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=449#Winter13_2012_A_B_C_D_datasets_r
-#
-def configureJEC( process, runOnData ):
-    if runOnData:
-        # Newest GT for the ReReco-22Jan2013 data.
-        jecGlobalTag = cms.string( 'FT_53_V21_AN6::All' )
-    else:
-        # Newest GT for CMSSW >= CMSSW_5_3_8_patch3 MC.
-        jecGlobalTag = cms.string( 'START53_V27::All' )
 
-    GlobalTag = process.GlobalTag.globaltag
-    process.GlobalTag.globaltag = jecGlobalTag
-    print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
+
+#def configureJEC( process, runOnData ):
+#    if runOnData:
+#        # Newest GT for the ReReco-22Jan2013 data.
+#        jecGlobalTag = cms.string( 'FT_53_V21_AN6::All' )
+#    else:
+#        # Newest GT for CMSSW >= CMSSW_5_3_8_patch3 MC.
+#        jecGlobalTag = cms.string( 'START53_V27::All' )
+#
+#    GlobalTag = process.GlobalTag.globaltag
+#
+#    process.GlobalTag.globaltag = jecGlobalTag
+#    print "INFO: GlobalTag was '%s' and was changed by configureJEC() to: '%s'" % (GlobalTag, jecGlobalTag)
 
 
 # PF2PAT configuration for jets.
@@ -267,12 +270,14 @@ def configurePFJet( process, runOnData, postfix ):
     #
     from PhysicsTools.PatAlgos.tools import pfTools
 
+    process.goodOfflinePrimaryVertices
+
     jetCorrFactors = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute' )
     if runOnData: jetCorrFactors = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual' )
     pfTools.usePF2PAT( process,
                        runPF2PAT = True,
                        jetAlgo = 'AK5',
-                       jetCorrections = ( 'AK5PFchs', jetCorrFactors ),
+                       #jetCorrections = ( 'AK5PFchs', jetCorrFactors ),
                        runOnMC = not runOnData,
                        postfix = postfix,
                        pvCollection = cms.InputTag( 'goodOfflinePrimaryVertices' ),
@@ -282,26 +287,14 @@ def configurePFJet( process, runOnData, postfix ):
 
     # 3. Add them all to the sequence.
     #
-    process.patseq = cms.Sequence(
-       process.goodOfflinePrimaryVertices*
-       getattr( process, 'patPF2PATSequence' + postfix )
-       )
-
-    process.p += process.patseq
-
-    # Set the jetSource to all jets, i.e. jets that have identified as taus have
-    # *not* been removed from the collection (we do it on our own in MUSiC).
-    #
-    process.patJetsPFlow.jetSource = 'pfJetsPFlow'
-    process.patMuonsPFlow.embedHighLevelSelection = False
-    process.patElectronsPFlow.embedHighLevelSelection = False
+    #process.patseq = cms.Sequence(
+    #   process.goodOfflinePrimaryVertices*
+    #   getattr( process, 'patPF2PATSequence' + postfix )
+    #   )
 
 
-# Apply MET corrections following:
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis?rev=170#How_to_apply_the_MET_corrections
-# https://github.com/TaiSakuma/WorkBookMet/blob/master/corrMet_cfg.py
-# https://github.com/TaiSakuma/WorkBookMet/blob/master/printMet_corrMet.py
-#
+# PF2PAT and MET corrections build up on each other, so everything is defined in this one function.
+
 def configurePFMET( process, runOnData ):
 
    process.load( 'JetMETCorrections.Type1MET.correctionTermsPfMetType1Type2_cff' )
@@ -324,45 +317,45 @@ def configurePFMET( process, runOnData ):
 
    process.load( 'JetMETCorrections.Type1MET.correctedMet_cff' )
 
-   process.p += process.correctionTermsPfMetType1Type2
-   process.p += process.correctionTermsPfMetType0RecoTrack
-   process.p += process.correctionTermsPfMetType0PFCandidate
-   process.p += process.correctionTermsPfMetShiftXY
+   process.correctionTermsPfMetType1Type2
+   process.correctionTermsPfMetType0RecoTrack
+   process.correctionTermsPfMetType0PFCandidate
+   process.correctionTermsPfMetShiftXY
 
    # pfMET + Type-0(track)
-   process.p += process.pfMetT0rt
+   process.pfMetT0rt
    # PFMET + Type-0(track) + Type-I
-   process.p += process.pfMetT0rtT1
+   process.pfMetT0rtT1
    # PFMET + Type-0(track) + Type-II
-   process.p += process.pfMetT0rtT2
+   process.pfMetT0rtT2
    # PFMET + Type-0(track) + xy-shift
-   process.p += process.pfMetT0rtTxy
+   process.pfMetT0rtTxy
    # PFMET + Type-0(track) + Type-I + Type-II
-   process.p += process.pfMetT0rtT1T2
+   process.pfMetT0rtT1T2
    # PFMET + Type-0(track) + Type-I + xy-shift
-   process.p += process.pfMetT0rtT1Txy
+   process.pfMetT0rtT1Txy
    # PFMET + Type-0(track) + Type-II + xy-shift
-   process.p += process.pfMetT0rtT2Txy
+   process.pfMetT0rtT2Txy
    # PFMET + Type-0(track) + Type-I + Type-II + xy-shift
-   process.p += process.pfMetT0rtT1T2Txy
+   process.pfMetT0rtT1T2Txy
 
    # PFMET + Type-0(pfcand)
-   process.p += process.pfMetT0pc
+   process.pfMetT0pc
    # PFMET + Type-0(pfcand) + Type-I
-   process.p += process.pfMetT0pcT1
+   process.pfMetT0pcT1
    # PFMET + Type-0(pfcand) + xy-shift
-   process.p += process.pfMetT0pcTxy
+   process.pfMetT0pcTxy
    # PFMET + Type-0(pfcand) + Type-I + xy-shift
-   process.p += process.pfMetT0pcT1Txy
+   process.pfMetT0pcT1Txy
 
    # PFMET + Type-I
-   process.p += process.pfMetT1
+   process.pfMetT1
    # PFMET + Type-I + Type-II
-   process.p += process.pfMetT1T2
+   process.pfMetT1T2
    # PFMET + Type-I + xy-shift
-   process.p += process.pfMetT1Txy
+   process.pfMetT1Txy
    # PFMET + Type-I + Type-II + xy-shift
-   process.p += process.pfMetT1T2Txy
+   process.pfMetT1T2Txy
 
 
 # Following the "recipe":
@@ -376,12 +369,12 @@ def configurePFIso( process ):
     process.eleIsoSequence = pfIsolation.setupPFElectronIso( process, 'cleanPatElectrons' )
     process.phoIsoSequence = pfIsolation.setupPFPhotonIso( process, 'cleanPatPhotons' )
 
-    process.p += process.pfParticleSelectionSequence
-    process.p += process.eleIsoSequence
-    process.p += process.phoIsoSequence
+    process.pfParticleSelectionSequence
+    process.eleIsoSequence
+    process.phoIsoSequence
 
 
-# Median jet pt per area for each event. Needed for 2011 data with CMSSW_4_X_Y.
+# Median jet pt per area for each event.
 # See also:
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection#Rho_for_2011_Effective_Areas
 # https://twiki.cern.ch/twiki/bin/view/CMS/Vgamma2011PhotonID#Recommended_cuts
@@ -400,7 +393,7 @@ def addRhoVariable( process ):
                                        process.kt6PFJets50 +
                                        process.kt6PFJets44
                                        )
-    process.p += process.fjSequence
+    #process.p += process.fjSequence
 
 
 def addScrapingFilter( process ):
@@ -501,14 +494,10 @@ def addHCALnoiseFilter( process ):
         minNumIsolatedNoiseChannels = cms.int32( 9999 ),
         minIsolatedNoiseSumE = cms.double( 9999 ),
         minIsolatedNoiseSumEt = cms.double( 9999 ),
-        useTS4TS5 = cms.bool( True ),
-        IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(True),
-        jetlabel = cms.InputTag('ak5PFJets'),
-        maxjetindex = cms.int32(0),
-        maxNHF = cms.double(0.9)
+        useTS4TS5 = cms.bool( True )
         )
 
-    process.p += process.HBHENoiseFilterResultProducer
+    #process.p += process.HBHENoiseFilterResultProducer
 
 
 def addKinematicsFilter( process ):
@@ -582,6 +571,11 @@ def addMuonPFCandidateFilter( process ):
     process.Skimmer.filterlist.append( 'p_muonpfcandidatefilter' )
 
 
+# Make sure you check out this user code:
+#   cvs co -r Seema11Apr12_52X_V1 -d SandBox/Skims UserCode/seema/SandBox/Skims
+# For info & code see this Twiki page:
+#   https://twiki.cern.ch/twiki/bin/view/CMS/SusyRA2NJetsInData2011#EB_or_EE_Xtals_with_large_laser
+#
 def addECALLaserCorrFilter( process ):
     process.load( 'RecoMET.METFilters.ecalLaserCorrFilter_cfi' )
 
@@ -589,90 +583,10 @@ def addECALLaserCorrFilter( process ):
     process.Skimmer.filterlist.append( 'p_ecallasercorrfilter' )
 
 
-# Filter to reject events with aborted track reconstruction. Find details
-# and code snippets on:
-# https://twiki.cern.ch/twiki/bin/view/CMS/TrackingPOGFilters#Filters
-#
-def addLogErrorTooManyClustersFilter( process ):
-    # Configuration to select events with the 'TooManyClusters' error in
-    # seeding modules of the track reconstruction. This filter does not
-    # protect from other modules issuing a 'TooManyClusters' error.
-    #
-    process.logErrorTooManyClustersFilter = cms.EDFilter( 'LogErrorEventFilter',
-        src = cms.InputTag( 'logErrorHarvester' ),
-        maxErrorFractionInLumi = cms.double( 1.0 ),
-        maxErrorFractionInRun  = cms.double( 1.0 ),
-        maxSavedEventsPerLumiAndError = cms.uint32( 100000 ),
-        categoriesToWatch = cms.vstring( 'TooManyClusters' ),
-        modulesToIgnore = cms.vstring( 'SeedGeneratorFromRegionHitsEDProducer:regionalCosmicTrackerSeeds',
-                                       'PhotonConversionTrajectorySeedProducerFromSingleLeg:photonConvTrajSeedFromSingleLeg'
-        )
-    )
-
-    process.p_logerrortoomanyclustersfilter = cms.Path( ~process.logErrorTooManyClustersFilter )
-    process.Skimmer.filterlist.append( 'p_logerrortoomanyclustersfilter' )
-
-
-# The following two filters are for rejecting events found in data with coherent noise in the
-# strip tracker. Find more information, necessary tags and code snippets on:
-# https://twiki.cern.ch/twiki/bin/view/CMS/TrackingPOGFilters#Events_with_coherent_noise_in_th
-#
-def addCoherentNoiseRelativeFilter( process ):
-    # Compare the number of strip clusters to the number of pixel clusters. Introduce a cut on the
-    # maximal number of strip clusters relative to the number of pixel clusters.
-    #
-    process.coherentNoiseRelativeFilter = cms.EDFilter( 'ByClusterSummaryMultiplicityPairEventFilter',
-        multiplicityConfig = cms.PSet(
-            firstMultiplicityConfig = cms.PSet(
-                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
-                subDetEnum = cms.int32(5),
-                subDetVariable = cms.string( 'pHits' )
-            ),
-            secondMultiplicityConfig = cms.PSet(
-                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
-                subDetEnum = cms.int32(0),
-                subDetVariable = cms.string( 'cHits' )
-            ),
-        ),
-        cut = cms.string( '( mult2 > 20000+7*mult1 )' )
-    )
-
-    process.p_coherentnoiserelativefilter = cms.Path( ~process.coherentNoiseRelativeFilter )
-    process.Skimmer.filterlist.append( 'p_coherentnoiserelativefilter' )
-
-
-def addCoherentNoiseAbsoluteFilter( process ):
-    # Compare the number of strip clusters to the number of pixel clusters. Apply a cut on the
-    # maximal number of strip clusters relative to the number of pixel clusters, if the number of
-    # strip clusters is above an absolute threshold.
-    #
-    process.coherentNoiseAbsoluteFilter = cms.EDFilter( 'ByClusterSummaryMultiplicityPairEventFilter',
-        multiplicityConfig = cms.PSet(
-            firstMultiplicityConfig = cms.PSet(
-                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
-                subDetEnum = cms.int32(5),
-                subDetVariable = cms.string( 'pHits' )
-            ),
-            secondMultiplicityConfig = cms.PSet(
-                clusterSummaryCollection = cms.InputTag( 'clusterSummaryProducer' ),
-                subDetEnum = cms.int32(0),
-                subDetVariable = cms.string( 'cHits' )
-            ),
-        ),
-        cut = cms.string( '( mult2 > 50000 ) && ( mult2 > 20000+7*mult1 )' )
-    )
-
-    process.p_coherentnoiseabsolutefilter = cms.Path( ~process.coherentNoiseAbsoluteFilter )
-    process.Skimmer.filterlist.append( 'p_coherentnoiseabsolutefilter' )
-
-
 def configureTaus( process ):
-    # Re-run full HPS sequence as PFTau ID stored in AODs produced
-    # by CMSSW < 5_3_12 is outdated.
-    # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePFTauID?rev=145#5_3_12_and_higher
-    #
+    # rerun PFTau reco
     process.load( 'RecoTauTag.Configuration.RecoPFTauTag_cff' )
-    process.p += process.recoTauClassicHPSSequence
+    #process.p += process.PFTau
 
 
 # Initialize MessageLogger and output report.

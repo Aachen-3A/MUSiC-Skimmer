@@ -31,10 +31,12 @@ Skimmer = cms.EDAnalyzer(
 
     # Use these taus (list of possible pat::Taus):
     patTauTags = cms.VInputTag( cms.InputTag( 'patTaus' ),
+    #patTauTags = cms.VInputTag( cms.InputTag( 'patTausPFlow' ),
                                 ),
 
     # Needed for electron vetoing.
-    gsfElectronsTag = cms.InputTag( 'gsfElectrons' ),
+    gsfElectronsTag = cms.InputTag( 'gedGsfElectrons' ),
+    #gsfElectronsTag = cms.InputTag( 'cleanPatElectrons' ),
     # Default value for effective area correction. Changed in config file!
     EleEffAreaTargetLabel = cms.untracked.string( 'NoCorr' ),
     # for PF isolation
@@ -64,6 +66,7 @@ Skimmer = cms.EDAnalyzer(
 
     patMETTags = cms.VInputTag( cms.InputTag( 'patMETs' ),
                                 cms.InputTag( 'patMETsPFlow' ),
+                                #cms.InputTag( 'patMETsPFlowNoPU' ),
                                 ),
 
     # PFMET with different corrections applied.
@@ -85,6 +88,15 @@ Skimmer = cms.EDAnalyzer(
                                    cms.InputTag( 'pfMetT1Txy' ),
                                    cms.InputTag( 'pfMetT1T2Txy' ),
                                    ),
+
+
+#    # In CMSSW 4_X_Y it is not forseen to get Type-I,-II corrected pat::MET, so
+#    # we use reco::PFMET instead (same functuality for us).
+#    recoPFMETTags = cms.VInputTag( cms.InputTag( 'pfType1CorrectedMetNoType0' ),
+#                                   cms.InputTag( 'pfType1p2CorrectedMetNoType0' ),
+#                                   cms.InputTag( 'pfType1CorrectedMet' ),
+#                                   cms.InputTag( 'pfType1p2CorrectedMet' ),
+#                                   ),
 
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
