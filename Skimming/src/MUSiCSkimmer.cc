@@ -468,7 +468,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTracks( iEvent, RecEvtView );
       analyzeRecTaus( iEvent, RecEvtView );
-      analyzeRecMuons( iEvent, RecEvtView, IsMC, genmap, vertices->at( 0 ) );
+      //analyzeRecMuons( iEvent, RecEvtView, IsMC, genmap, vertices->at( 0 ) );
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
@@ -485,7 +485,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       Matcher->matchObjects(GenEvtView, RecEvtView, jet_infos, met_name);
    }
 
-   printEventContent( GenEvtView, RecEvtView, IsMC );
+   //printEventContent( GenEvtView, RecEvtView, IsMC );
 
    fePaxFile.writeEvent(&event);
 }
