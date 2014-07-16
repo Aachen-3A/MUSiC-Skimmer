@@ -1672,20 +1672,20 @@ void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
          // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
          // (i.e. the absolute longitudinal and transverse impact parameter).
          //
-         part->setUserRecord< double >( "Dsz", muontrack->dsz( the_vertex ) );
-         part->setUserRecord< double >( "Dxy", muontrack->dxy( the_vertex ) );
+         //part->setUserRecord< double >( "Dsz", muontrack->dsz( the_vertex ) );
+         //part->setUserRecord< double >( "Dxy", muontrack->dxy( the_vertex ) );
 
-         part->setUserRecord< double >( "DzBT",  muonBestTrack->dz( the_vertex ) );
-         part->setUserRecord< double >( "DxyBT", muonBestTrack->dxy( the_vertex ) );
-         // dB returns almost the same value as DxyBT, but is more accurate. For more details see:
-         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
-         part->setUserRecord< double >( "dB",    muon->dB() );
+         //part->setUserRecord< double >( "DzBT",  muonBestTrack->dz( the_vertex ) );
+         //part->setUserRecord< double >( "DxyBT", muonBestTrack->dxy( the_vertex ) );
+         //// dB returns almost the same value as DxyBT, but is more accurate. For more details see:
+         //// https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
+         //part->setUserRecord< double >( "dB",    muon->dB() );
 
-         part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
-         part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
+         //part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
+         //part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
 
-         part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
-         part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
+         //part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
+         //part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
 
          // Store information for "cocktail" high energy refit. These are needed
          // for the HighPT Muon ID, for more details see:
