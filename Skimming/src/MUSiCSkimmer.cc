@@ -1715,13 +1715,13 @@ void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
             part->setUserRecord< int >( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
             part->setUserRecord< int >( "VHitsMuonSysCocktail", pmcTrack->hitPattern().numberOfValidMuonHits() );
 
-            part->setUserRecord< double >( "DzCocktail",    pmcTrack->dz( the_vertex ) );
-            part->setUserRecord< double >( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
-            part->setUserRecord< double >( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
+            //part->setUserRecord< double >( "DzCocktail",    pmcTrack->dz( the_vertex ) );
+            //part->setUserRecord< double >( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
+            //part->setUserRecord< double >( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
 
-            part->setUserRecord< double >( "DzBSCocktail",  pmcTrack->dz( the_beamspot ) );
-            part->setUserRecord< double >( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
-            part->setUserRecord< double >( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
+            //part->setUserRecord< double >( "DzBSCocktail",  pmcTrack->dz( the_beamspot ) );
+            //part->setUserRecord< double >( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
+            //part->setUserRecord< double >( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
 
             part->setUserRecord< int >( "TrackerLayersWithMeasCocktail", pmcTrack->hitPattern().trackerLayersWithMeasurement() );
             part->setUserRecord< int >( "PixelLayersWithMeasCocktail",   pmcTrack->hitPattern().pixelLayersWithMeasurement() );
