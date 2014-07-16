@@ -468,7 +468,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       analyzeRecVertices(iEvent, RecEvtView);
       analyzeRecTracks( iEvent, RecEvtView );
       analyzeRecTaus( iEvent, RecEvtView );
-      //analyzeRecMuons( iEvent, RecEvtView, IsMC, genmap, vertices->at( 0 ) );
+      analyzeRecMuons( iEvent, RecEvtView, IsMC, genmap, vertices->at( 0 ) );
       analyzeRecElectrons( iEvent, RecEvtView, IsMC, lazyTools, genmap, geo, vertices, pfCandidates, *rho25 );
       for( vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info ){
          analyzeRecJets( iEvent, RecEvtView, IsMC, genjetmap, *jet_info );
@@ -485,7 +485,7 @@ void MUSiCSkimmer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       Matcher->matchObjects(GenEvtView, RecEvtView, jet_infos, met_name);
    }
 
-   //printEventContent( GenEvtView, RecEvtView, IsMC );
+   printEventContent( GenEvtView, RecEvtView, IsMC );
 
    fePaxFile.writeEvent(&event);
 }
@@ -1608,7 +1608,7 @@ void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
          // http://cmslxr.fnal.gov/lxr/source/DataFormats/MuonReco/src/MuonSelectors.cc
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
-         part->setUserRecord< bool >( "isTightMuon", muon::isTightMuon( *muon, PV ) );
+         //part->setUserRecord< bool >( "isTightMuon", muon::isTightMuon( *muon, PV ) );
          //part->setUserRecord< bool >( "isHighPtMuon", muon::isHighPtMuon( *muon, PV, reco::improvedTuneP ) );
 
          //save info about quality of track-fit for combined muon (muon system + tracker)
