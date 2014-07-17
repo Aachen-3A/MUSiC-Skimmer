@@ -1675,17 +1675,17 @@ void MUSiCSkimmer::analyzeRecMuons( edm::Event const &iEvent,
          //part->setUserRecord< double >( "Dsz", muontrack->dsz( the_vertex ) );
          //part->setUserRecord< double >( "Dxy", muontrack->dxy( the_vertex ) );
 
-         part->setUserRecord< double >( "DzBT",  muonBestTrack->dz( the_vertex ) );
-         part->setUserRecord< double >( "DxyBT", muonBestTrack->dxy( the_vertex ) );
+         //part->setUserRecord< double >( "DzBT",  muonBestTrack->dz( the_vertex ) ); //Causes the jobs to fail on the grid
+         //part->setUserRecord< double >( "DxyBT", muonBestTrack->dxy( the_vertex ) ); //Causes the jobs to fail on the grid
          // dB returns almost the same value as DxyBT, but is more accurate. For more details see:
-         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
-         part->setUserRecord< double >( "dB",    muon->dB() );
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon 
+         //part->setUserRecord< double >( "dB",    muon->dB() ); //Causes the jobs to fail on the grid
 
-         //part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
-         //part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
+         part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
+         part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
 
-         //part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
-         //part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
+         part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
+         part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
 
          // Store information for "cocktail" high energy refit. These are needed
          // for the HighPT Muon ID, for more details see:
