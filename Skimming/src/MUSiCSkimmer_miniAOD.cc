@@ -364,28 +364,35 @@ void MUSiCSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSet
 
    // event-specific data
    bool IsMC =  !iEvent.isRealData();
-   event.setUserRecord<bool>("MC", IsMC);  //distinguish between MC and data
-   event.setUserRecord< unsigned int >( "Run", iEvent.run() );
-   event.setUserRecord< unsigned int >( "LumiSection", iEvent.luminosityBlock());
-   event.setUserRecord< unsigned int >( "EventNum", iEvent.id().event() );
-   event.setUserRecord< unsigned int >( "BX", iEvent.bunchCrossing() );
-   event.setUserRecord< unsigned int >( "Orbit", iEvent.orbitNumber() );
-   event.setUserRecord< std::string >( "Dataset", Dataset_ );
+   event.setUserRecord("MC", IsMC);  //distinguish between MC and data
+   event.setUserRecord( "Run", iEvent.run() );
+   event.setUserRecord( "LumiSection", iEvent.luminosityBlock());
+   event.setUserRecord( "EventNum", iEvent.id().event() );
+   event.setUserRecord( "BX", iEvent.bunchCrossing() );
+   event.setUserRecord( "Orbit", iEvent.orbitNumber() );
+   event.setUserRecord( "Dataset", Dataset_ );
 
    // create two ePaxEventViews for Generator/Reconstructed Objects
-   pxl::EventView* GenEvtView = event.createIndexed<pxl::EventView>("Gen");
-   pxl::EventView* RecEvtView = event.createIndexed<pxl::EventView>("Rec");
-   GenEvtView->setName("Gen"); RecEvtView->setName("Rec");
-   GenEvtView->setUserRecord<std::string>("Type", "Gen");
-   RecEvtView->setUserRecord<std::string>("Type", "Rec");
+   //pxl::EventView* GenEvtView = event.createIndexed<pxl::EventView>("Gen");
+   //pxl::EventView* RecEvtView = event.createIndexed<pxl::EventView>("Rec");
+
+   pxl::EventView* RecEvtView = event.create<pxl::EventView>();
+   event.setIndex("Rec", RecEvtView);
+   pxl::EventView* GenEvtView = event.create<pxl::EventView>();
+   event.setIndex("Gen", GenEvtView);
+   GenEvtView->setName("Gen");
+   RecEvtView->setName("Rec");
+
+   GenEvtView->setUserRecord("Type", (string) "Gen");
+   RecEvtView->setUserRecord("Type", (string) "Rec");
 
    //maps for matching
    std::map< const reco::Candidate*, pxl::Particle* > genmap;
    std::map< const reco::Candidate*, pxl::Particle* > genjetmap;
 
    //set process name
-   GenEvtView->setUserRecord<std::string>("Process", Process_);
-   RecEvtView->setUserRecord<std::string>("Process", Process_);
+   GenEvtView->setUserRecord("Process", Process_);
+   RecEvtView->setUserRecord("Process", Process_);
 
    // Generator stuff
    if (IsMC) {
@@ -425,7 +432,7 @@ void MUSiCSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSet
       for( VInputTag::const_iterator rho_label = rhos_.begin(); rho_label != rhos_.end(); ++rho_label ) {
           edm::Handle< double > rho;
           iEvent.getByLabel( *rho_label, rho );
-          RecEvtView->setUserRecord< double >( rho_label->label(), *rho );
+          RecEvtView->setUserRecord( rho_label->label(), *rho );
           rhos.push_back(*rho);
       }
 
@@ -483,12 +490,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::
    iEvent.getByLabel( "generator", genEvtInfo );
 
    //if the sample is binned, there should be a binning value. so save it, otherwise just save a 0
-   EvtView->setUserRecord< double >( "binScale", genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0 );
+   EvtView->setUserRecord( "binScale", genEvtInfo->hasBinningValues() ? genEvtInfo->binningValues()[0] : 0 );
 
-   EvtView->setUserRecord< double >( "Weight", genEvtInfo->weight() );
+   EvtView->setUserRecord( "Weight", genEvtInfo->weight() );
 
    unsigned int ID = genEvtInfo->signalProcessID();
-   EvtView->setUserRecord< unsigned int >( "processID", ID );
+   EvtView->setUserRecord( "processID", ID );
 
    //don't save PDF infos for processes without partons
    if( genEvtInfo->hasPDF() && !( 91 <= ID && ID <= 95 ) ){
@@ -508,13 +515,13 @@ void MUSiCSkimmer_miniAOD::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::
          fpdf_vec.back().id.second = 0;
       }
 
-      EvtView->setUserRecord<float>("x1", pdf->x.first);
-      EvtView->setUserRecord<float>("x2", pdf->x.second);
-      EvtView->setUserRecord<float>("Q", pdf->scalePDF);
-      EvtView->setUserRecord<int>("f1", id1);
-      EvtView->setUserRecord<int>("f2", id2);
-      EvtView->setUserRecord<float>("pdf1", pdf->xPDF.first);
-      EvtView->setUserRecord<float>("pdf2", pdf->xPDF.second);
+      EvtView->setUserRecord("x1", pdf->x.first);
+      EvtView->setUserRecord("x2", pdf->x.second);
+      EvtView->setUserRecord("Q", pdf->scalePDF);
+      EvtView->setUserRecord("f1", id1);
+      EvtView->setUserRecord("f2", id2);
+      EvtView->setUserRecord("pdf1", pdf->xPDF.first);
+      EvtView->setUserRecord("pdf2", pdf->xPDF.second);
 
 
       if( abs( id1 ) > 6 || abs( id2 ) > 6 ){
@@ -567,7 +574,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
    // therefore add a protection :-) C.H. 20.04.09
    if (p->daughter(0) != 0) GenVtx->setXYZ(p->daughter(0)->vx(), p->daughter(0)->vy(), p->daughter(0)->vz()); //need daughter since first particle (proton) has position zero
    else GenVtx->setXYZ(p->vx(), p->vy(), p->vz());  // if we do not have pp collisions
-   EvtView->setUserRecord<int>("NumVertices", 1);
+   EvtView->setUserRecord("NumVertices", 1);
 
    int numTauMC = 0;
    int numMuonMC = 0;
@@ -576,28 +583,42 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
    int GenId = 0;
 
    //save mother of stable particle
-   const reco::Candidate* p_mother;
+   const reco::GenParticle* p_mother;
+   const reco::GenParticle* p_mother_used;
    int mother = 0;
-
+   std::map< const reco::Candidate*, pxl::Particle* > genMatchMap;
    // loop over all particles
    for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++ pa ) {
       //cast iterator into GenParticleCandidate
       const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
       // the following is interesting for GEN studies
-      p_mother = p->mother();
+      p_mother = (const reco::GenParticle*) p->mother();
       if( p_mother ) {
-         //if( p->status() == 3 ) {
-            int p_id = p->pdgId();
-            mother = p_mother->pdgId();
-            if( p_id != mother && mother <= 100 ) {
-               pxl::Particle* part = EvtView->create< pxl::Particle >();
-               part->setName( "prunedGen" );
-               part->setP4( p->px(), p->py(), p->pz(), p->energy() );
-               part->setUserRecord< int >( "id", p_id );
-               part->setUserRecord< int >( "mother_id", mother );
+         int p_id = p->pdgId();
+         mother = p_mother->pdgId();
+         if( p_id != mother ) {
+            pxl::Particle* part = EvtView->create< pxl::Particle >();
+            genMatchMap[p]=part;
+            part->setName( "gen" );
+            part->setP4( p->px(), p->py(), p->pz(), p->energy() );
+            part->setParticleId( p_id );
+            if(genMatchMap.count(p_mother)==1){
+               part->linkMother(genMatchMap[p_mother]);
             }
-         //}
+            else {
+               p_mother_used = (const reco::GenParticle*) p->mother();
+               while(genMatchMap.end()==genMatchMap.find(p_mother_used)){
+                  p_mother_used = (const reco::GenParticle*) p_mother_used->mother();
+                  if(!p_mother_used){
+                     break;
+                  }
+               }
+               if(p_mother_used){
+                  part->linkMother(genMatchMap[p_mother_used]);
+               }
+            }
+         }
       }
 
       // fill Gen Muons passing some basic cuts
@@ -609,29 +630,17 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
             part->setName("Muon");
             part->setCharge(p->charge());
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
-            part->setUserRecord<float>("Vtx_X", p->vx());
-            part->setUserRecord<float>("Vtx_Y", p->vy());
-            part->setUserRecord<float>("Vtx_Z", p->vz());
-            part->setUserRecord<int>("GenId", GenId);
-
-            // TEMPORARY: calculate isolation ourselves
+            part->setUserRecord("Vtx_X", p->vx());
+            part->setUserRecord("Vtx_Y", p->vy());
+            part->setUserRecord("Vtx_Z", p->vz());
+            //set a soft link if the particle is already stored
+            if(genMatchMap.end()!=genMatchMap.find(p)){
+               part->linkSoft(genMatchMap[p],"genParticle");
+            }
+            // TEMPORARY: calculate isolation ourselves FIXME still needed???
             //FIXME: make this at least comparable with pat/lepton isolation
             double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
-            part->setUserRecord<float>("GenIso", GenIso);
-
-            //save mother of stable muon
-            p_mother =p->mother();
-            if (p_mother != 0) {
-               mother = p_mother->pdgId();
-               //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-               while (abs(mother) == 13){
-                  p_mother = p_mother->mother();
-                  mother = p_mother->pdgId();
-               }
-               part->setUserRecord<int>("mother_id", mother);
-            } else {
-               part->setUserRecord<int>("mother_id", -1);
-            }
+            part->setUserRecord("GenIso", GenIso);
             numMuonMC++;
          }
       }
@@ -644,26 +653,16 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
             part->setName("Ele");
             part->setCharge(p->charge());
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
-            part->setUserRecord<double>("Vtx_X", p->vx());
-            part->setUserRecord<double>("Vtx_Y", p->vy());
-            part->setUserRecord<double>("Vtx_Z", p->vz());
-            part->setUserRecord<int>("GenId", GenId);
-            // TEMPORARY: calculate isolation ourselves
-            double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
-            part->setUserRecord<double>("GenIso", GenIso);
-            //save mother of stable electron
-            p_mother =p->mother();
-            if (p_mother != 0) {
-               mother = p_mother->pdgId();
-               //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-               while (abs(mother) == 11) {
-                  p_mother = p_mother->mother();
-                  mother = p_mother->pdgId();
-               }
-               part->setUserRecord<int>("mother_id", mother);
-            } else {
-               part->setUserRecord<int>("mother_id", -1);
+            part->setUserRecord("Vtx_X", p->vx());
+            part->setUserRecord("Vtx_Y", p->vy());
+            part->setUserRecord("Vtx_Z", p->vz());
+            if(genMatchMap.end()!=genMatchMap.find(p)){
+               part->linkSoft(genMatchMap[p],"genParticle");
             }
+            // TEMPORARY: calculate isolation ourselves  FIXME still needed???
+            double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
+            part->setUserRecord("GenIso", GenIso);
+            //set a soft link if the particle is already stored
             numEleMC++;
          }
       }
@@ -676,30 +675,15 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
             part->setName("Gamma");
             part->setCharge(0);
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
-
-            part->setUserRecord<int>("GenId", GenId);
-            // TEMPORARY: calculate isolation ourselves
-            double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5); //0. since gamma not charged!
-            part->setUserRecord<double>("GenIso", GenIso);
-
-            //save mother of stable gamma
-            p_mother =p->mother();
-            if (p_mother != 0) {
-               mother = p_mother->pdgId();
-               //in case of final state radiation need to access mother of mother of mother...until particle ID really changes
-               while (abs(mother) == 22) {
-                  p_mother = p_mother->mother();
-                  mother = p_mother->pdgId();
-               }
-               part->setUserRecord<int>("mother_id", mother);
-            } else {
-               part->setUserRecord<int>("mother_id", -1);
+            if(genMatchMap.end()!=genMatchMap.find(p)){
+               part->linkSoft(genMatchMap[p],"genParticle");
             }
+            // TEMPORARY: calculate isolation ourselves FIXME still needed???
+            double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5); //0. since gamma not charged!
+            part->setUserRecord("GenIso", GenIso);
             numGammaMC++;
          }
       }
-
-      GenId++;
 
       // fill Gen Taus passing some basic cuts -> status? What kind of taus can be found?
       if( abs( p->pdgId() ) == 15 && TauMC_cuts( p ) ) {
@@ -717,20 +701,27 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
             part->setName( "Tau" );
             part->setCharge( p->charge() );
             part->setP4( p->px(), p->py(), p->pz(), p->energy() );
-            part->setUserRecord< float >( "Vtx_X", p->vx() );
-            part->setUserRecord< float >( "Vtx_Y", p->vy() );
-            part->setUserRecord< float >( "Vtx_Z", p->vz() );
-            part->setUserRecord< int >( "GenId", GenId );
+            if(genMatchMap.end()!=genMatchMap.find(p)){
+               part->linkSoft(genMatchMap[p],"genParticle");
+            }
+            part->setUserRecord( "Vtx_X", p->vx() );
+            part->setUserRecord( "Vtx_Y", p->vy() );
+            part->setUserRecord( "Vtx_Z", p->vz() );
             numTauMC++;
          }
       }
+
+      GenId++;
+
+
    } //end of loop over generated particles
 
+
    edm::LogInfo( "MUSiCSkimmer_miniAOD|GenInfo" ) << "MC Found: " << numMuonMC <<  " muon(s), " << numEleMC << " electron(s), " << numGammaMC << " gamma(s)";
-   EvtView->setUserRecord<int>("NumMuon", numMuonMC);
-   EvtView->setUserRecord<int>("NumEle", numEleMC);
-   EvtView->setUserRecord< int >( "NumTau", numTauMC );
-   EvtView->setUserRecord<int>("NumGamma", numGammaMC);
+   EvtView->setUserRecord("NumMuon", numMuonMC);
+   EvtView->setUserRecord("NumEle", numEleMC);
+   EvtView->setUserRecord( "NumTau", numTauMC );
+   EvtView->setUserRecord("NumGamma", numGammaMC);
 
    // take care of the pile-up in the event
    //
@@ -749,16 +740,16 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
       int num     = (*PUiter).getPU_NumInteractions();
 
       if( BX == -1 ) {
-         EvtView->setUserRecord< int >( "NumVerticesPULastBX", num );
+         EvtView->setUserRecord( "NumVerticesPULastBX", num );
       } else if( BX == 0 ) {
-         EvtView->setUserRecord< int >( "NumVerticesPU", num );
+         EvtView->setUserRecord( "NumVerticesPU", num );
          // The true number of interactions (i.e., the mean used in the Poisson
          // distribution) should be the same for in-time and out-of-time
          // pile-up as the actual number is drawn from the same Poisson distribution.
          //
-         EvtView->setUserRecord< int >( "NumVerticesPUTrue", (*PUiter).getTrueNumInteractions() );
+         EvtView->setUserRecord( "NumVerticesPUTrue", (*PUiter).getTrueNumInteractions() );
       } else if( BX == 1 ) {
-         EvtView->setUserRecord< int >( "NumVerticesPUNextBX", num );
+         EvtView->setUserRecord( "NumVerticesPUNextBX", num );
       }
    }
 }
@@ -794,10 +785,10 @@ void MUSiCSkimmer_miniAOD::analyzeGenJets( const edm::Event &iEvent, pxl::EventV
          part->setName( jet_info.name );
          part->setP4(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
          //fill additional jet-related infos
-         part->setUserRecord<double>("EmE", genJet->emEnergy());
-         part->setUserRecord<double>("HadE", genJet->hadEnergy());
-         part->setUserRecord<double>("InvE", genJet->invisibleEnergy());
-         part->setUserRecord<double>("AuxE", genJet->auxiliaryEnergy());
+         part->setUserRecord("EmE", genJet->emEnergy());
+         part->setUserRecord("HadE", genJet->hadEnergy());
+         part->setUserRecord("InvE", genJet->invisibleEnergy());
+         part->setUserRecord("AuxE", genJet->auxiliaryEnergy());
          numJetMC++;
 
          //save number of GenJet-constituents fulfilling some cuts
@@ -807,12 +798,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenJets( const edm::Event &iEvent, pxl::EventV
             //raise counter if cut passed
             if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++;
          }
-         part->setUserRecord< int >( "GenJetConstit", numGenJetConstit_withcuts );
-         //part->setUserRecord< int >( "algoFlavour",    (*algoFlavour)   [ jetRef ].getFlavour() );
-         //part->setUserRecord< int >( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
+         part->setUserRecord( "GenJetConstit", numGenJetConstit_withcuts );
+         //part->setUserRecord( "algoFlavour",    (*algoFlavour)   [ jetRef ].getFlavour() );
+         //part->setUserRecord( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
       }
    }
-   EvtView->setUserRecord< int >( "Num"+jet_info.name, numJetMC );
+   EvtView->setUserRecord( "Num"+jet_info.name, numJetMC );
    edm::LogInfo( "MUSiCSkimmer_miniAOD|GenInfo" ) << "MC Found: " << numJetMC << " jet(s) of type: " << jet_info.name;
 }
 
@@ -846,12 +837,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenMET( edm::Event const &iEvent,
    pxl::Particle *part = GenEvtView->create< pxl::Particle >();
    part->setName( patMETTag_.label()+"_gen" );
    part->setP4( genmet->px(), genmet->py(), genmet->pz(), genmet->energy() );
-   part->setUserRecord< double >( "sumEt",  genmet->sumEt() );
-   part->setUserRecord< double >( "mEtSig", genmet->mEtSig() );
+   part->setUserRecord( "sumEt",  genmet->sumEt() );
+   part->setUserRecord( "mEtSig", genmet->mEtSig() );
    //fill additional jet-related infos
-   part->setUserRecord< double >( "EmE",  genmet->emEnergy() );
-   part->setUserRecord< double >( "HadE", genmet->hadEnergy() );
-   part->setUserRecord< double >( "InvE", genmet->invisibleEnergy() );
+   part->setUserRecord( "EmE",  genmet->emEnergy() );
+   part->setUserRecord( "HadE", genmet->hadEnergy() );
+   part->setUserRecord( "InvE", genmet->invisibleEnergy() );
 
    edm::LogInfo( "MUSiCSkimmer_miniAOD|GenInfo" ) << "GenMET before muon corr: Px = " << part->getPx()
                                           << ", Py = " << part->getPy()
@@ -881,7 +872,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenMET( edm::Event const &iEvent,
                                              //<< ", Pt = " << part->getPt();
    //}
    if( METMC_cuts( part ) ) numMETMC++;
-   GenEvtView->setUserRecord< int >( "Num" + patMETTag_.label()+"_gen", numMETMC );
+   GenEvtView->setUserRecord( "Num" + patMETTag_.label()+"_gen", numMETMC );
    if( numMETMC ) edm::LogInfo( "MUSiCSkimmer_miniAOD|GenInfo" ) << "Event contains MET";
 }
 
@@ -924,7 +915,7 @@ void MUSiCSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* 
                      pxl::Particle* part = EvtView->create<pxl::Particle>();
                      part->setName("SIMConvGamma");
                      part->setP4(simTrack2->momentum().px(), simTrack2->momentum().py(),simTrack2->momentum().pz(), simTrack2->momentum().energy() );
-                     part->setUserRecord<unsigned int>("TrackId", ParentTrack);
+                     part->setUserRecord("TrackId", ParentTrack);
                      //cout << "found conversion with energy: " << simTrack2->momentum().energy() << " pt: " << part->getPt() << " eta: " << part->getEta() << " phi: " << part->getPhi() << endl;
                      //cout << "------------------" << endl;
                   }
@@ -943,7 +934,7 @@ void MUSiCSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::Event
    //save HCAL noise infos
    edm::Handle< bool > hcal_noise;
    iEvent.getByLabel( hcal_noise_label_, hcal_noise );
-   EvtView->setUserRecord< bool >( "HCALNoisy", !*hcal_noise );
+   EvtView->setUserRecord( "HCALNoisy", !*hcal_noise );
 
 }
 
@@ -978,14 +969,14 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatMET( edm::Event const &iEvent,
    pxl::Particle *part = RecEvtView->create< pxl::Particle >();
    part->setName( patMETTag.label() );
    part->setP4( met->px(), met->py(), met->pz(), met->energy() );
-   part->setUserRecord< double >( "sumEt",  met->sumEt() );
-   part->setUserRecord< double >( "mEtSig", met->mEtSig() );
+   part->setUserRecord( "sumEt",  met->sumEt() );
+   part->setUserRecord( "mEtSig", met->mEtSig() );
 
-   part->setUserRecord< double >( "uncorrectedPhi", met->uncorrectedPhi() );
-   part->setUserRecord< double >( "uncorrectedPt", met->uncorrectedPt() );
+   part->setUserRecord( "uncorrectedPhi", met->uncorrectedPhi() );
+   part->setUserRecord( "uncorrectedPt", met->uncorrectedPt() );
 
    if( MET_cuts( part ) ) numPatMET++;
-   RecEvtView->setUserRecord< int >( "Num" + patMETTag.label(), numPatMET );
+   RecEvtView->setUserRecord( "Num" + patMETTag.label(), numPatMET );
 
 }
 
@@ -1004,11 +995,11 @@ void MUSiCSkimmer_miniAOD::analyzeRecRecoPFMET( edm::Event const &iEvent,
    pxl::Particle *part = RecEvtView->create< pxl::Particle >();
    part->setName( recoPFMETTag.label() );
    part->setP4( met->px(), met->py(), met->pz(), met->energy() );
-   part->setUserRecord< double >( "sumEt",  met->sumEt() );
-   part->setUserRecord< double >( "mEtSig", met->mEtSig() );
+   part->setUserRecord( "sumEt",  met->sumEt() );
+   part->setUserRecord( "mEtSig", met->mEtSig() );
 
    if( MET_cuts( part ) ) numRecoPFMET++;
-   RecEvtView->setUserRecord< int >( "Num" + recoPFMETTag.label(), numRecoPFMET );
+   RecEvtView->setUserRecord( "Num" + recoPFMETTag.label(), numRecoPFMET );
 }
 
 
@@ -1277,7 +1268,7 @@ void MUSiCSkimmer_miniAOD::analyzeFilter( const edm::Event &iEvent,
       bool error  = filterResultsHandle->error( filt->ID );
 
       if( wasrun && !error ){
-        EvtView->setUserRecord< bool >( filter.name + "_" + filt->name, filterResultsHandle->accept( filt->ID ) );
+        EvtView->setUserRecord( filter.name + "_" + filt->name, filterResultsHandle->accept( filt->ID ) );
 
         if( filterResultsHandle->accept( filt->ID ) )
            edm::LogInfo( "MUSiCSkimmer_miniAOD|FilterInfo" ) << "Event in process: '" << filter.process << "' passed filter: '" << filt->name << "'.";
@@ -1326,7 +1317,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
    }
 
    for( std::map< std::string, bool >::const_iterator DS = availableDS.begin(); DS != availableDS.end(); ++DS ) {
-      EvtView->setUserRecord< bool >( "DS_" + (*DS).first, (*DS).second );
+      EvtView->setUserRecord( "DS_" + (*DS).first, (*DS).second );
    }
 
    // Use bool to ckeck if 'trigger_infos_by_datastream' (mapping of the wanted
@@ -1363,7 +1354,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
             //we can only use unprescaled triggers
             if( prescale == 1 ) {
                //unprescaled, so store it
-               EvtView->setUserRecord< bool >( trigger.name+"_"+trig->name, triggerResultsHandle->accept( trig->ID ) );
+               EvtView->setUserRecord( trigger.name+"_"+trig->name, triggerResultsHandle->accept( trig->ID ) );
                unprescaledTrigger     = true;
                unprescaledTriggerinDS = true;
 
@@ -1420,7 +1411,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
                      //pxl::Particle *part = EvtView->create< pxl::Particle >();
                      //part->setName( moduleLabel );
                      //part->setP4( TO.px(), TO.py(), TO.pz(), TO.energy() );
-                     //part->setUserRecord< double >( "ID", TO.id() );
+                     //part->setUserRecord( "ID", TO.id() );
                      //edm::LogVerbatim( "MUSiCSkimmer|TriggerInfo" )  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
                                                                      //<< " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
                                                                      //<< TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
@@ -1432,7 +1423,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
       // Does the datastream contain any unprescaled triggers? If not set the
       // datastream UserRecord to false.
       if( !unprescaledTriggerinDS ) {
-         EvtView->setUserRecord< bool >( "DS_" + trg_infos_by_DS->first, unprescaledTriggerinDS );
+         EvtView->setUserRecord( "DS_" + trg_infos_by_DS->first, unprescaledTriggerinDS );
          edm::LogWarning( "MUSiCSkimmer|TriggerWarning" ) << "TRIGGER WARNING: No unprescaled triggers in datastream "
                                                           << trg_infos_by_DS->first << " in menu " << trigger.process;
       }
@@ -1450,15 +1441,15 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
    //const TechnicalTriggerWord &tech_word = gtReadoutRecord->technicalTriggerWord();
 
    ////store the important bits
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_0", tech_word[ 0 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_36", tech_word[ 36 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_37", tech_word[ 37 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_38", tech_word[ 38 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_39", tech_word[ 39 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_40", tech_word[ 40 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_41", tech_word[ 41 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_42", tech_word[ 42 ] );
-   //EvtView->setUserRecord< bool >( trigger.name+"_L1_43", tech_word[ 43 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_0", tech_word[ 0 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_36", tech_word[ 36 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_37", tech_word[ 37 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_38", tech_word[ 38 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_39", tech_word[ 39 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_40", tech_word[ 40 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_41", tech_word[ 41 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_42", tech_word[ 42 ] );
+   //EvtView->setUserRecord( trigger.name+"_L1_43", tech_word[ 43 ] );
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
@@ -1500,19 +1491,19 @@ void MUSiCSkimmer_miniAOD::analyzeRecVertices(const edm::Event& iEvent, pxl::Eve
          vtx->setName("PV");
          vtx->setXYZ(vertex->x(), vertex->y(), vertex->z());
          // errors
-         vtx->setUserRecord<double>("xErr", vertex->xError());
-         vtx->setUserRecord<double>("yErr", vertex->yError());
-         vtx->setUserRecord<double>("zErr", vertex->zError());
+         vtx->setUserRecord("xErr", vertex->xError());
+         vtx->setUserRecord("yErr", vertex->yError());
+         vtx->setUserRecord("zErr", vertex->zError());
          // chi2 of vertex-fit
-         vtx->setUserRecord<double>("chi2", vertex->chi2());
-         vtx->setUserRecord<double>("ndof", vertex->ndof());
+         vtx->setUserRecord("chi2", vertex->chi2());
+         vtx->setUserRecord("ndof", vertex->ndof());
          // is valid?
-         vtx->setUserRecord<bool>("IsValid", vertex->isValid());
-         vtx->setUserRecord<bool>("IsFake", vertex->isFake());
+         vtx->setUserRecord("IsValid", vertex->isValid());
+         vtx->setUserRecord("IsFake", vertex->isFake());
          numVertices++;
       }
    }
-   EvtView->setUserRecord<int>("NumVertices", numVertices);
+   EvtView->setUserRecord("NumVertices", numVertices);
 }
 
 
@@ -1523,7 +1514,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecVertices(const edm::Event& iEvent, pxl::Eve
    //iEvent.getByLabel( m_recoTracksTag, tracksHandle );
 
    //// Store the number of tracks in each event!
-   //RecEvtView->setUserRecord< unsigned int >( "Num" + m_recoTracksTag.label(), tracksHandle->size() );
+   //RecEvtView->setUserRecord( "Num" + m_recoTracksTag.label(), tracksHandle->size() );
 //}
 
 
@@ -1562,44 +1553,87 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatTaus( edm::Event const &iEvent,
          part->setName( tauTag.label() );
          part->setCharge( tau->charge() );
          part->setP4( tau->px(), tau->py(), tau->pz(), tau->energy() );
-         part->setUserRecord< int >("decayMode",tau->decayMode() );
+         part->setUserRecord("Vtx_X", tau->vx());
+         part->setUserRecord("Vtx_Y", tau->vy());
+         part->setUserRecord("Vtx_Z", tau->vz());
 
          //Pt of the Leading Charged Hadron of the Jet
+         //at the moment we don't need any infos from them if so use pat::PackedCandidate
          reco::CandidatePtr const &leadChargedHadrCand = tau->leadChargedHadrCand();
-         if( leadChargedHadrCand.isNonnull() )
-            part->setUserRecord< double >( "LeadingHadronPt", leadChargedHadrCand->pt() );
-         else
-            part->setUserRecord< double >( "LeadingHadronPt", -1.0 );
+         if( leadChargedHadrCand.isNonnull() ){
+            part->setUserRecord( "LeadingHadronPt", leadChargedHadrCand->pt() );
+            part->setUserRecord( "LeadingHadronP", leadChargedHadrCand->p() );
+         }else{
+            part->setUserRecord( "LeadingHadronPt", -1.0 );
+            part->setUserRecord( "LeadingHadronP", -1. );
+         }
 
          reco::CandidatePtr const &leadNeutralCand = tau->leadNeutralCand();
          if( leadNeutralCand.isNonnull() )
-            part->setUserRecord< double >( "LeadingNeutralPt", leadNeutralCand->pt() );
+            part->setUserRecord( "LeadingNeutralPt", leadNeutralCand->pt() );
          else
-            part->setUserRecord< double >( "LeadingNeutralPt", -1.0 );
+            part->setUserRecord( "LeadingNeutralPt", -1.0 );
 
-
-         //part->setUserRecord< float >( "PfAllParticleIso",   tau->userIsolation( "pat::PfAllParticleIso" ) );
-         //part->setUserRecord< float >( "PfChargedHadronIso", tau->userIsolation( "pat::PfChargedHadronIso" ) );
-         //part->setUserRecord< float >( "PfNeutralHadronIso", tau->userIsolation( "pat::PfNeutralHadronIso" ) );
-         //part->setUserRecord< float >( "PfGammaIso",         tau->userIsolation( "pat::PfGammaIso" ) );
          //Saving all discriminators
          for ( std::vector< pat::Tau::IdPair >::const_iterator it = tau->tauIDs().begin(); it != tau->tauIDs().end(); ++it ) {
             part->setUserRecord < float >( it->first, it->second );
          }
 
+         //part->setUserRecord( "EMFraction", tau->emFraction() ); // Ecal/Hcal Cluster Energy
+
+         //GRRRR there is no way to get the jet link at the moment!!
+         //part->setUserRecord( "HcalEoverLeadChargedP", tau->hcalTotOverPLead() ); // total Hcal Cluster E / leadPFChargedHadron P
+         part->setUserRecord( "dxy", tau->dxy() );
+         part->setUserRecord( "dxy_error", tau->dxy_error() );
+         part->setUserRecord( "dxy_Sig", tau->dxy_Sig() );
+         //reco::VertexRef const &tau_primary_vertex = tau->primaryVertex();
+         //part->setUserRecord("PrimVtx_X", tau_primary_vertex->x());
+         //part->setUserRecord("PrimVtx_Y", tau_primary_vertex->y());
+         //part->setUserRecord("PrimVtx_Z", tau_primary_vertex->z());
+
+         part->setUserRecord( "decayMode", tau->decayMode() );
+
+         reco::CandidatePtrVector const &signalGammaCands = tau->signalGammaCands();
+         try{
+            part->setUserRecord( "NumPFGammaCands", signalGammaCands.size() );
+         }
+         catch(...){
+            part->setUserRecord( "NumPFGammaCands", -1 );
+         }
+         reco::CandidatePtrVector  const &signalChargedHadrCands = tau->signalChargedHadrCands();
+         try{
+            part->setUserRecord( "NumPFChargedHadrCands", signalChargedHadrCands.size() );
+         }
+         catch(...){
+            part->setUserRecord( "NumPFChargedHadrCands", -1 );
+         }
+         reco::CandidatePtrVector const &signalNeutrHadrCands = tau->signalNeutrHadrCands();
+         try{
+            part->setUserRecord( "NumPFNeutralHadrCands", signalNeutrHadrCands.size() );
+         }
+         catch(...){
+            part->setUserRecord( "NumPFNeutralHadrCands", -1 );
+         }
+
+         //reco::TrackRefVector const &signalTracks = tau->signalTracks();
+         //if( signalTracks.isNonnull() )
+            //part->setUserRecord( "NumSignalTracks", signalTracks.size() );
+         //else
+            //part->setUserRecord( "NumSignalTracks", -1 );
+         //GRRRR there is no way to get the jet link at the moment!! Will be fixed in CMSSW_7_1_X!!
          // Information from jet used to reconstruct the tau:
          // (Uncorrected jet pt.)
          //PFJetRef const &tauJet = tau->pfJetRef();
-         //part->setUserRecord< double >( "tauJetpx", tauJet->px() );
-         //part->setUserRecord< double >( "tauJetpy", tauJet->py() );
-         //part->setUserRecord< double >( "tauJetpz", tauJet->pz() );
-         //part->setUserRecord< double >( "tauJetE",  tauJet->energy() );
+         //part->setUserRecord( "tauJetpx", tauJet->px() );
+         //part->setUserRecord( "tauJetpy", tauJet->py() );
+         //part->setUserRecord( "tauJetpz", tauJet->pz() );
+         //part->setUserRecord( "tauJetE",  tauJet->energy() );
 
          numPatTaus++;
       }
    }
 
-   RecEvtView->setUserRecord< int >( "Num" + tauTag.label(), numPatTaus );
+   RecEvtView->setUserRecord( "Num" + tauTag.label(), numPatTaus );
 }
 
 // ------------ reading Reconstructed Muons ------------
@@ -1624,17 +1658,17 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
          part->setName("Muon");
          part->setCharge(muon->charge());
          part->setP4(muon->px(), muon->py(), muon->pz(), muon->energy());
-         part->setUserRecord<double>("Vtx_X", muon->vx());
-         part->setUserRecord<double>("Vtx_Y", muon->vy());
-         part->setUserRecord<double>("Vtx_Z", muon->vz());
+         part->setUserRecord("Vtx_X", muon->vx());
+         part->setUserRecord("Vtx_Y", muon->vy());
+         part->setUserRecord("Vtx_Z", muon->vz());
 
          // Particle-Flow muons out-of-the-box.
-         part->setUserRecord< bool >( "isPFMuon", muon->isPFMuon() );
+         part->setUserRecord( "isPFMuon", muon->isPFMuon() );
          if( muon->isPFMuon() ) {
-            part->setUserRecord< double >( "PFpx", muon->pfP4().Px() );
-            part->setUserRecord< double >( "PFpy", muon->pfP4().Py() );
-            part->setUserRecord< double >( "PFpz", muon->pfP4().Pz() );
-            part->setUserRecord< double >( "PFE",  muon->pfP4().E()  );
+            part->setUserRecord( "PFpx", muon->pfP4().Px() );
+            part->setUserRecord( "PFpy", muon->pfP4().Py() );
+            part->setUserRecord( "PFpz", muon->pfP4().Pz() );
+            part->setUserRecord( "PFE",  muon->pfP4().E()  );
          }
 
          //store PAT matching info if MC
@@ -1646,205 +1680,201 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
          }
 
          //check if muon is Global/Tracker/StandAlone -Muon
-         part->setUserRecord<bool>("isGlobalMuon", muon->isGlobalMuon());
-         part->setUserRecord<bool>("isTrackerMuon", muon->isTrackerMuon());
-         part->setUserRecord<bool>("isStandAloneMuon", muon->isStandAloneMuon());
+         part->setUserRecord("isGlobalMuon", muon->isGlobalMuon());
+         part->setUserRecord("isTrackerMuon", muon->isTrackerMuon());
+         part->setUserRecord("isStandAloneMuon", muon->isStandAloneMuon());
 
          // Access all Tight-Muon-ID or High-Pt-Muon-ID cuts at once. For details see:
          // http://cmslxr.fnal.gov/lxr/source/DataFormats/MuonReco/src/MuonSelectors.cc
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
-         //part->setUserRecord< bool >( "isTightMuon", muon::isTightMuon( *muon, PV ) );
-         //part->setUserRecord< bool >( "isHighPtMuon", muon::isHighPtMuon( *muon, PV, reco::improvedTuneP ) );
+         part->setUserRecord( "isTightMuon", muon->isTightMuon( PV ) );
+         part->setUserRecord( "isHighPtMuon", muon->isHighPtMuon(  PV ) );
 
 
          //save info about quality of track-fit for combined muon (muon system + tracker)
-         edm::LogInfo( "MUSiCSkimmer_miniAOD|Muon" ) << "test1!";
          reco::TrackRef muontrack = muon->globalTrack();
          reco::TrackRef trackerTrack = muon->innerTrack();
          reco::TrackRef outerTrack = muon->outerTrack();
          reco::TrackRef muonBestTrack = muon->muonBestTrack();
 
          // Need chi^2 and n.d.f. to calculate fit probability.
-         part->setUserRecord< double >( "chi2", muontrack->chi2() );
-         part->setUserRecord< double >( "ndof", muontrack->ndof() );
+         part->setUserRecord( "chi2", muontrack->chi2() );
+         part->setUserRecord( "ndof", muontrack->ndof() );
 
          // Keep normalized chi^2 for backward compatibility.
          // TODO: Remove 'NormChi2' variable, once everything is switched to those above.
-         part->setUserRecord<double>("NormChi2", muontrack->normalizedChi2());
+         part->setUserRecord("NormChi2", muontrack->normalizedChi2());
 
          // Store info from HitPattern of the global tracker.
 
          // Number of lost ( = invalid) hits on track.
          //
-         part->setUserRecord< int >( "LHits", muontrack->hitPattern().numberOfLostHits() );
+         part->setUserRecord( "LHits", muontrack->hitPattern().numberOfLostHits() );
 
          // Valid hit information
          //
-         part->setUserRecord<int>("VHits",muontrack->hitPattern().numberOfValidHits());
-         part->setUserRecord<int>("VHitsPixel",muontrack->hitPattern().numberOfValidPixelHits());
-         part->setUserRecord<int>("VHitsTracker",muontrack->hitPattern().numberOfValidTrackerHits());
-         part->setUserRecord<int>("VHitsMuonSys",muontrack->hitPattern().numberOfValidMuonHits());
+         part->setUserRecord("VHits",muontrack->hitPattern().numberOfValidHits());
+         part->setUserRecord("VHitsPixel",muontrack->hitPattern().numberOfValidPixelHits());
+         part->setUserRecord("VHitsTracker",muontrack->hitPattern().numberOfValidTrackerHits());
+         part->setUserRecord("VHitsMuonSys",muontrack->hitPattern().numberOfValidMuonHits());
 
          // Store the number of tracker layers with measurement.
          //
-         part->setUserRecord< int >( "TrackerLayersWithMeas", muontrack->hitPattern().trackerLayersWithMeasurement() );
-         part->setUserRecord< int >( "PixelLayersWithMeas",   muontrack->hitPattern().pixelLayersWithMeasurement() );
+         part->setUserRecord( "TrackerLayersWithMeas", muontrack->hitPattern().trackerLayersWithMeasurement() );
+         part->setUserRecord( "PixelLayersWithMeas",   muontrack->hitPattern().pixelLayersWithMeasurement() );
 
          //store the number of muon stations containing segments
-         part->setUserRecord< int > ( "NMatchedStations", muon->numberOfMatchedStations() );
+         part->setUserRecord ( "NMatchedStations", muon->numberOfMatchedStations() );
 
          // Store the pt and error from the global track.
          // ( qoverpError() is the same as error(0) for a track. )
          //
-         part->setUserRecord< double >( "qoverp",      muontrack->qoverp() );
-         part->setUserRecord< double >( "qoverpError", muontrack->qoverpError() );
-         part->setUserRecord< double >( "ptError",     muontrack->ptError() );
-         part->setUserRecord< double >( "pt",          muontrack->pt() );
+         part->setUserRecord( "qoverp",      muontrack->qoverp() );
+         part->setUserRecord( "qoverpError", muontrack->qoverpError() );
+         part->setUserRecord( "ptError",     muontrack->ptError() );
+         part->setUserRecord( "pt",          muontrack->pt() );
 
          // TODO: These variables are still used in the analysis and should be
          // replaced with those above in the future.
          //
          //error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
-         part->setUserRecord<double>("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
-         part->setUserRecord<double>("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
+         part->setUserRecord("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
+         part->setUserRecord("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
 
          // Store also the pt error from the tracker track.
          // ( qoverpError() is the same as error(0) for a track. )
          //
-         part->setUserRecord< double >( "qoverpTracker",      trackerTrack->qoverp() );
-         part->setUserRecord< double >( "qoverpErrorTracker", trackerTrack->qoverpError() );
-         part->setUserRecord< double >( "ptErrorTracker",     trackerTrack->ptError() );
-         part->setUserRecord< double >( "ptTracker",          trackerTrack->pt() );
+         part->setUserRecord( "qoverpTracker",      trackerTrack->qoverp() );
+         part->setUserRecord( "qoverpErrorTracker", trackerTrack->qoverpError() );
+         part->setUserRecord( "ptErrorTracker",     trackerTrack->ptError() );
+         part->setUserRecord( "ptTracker",          trackerTrack->pt() );
 
          // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
          // (i.e. the absolute longitudinal and transverse impact parameter).
          //
-         //part->setUserRecord< double >( "Dsz", muontrack->dsz( the_vertex ) );
-         //part->setUserRecord< double >( "Dxy", muontrack->dxy( the_vertex ) );
+         //part->setUserRecord( "Dsz", muontrack->dsz( the_vertex ) );
+         //part->setUserRecord( "Dxy", muontrack->dxy( the_vertex ) );
 
-         //part->setUserRecord< double >( "DzBT",  muonBestTrack->dz( the_vertex ) ); //Causes the jobs to fail on the grid
-         //part->setUserRecord< double >( "DxyBT", muonBestTrack->dxy( the_vertex ) ); //Causes the jobs to fail on the grid
+         //part->setUserRecord( "DzBT",  muonBestTrack->dz( the_vertex ) ); //Causes the jobs to fail on the grid
+         //part->setUserRecord( "DxyBT", muonBestTrack->dxy( the_vertex ) ); //Causes the jobs to fail on the grid
          // dB returns almost the same value as DxyBT, but is more accurate. For more details see:
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
-         //part->setUserRecord< double >( "dB",    muon->dB() ); //Causes the jobs to fail on the grid
+         part->setUserRecord( "dB",    muon->dB() ); //Causes the jobs to fail on the grid
 
-         part->setUserRecord< double >( "DszBS", muontrack->dsz( the_beamspot ) );
-         part->setUserRecord< double >( "DxyBS", muontrack->dxy( the_beamspot ) );
+         part->setUserRecord( "DszBS", muontrack->dsz( the_beamspot ) );
+         part->setUserRecord( "DxyBS", muontrack->dxy( the_beamspot ) );
 
-         part->setUserRecord< double >( "Dz",   trackerTrack->dz( the_vertex ) );
-         part->setUserRecord< double >( "DzBS", trackerTrack->dz( the_beamspot ) );
+         part->setUserRecord( "Dz",   trackerTrack->dz( the_vertex ) );
+         part->setUserRecord( "DzBS", trackerTrack->dz( the_beamspot ) );
 
          // Store information for "cocktail" high energy refit. These are needed
          // for the HighPT Muon ID, for more details see:
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
          //
          // Get the optimal cocktail muon track using the improved version of Tune P.
-         edm::LogInfo( "MUSiCSkimmer_miniAOD|Muon" ) << "test2!";
-         //reco::Muon::MuonTrackTypePair trackPair = muon::tevOptimized( *muon, 200, 17., 40., 0.25 );
-         edm::LogInfo( "MUSiCSkimmer_miniAOD|Muon" ) << "test3!";
          reco::TrackRef pmcTrack = muon->tunePMuonBestTrack();
 
          if( pmcTrack.isAvailable() ) {
-            part->setUserRecord< bool >( "validCocktail", true );
+            part->setUserRecord( "validCocktail", true );
             // Same as above but for cocktail
             //
-            part->setUserRecord< double >( "pxCocktail", pmcTrack->px() );
-            part->setUserRecord< double >( "pyCocktail", pmcTrack->py() );
-            part->setUserRecord< double >( "pzCocktail", pmcTrack->pz() );
+            part->setUserRecord( "pxCocktail", pmcTrack->px() );
+            part->setUserRecord( "pyCocktail", pmcTrack->py() );
+            part->setUserRecord( "pzCocktail", pmcTrack->pz() );
 
-            part->setUserRecord< double >( "qoverpCocktail",      pmcTrack->qoverp() );
-            part->setUserRecord< double >( "qoverpErrorCocktail", pmcTrack->qoverpError() );
-            part->setUserRecord< double >( "ptErrorCocktail",     pmcTrack->ptError() );
-            part->setUserRecord< double >( "ptCocktail",          pmcTrack->pt() );
+            part->setUserRecord( "qoverpCocktail",      pmcTrack->qoverp() );
+            part->setUserRecord( "qoverpErrorCocktail", pmcTrack->qoverpError() );
+            part->setUserRecord( "ptErrorCocktail",     pmcTrack->ptError() );
+            part->setUserRecord( "ptCocktail",          pmcTrack->pt() );
 
-            part->setUserRecord< double >( "NormChi2Cocktail", pmcTrack->normalizedChi2() );
+            part->setUserRecord( "NormChi2Cocktail", pmcTrack->normalizedChi2() );
 
-            part->setUserRecord< int >( "LHitsCocktail",        pmcTrack->hitPattern().numberOfLostHits() );
-            part->setUserRecord< int >( "VHitsCocktail",        pmcTrack->hitPattern().numberOfValidHits() );
-            part->setUserRecord< int >( "VHitsPixelCocktail",   pmcTrack->hitPattern().numberOfValidPixelHits() );
-            part->setUserRecord< int >( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
-            part->setUserRecord< int >( "VHitsMuonSysCocktail", pmcTrack->hitPattern().numberOfValidMuonHits() );
+            part->setUserRecord( "LHitsCocktail",        pmcTrack->hitPattern().numberOfLostHits() );
+            part->setUserRecord( "VHitsCocktail",        pmcTrack->hitPattern().numberOfValidHits() );
+            part->setUserRecord( "VHitsPixelCocktail",   pmcTrack->hitPattern().numberOfValidPixelHits() );
+            part->setUserRecord( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
+            part->setUserRecord( "VHitsMuonSysCocktail", pmcTrack->hitPattern().numberOfValidMuonHits() );
 
-            //part->setUserRecord< double >( "DzCocktail",    pmcTrack->dz( the_vertex ) );
-            //part->setUserRecord< double >( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
-            //part->setUserRecord< double >( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
+            //part->setUserRecord( "DzCocktail",    pmcTrack->dz( the_vertex ) );
+            //part->setUserRecord( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
+            //part->setUserRecord( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
 
-            //part->setUserRecord< double >( "DzBSCocktail",  pmcTrack->dz( the_beamspot ) );
-            //part->setUserRecord< double >( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
-            //part->setUserRecord< double >( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
+            //part->setUserRecord( "DzBSCocktail",  pmcTrack->dz( the_beamspot ) );
+            //part->setUserRecord( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
+            //part->setUserRecord( "DxyBSCocktail", pmcTrack->dxy( the_beamspot ) );
 
-            part->setUserRecord< int >( "TrackerLayersWithMeasCocktail", pmcTrack->hitPattern().trackerLayersWithMeasurement() );
-            part->setUserRecord< int >( "PixelLayersWithMeasCocktail",   pmcTrack->hitPattern().pixelLayersWithMeasurement() );
+            part->setUserRecord( "TrackerLayersWithMeasCocktail", pmcTrack->hitPattern().trackerLayersWithMeasurement() );
+            part->setUserRecord( "PixelLayersWithMeasCocktail",   pmcTrack->hitPattern().pixelLayersWithMeasurement() );
          } else {
-            part->setUserRecord< bool >( "validCocktail", false );
+            part->setUserRecord( "validCocktail", false );
          }
 
          //official CaloIso and TrkIso
          //Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
-         part->setUserRecord<double>("CaloIso", muon->caloIso());
-         part->setUserRecord<double>("TrkIso", muon->trackIso());
-         part->setUserRecord<double>("ECALIso", muon->ecalIso());
-         part->setUserRecord<double>("HCALIso", muon->hcalIso());
+         part->setUserRecord("CaloIso", muon->caloIso());
+         part->setUserRecord("TrkIso", muon->trackIso());
+         part->setUserRecord("ECALIso", muon->ecalIso());
+         part->setUserRecord("HCALIso", muon->hcalIso());
          //save offical isolation information: delta R = 0.3
          const reco::MuonIsolation& muonIsoR03 = muon->isolationR03();
-         part->setUserRecord<double>("IsoR3SumPt", muonIsoR03.sumPt);
-         part->setUserRecord<double>("IsoR3EmEt", muonIsoR03.emEt);
-         part->setUserRecord<double>("IsoR3HadEt", muonIsoR03.hadEt);
-         part->setUserRecord<double>("IsoR3HoEt", muonIsoR03.hoEt);
-         part->setUserRecord<int>("IsoR3NTracks", muonIsoR03.nTracks);
-         part->setUserRecord<int>("IsoR3NJets", muonIsoR03.nJets);
+         part->setUserRecord("IsoR3SumPt", muonIsoR03.sumPt);
+         part->setUserRecord("IsoR3EmEt", muonIsoR03.emEt);
+         part->setUserRecord("IsoR3HadEt", muonIsoR03.hadEt);
+         part->setUserRecord("IsoR3HoEt", muonIsoR03.hoEt);
+         part->setUserRecord("IsoR3NTracks", muonIsoR03.nTracks);
+         part->setUserRecord("IsoR3NJets", muonIsoR03.nJets);
          //save offical isolation information: delta R = 0.5
          const reco::MuonIsolation& muonIsoR05 = muon->isolationR05();
-         part->setUserRecord<double>("IsoR5SumPt", muonIsoR05.sumPt);
-         part->setUserRecord<double>("IsoR5EmEt", muonIsoR05.emEt);
-         part->setUserRecord<double>("IsoR5HadEt", muonIsoR05.hadEt);
-         part->setUserRecord<double>("IsoR5HoEt", muonIsoR05.hoEt);
-         part->setUserRecord<int>("IsoR5NTracks", muonIsoR05.nTracks);
-         part->setUserRecord<int>("IsoR5NJets", muonIsoR05.nJets);
+         part->setUserRecord("IsoR5SumPt", muonIsoR05.sumPt);
+         part->setUserRecord("IsoR5EmEt", muonIsoR05.emEt);
+         part->setUserRecord("IsoR5HadEt", muonIsoR05.hadEt);
+         part->setUserRecord("IsoR5HoEt", muonIsoR05.hoEt);
+         part->setUserRecord("IsoR5NTracks", muonIsoR05.nTracks);
+         part->setUserRecord("IsoR5NJets", muonIsoR05.nJets);
          //save some stuff related to Muon-ID (Calo-info etc.)
-         part->setUserRecord<double>("CaloComp", muon->caloCompatibility());
-         part->setUserRecord<int>("NumChambers", muon->numberOfChambers());
-         part->setUserRecord<int>("NumMatches", muon->numberOfMatches());
-         part->setUserRecord<double>("EMDeposit", muon->calEnergy().em);
-         part->setUserRecord<double>("HCALDeposit", muon->calEnergy().had);
+         part->setUserRecord("CaloComp", muon->caloCompatibility());
+         part->setUserRecord("NumChambers", muon->numberOfChambers());
+         part->setUserRecord("NumMatches", muon->numberOfMatches());
+         part->setUserRecord("EMDeposit", muon->calEnergy().em);
+         part->setUserRecord("HCALDeposit", muon->calEnergy().had);
          // check good muon method
-         part->setUserRecord<bool>("isGood", muon::isGoodMuon( *muon, muon::GlobalMuonPromptTight ) );
-         part->setUserRecord<bool>("lastStationTight", muon::isGoodMuon( *muon, muon::TMLastStationTight ) );
-         part->setUserRecord<float>("SegComp", muon::segmentCompatibility( *muon ) );
-         part->setUserRecord< bool >( "TMOneStationTight", muon::isGoodMuon( *muon, muon::TMOneStationTight ) );
+         part->setUserRecord("isGood", muon::isGoodMuon( *muon, muon::GlobalMuonPromptTight ) );
+         part->setUserRecord("lastStationTight", muon::isGoodMuon( *muon, muon::TMLastStationTight ) );
+         part->setUserRecord("SegComp", muon::segmentCompatibility( *muon ) );
+         part->setUserRecord( "TMOneStationTight", muon::isGoodMuon( *muon, muon::TMOneStationTight ) );
 
          // Particle Flow based Isolation (available for samples processed with CMSSW_4_4_X+ otherwise 0).
          const reco::MuonPFIsolation muonPFIso03 = muon->pfIsolationR03();
          const reco::MuonPFIsolation muonPFIso04 = muon->pfIsolationR04();
 
          // Sum Pt of the charged Hadrons.
-         part->setUserRecord< double >( "PFIsoR03ChargedHadrons", muonPFIso03.sumChargedHadronPt );
-         part->setUserRecord< double >( "PFIsoR04ChargedHadrons", muonPFIso04.sumChargedHadronPt );
+         part->setUserRecord( "PFIsoR03ChargedHadrons", muonPFIso03.sumChargedHadronPt );
+         part->setUserRecord( "PFIsoR04ChargedHadrons", muonPFIso04.sumChargedHadronPt );
          // Sum Pt of all charged particles (including PF electrons and muons).
-         part->setUserRecord< double >( "PFIsoR03ChargeParticles", muonPFIso03.sumChargedParticlePt );
-         part->setUserRecord< double >( "PFIsoR04ChargeParticles", muonPFIso04.sumChargedParticlePt );
+         part->setUserRecord( "PFIsoR03ChargeParticles", muonPFIso03.sumChargedParticlePt );
+         part->setUserRecord( "PFIsoR04ChargeParticles", muonPFIso04.sumChargedParticlePt );
          // Sum Et of the neutral hadrons.
-         part->setUserRecord< double >( "PFIsoR03NeutralHadrons", muonPFIso03.sumNeutralHadronEt );
-         part->setUserRecord< double >( "PFIsoR04NeutralHadrons", muonPFIso04.sumNeutralHadronEt );
+         part->setUserRecord( "PFIsoR03NeutralHadrons", muonPFIso03.sumNeutralHadronEt );
+         part->setUserRecord( "PFIsoR04NeutralHadrons", muonPFIso04.sumNeutralHadronEt );
          // Sum Et of PF photons.
-         part->setUserRecord< double >( "PFIsoR03Photons", muonPFIso03.sumPhotonEt );
-         part->setUserRecord< double >( "PFIsoR04Photons", muonPFIso04.sumPhotonEt );
+         part->setUserRecord( "PFIsoR03Photons", muonPFIso03.sumPhotonEt );
+         part->setUserRecord( "PFIsoR04Photons", muonPFIso04.sumPhotonEt );
          // Sum Pt of the charged particles in the cone of interest but with particles not originating from the primary vertex(for PU corrections).
-         part->setUserRecord< double >( "PFIsoR03PU", muonPFIso03.sumPUPt );
-         part->setUserRecord< double >( "PFIsoR04PU", muonPFIso04.sumPUPt );
+         part->setUserRecord( "PFIsoR03PU", muonPFIso03.sumPUPt );
+         part->setUserRecord( "PFIsoR04PU", muonPFIso04.sumPUPt );
          // TODO: The following two are not available before CMSSW_5_X_Y.
          // Sum of the neutral hadron Et with a higher threshold for the candidates(1 GeV instead of 0.5).
-         //part->setUserRecord< double >( "PFIso03NeutralHadronsHighThres", muonPFIso03.sumNeutralHadronEtHighThreshold );
-         //part->setUserRecord< double >( "PFIso04NeutralHadronsHighThres", muonPFIso04.sumNeutralHadronEtHighThreshold );
+         //part->setUserRecord( "PFIso03NeutralHadronsHighThres", muonPFIso03.sumNeutralHadronEtHighThreshold );
+         //part->setUserRecord( "PFIso04NeutralHadronsHighThres", muonPFIso04.sumNeutralHadronEtHighThreshold );
          // Sum of the PF photons Et with higher threshold (1 GeV instead of 0.5).
-         //part->setUserRecord< double >( "PFIso03PhotonsHighThres", muonPFIso03.sumPhotonEtHighThreshold );
-         //part->setUserRecord< double >( "PFIso04PhotonsHighThres", muonPFIso04.sumPhotonEtHighThreshold );
+         //part->setUserRecord( "PFIso03PhotonsHighThres", muonPFIso03.sumPhotonEtHighThreshold );
+         //part->setUserRecord( "PFIso04PhotonsHighThres", muonPFIso04.sumPhotonEtHighThreshold );
 
          numMuonRec++;
       }
    }
-   RecView->setUserRecord<int>("NumMuon", numMuonRec);
+   RecView->setUserRecord("NumMuon", numMuonRec);
    edm::LogInfo( "MUSiCSkimmer_miniAOD|RecInfo" ) << "Rec Muons: " << numMuonRec;
 }
 
@@ -1905,142 +1935,142 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          // For the sake of completeness write the HEEP definition of Et.
          // According to:
          // https://twiki.cern.ch/twiki/bin/view/CMS/HEEPElectronID?rev=64#Et
-         pxlEle->setUserRecord< double >( "SCEt", patEle->caloEnergy() *
+         pxlEle->setUserRecord( "SCEt", patEle->caloEnergy() *
                                            std::sin( patEle->p4().theta() )
                                            );
 
-         pxlEle->setUserRecord< bool >( "isBarrel", isBarrel );
-         pxlEle->setUserRecord< bool >( "isEndcap", isEndcap );
-         pxlEle->setUserRecord< bool >( "isGap", patEle->isEBGap() || patEle->isEEGap() || patEle->isEBEEGap() );
+         pxlEle->setUserRecord( "isBarrel", isBarrel );
+         pxlEle->setUserRecord( "isEndcap", isEndcap );
+         pxlEle->setUserRecord( "isGap", patEle->isEBGap() || patEle->isEEGap() || patEle->isEBEEGap() );
 
          //
          // Electron variables orientated to
          // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
          //
 
-         pxlEle->setUserRecord< double >( "PErr",   patEle->trackMomentumError() );
-         pxlEle->setUserRecord< double >( "SCeta",  patEle->caloPosition().eta() );
-         pxlEle->setUserRecord< double >( "SCEErr", patEle->ecalEnergyError() );
+         pxlEle->setUserRecord( "PErr",   patEle->trackMomentumError() );
+         pxlEle->setUserRecord( "SCeta",  patEle->caloPosition().eta() );
+         pxlEle->setUserRecord( "SCEErr", patEle->ecalEnergyError() );
 
          // Isolation variables:
          //
          // The following are there to have the same variable naming for all
          // particles with isolation.
-         pxlEle->setUserRecord< double >( "CaloIso", patEle->caloIso() );
-         pxlEle->setUserRecord< double >( "TrkIso",  patEle->trackIso() );
-         pxlEle->setUserRecord< double >( "ECALIso", patEle->ecalIso() );
-         pxlEle->setUserRecord< double >( "HCALIso", patEle->hcalIso() );
+         pxlEle->setUserRecord( "CaloIso", patEle->caloIso() );
+         pxlEle->setUserRecord( "TrkIso",  patEle->trackIso() );
+         pxlEle->setUserRecord( "ECALIso", patEle->ecalIso() );
+         pxlEle->setUserRecord( "HCALIso", patEle->hcalIso() );
          // Track iso deposit with electron footprint removed.
-         pxlEle->setUserRecord< double >( "TrkIso03", patEle->dr03TkSumPt() );
-         pxlEle->setUserRecord< double >( "TrkIso04", patEle->dr04TkSumPt() ); // (Identical to trackIso()!)
+         pxlEle->setUserRecord( "TrkIso03", patEle->dr03TkSumPt() );
+         pxlEle->setUserRecord( "TrkIso04", patEle->dr04TkSumPt() ); // (Identical to trackIso()!)
          // ECAL iso deposit with electron footprint removed.
-         pxlEle->setUserRecord< double >( "ECALIso03", patEle->dr03EcalRecHitSumEt() );
-         pxlEle->setUserRecord< double >( "ECALIso04", patEle->dr04EcalRecHitSumEt() ); // (Identical to ecalIso()!)
+         pxlEle->setUserRecord( "ECALIso03", patEle->dr03EcalRecHitSumEt() );
+         pxlEle->setUserRecord( "ECALIso04", patEle->dr04EcalRecHitSumEt() ); // (Identical to ecalIso()!)
          // dr03HcalDepth1TowerSumEt()+dr03HcalDepth2TowerSumEt().
-         pxlEle->setUserRecord< double >( "HCALIso03", patEle->dr03HcalTowerSumEt() );
+         pxlEle->setUserRecord( "HCALIso03", patEle->dr03HcalTowerSumEt() );
          // dr04HcalDepth1TowerSumEt()+dr04HcalDepth2TowerSumEt().
-         pxlEle->setUserRecord< double >( "HCALIso04", patEle->dr04HcalTowerSumEt() ); // (Identical to hcalIso()!)
+         pxlEle->setUserRecord( "HCALIso04", patEle->dr04HcalTowerSumEt() ); // (Identical to hcalIso()!)
          // HCAL depth 1 iso deposit with electron footprint removed.
-         pxlEle->setUserRecord< double >( "HCALIso03d1", patEle->dr03HcalDepth1TowerSumEt() );
-         pxlEle->setUserRecord< double >( "HCALIso04d1", patEle->dr04HcalDepth1TowerSumEt() );
+         pxlEle->setUserRecord( "HCALIso03d1", patEle->dr03HcalDepth1TowerSumEt() );
+         pxlEle->setUserRecord( "HCALIso04d1", patEle->dr04HcalDepth1TowerSumEt() );
          // HCAL depth 2 iso deposit with electron footprint removed.
-         pxlEle->setUserRecord< double >( "HCALIso03d2", patEle->dr03HcalDepth2TowerSumEt() );
-         pxlEle->setUserRecord< double >( "HCALIso04d2", patEle->dr04HcalDepth2TowerSumEt() );
+         pxlEle->setUserRecord( "HCALIso03d2", patEle->dr03HcalDepth2TowerSumEt() );
+         pxlEle->setUserRecord( "HCALIso04d2", patEle->dr04HcalDepth2TowerSumEt() );
 
          // Track-cluster matching variables.
          //
          // The supercluster eta - track eta position at calo extrapolated from innermost track state.
-         pxlEle->setUserRecord< double >( "DEtaSCVtx", patEle->deltaEtaSuperClusterTrackAtVtx() );
+         pxlEle->setUserRecord( "DEtaSCVtx", patEle->deltaEtaSuperClusterTrackAtVtx() );
          // The supercluster phi - track phi position at calo extrapolated from the innermost track state.
-         pxlEle->setUserRecord< double >( "DPhiSCVtx", patEle->deltaPhiSuperClusterTrackAtVtx() );
+         pxlEle->setUserRecord( "DPhiSCVtx", patEle->deltaPhiSuperClusterTrackAtVtx() );
          // The electron cluster eta - track eta position at calo extrapolated from the outermost state.
-         pxlEle->setUserRecord< double >( "DEtaSCCalo", patEle->deltaEtaEleClusterTrackAtCalo() );
+         pxlEle->setUserRecord( "DEtaSCCalo", patEle->deltaEtaEleClusterTrackAtCalo() );
          // The seed cluster eta - track eta at calo from outermost state.
-         pxlEle->setUserRecord< double >( "DEtaSeedTrk", patEle->deltaEtaSeedClusterTrackAtCalo() );
+         pxlEle->setUserRecord( "DEtaSeedTrk", patEle->deltaEtaSeedClusterTrackAtCalo() );
          // The seed cluster phi - track phi position at calo extrapolated from the outermost track state.
-         pxlEle->setUserRecord< double >( "DPhiSeedTrk", patEle->deltaPhiSeedClusterTrackAtCalo() );
+         pxlEle->setUserRecord( "DPhiSeedTrk", patEle->deltaPhiSeedClusterTrackAtCalo() );
          // The seed cluster energy / track momentum at the PCA to the beam spot.
-         pxlEle->setUserRecord< double >( "ESCSeedOverP", patEle->eSeedClusterOverP() );
+         pxlEle->setUserRecord( "ESCSeedOverP", patEle->eSeedClusterOverP() );
          // The seed cluster energy / track momentum at calo extrapolated from the outermost track state.
-         pxlEle->setUserRecord< double >( "ESCSeedPout", patEle->eSeedClusterOverPout() );
+         pxlEle->setUserRecord( "ESCSeedPout", patEle->eSeedClusterOverPout() );
          // The supercluster energy / track momentum at the PCA to the beam spot.
-         pxlEle->setUserRecord< double >( "EoP", patEle->eSuperClusterOverP() );
+         pxlEle->setUserRecord( "EoP", patEle->eSuperClusterOverP() );
          // The electron cluster energy / track momentum at calo extrapolated from the outermost track state.
-         pxlEle->setUserRecord< double >( "ESCOverPout", patEle->eEleClusterOverPout() );
+         pxlEle->setUserRecord( "ESCOverPout", patEle->eEleClusterOverPout() );
 
          // Calorimeter information.
          //
-         pxlEle->setUserRecord< double >( "sigmaIetaIeta", patEle->sigmaIetaIeta() );
+         pxlEle->setUserRecord( "sigmaIetaIeta", patEle->sigmaIetaIeta() );
          // Energy inside 1x5 in etaxphi around the seed Xtal.
-         pxlEle->setUserRecord< double >( "e1x5", patEle->e1x5() );
+         pxlEle->setUserRecord( "e1x5", patEle->e1x5() );
          // Energy inside 2x5 in etaxphi around the seed Xtal (max bwt the 2 possible sums).
-         pxlEle->setUserRecord< double >( "e2x5", patEle->e2x5Max() );
+         pxlEle->setUserRecord( "e2x5", patEle->e2x5Max() );
          // Energy inside 5x5 in etaxphi around the seed Xtal.
-         pxlEle->setUserRecord< double >( "e5x5", patEle->e5x5() );
+         pxlEle->setUserRecord( "e5x5", patEle->e5x5() );
          // hcal over ecal seed cluster energy using first hcal depth (hcal is energy of towers within dR = 0.15).
-         pxlEle->setUserRecord< double >( "HCALOverECALd1", patEle->hcalDepth1OverEcal() );
+         pxlEle->setUserRecord( "HCALOverECALd1", patEle->hcalDepth1OverEcal() );
          // hadronicOverEm() = hcalDepth1OverEcal() + hcalDepth2OverEcal()
          const double HoEm = patEle->hadronicOverEm();
-         pxlEle->setUserRecord< double >( "HoEm", HoEm );
+         pxlEle->setUserRecord( "HoEm", HoEm );
          // Number of basic clusters inside the supercluster - 1.
-         pxlEle->setUserRecord< double >( "NumBrems", patEle->numberOfBrems() );
+         pxlEle->setUserRecord( "NumBrems", patEle->numberOfBrems() );
 
          // Track information
          //
          // The brem fraction from gsf fit:
          // (track momentum in - track momentum out) / track momentum in
-         pxlEle->setUserRecord< double >( "fbrem", patEle->fbrem() );
-         pxlEle->setUserRecord< double >( "pin",   patEle->trackMomentumAtVtx().R() );
-         pxlEle->setUserRecord< double >( "pout",  patEle->trackMomentumOut().R() );
+         pxlEle->setUserRecord( "fbrem", patEle->fbrem() );
+         pxlEle->setUserRecord( "pin",   patEle->trackMomentumAtVtx().R() );
+         pxlEle->setUserRecord( "pout",  patEle->trackMomentumOut().R() );
 
          const reco::GsfTrackRef gsfTrack = patEle->gsfTrack();
-         pxlEle->setUserRecord< double >( "TrackerP", gsfTrack->p() );
+         pxlEle->setUserRecord( "TrackerP", gsfTrack->p() );
 
-         pxlEle->setUserRecord< double >( "GSFNormChi2", gsfTrack->normalizedChi2() );
+         pxlEle->setUserRecord( "GSFNormChi2", gsfTrack->normalizedChi2() );
          // Save distance to the primary vertex and the beam spot, respectively (i.e. the impact parameter).
-         pxlEle->setUserRecord< double >( "Dz",  gsfTrack->dz( the_vertex ) );
-         pxlEle->setUserRecord< double >( "Dsz", gsfTrack->dsz( the_vertex ) );
-         pxlEle->setUserRecord< double >( "Dxy", gsfTrack->dxy( the_vertex ) );
+         pxlEle->setUserRecord( "Dz",  gsfTrack->dz( the_vertex ) );
+         pxlEle->setUserRecord( "Dsz", gsfTrack->dsz( the_vertex ) );
+         pxlEle->setUserRecord( "Dxy", gsfTrack->dxy( the_vertex ) );
 
-         pxlEle->setUserRecord< double >( "DzBS",  gsfTrack->dz( the_beamspot ) );
-         pxlEle->setUserRecord< double >( "DszBS", gsfTrack->dsz( the_beamspot ) );
-         pxlEle->setUserRecord< double >( "DxyBS", gsfTrack->dxy( the_beamspot ) );
+         pxlEle->setUserRecord( "DzBS",  gsfTrack->dz( the_beamspot ) );
+         pxlEle->setUserRecord( "DszBS", gsfTrack->dsz( the_beamspot ) );
+         pxlEle->setUserRecord( "DxyBS", gsfTrack->dxy( the_beamspot ) );
 
          // Store the number of *expected* crossed layers before the first trajectory's hit.
          // If this number is 0, this is the number of missing hits in that trajectory. (This is for conversion rejection.)
-         pxlEle->setUserRecord< int >( "NinnerLayerLostHits", gsfTrack->trackerExpectedHitsInner().numberOfHits() );
-         pxlEle->setUserRecord< int >( "TrackerVHits", gsfTrack->numberOfValidHits() );
-         pxlEle->setUserRecord< int >( "TrackerLHits", gsfTrack->numberOfLostHits() );
+         pxlEle->setUserRecord( "NinnerLayerLostHits", gsfTrack->trackerExpectedHitsInner().numberOfHits() );
+         pxlEle->setUserRecord( "TrackerVHits", gsfTrack->numberOfValidHits() );
+         pxlEle->setUserRecord( "TrackerLHits", gsfTrack->numberOfLostHits() );
 
          // True if the electron track had an ecalDriven seed (regardless of the
          // result of the tracker driven seed finding algorithm).
-         pxlEle->setUserRecord< bool >( "ecalDriven", patEle->ecalDrivenSeed() );
+         pxlEle->setUserRecord( "ecalDriven", patEle->ecalDrivenSeed() );
          // True if ecalDrivenSeed is true AND the electron passes the cut based
          // preselection.
          if(patEle->passingCutBasedPreselection() || patEle->passingMvaPreselection()){
-             pxlEle->setUserRecord< bool >( "ecalDrivenEle", patEle->ecalDriven() );
+             pxlEle->setUserRecord( "ecalDrivenEle", patEle->ecalDriven() );
          }else{
-              pxlEle->setUserRecord< bool >( "ecalDrivenEle", false );
+              pxlEle->setUserRecord( "ecalDrivenEle", false );
          }
 
 
          // Conversion rejection variables.
          //
          // Difference of cot(angle) with the conversion partner track.
-         pxlEle->setUserRecord< double >( "convDcot", patEle->convDcot() );
+         pxlEle->setUserRecord( "convDcot", patEle->convDcot() );
          // Distance to the conversion partner.
-         pxlEle->setUserRecord< double >( "convDist", patEle->convDist() );
+         pxlEle->setUserRecord( "convDist", patEle->convDist() );
          // Signed conversion radius.
-         pxlEle->setUserRecord< double >( "convRadius", patEle->convRadius() );
+         pxlEle->setUserRecord( "convRadius", patEle->convRadius() );
 
          // Vertex coordinates.
          //
-         pxlEle->setUserRecord< double >( "Vtx_X", patEle->vx() );
-         pxlEle->setUserRecord< double >( "Vtx_Y", patEle->vy() );
-         pxlEle->setUserRecord< double >( "Vtx_Z", patEle->vz() );
+         pxlEle->setUserRecord( "Vtx_X", patEle->vx() );
+         pxlEle->setUserRecord( "Vtx_Y", patEle->vy() );
+         pxlEle->setUserRecord( "Vtx_Z", patEle->vz() );
 
          // Electron classification: UNKNOWN=-1, GOLDEN=0, BIGBREM=1, OLDNARROW=2, SHOWERING=3, GAP=4.
-         pxlEle->setUserRecord< int >( "Class", patEle->classification() );
+         pxlEle->setUserRecord( "Class", int(patEle->classification()) );
 
          // Additional cluster variables for (spike) cleaning:
          //
@@ -2052,7 +2082,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          const reco::SuperClusterRef SCRef = patEle->superCluster();
 
          const double SCenergy = SCRef->energy();
-         pxlEle->setUserRecord< double >( "SCE", SCenergy );
+         pxlEle->setUserRecord( "SCE", SCenergy );
 
          // Get highest energy entry (seed) and SC ID.
          // Use EcalClusterLazyTools to store ClusterShapeVariables.
@@ -2062,26 +2092,26 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          //const double eMax  = max_hit.second;
          //const double e3x3  = lazyTools.e3x3( *SCRef ); // Energy in 3x3 around most energetic hit.
 
-         //pxlEle->setUserRecord< double >( "Emax", eMax );
-         //pxlEle->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
-         //pxlEle->setUserRecord< double >( "e3x3", e3x3 );
-         //pxlEle->setUserRecord< double >( "r19",  eMax / e3x3 );
+         //pxlEle->setUserRecord( "Emax", eMax );
+         //pxlEle->setUserRecord( "E2nd", lazyTools.e2nd( *SCRef ) );
+         //pxlEle->setUserRecord( "e3x3", e3x3 );
+         //pxlEle->setUserRecord( "r19",  eMax / e3x3 );
          //const pair< DetId, float > max_hit = lazyTools.getMaximum( *SCRef );
          //const DetId seedID = max_hit.first;
          //const double eMax  = max_hit.second;
          //const double e3x3  = lazyTools.e3x3( *SCRef ); // Energy in 3x3 around most energetic hit.
 
-         //pxlEle->setUserRecord< double >( "scE2x5Max", patEle->scE2x5Max() );
-         //pxlEle->setUserRecord< double >( "E2x5Max", patEle->E2x5Max() );
-         //pxlEle->setUserRecord< double >( "E2nd", lazyTools.e2nd( *SCRef ) );
-         //pxlEle->setUserRecord< double >( "e3x3", patEle->e3x3 );
-         //pxlEle->setUserRecord< double >( "r19",  eMax / e3x3 );
+         //pxlEle->setUserRecord( "scE2x5Max", patEle->scE2x5Max() );
+         //pxlEle->setUserRecord( "E2x5Max", patEle->E2x5Max() );
+         //pxlEle->setUserRecord( "E2nd", lazyTools.e2nd( *SCRef ) );
+         //pxlEle->setUserRecord( "e3x3", patEle->e3x3 );
+         //pxlEle->setUserRecord( "r19",  eMax / e3x3 );
 
          // These are the covariances, if you want the sigmas, you have to sqrt them.
          //const vector< float > covariances = lazyTools.covariances( *SCRef, 4.7 );
-         //pxlEle->setUserRecord< double >( "covEtaEta", covariances[0] );
-         //pxlEle->setUserRecord< double >( "covEtaPhi", covariances[1] );
-         //pxlEle->setUserRecord< double >( "covPhiPhi", covariances[2] );
+         //pxlEle->setUserRecord( "covEtaEta", covariances[0] );
+         //pxlEle->setUserRecord( "covEtaPhi", covariances[1] );
+         //pxlEle->setUserRecord( "covPhiPhi", covariances[2] );
 
 
          //not possible
@@ -2096,22 +2126,22 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
 
             //EcalRecHitCollection::const_iterator recHit_it = recHits->find( seedID );
             //if( recHit_it != recHits->end() ) {
-               //pxlEle->setUserRecord< unsigned int >( "recoFlag", recHit_it->recoFlag() );
+               //pxlEle->setUserRecord( "recoFlag", recHit_it->recoFlag() );
             //}
          //}
 
-         //pxlEle->setUserRecord< double >( "SwissCross",         swissCross );
-         //pxlEle->setUserRecord< double >( "SwissCrossNoBorder", swissCrossNoBorder );
+         //pxlEle->setUserRecord( "SwissCross",         swissCross );
+         //pxlEle->setUserRecord( "SwissCrossNoBorder", swissCrossNoBorder );
 
          // Save eta/phi and DetId info from seed-cluster to prevent duplication of Electron/Photon-Candidates (in final selection).
-         //pxlEle->setUserRecord< unsigned int >( "seedId", seedID.rawId() );
-         //pxlEle->setUserRecord< double >( "seedphi", geo->getPosition( seedID ).phi() );
-         //pxlEle->setUserRecord< double >( "seedeta", geo->getPosition( seedID ).eta() );
+         pxlEle->setUserRecord( "seedId",patEle->seed()->seed().rawId() );
+         //pxlEle->setUserRecord( "seedphi", geo->getPosition( seedID ).phi() );
+         //pxlEle->setUserRecord( "seedeta", geo->getPosition( seedID ).eta() );
 
          //Returns a specific electron ID associated to the pat::Electron given its name For cut-based IDs, the value map has the following meaning: 0: fails, 1: passes electron ID only, 2: passes electron Isolation only, 3: passes electron ID and Isolation only, 4: passes conversion rejection, 5: passes conversion rejection and ID, 6: passes conversion rejection and Isolation, 7: passes the whole selection. For more details have a look at: https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCategoryBasedElectronID Note: an exception is thrown if the specified ID is not available
          const vector< pair< string, float > > &electronIDs = patEle->electronIDs();
          for( vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID ){
-            pxlEle->setUserRecord< float >( electronID->first, electronID->second );
+            pxlEle->setUserRecord( electronID->first, electronID->second );
          }
 
          // Conversion veto for electron ID.
@@ -2119,16 +2149,16 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          //
          //const bool hasMatchedConversion = ConversionTools::hasMatchedConversion( *patEle, conversionsHandle, the_beamspot );
 
-         //pxlEle->setUserRecord< bool >( "hasMatchedConversion", hasMatchedConversion );
-         pxlEle->setUserRecord< bool >( "passConversionVeto", patEle->passConversionVeto() );
+         //pxlEle->setUserRecord( "hasMatchedConversion", hasMatchedConversion );
+         pxlEle->setUserRecord( "passConversionVeto", patEle->passConversionVeto() );
 
          // 2012 definition of H/E and related HCAL isolation.
          // See also:
          // https://twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev=11
          //
-         pxlEle->setUserRecord< double >( "HoverE2012"          , patEle->hcalOverEcalBc()             );
-         pxlEle->setUserRecord< double >( "HCALIsoConeDR03_2012", patEle->dr03HcalDepth1TowerSumEtBc() );
-         pxlEle->setUserRecord< double >( "HCALIsoConeDR04_2012", patEle->dr04HcalDepth1TowerSumEtBc() );
+         pxlEle->setUserRecord( "HoverE2012"          , patEle->hcalOverEcalBc()             );
+         pxlEle->setUserRecord( "HCALIsoConeDR03_2012", patEle->dr03HcalDepth1TowerSumEtBc() );
+         pxlEle->setUserRecord( "HCALIsoConeDR04_2012", patEle->dr04HcalDepth1TowerSumEtBc() );
          //vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters( *SCRef );
 
          //const double hcalDepth1 = m_hcalHelper->hcalESumDepth1BehindClusters( hcalTowersBehindClusters );
@@ -2142,15 +2172,15 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          //                                    ( HoEm - HoverE2012 ) *
          //                                    SCenergy / cosh( SCRef->eta() );
 
-         //pxlEle->setUserRecord< double >( "HoverE2012",           HoverE2012           );
-         //pxlEle->setUserRecord< double >( "HCALIsoConeDR03_2012", HCALIsoConeDR03_2012 );
-         //pxlEle->setUserRecord< double >( "HCALIsoConeDR04_2012", HCALIsoConeDR04_2012 );
+         //pxlEle->setUserRecord( "HoverE2012",           HoverE2012           );
+         //pxlEle->setUserRecord( "HCALIsoConeDR03_2012", HCALIsoConeDR03_2012 );
+         //pxlEle->setUserRecord( "HCALIsoConeDR04_2012", HCALIsoConeDR04_2012 );
 
          // Default PF based isolation for charged leptons:
-         pxlEle->setUserRecord< double >( "chargedHadronIso", patEle->chargedHadronIso() );
-         pxlEle->setUserRecord< double >( "neutralHadronIso", patEle->neutralHadronIso() );
-         pxlEle->setUserRecord< double >( "photonIso",        patEle->photonIso() );
-         pxlEle->setUserRecord< double >( "puChargedHadronIso",patEle->puChargedHadronIso() );
+         pxlEle->setUserRecord( "chargedHadronIso", patEle->chargedHadronIso() );
+         pxlEle->setUserRecord( "neutralHadronIso", patEle->neutralHadronIso() );
+         pxlEle->setUserRecord( "photonIso",        patEle->photonIso() );
+         pxlEle->setUserRecord( "puChargedHadronIso",patEle->puChargedHadronIso() );
 
          // Need a Ref to access the isolation values in particleFlowBasedIsolation(...).
          //
@@ -2182,7 +2212,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
       }
       numEleAll++;
    }
-   RecView->setUserRecord< int >( "NumEle", numEleRec );
+   RecView->setUserRecord( "NumEle", numEleRec );
 
    edm::LogInfo( "MUSiCSkimmer_miniAOD|RecInfo" ) << "Rec Eles: " << numEleRec;
 }
@@ -2210,52 +2240,52 @@ void MUSiCSkimmer_miniAOD::analyzeRecJets( const edm::Event &iEvent, pxl::EventV
          pxl::Particle* part = RecView->create<pxl::Particle>();
          part->setName( jet_info.name );
          part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
-         part->setUserRecord< bool >( "isPFJet", jet->isPFJet() );
+         part->setUserRecord( "isPFJet", jet->isPFJet() );
          if (jet_info.isPF) {
-            part->setUserRecord< double >( "chargedHadronEnergyFraction", jet->chargedHadronEnergyFraction() );
-            part->setUserRecord< double >( "chargedHadronEnergy",         jet->chargedHadronEnergy() );
-            part->setUserRecord< double >( "neutralHadronEnergyFraction", jet->neutralHadronEnergyFraction() );
-            part->setUserRecord< double >( "neutralHadronEnergy",         jet->neutralHadronEnergy() );
-            part->setUserRecord< double >( "chargedEmEnergyFraction",     jet->chargedEmEnergyFraction() );
-            part->setUserRecord< double >( "chargedEmEnergy",             jet->chargedEmEnergy() );
-            part->setUserRecord< double >( "neutralEmEnergyFraction",     jet->neutralEmEnergyFraction() );
-            part->setUserRecord< double >( "neutralEmEnergy",             jet->neutralEmEnergy() );
-            part->setUserRecord<int>("chargedMultiplicity", jet->chargedMultiplicity());
-            part->setUserRecord<int>("nconstituents", jet->numberOfDaughters());
-            part->setUserRecord<double>("uncorrectedPT", jet->pt()*jet->jecFactor("Uncorrected"));
-            part->setUserRecord<double>("pileupDiscriminant", jet->userFloat("pileupJetId:fullDiscriminant"));
+            part->setUserRecord( "chargedHadronEnergyFraction", jet->chargedHadronEnergyFraction() );
+            part->setUserRecord( "chargedHadronEnergy",         jet->chargedHadronEnergy() );
+            part->setUserRecord( "neutralHadronEnergyFraction", jet->neutralHadronEnergyFraction() );
+            part->setUserRecord( "neutralHadronEnergy",         jet->neutralHadronEnergy() );
+            part->setUserRecord( "chargedEmEnergyFraction",     jet->chargedEmEnergyFraction() );
+            part->setUserRecord( "chargedEmEnergy",             jet->chargedEmEnergy() );
+            part->setUserRecord( "neutralEmEnergyFraction",     jet->neutralEmEnergyFraction() );
+            part->setUserRecord( "neutralEmEnergy",             jet->neutralEmEnergy() );
+            part->setUserRecord("chargedMultiplicity", jet->chargedMultiplicity());
+            part->setUserRecord("nconstituents", jet->numberOfDaughters());
+            part->setUserRecord("uncorrectedPT", jet->pt()*jet->jecFactor("Uncorrected"));
+            part->setUserRecord("pileupDiscriminant", jet->userFloat("pileupJetId:fullDiscriminant"));
 
 
             for( jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID ){
                pat::strbitset ret = ID->second->getBitTemplate();
-               part->setUserRecord< bool >( ID->first, (*(ID->second))( *jet, ret ) );
+               part->setUserRecord( ID->first, (*(ID->second))( *jet, ret ) );
 
          }
          } else {
-//            part->setUserRecord<double>("EmEFrac", jet->emEnergyFraction());
-//            part->setUserRecord<double>("HadEFrac", jet->energyFractionHadronic());
-//            part->setUserRecord<int>("N90", jet->n90());
-//            part->setUserRecord<int>("N60", jet->n60());
+//            part->setUserRecord("EmEFrac", jet->emEnergyFraction());
+//            part->setUserRecord("HadEFrac", jet->energyFractionHadronic());
+//            part->setUserRecord("N90", jet->n90());
+//            part->setUserRecord("N60", jet->n60());
 //            //std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
-//            //part->setUserRecord<int>("NCaloRefs", caloRefs.size());
-//            part->setUserRecord<double>("MaxEEm", jet->maxEInEmTowers());
-//            part->setUserRecord<double>("MaxEHad", jet->maxEInHadTowers());
-//            part->setUserRecord<double>("TowersArea", jet->towersArea());
+//            //part->setUserRecord("NCaloRefs", caloRefs.size());
+//            part->setUserRecord("MaxEEm", jet->maxEInEmTowers());
+//            part->setUserRecord("MaxEHad", jet->maxEInHadTowers());
+//            part->setUserRecord("TowersArea", jet->towersArea());
          }
 
          //calculate the kinematics with a new vertex
          //is this used in any way????
          reco::Candidate::LorentzVector physP4 = reco::Jet::physicsP4( the_vertex, *jet, jet->vertex() );
-         part->setUserRecord<double>("PhysEta", physP4.eta());
-         part->setUserRecord<double>("PhysPhi", physP4.phi());
-         part->setUserRecord<double>("PhysPt",  physP4.pt());
+         part->setUserRecord("PhysEta", physP4.eta());
+         part->setUserRecord("PhysPhi", physP4.phi());
+         part->setUserRecord("PhysPt",  physP4.pt());
 
-         part->setUserRecord< double >( "fHPD", jet->jetID().fHPD );
-         part->setUserRecord< double >( "fRBX", jet->jetID().fRBX );
+         part->setUserRecord( "fHPD", jet->jetID().fHPD );
+         part->setUserRecord( "fRBX", jet->jetID().fRBX );
          // store b-tag discriminator values:
          const vector< pair< string, float > > &btags = jet->getPairDiscri();
          for( vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag ){
-            part->setUserRecord< float >( btag->first, btag->second );
+            part->setUserRecord( btag->first, btag->second );
             edm::LogInfo( "MUSiCSkimmer_miniAOD|RecInfo" ) << "BTag name: " << btag->first << ", value: " << btag->second;
          }
          //jet IDs
@@ -2267,7 +2297,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecJets( const edm::Event &iEvent, pxl::EventV
          //store PAT matching info if MC
          if (MC) {
          //   // to be compared with Generator Flavor:
-            part->setUserRecord< int >( "algoFlavour", jet->partonFlavour() );
+            part->setUserRecord( "algoFlavour", jet->partonFlavour() );
             std::map< const reco::Candidate*, pxl::Particle* >::const_iterator it = genjetmap.find( jet->genJet() );
             if( it != genjetmap.end() ){
                part->linkSoft( it->second, "pat-match" );
@@ -2276,7 +2306,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecJets( const edm::Event &iEvent, pxl::EventV
          numJetRec++;
       }
    }
-   RecView->setUserRecord< int >( "Num"+jet_info.name, numJetRec );
+   RecView->setUserRecord( "Num"+jet_info.name, numJetRec );
    edm::LogInfo( "MUSiCSkimmer_miniAOD|RecInfo" ) << "Found Rec Jets:  " << numJetRec << " of Type " << jet_info.name;
 }
 
@@ -2335,17 +2365,17 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas( const Event &iEvent,
          pxlPhoton->setCharge( 0 );
          pxlPhoton->setP4( patPhoton->px(), patPhoton->py(), patPhoton->pz(), patPhoton->energy() );
 
-         pxlPhoton->setUserRecord< bool >( "isBarrel", isBarrel );
-         pxlPhoton->setUserRecord< bool >( "isEndcap", isEndcap );
-         pxlPhoton->setUserRecord< bool >( "Gap", patPhoton->isEBGap() || patPhoton->isEEGap() || patPhoton->isEBEEGap() );
+         pxlPhoton->setUserRecord( "isBarrel", isBarrel );
+         pxlPhoton->setUserRecord( "isEndcap", isEndcap );
+         pxlPhoton->setUserRecord( "Gap", patPhoton->isEBGap() || patPhoton->isEEGap() || patPhoton->isEBEEGap() );
 
          // Store Photon info corrected for primary vertex (this changes direction but leaves energy of SC unchanged).
          pat::Photon localPho( *patPhoton );
          // Set event vertex
          localPho.setVertex( the_vertex );
-         pxlPhoton->setUserRecord< double >( "PhysEta", localPho.eta() );
-         pxlPhoton->setUserRecord< double >( "PhysPhi", localPho.phi() );
-         pxlPhoton->setUserRecord< double >( "PhysPt",  localPho.pt()  );
+         pxlPhoton->setUserRecord( "PhysEta", localPho.eta() );
+         pxlPhoton->setUserRecord( "PhysPhi", localPho.phi() );
+         pxlPhoton->setUserRecord( "PhysPt",  localPho.pt()  );
 
          //
          // Photon variables orientated to
@@ -2356,38 +2386,38 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas( const Event &iEvent,
          //
          // The following are there to have the same variable naming for all
          // particles with isolation.
-         pxlPhoton->setUserRecord< double >( "CaloIso", patPhoton->caloIso() );
-         pxlPhoton->setUserRecord< double >( "TrkIso",  patPhoton->trackIso() );
-         pxlPhoton->setUserRecord< double >( "ECALIso", patPhoton->ecalIso() );
-         pxlPhoton->setUserRecord< double >( "HCALIso", patPhoton->hcalIso() );
+         pxlPhoton->setUserRecord( "CaloIso", patPhoton->caloIso() );
+         pxlPhoton->setUserRecord( "TrkIso",  patPhoton->trackIso() );
+         pxlPhoton->setUserRecord( "ECALIso", patPhoton->ecalIso() );
+         pxlPhoton->setUserRecord( "HCALIso", patPhoton->hcalIso() );
          // Sum of track pT in a hollow cone of outer radius, inner radius.
-         pxlPhoton->setUserRecord< double >( "TrkIsoHollow03", patPhoton->trkSumPtHollowConeDR03() );
-         pxlPhoton->setUserRecord< double >( "TrkIsoHollow04", patPhoton->trkSumPtHollowConeDR04() );
+         pxlPhoton->setUserRecord( "TrkIsoHollow03", patPhoton->trkSumPtHollowConeDR03() );
+         pxlPhoton->setUserRecord( "TrkIsoHollow04", patPhoton->trkSumPtHollowConeDR04() );
          // Sum of track pT in a cone of dR.
-         pxlPhoton->setUserRecord< double >( "TrkIso03", patPhoton->trkSumPtSolidConeDR03() );
-         pxlPhoton->setUserRecord< double >( "TrkIso04", patPhoton->trkSumPtSolidConeDR04() ); // (Identical to trackIso()!)
+         pxlPhoton->setUserRecord( "TrkIso03", patPhoton->trkSumPtSolidConeDR03() );
+         pxlPhoton->setUserRecord( "TrkIso04", patPhoton->trkSumPtSolidConeDR04() ); // (Identical to trackIso()!)
          // EcalRecHit isolation.
-         pxlPhoton->setUserRecord< double >( "ECALIso03", patPhoton->ecalRecHitSumEtConeDR03() );
-         pxlPhoton->setUserRecord< double >( "ECALIso04", patPhoton->ecalRecHitSumEtConeDR04() ); // (Identical to ecalIso()!)
+         pxlPhoton->setUserRecord( "ECALIso03", patPhoton->ecalRecHitSumEtConeDR03() );
+         pxlPhoton->setUserRecord( "ECALIso04", patPhoton->ecalRecHitSumEtConeDR04() ); // (Identical to ecalIso()!)
          // HcalDepth1Tower isolation.
-         pxlPhoton->setUserRecord< double >( "HCALIso03", patPhoton->hcalTowerSumEtConeDR03() );
-         pxlPhoton->setUserRecord< double >( "HCALIso04", patPhoton->hcalTowerSumEtConeDR04() ); // (Identical to hcalIso()!)
+         pxlPhoton->setUserRecord( "HCALIso03", patPhoton->hcalTowerSumEtConeDR03() );
+         pxlPhoton->setUserRecord( "HCALIso04", patPhoton->hcalTowerSumEtConeDR04() ); // (Identical to hcalIso()!)
          // Number of tracks in a cone of dR.
-         pxlPhoton->setUserRecord< int >( "TrackNum03", patPhoton->nTrkSolidConeDR03() );
-         pxlPhoton->setUserRecord< int >( "TrackNum04", patPhoton->nTrkSolidConeDR04() );
+         pxlPhoton->setUserRecord( "TrackNum03", patPhoton->nTrkSolidConeDR03() );
+         pxlPhoton->setUserRecord( "TrackNum04", patPhoton->nTrkSolidConeDR04() );
 
          // Calorimeter information.
          //
-         pxlPhoton->setUserRecord< double >( "iEta_iEta", patPhoton->sigmaIetaIeta() );
-         pxlPhoton->setUserRecord< double >( "r9",        patPhoton->r9() );
+         pxlPhoton->setUserRecord( "iEta_iEta", patPhoton->sigmaIetaIeta() );
+         pxlPhoton->setUserRecord( "r9",        patPhoton->r9() );
          const double HoEm = patPhoton->hadronicOverEm();
-         pxlPhoton->setUserRecord< double >( "HoEm", HoEm );
+         pxlPhoton->setUserRecord( "HoEm", HoEm );
 
          // Whether or not the SuperCluster has a matched pixel seed (electron veto).
-         pxlPhoton->setUserRecord< bool >( "HasSeed", patPhoton->hasPixelSeed() );
+         pxlPhoton->setUserRecord( "HasSeed", patPhoton->hasPixelSeed() );
 
          // Store information about converted state.
-         pxlPhoton->setUserRecord< bool >( "Converted", patPhoton->hasConversionTracks() );
+         pxlPhoton->setUserRecord( "Converted", patPhoton->hasConversionTracks() );
 
          // Additional cluster variables for (spike) cleaning:
          //
@@ -2398,32 +2428,32 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas( const Event &iEvent,
          // therefore only the first element of the vector should be available!
          const reco::SuperClusterRef SCRef = patPhoton->superCluster();
 
-         pxlPhoton->setUserRecord< double >( "etaWidth", SCRef->etaWidth() );
-         pxlPhoton->setUserRecord< double >( "phiWidth", SCRef->phiWidth() );
+         pxlPhoton->setUserRecord( "etaWidth", SCRef->etaWidth() );
+         pxlPhoton->setUserRecord( "phiWidth", SCRef->phiWidth() );
          // Set hadronic over electromagnetic energy fraction.
 
          // Raw uncorrected energy (sum of energies of component BasicClusters).
-         pxlPhoton->setUserRecord< double >( "rawEnergy", SCRef->rawEnergy() );
+         pxlPhoton->setUserRecord( "rawEnergy", SCRef->rawEnergy() );
          // Energy deposited in preshower.
-         pxlPhoton->setUserRecord< double >( "preshowerEnergy", SCRef->preshowerEnergy() );
+         pxlPhoton->setUserRecord( "preshowerEnergy", SCRef->preshowerEnergy() );
 
 
 
 
-         pxlPhoton->setUserRecord< double >( "e5x5", patPhoton->e5x5() );
-         pxlPhoton->setUserRecord< double >( "e1x5", patPhoton->e1x5() );
-         //pxlPhoton->setUserRecord< double >( "scE2x5Max", patPhoton->scE2x5Max() );
-         //pxlPhoton->setUserRecord< double >( "E2x5Max",   patpatPhotonEle->E2x5Max() );
+         pxlPhoton->setUserRecord( "e5x5", patPhoton->e5x5() );
+         pxlPhoton->setUserRecord( "e1x5", patPhoton->e1x5() );
+         //pxlPhoton->setUserRecord( "scE2x5Max", patPhoton->scE2x5Max() );
+         //pxlPhoton->setUserRecord( "E2x5Max",   patpatPhotonEle->E2x5Max() );
 
 
          // Store ID information.
          const vector< pair< string, bool > > &photonIDs = patPhoton->photonIDs();
          for( vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID ){
-            pxlPhoton->setUserRecord< bool >( photonID->first, photonID->second );
+            pxlPhoton->setUserRecord( photonID->first, photonID->second );
          }
-         pxlPhoton->setUserRecord< double >( "pfMVA", patPhoton->pfMVA() );
+         pxlPhoton->setUserRecord( "pfMVA", patPhoton->pfMVA() );
 
-
+         pxlPhoton->setUserRecord( "seedId", patPhoton->seed()->seed().rawId()  );
          //FIXME still needed??? Is there a way to get it from mini AOD??
          // Conversion safe electron veto for photon ID.
          // ("Conversion-safe" since it explicitly checks for the presence of a
@@ -2435,7 +2465,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas( const Event &iEvent,
                                                                                           //electronsHandle,
                                                                                           //conversionsHandle,
                                                                                           //the_beamspot );
-         //pxlPhoton->setUserRecord< bool >( "hasMatchedPromptElectron", hasMatchedPromptElectron );
+         //pxlPhoton->setUserRecord( "hasMatchedPromptElectron", hasMatchedPromptElectron );
 
          // 2012 definition of H/E and related HCAL isolation.
          // See also:
@@ -2452,16 +2482,16 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas( const Event &iEvent,
                                              ( HoEm - HoverE2012 ) *
                                              SCRef->energy() / cosh( SCRef->eta() );
 
-         pxlPhoton->setUserRecord< double >( "HoverE2012"           , HoverE2012           );
-         pxlPhoton->setUserRecord< double >( "HCALIsoConeDR03_2012" , HCALIsoConeDR03_2012 );
-         pxlPhoton->setUserRecord< double >( "HCALIsoConeDR04_2012" , HCALIsoConeDR04_2012 );
+         pxlPhoton->setUserRecord( "HoverE2012"           , HoverE2012           );
+         pxlPhoton->setUserRecord( "HCALIsoConeDR03_2012" , HCALIsoConeDR03_2012 );
+         pxlPhoton->setUserRecord( "HCALIsoConeDR04_2012" , HCALIsoConeDR04_2012 );
 
 
          // Default PF based isolation for charged leptons:
-         pxlPhoton->setUserRecord< double >( "chargedHadronIso", patPhoton->chargedHadronIso() );
-         pxlPhoton->setUserRecord< double >( "neutralHadronIso", patPhoton->neutralHadronIso() );
-         pxlPhoton->setUserRecord< double >( "photonIso",        patPhoton->photonIso() );
-         pxlPhoton->setUserRecord< double >( "puChargedHadronIso",patPhoton->puChargedHadronIso() );
+         pxlPhoton->setUserRecord( "chargedHadronIso", patPhoton->chargedHadronIso() );
+         pxlPhoton->setUserRecord( "neutralHadronIso", patPhoton->neutralHadronIso() );
+         pxlPhoton->setUserRecord( "photonIso",        patPhoton->photonIso() );
+         pxlPhoton->setUserRecord( "puChargedHadronIso",patPhoton->puChargedHadronIso() );
 
 
          // Store PAT matching info if MC. FIXME: Do we still use this?
@@ -2475,7 +2505,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas( const Event &iEvent,
       }
       numGammaAll++;
    }
-   RecView->setUserRecord< int >( "NumGamma", numGammaRec );
+   RecView->setUserRecord( "NumGamma", numGammaRec );
 
    edm::LogInfo( "MUSiCSkimmer_miniAOD|RecInfo" ) << "Rec Gammas: " << numGammaRec;
 }
@@ -2563,8 +2593,8 @@ void MUSiCSkimmer_miniAOD::endJob() {
             //ostringstream aStream;
             //aStream << "w" << i;
             //string str_i = aStream.str();
-            //GenEvtView->setUserRecord<float>(str_i, *weight);
-            //RecEvtView->setUserRecord<float>(str_i, *weight);
+            //GenEvtView->setUserRecord(str_i, *weight);
+            //RecEvtView->setUserRecord(str_i, *weight);
             //i++;
          //}
          //tmpFile.writeEvent(&event);
@@ -2761,9 +2791,9 @@ double MUSiCSkimmer_miniAOD::IsoGenSum (const edm::Event& iEvent, double Particl
    ////const double pfIsoPhoton  = ( *isoValPFId.at( 1 ) )[ ref ];
    ////const double pfIsoNeutral = ( *isoValPFId.at( 2 ) )[ ref ];
 
-   ////part.setUserRecord< double >( "PFIso03ChargedHadron", pfIsoCharged );
-   ////part.setUserRecord< double >( "PFIso03NeutralHadron", pfIsoNeutral );
-   ////part.setUserRecord< double >( "PFIso03Photon",        pfIsoPhoton  );
+   ////part.setUserRecord( "PFIso03ChargedHadron", pfIsoCharged );
+   ////part.setUserRecord( "PFIso03NeutralHadron", pfIsoNeutral );
+   ////part.setUserRecord( "PFIso03Photon",        pfIsoPhoton  );
 
    //// PU corrected isolation for electrons, according to:
    //// http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/ElectronIsoAnalyzer.cc
@@ -2773,8 +2803,8 @@ double MUSiCSkimmer_miniAOD::IsoGenSum (const edm::Event& iEvent, double Particl
 
       ////const double PFIsoPUCorrected = pfIsoCharged + max( 0.0, ( pfIsoPhoton + pfIsoNeutral ) - effArea * rhoFastJet25 );
 
-      ////part.setUserRecord< double >( "EffectiveArea",      effArea          );
-      ////part.setUserRecord< double >( "PFIso03PUCorrected", PFIsoPUCorrected );
+      ////part.setUserRecord( "EffectiveArea",      effArea          );
+      ////part.setUserRecord( "PFIso03PUCorrected", PFIsoPUCorrected );
    //}
 
    //// This is the recommended method for photons!
@@ -2786,9 +2816,9 @@ double MUSiCSkimmer_miniAOD::IsoGenSum (const edm::Event& iEvent, double Particl
 
       //isolator->fGetIsolation( &*ref, &thePFCollection, vtxRef, vertices );
 
-      //part.setUserRecord< double >( "PFIso03ChargedHadronFromIsolator", isolator->getIsolationCharged() );
-      //part.setUserRecord< double >( "PFIso03NeutralHadronFromIsolator", isolator->getIsolationNeutral() );
-      //part.setUserRecord< double >( "PFIso03PhotonFromIsolator",        isolator->getIsolationPhoton()  );
+      //part.setUserRecord( "PFIso03ChargedHadronFromIsolator", isolator->getIsolationCharged() );
+      //part.setUserRecord( "PFIso03NeutralHadronFromIsolator", isolator->getIsolationNeutral() );
+      //part.setUserRecord( "PFIso03PhotonFromIsolator",        isolator->getIsolationPhoton()  );
    //}
 //}
 

@@ -586,6 +586,7 @@ def configureMessenger( process, verbosity = 0 ):
     process.MessageLogger.cerr.default.limit = -1
     process.MessageLogger.cerr.FwkReport.limit = 100
     process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+    process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
     process.MessageLogger.categories.append( 'TRIGGERINFO' )

@@ -90,7 +90,8 @@ class PFIsolationEstimator;
 // Has to be included as the last header otherwise there will be a warning concerning the
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
 // but PXL can deal with both of them
-#include "MUSiCProject/Pxl/interface/Pxl.h"
+//#include "MUSiCProject/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/Pxl.h"
 
 class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
 public:
