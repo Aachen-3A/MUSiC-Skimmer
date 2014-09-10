@@ -10,12 +10,12 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
         wantSummary = cms.untracked.bool( True ),
         # Open file in NOMERGE mode to avoid a memory leak.
         #
-        fileMode = cms.untracked.string( 'NOMERGE' ),
+        #fileMode = cms.untracked.string( 'NOMERGE' ),
         # Stop processing on each and every thrown exception.
         #
-        Rethrow = FWCore.Framework.test.cmsExceptionsFatalOption_cff.Rethrow
+        #Rethrow = FWCore.Framework.test.cmsExceptionsFatalOption_cff.Rethrow
         )
-
+    #process.Tracer = cms.Service("Tracer")
     # The global tag is retrieved automatically but can be changed by the
     # configureJEC function.
     #
@@ -586,7 +586,7 @@ def configureMessenger( process, verbosity = 0 ):
     process.MessageLogger.cerr.default.limit = -1
     process.MessageLogger.cerr.FwkReport.limit = 100
     process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-    process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+
 
 
     process.MessageLogger.categories.append( 'TRIGGERINFO' )
