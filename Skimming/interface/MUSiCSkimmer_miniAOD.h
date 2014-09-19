@@ -91,7 +91,9 @@ class PFIsolationEstimator;
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
 // but PXL can deal with both of them
 //#include "MUSiCProject/Pxl/interface/Pxl.h"
-#include "Pxl/Pxl/interface/Pxl.h"
+//#include "Pxl/Pxl/interface/Pxl.h"
+#include "Pxl/Pxl/interface/pxl/core.hh"
+#include "Pxl/Pxl/interface/pxl/hep.hh"
 
 class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
 public:
@@ -285,6 +287,10 @@ public:
    bool GenOnly_;
    bool UseSIM_;
 
+   bool allMuonInfos_;
+   bool allElectronInfos_;
+   bool allGammaInfos_;
+   bool allTauInfos_;
 
    string LHgridName_;
    int NumLHgridErrorSets_;
