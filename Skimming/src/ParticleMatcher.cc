@@ -5,11 +5,11 @@
 #include "Pxl/Pxl/interface/pxl/hep.hh"
 
 using namespace std;
-using namespace pxl;
+//using namespace pxl;
 
 // ------------ matching Method ------------
 
-void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, const std::vector< jet_def > &jet_infos, const std::string &_METType ){
+void ParticleMatcher::matchObjects( pxl::EventView *GenView, pxl::EventView *RecView, const std::vector< jet_def > &jet_infos, const std::string &_METType ){
 
    // FIXME: Make code more generic! Generate a list of all Particle types
    std::vector<std::string> typeList;
@@ -23,13 +23,13 @@ void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, cons
    pxl::ParticleFilter _particleFilter;
 
    // containers to keep the filtered gen/rec particles
-   vector<Particle*> gen_particles;
-   vector<Particle*> rec_particles;
+   vector<pxl::Particle*> gen_particles;
+   vector<pxl::Particle*> rec_particles;
    for (std::vector<std::string>::const_iterator partType = typeList.begin(); partType != typeList.end(); ++partType) {
       // Choose name filter criterion
       gen_particles.clear();
       rec_particles.clear();
-      ParticlePtEtaNameCriterion crit(*partType);
+      pxl::ParticlePtEtaNameCriterion crit(*partType);
       _particleFilter.apply(GenView->getObjectOwner(), gen_particles, crit);
       _particleFilter.apply(RecView->getObjectOwner(), rec_particles, crit);
       makeMatching(gen_particles, rec_particles, _METType);
@@ -39,14 +39,14 @@ void ParticleMatcher::matchObjects( EventView *GenView, EventView *RecView, cons
 
 // ------------ implementation of the matching Gen <--> Rec ------------
 
-void ParticleMatcher::makeMatching(std::vector<Particle*>& gen_particles, std::vector<Particle*>& rec_particles, const string& _METType) {
+void ParticleMatcher::makeMatching(std::vector<pxl::Particle*>& gen_particles, std::vector<pxl::Particle*>& rec_particles, const string& _METType) {
    // First set for Gen all Matches to -1 and reset bools:
-   for (std::vector<Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
+   for (std::vector<pxl::Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
       (*gen_iter)->setUserRecord("Match", -1);
       (*gen_iter)->setUserRecord("hctaM", false);
    }
    // same for Rec
-   for (std::vector<Particle*>::iterator rec_iter = rec_particles.begin(); rec_iter != rec_particles.end(); rec_iter++) {
+   for (std::vector<pxl::Particle*>::iterator rec_iter = rec_particles.begin(); rec_iter != rec_particles.end(); rec_iter++) {
       (*rec_iter)->setUserRecord("Match", -1);
       (*rec_iter)->setUserRecord("hctaM", false);
    }
@@ -65,9 +65,9 @@ void ParticleMatcher::makeMatching(std::vector<Particle*>& gen_particles, std::v
       TMatrixT<double> DeltaPtoPtMatrix(num_gen, num_rec);
       TMatrixT<double> DeltaChargeMatrix(num_gen, num_rec);
 
-      for (std::vector<Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
+      for (std::vector<pxl::Particle*>::iterator gen_iter = gen_particles.begin(); gen_iter != gen_particles.end(); gen_iter++) {
          col = 0;
-         for (std::vector<Particle*>::iterator rec_iter = rec_particles.begin(); rec_iter != rec_particles.end(); rec_iter++) {
+         for (std::vector<pxl::Particle*>::iterator rec_iter = rec_particles.begin(); rec_iter != rec_particles.end(); rec_iter++) {
          // Calculate the distance
          if (_fDebug > 0) {
             cout << "Gen: " << (*gen_iter)->print(0);
