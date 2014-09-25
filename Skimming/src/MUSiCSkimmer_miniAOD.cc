@@ -251,7 +251,7 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig ) :
       trigger.datastreams = sstring( tmp_streams.begin(), tmp_streams.end() );
 
       if( not GenOnly_ and trigger.triggers_names.size() == 0 ) {
-         edm::LogInfo( "MUSiCSkimmer_miniAOD|TRIGGERINFO" ) << "No Trigger names found in configuration! "
+         edm::LogInfo( "MUSiCSkimmer_miniAOD|TRIGGERINFO_MUSIC" ) << "No Trigger names found in configuration! "
                                                     << "Using all (unprescaled) triggers in given datastreams.";
       }
 
@@ -1023,7 +1023,7 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger( edm::Even
    trigger.triggers_by_datastream.clear();
    trigger.trigger_infos_by_datastream.clear();
 
-   edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: Using trigger config '" << trigger.config.tableName() << "'";
+   edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO_MUSIC" ) << "TRIGGER INFO: Using trigger config '" << trigger.config.tableName() << "'";
 
    // Get all the datastreams (aka. datasets) that are available in
    // the current HLT config. (Convert them to a set of strings.)
@@ -1039,12 +1039,12 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger( edm::Even
       // If the list of datastreams in the config is empty, get all (unprescaled)
       // triggers from all datastreams.
       if( trigger.datastreams.empty() ) {
-         edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "No datastreams found in configuration! "
+         edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO_MUSIC" ) << "No datastreams found in configuration! "
                                                     << "Using all (unprescaled) triggers in HLT config.";
 
          // Map all triggers from the HLT menu to their datastreams.
          if( fastSim_ ) {
-            edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "Using FastSIM configuration! "
+            edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO_MUSIC" ) << "Using FastSIM configuration! "
                                                        << "No datastreams available in HLT config.";
             // Since triggers are not assigned to datastreams in FastSIM, fill
             // all triggers into a single map entry.
@@ -1117,7 +1117,7 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger( edm::Even
       if( trigger.datastreams.empty() ) {
          sstring trigIntersect;
          if( fastSim_ ) {
-            edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "Using FastSIM configuration! "
+            edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO_MUSIC" ) << "Using FastSIM configuration! "
                                                        << "No datastreams available in HLT config.";
             // Since triggers are not assigned to datastreams in FastSIM, fill
             // all specified triggers into a single map entry.
@@ -1315,7 +1315,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
    }
 
    if( changed ) {
-      edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
+      edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO_MUSIC" ) << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
                                                  << ", building new trigger map for process " << process;
       // Initialize the trigger config and re-write the available datastreams.
       availableDS = initializeTrigger( iEvent, iSetup, trigger );
@@ -1409,7 +1409,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger( const edm::Event &iEvent,
                   //assert( nI==nK );
                   //size_t n( max( nI,nK ) );
                   //if( n > 5 ){
-                     //edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO" ) << "Storing only 5 L3 objects for label/type "
+                     //edm::LogInfo( "MUSiCSkimmer|TRIGGERINFO_MUSIC" ) << "Storing only 5 L3 objects for label/type "
                                                                 //<< moduleLabel << "/" << trigger.config.moduleType( moduleLabel );
                      //n = 5;
                   //}
@@ -2576,7 +2576,7 @@ void MUSiCSkimmer_miniAOD::endJob() {
       //if (loc != string::npos) pdfSet = pdfSet.substr(0,loc);
       //pdfSet.append("/");
       //pdfSet.append(fLHgridName);
-      //edm::LogInfo( "MUSiCSkimmer_miniAOD|PDFINFO" ) << "PDF set - " << pdfSet.data();
+      //edm::LogInfo( "MUSiCSkimmer_miniAOD|PDFINFO_MUSIC" ) << "PDF set - " << pdfSet.data();
       //initpdfset_((char *)pdfSet.data(), pdfSet.size());
 
       ////load the best fit PDF

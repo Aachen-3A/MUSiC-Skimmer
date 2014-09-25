@@ -589,8 +589,8 @@ def configureMessenger( process, verbosity = 0 ):
 
 
 
-    process.MessageLogger.categories.append( 'TRIGGERINFO' )
-    process.MessageLogger.categories.append( 'PDFINFO' )
+    process.MessageLogger.categories.append( 'TRIGGERINFO_MUSIC' )
+    process.MessageLogger.categories.append( 'PDFINFO_MUSIC' )
 
     if verbosity > 0:
         process.MessageLogger.categories.append( 'EventInfo' )
