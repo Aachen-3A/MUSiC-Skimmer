@@ -1869,11 +1869,11 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
          // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
          // (i.e. the absolute longitudinal and transverse impact parameter).
          //
-         //part->setUserRecord( "Dsz", muontrack->dsz( the_vertex ) );
-         //part->setUserRecord( "Dxy", muontrack->dxy( the_vertex ) );
+         part->setUserRecord( "Dsz", muontrack->dsz( the_vertex ) );
+         part->setUserRecord( "Dxy", muontrack->dxy( the_vertex ) );
 
-         //part->setUserRecord( "DzBT",  muonBestTrack->dz( the_vertex ) ); //Causes the jobs to fail on the grid
-         //part->setUserRecord( "DxyBT", muonBestTrack->dxy( the_vertex ) ); //Causes the jobs to fail on the grid
+         part->setUserRecord( "DzBT",  muonBestTrack->dz( the_vertex ) ); //Causes the jobs to fail on the grid
+         part->setUserRecord( "DxyBT", muonBestTrack->dxy( the_vertex ) ); //Causes the jobs to fail on the grid
          // dB returns almost the same value as DxyBT, but is more accurate. For more details see:
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
          part->setUserRecord( "dB",    muon->dB() ); //Causes the jobs to fail on the grid
