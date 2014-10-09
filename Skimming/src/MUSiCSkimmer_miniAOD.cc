@@ -1797,24 +1797,6 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
          part->setUserRecord( "Dz",   trackerTrack->dz( the_vertex ) );
          part->setUserRecord( "DzBS", trackerTrack->dz( the_beamspot ) );
 
-         // Store information for "cocktail" high energy refit. These are needed
-         // for the HighPT Muon ID, for more details see:
-         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
-         //
-         // Get the optimal cocktail muon track using the improved version of Tune P.
-         reco::TrackRef pmcTrack = muon->tunePMuonBestTrack();
-
-         if( pmcTrack.isAvailable() ) {
-            part->setUserRecord( "validCocktail", true );
-            part->setUserRecord( "pxCocktail", pmcTrack->px() );
-            part->setUserRecord( "pyCocktail", pmcTrack->py() );
-            part->setUserRecord( "pzCocktail", pmcTrack->pz() );
-
-            part->setUserRecord( "ptErrorCocktail",     pmcTrack->ptError() );
-            part->setUserRecord( "ptCocktail",          pmcTrack->pt() );
-         } else {
-            part->setUserRecord( "validCocktail", false );
-         }
 
          // Need chi^2 and n.d.f. to calculate fit probability.
          part->setUserRecord( "chi2", muontrack->chi2() );
@@ -1878,8 +1860,21 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
          // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
          part->setUserRecord( "dB",    muon->dB() ); //Causes the jobs to fail on the grid
 
+         // Store information for "cocktail" high energy refit. These are needed
+         // for the HighPT Muon ID, for more details see:
+         // https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#New_Version_recommended
+         //
+         // Get the optimal cocktail muon track using the improved version of Tune P.
+         reco::TrackRef pmcTrack = muon->tunePMuonBestTrack();
 
          if( pmcTrack.isAvailable() ) {
+            part->setUserRecord( "validCocktail", true );
+            part->setUserRecord( "pxCocktail", pmcTrack->px() );
+            part->setUserRecord( "pyCocktail", pmcTrack->py() );
+            part->setUserRecord( "pzCocktail", pmcTrack->pz() );
+
+            part->setUserRecord( "ptErrorCocktail",     pmcTrack->ptError() );
+            part->setUserRecord( "ptCocktail",          pmcTrack->pt() );
 
             part->setUserRecord( "qoverpCocktail",      pmcTrack->qoverp() );
             part->setUserRecord( "qoverpErrorCocktail", pmcTrack->qoverpError() );
@@ -1893,9 +1888,9 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
             part->setUserRecord( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
             part->setUserRecord( "VHitsMuonSysCocktail", pmcTrack->hitPattern().numberOfValidMuonHits() );
 
-            //part->setUserRecord( "DzCocktail",    pmcTrack->dz( the_vertex ) );
-            //part->setUserRecord( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
-            //part->setUserRecord( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
+            part->setUserRecord( "DzCocktail",    pmcTrack->dz( the_vertex ) );
+            part->setUserRecord( "DszCocktail",   pmcTrack->dsz( the_vertex ) );
+            part->setUserRecord( "DxyCocktail",   pmcTrack->dxy( the_vertex ) );
 
             //part->setUserRecord( "DzBSCocktail",  pmcTrack->dz( the_beamspot ) );
             //part->setUserRecord( "DszBSCocktail", pmcTrack->dsz( the_beamspot ) );
@@ -1903,6 +1898,8 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
 
             part->setUserRecord( "TrackerLayersWithMeasCocktail", pmcTrack->hitPattern().trackerLayersWithMeasurement() );
             part->setUserRecord( "PixelLayersWithMeasCocktail",   pmcTrack->hitPattern().pixelLayersWithMeasurement() );
+         }else {
+            part->setUserRecord( "validCocktail", false );
          }
 
 
