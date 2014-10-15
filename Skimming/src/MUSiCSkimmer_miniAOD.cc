@@ -630,7 +630,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
 
       if ( abs((p)->pdgId()) == 13 ) {
          if ( MuonMC_cuts(p) ) {
+            //set a soft link if the particle is already stored
+            if(genMatchMap.end()==genMatchMap.find(p)){
+               continue;
+            }
             pxl::Particle* part = EvtView->create<pxl::Particle>();
+            part->linkSoft(genMatchMap[p],"genParticle");
             genmap[p] = part;	//fill genmap
             part->setName("Muon");
             part->setCharge(p->charge());
@@ -638,10 +643,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
             part->setUserRecord("Vtx_X", p->vx());
             part->setUserRecord("Vtx_Y", p->vy());
             part->setUserRecord("Vtx_Z", p->vz());
-            //set a soft link if the particle is already stored
-            if(genMatchMap.end()!=genMatchMap.find(p)){
-               part->linkSoft(genMatchMap[p],"genParticle");
-            }
+
             // TEMPORARY: calculate isolation ourselves FIXME still needed???
             //FIXME: make this at least comparable with pat/lepton isolation
             double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
@@ -653,7 +655,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
       // fill Gen Electrons passing some basic cuts
       if ( abs(p->pdgId()) == 11 ) {
          if ( EleMC_cuts(p) ) {
+            //set a soft link if the particle is already stored
+            if(genMatchMap.end()==genMatchMap.find(p)){
+               continue;
+            }
             pxl::Particle* part = EvtView->create<pxl::Particle>();
+            part->linkSoft(genMatchMap[p],"genParticle");
             genmap[p] = part; //fill genmap
             part->setName("Ele");
             part->setCharge(p->charge());
@@ -661,9 +668,6 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
             part->setUserRecord("Vtx_X", p->vx());
             part->setUserRecord("Vtx_Y", p->vy());
             part->setUserRecord("Vtx_Z", p->vz());
-            if(genMatchMap.end()!=genMatchMap.find(p)){
-               part->linkSoft(genMatchMap[p],"genParticle");
-            }
             // TEMPORARY: calculate isolation ourselves  FIXME still needed???
             double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
             part->setUserRecord("GenIso", GenIso);
@@ -675,14 +679,17 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo( const edm::Event& iEvent, pxl::EventV
       // fill Gen Gammas passing some basic cuts
       if ( abs(p->pdgId()) == 22 ) {
          if ( GammaMC_cuts(p) ) {
+            //set a soft link if the particle is already stored
+            if(genMatchMap.end()==genMatchMap.find(p)){
+               continue;
+            }
             pxl::Particle* part = EvtView->create<pxl::Particle>();
+            part->linkSoft(genMatchMap[p],"genParticle");
+
             genmap[p] = part; //fill genmap
             part->setName("Gamma");
             part->setCharge(0);
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
-            if(genMatchMap.end()!=genMatchMap.find(p)){
-               part->linkSoft(genMatchMap[p],"genParticle");
-            }
             // TEMPORARY: calculate isolation ourselves FIXME still needed???
             double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5); //0. since gamma not charged!
             part->setUserRecord("GenIso", GenIso);
