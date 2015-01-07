@@ -33,12 +33,12 @@ process.source = cms.Source(
         #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
         #'file://WprimeTauMiniAOD.root'
-        '/store/mc/Spring14miniaod/WprimeToMuNu_M_5800_Tune4C_13TeV_pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/E4AD1244-2809-E411-919F-0025904B1452.root'
+        'file:///home/home1/institut_3a/padeken/user/DarkMatter_Monojet_M-10_AV_Tune4C_13TeV-madgraph_miniaod/F8D96877-2560-E411-9418-0025902009B8.root'
         )
     )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( -1 ) )
-
+process.GlobalTag.globaltag = cms.string("PHYS14_25_V1::All")
 ###FIXME for miniAOD!!!
 #if not runOnGen:
     #if not runOnData:

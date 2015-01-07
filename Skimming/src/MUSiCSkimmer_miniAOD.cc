@@ -64,50 +64,34 @@
 
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
-//#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
-//#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
 #include "DataFormats/EgammaCandidates/interface/ConversionFwd.h"
-//#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
-//#include "DataFormats/ParticleFlowReco/interface/PFBlockElementSuperClusterFwd.h"
+//this is for the ID selection
+//#include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+//#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 
 // For Muon stuff.
 #include "DataFormats/MuonReco/interface/MuonCocktails.h"
 #include "DataFormats/MuonReco/interface/MuonIsolation.h"
-//#include "DataFormats/MuonReco/interface/MuonPFIsolation.h"
-//#include "DataFormats/TrackReco/interface/TrackToTrackMap.h"
+#include "DataFormats/TrackReco/interface/HitPattern.h"
 
 // Jet stuff.
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "PhysicsTools/SelectorUtils/interface/Selector.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
 
-// ECAL + HCAL
-//#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
-//#include "Geometry/Records/interface/CaloGeometryRecord.h"
-//#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
-//#include "DataFormats/CaloTowers/interface/CaloTowerDetId.h"
-//#include "DataFormats/CaloTowers/interface/CaloTowerFwd.h"
-//#include "RecoEcal/EgammaCoreTools/interface/EcalTools.h"
-
-//#include "RecoEgamma/EgammaElectronAlgos/interface/ElectronHcalHelper.h"
 
 // MET stuff.
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 
 // For Trigger Bits:
-//#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-//#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
-//#include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
 // Misc.
-//#include "DataFormats/Common/interface/RefToBase.h"
-//#include "DataFormats/DetId/interface/DetId.h"
-//#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+//#include "DataFormats/Common/interface/ValueMap.h"
 
 // Math stuff from Physics tools.
 #include "DataFormats/Math/interface/deltaR.h"
@@ -782,7 +766,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenJets( const edm::Event &iEvent, pxl::EventV
    // counter
    size_t jet_index = 0;
    int numJetMC = 0;
-   double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
+   //double constit_pT = 5.; //here we have a hardcoded cut, but do we really need cfg-parameter for this?...
    //Loop over GenJets
    for( reco::GenJetCollection::const_iterator genJet = GenJets->begin(); genJet != GenJets->end(); ++genJet, jet_index++ ){
       if( JetMC_cuts( genJet ) ){
@@ -804,13 +788,13 @@ void MUSiCSkimmer_miniAOD::analyzeGenJets( const edm::Event &iEvent, pxl::EventV
          numJetMC++;
 
          //save number of GenJet-constituents fulfilling some cuts
-         int numGenJetConstit_withcuts = 0;
-         const vector< const reco::GenParticle* > &genJetConstit = genJet->getGenConstituents();
-         for( std::vector< const reco::GenParticle* >::const_iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
-            //raise counter if cut passed
-            if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++;
-         }
-         part->setUserRecord( "GenJetConstit", numGenJetConstit_withcuts );
+         //int numGenJetConstit_withcuts = 0;
+         //const vector< const reco::GenParticle* > &genJetConstit = genJet->getGenConstituents();
+         //for( std::vector< const reco::GenParticle* >::const_iterator constit = genJetConstit.begin(); constit != genJetConstit.end(); ++constit ) {
+            ////raise counter if cut passed
+            //if( (*constit)->pt() > constit_pT ) numGenJetConstit_withcuts++;
+         //}
+         part->setUserRecord( "GenJetConstit", genJet->nConstituents() );
          //part->setUserRecord( "algoFlavour",    (*algoFlavour)   [ jetRef ].getFlavour() );
          //part->setUserRecord( "physicsFlavour", (*physicsFlavour)[ jetRef ].getFlavour() );
       }
@@ -1817,7 +1801,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
 
          // Number of lost ( = invalid) hits on track.
          //
-         part->setUserRecord( "LHits", muontrack->hitPattern().numberOfLostHits() );
+         part->setUserRecord( "LHits", muontrack->hitPattern().numberOfLostHits(reco::HitPattern::HitCategory::TRACK_HITS) );
 
          // Valid hit information
          //
@@ -1889,7 +1873,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons( edm::Event const &iEvent,
 
             part->setUserRecord( "NormChi2Cocktail", pmcTrack->normalizedChi2() );
 
-            part->setUserRecord( "LHitsCocktail",        pmcTrack->hitPattern().numberOfLostHits() );
+            part->setUserRecord( "LHitsCocktail",        pmcTrack->hitPattern().numberOfLostHits(reco::HitPattern::HitCategory::TRACK_HITS) );
             part->setUserRecord( "VHitsCocktail",        pmcTrack->hitPattern().numberOfValidHits() );
             part->setUserRecord( "VHitsPixelCocktail",   pmcTrack->hitPattern().numberOfValidPixelHits() );
             part->setUserRecord( "VHitsTrackerCocktail", pmcTrack->hitPattern().numberOfValidTrackerHits() );
@@ -2077,7 +2061,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
 
          // Store the number of *expected* crossed layers before the first trajectory's hit.
          // If this number is 0, this is the number of missing hits in that trajectory. (This is for conversion rejection.)
-         pxlEle->setUserRecord( "NinnerLayerLostHits", gsfTrack->trackerExpectedHitsInner().numberOfHits() );
+         pxlEle->setUserRecord( "NinnerLayerLostHits", gsfTrack->hitPattern().numberOfHits(reco::HitPattern::HitCategory::MISSING_INNER_HITS) );
          pxlEle->setUserRecord( "TrackerVHits", gsfTrack->numberOfValidHits() );
          pxlEle->setUserRecord( "TrackerLHits", gsfTrack->numberOfLostHits() );
 
