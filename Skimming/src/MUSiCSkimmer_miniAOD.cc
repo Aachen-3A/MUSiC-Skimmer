@@ -125,9 +125,9 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig ) :
    // Use SIM info
    UseSIM_ = iConfig.getUntrackedParameter<bool>("UseSIM");
    // name of the LHgrid for pdf weights
-   LHgridName_ = iConfig.getUntrackedParameter<string>("LHgridName"),
+   LHgridName_ = iConfig.getUntrackedParameter<string>("LHgridName");
    // number of pdf error sets in the LHgrid for pdf weights
-   NumLHgridErrorSets_ = iConfig.getUntrackedParameter<int>("NumLHgridErrorSets"),
+   NumLHgridErrorSets_ = iConfig.getUntrackedParameter<int>("NumLHgridErrorSets");
    // The labels used in cfg-file
    genParticleCandidatesLabel_   = iConfig.getParameter<edm::InputTag>("genParticleCandidatesLabel");
    genFinalParticlesLabel_       = iConfig.getParameter<edm::InputTag>("genFinalParticlesLabel");
@@ -147,11 +147,18 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig ) :
    reducedEBClusterCollection_    = iConfig.getParameter<edm::InputTag>("reducedEBClusterCollection");
 
 
-   conversionsTag_          = iConfig.getParameter<edm::InputTag>( "conversionsTag" ),
-   conversionsSingleLegTag_ = iConfig.getParameter<edm::InputTag>( "conversionsSingleLegTag" ),
+   conversionsTag_          = iConfig.getParameter<edm::InputTag>( "conversionsTag" );
+   conversionsSingleLegTag_ = iConfig.getParameter<edm::InputTag>( "conversionsSingleLegTag" );
 
-   rhos_                    =iConfig.getParameter< VInputTag >( "rhos" ),
+   rhos_                    = iConfig.getParameter< VInputTag >( "rhos" );
+   eleIDs_                  = iConfig.getParameter< VInputTag >( "eleIDs" );
 
+   for( VInputTag::const_iterator eleIDs_label = eleIDs_.begin(); eleIDs_label != eleIDs_.end(); ++eleIDs_label ) {
+      edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*eleIDs_label);
+      eleID_tokens.push_back(dummy_token);
+   }
+
+   patElectronLToken_ = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("patElectronLabel"));
 
    //HCAL noise
    hcal_noise_label_ = iConfig.getParameter< InputTag >( "HCALNoise" );
@@ -1068,6 +1075,9 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger( edm::Even
                                 );
 
          if( DSintersect.empty() ) {
+            for( sstring::const_iterator DS = DSInThisConfig.begin(); DS != DSInThisConfig.end(); ++DS ) {
+               std::cout << *DS << std::endl;
+            }
             throw cms::Exception( "Trigger Error" ) << "Cound not find any of the datastreams specified in "
                                                     << "'Skimmer.triggers.HLT.datastreams'! "
                                                     << "Please investigate!";
@@ -1930,6 +1940,13 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
    Handle< reco::ConversionCollection > conversionsHandle;
    iEvent.getByLabel( conversionsTag_, conversionsHandle );
 
+   std::vector<edm::Handle<edm::ValueMap<bool> > > ele_id_decisions;
+   for( uint ii = 0; ii < eleID_tokens.size(); ii++ ) {
+        edm::Handle<edm::ValueMap<bool> > eleID;
+        iEvent.getByToken( eleID_tokens[ii], eleID );
+        ele_id_decisions.push_back(eleID);
+   }
+
    //const unsigned int numIsoVals = m_inputTagIsoValElectronsPFId.size();
 
    // typedef in MUSiCSkimmer_miniAOD.h
@@ -1939,7 +1956,10 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
       //iEvent.getByLabel( m_inputTagIsoValElectronsPFId.at( i ), eleIsoValPFId.at( i ) );
    //}
 
-   for( vector< pat::Electron>::const_iterator patEle = patElectrons.begin(); patEle != patElectrons.end(); ++patEle ) {
+   Handle<edm::View<pat::Electron> > electrons;
+   iEvent.getByToken(patElectronLToken_, electrons);
+   View<pat::Electron>::const_iterator el = electrons->begin();
+   for( vector< pat::Electron>::const_iterator patEle = patElectrons.begin() ; patEle != patElectrons.end(); ++patEle) {
       if( Ele_cuts( patEle ) ) {
          edm::LogInfo( "MUSiCSkimmer_miniAOD|RecInfo" ) << "Electron Energy scale corrected: " << patEle->isEnergyScaleCorrected() << endl;
 
@@ -2161,6 +2181,12 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          //pxlEle->setUserRecord( "seedphi", geo->getPosition( seedID ).phi() );
          //pxlEle->setUserRecord( "seedeta", geo->getPosition( seedID ).eta() );
 
+         const Ptr<pat::Electron> elPtr(electrons, el - electrons->begin() );
+         for( uint ii = 0; ii < eleID_tokens.size(); ii++ ) {
+            bool Ele_temp_ID = (*ele_id_decisions[ii])[ elPtr ];
+            pxlEle->setUserRecord( eleIDs_[ii].instance(), Ele_temp_ID );
+         }
+
          //Returns a specific electron ID associated to the pat::Electron given its name For cut-based IDs, the value map has the following meaning: 0: fails, 1: passes electron ID only, 2: passes electron Isolation only, 3: passes electron ID and Isolation only, 4: passes conversion rejection, 5: passes conversion rejection and ID, 6: passes conversion rejection and Isolation, 7: passes the whole selection. For more details have a look at: https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCategoryBasedElectronID Note: an exception is thrown if the specified ID is not available
          const vector< pair< string, float > > &electronIDs = patEle->electronIDs();
          for( vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID ){
@@ -2236,6 +2262,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons( const Event &iEvent,
          numEleRec++;
       }
       numEleAll++;
+      el++;
    }
    RecView->setUserRecord( "NumEle", numEleRec );
 

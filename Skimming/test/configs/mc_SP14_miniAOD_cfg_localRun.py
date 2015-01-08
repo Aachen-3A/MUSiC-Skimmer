@@ -35,19 +35,7 @@ process.source = cms.Source(
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
         #'file://WprimeTauMiniAOD.root'
         #'/store/mc/Spring14miniaod/WprimeToMuNu_M_5800_Tune4C_13TeV_pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/E4AD1244-2809-E411-919F-0025904B1452.root'
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_08.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_04.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_20.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_02.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_13.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_05.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_18.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_06.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_12.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_03.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_01.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_17.root',
-        '/store/user/padeken/MCminiAOD/DM_EFT_4000_Mchi_Lambda_600_g_p1/DM_EFT_4000_Mchi_Lambda_600_g_p1_10.root',
+        'file:///disk1/erdweg/MINIAOD_files/0603D444-2D70-E411-AF03-002618943922.root'
         )
     )
 

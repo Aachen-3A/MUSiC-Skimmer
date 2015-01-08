@@ -55,6 +55,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     #
     #process.Skimmer.EleEffAreaTargetLabel = eleEffAreaTarget
 
+    addElectronIDs( process )
+
     if not runOnGen:
 
         #postfix = ''
@@ -68,7 +70,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     # The skimmer is in the endpath because then the results of all preceding paths
     # are available. This is used to access the outcome of filters that ran.
     #
-    process.e = cms.EndPath( process.Skimmer )
+    process.e = cms.EndPath(process.Skimmer )
 
     return process
 
@@ -95,14 +97,15 @@ def addElectronIDs( process ):
     my_id_modules = [
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'
-                     'MUSiCProject.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
-                     'MUSiCProject.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
+                     'MUSiCProject.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'#,
+                     #'MUSiCProject.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
                      ]
     #Add them to the VID producer
     for idmod in my_id_modules:
         setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
     # Do not forget to add the egmGsfElectronIDSequence to the path!
     #
+    process.p = cms.Path(process.egmGsfElectronIDSequence)
     # END ELECTRON ID SECTION
     #egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto
     #egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose

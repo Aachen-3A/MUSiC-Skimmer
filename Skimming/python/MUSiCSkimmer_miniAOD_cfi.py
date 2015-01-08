@@ -36,9 +36,15 @@ Skimmer = cms.EDAnalyzer(
                        cms.InputTag( 'fixedGridRhoFastjetAllCalo' ),
                        cms.InputTag( 'fixedGridRhoFastjetCentralCalo' ),
                        cms.InputTag( 'fixedGridRhoFastjetCentralChargedPileUp' ),
-                       cms.InputTag( 'fixedGridRhoFastjetCentralNeutral' ),
+                       cms.InputTag( 'fixedGridRhoFastjetCentralNeutral' )
                        ),
 
+    eleIDs = cms.VInputTag( cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto"),
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose"),
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium"),
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")#,
+                            #cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV50-prePHYS14-25ns-miniAOD")
+                           ),
 
     #ECAL RecHits for supercluster information
     reducedSuperClusterCollection   = cms.InputTag("reducedEgamma","reducedESClusters"),
@@ -66,8 +72,8 @@ Skimmer = cms.EDAnalyzer(
             # the following vector must hold the names of the IDs in the same sequence
             # as the qualities in PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h
             IDs = cms.vstring( 'LOOSE', 'TIGHT' )
-            ),
         ),
+    ),
 
 
     triggers = cms.PSet(
@@ -85,51 +91,55 @@ Skimmer = cms.EDAnalyzer(
             # Only triggers from datastreams whose name is given in the following list
             # will be considered. Make sure to update this list regularly.
             datastreams = cms.vstring(
-                                        "BJetPlusX",
-                                        "BTag",
-                                        #"Commissioning",
-                                        #"Cosmics",
-                                        "DoubleElectron",
-                                        "DoubleMu",
-                                        "DoubleMuParked",
-                                        "DoublePhoton",
-                                        "DoublePhotonHighPt",
-                                        "ElectronHad",
-                                        #"FEDMonitor",
-                                        #"HLTPhysicsParked",
-                                        "HTMHT",
-                                        "HTMHTParked",
-                                        #"HcalHPDNoise",
-                                        #"HcalNZS",
-                                        "JetHT",
-                                        "JetMon",
-                                        #"LogMonitor",
-                                        "MET",
-                                        "METParked",
-                                        "MinimumBias",
-                                        "MuEG",
-                                        "MuHad",
-                                        #"MuOnia",
-                                        #"MuOniaParked",
-                                        "MultiJet",
-                                        "MultiJet1Parked",
-                                        "NoBPTX",
-                                        "PPMuon",
-                                        "PPPhoton",
-                                        "PhotonHad",
-                                        "SingleElectron",
-                                        "SingleMu",
-                                        "SinglePhoton",
-                                        "SinglePhotonParked",
-                                        "Tau",
-                                        "TauParked",
-                                        "TauPlusX",
-                                        "VBF1Parked",
-                                        #"ZeroBiasParked",
-                                       ),
+                                        "InitialPD",
+                                        "Templates"
             ),
-        StoreL3Objects = cms.untracked.bool(False)
+            #datastreams = cms.vstring(
+                                        #"BJetPlusX",
+                                        #"BTag",
+                                        ##"Commissioning",
+                                        ##"Cosmics",
+                                        #"DoubleElectron",
+                                        #"DoubleMu",
+                                        #"DoubleMuParked",
+                                        #"DoublePhoton",
+                                        #"DoublePhotonHighPt",
+                                        #"ElectronHad",
+                                        ##"FEDMonitor",
+                                        ##"HLTPhysicsParked",
+                                        #"HTMHT",
+                                        #"HTMHTParked",
+                                        ##"HcalHPDNoise",
+                                        ##"HcalNZS",
+                                        #"JetHT",
+                                        #"JetMon",
+                                        ##"LogMonitor",
+                                        #"MET",
+                                        #"METParked",
+                                        #"MinimumBias",
+                                        #"MuEG",
+                                        #"MuHad",
+                                        ##"MuOnia",
+                                        ##"MuOniaParked",
+                                        #"MultiJet",
+                                        #"MultiJet1Parked",
+                                        #"NoBPTX",
+                                        #"PPMuon",
+                                        #"PPPhoton",
+                                        #"PhotonHad",
+                                        #"SingleElectron",
+                                        #"SingleMu",
+                                        #"SinglePhoton",
+                                        #"SinglePhotonParked",
+                                        #"Tau",
+                                        #"TauParked",
+                                        #"TauPlusX",
+                                        #"VBF1Parked",
+                                        ##"ZeroBiasParked",
+            #),
         ),
+        StoreL3Objects = cms.untracked.bool(False)
+    ),
 
     # This is used to access the results of all filters that ran.
     #
@@ -162,5 +172,5 @@ Skimmer = cms.EDAnalyzer(
         PV_minNDOF = cms.double( 4 ),
         PV_maxZ = cms.double( 24 ),
         PV_maxR = cms.double( 2 )
-        )
     )
+)

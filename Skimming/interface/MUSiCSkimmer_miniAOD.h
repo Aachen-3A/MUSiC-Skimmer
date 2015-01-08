@@ -319,6 +319,9 @@ public:
    edm::InputTag conversionsSingleLegTag_;
 
    std::vector< edm::InputTag > rhos_;
+   std::vector< edm::InputTag > eleIDs_;
+   std::vector< edm::EDGetTokenT<edm::ValueMap<bool> > > eleID_tokens;
+   edm::EDGetTokenT<edm::View<pat::Electron> > patElectronLToken_;
 
 
    //HCAL noise
