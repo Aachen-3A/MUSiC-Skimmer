@@ -42,8 +42,8 @@ Skimmer = cms.EDAnalyzer(
     eleIDs = cms.VInputTag( cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto"),
                             cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose"),
                             cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium"),
-                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight")#,
-                            #cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV50-prePHYS14-25ns-miniAOD")
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight"),
+                            cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV50-prePHYS14-25ns-miniAOD")
                            ),
 
     #ECAL RecHits for supercluster information

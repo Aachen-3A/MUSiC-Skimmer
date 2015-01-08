@@ -97,8 +97,8 @@ def addElectronIDs( process ):
     my_id_modules = [
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'
-                     'MUSiCProject.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'#,
-                     #'MUSiCProject.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
+                     'MUSiCProject.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
+                     'MUSiCProject.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
                      ]
     #Add them to the VID producer
     for idmod in my_id_modules:
