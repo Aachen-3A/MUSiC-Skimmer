@@ -367,10 +367,6 @@ void MUSiCSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSet
     event.setUserRecord("Orbit", iEvent.orbitNumber());
     event.setUserRecord("Dataset", Dataset_);
 
-    // create two ePaxEventViews for Generator/Reconstructed Objects
-    // pxl::EventView* GenEvtView = event.createIndexed<pxl::EventView>("Gen");
-    // pxl::EventView* RecEvtView = event.createIndexed<pxl::EventView>("Rec");
-
     pxl::EventView* RecEvtView = event.create<pxl::EventView>();
     event.setIndex("Rec", RecEvtView);
     pxl::EventView* GenEvtView = event.create<pxl::EventView>();
@@ -1580,11 +1576,11 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
                 part->setUserRecord("LeadingHadronP", -1.);
             }
 
-            // reco::TrackRefVector const &signalTracks = tau->signalTracks();
-            // if (signalTracks.isNonnull())
-            // part->setUserRecord("NumSignalTracks", signalTracks.size());
-            // else
-            // part->setUserRecord("NumSignalTracks", -1);
+             reco::TrackRefVector const &signalTracks = tau->signalTracks();
+             if (signalTracks.isNonnull())
+             part->setUserRecord("NumSignalTracks", signalTracks.size());
+             else
+             part->setUserRecord("NumSignalTracks", -1);
             // GRRRR there is no way to get the jet link at the moment!! Will be fixed in CMSSW_7_1_X!!
             // Information from jet used to reconstruct the tau:
             // (Uncorrected jet pt.)
@@ -1616,7 +1612,6 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             // part->setUserRecord("PrimVtx_Z", tau_primary_vertex->z());
 
 
-
             reco::CandidatePtrVector const &signalGammaCands = tau->signalGammaCands();
             try {
                 part->setUserRecord("NumPFGammaCands", signalGammaCands.size());
@@ -1638,8 +1633,6 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             catch(...) {
                 part->setUserRecord("NumPFNeutralHadrCands", -1);
             }
-
-
 
             numPatTaus++;
         }

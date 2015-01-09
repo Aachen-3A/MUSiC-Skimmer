@@ -422,4 +422,4 @@ class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
         reco::BeamSpot::Point the_vertex;
         reco::BeamSpot::Point the_beamspot;
 };
-endif
+#endif

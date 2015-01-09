@@ -183,7 +183,7 @@ def addFlavourMatching( process, skimmer, runOnGen ):
                                    coneSizeToAssociate = cms.double( 0.3 )
                                    )
                      )
-            #path += getattr( process, jet_name+'GenJetPartonAssociation' )
+            path += getattr( process, jet_name+'GenJetPartonAssociation' )
 
             setattr( process,
                      jet_name+'GenJetFlavourAlgo',
@@ -192,7 +192,7 @@ def addFlavourMatching( process, skimmer, runOnGen ):
                                    physicsDefinition = cms.bool( False )
                                    )
                      )
-            #path += getattr( process, jet_name+'GenJetFlavourAlgo' )
+            path += getattr( process, jet_name+'GenJetFlavourAlgo' )
 
             setattr( process,
                      jet_name+'GenJetFlavourPhysics',
@@ -201,7 +201,7 @@ def addFlavourMatching( process, skimmer, runOnGen ):
                                    physicsDefinition = cms.bool( True )
                                    )
                      )
-            #path += getattr( process, jet_name+'GenJetFlavourPhysics' )
+            path += getattr( process, jet_name+'GenJetFlavourPhysics' )
 
             if not runOnGen:
                setattr( process,
@@ -212,7 +212,7 @@ def addFlavourMatching( process, skimmer, runOnGen ):
                                     coneSizeToAssociate = cms.double( 0.3 )
                                     )
                         )
-               #path += getattr( process, jet_name+'RecoJetPartonAssociation' )
+               path += getattr( process, jet_name+'RecoJetPartonAssociation' )
 
                setattr( process,
                         jet_name+'RecoJetFlavourPhysics',
@@ -221,7 +221,7 @@ def addFlavourMatching( process, skimmer, runOnGen ):
                                     physicsDefinition = cms.bool( True )
                                     )
                         )
-               #path += getattr( process, jet_name+'RecoJetFlavourPhysics' )
+               path += getattr( process, jet_name+'RecoJetFlavourPhysics' )
 
 # See also:
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=116#JetEnCor2012Summer13
