@@ -151,8 +151,8 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
      conversionsTag_          = iConfig.getParameter<edm::InputTag>("conversionsTag");
      conversionsSingleLegTag_ = iConfig.getParameter<edm::InputTag>("conversionsSingleLegTag");
 
-     rhos_                    = iConfig.getParameter<edm::VInputTag>("rhos");
-     eleIDs_                  = iConfig.getParameter<edm::VInputTag>("eleIDs");
+     rhos_                    = iConfig.getParameter<VInputTag>("rhos");
+     eleIDs_                  = iConfig.getParameter<VInputTag>("eleIDs");
 
      for (VInputTag::const_iterator eleIDs_label = eleIDs_.begin(); eleIDs_label != eleIDs_.end(); ++eleIDs_label) {
           edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*eleIDs_label);
