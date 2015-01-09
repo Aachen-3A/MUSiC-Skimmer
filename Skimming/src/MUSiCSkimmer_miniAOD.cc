@@ -101,9 +101,6 @@
 // Private ParticleMatcher.
 #include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
 
-using namespace std;
-using namespace edm;
-
 //
 // constructors and destructor
 //
@@ -894,32 +891,32 @@ void MUSiCSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* 
 
      for (simTrack = simTracks->begin(); simTrack != simTracks->end(); ++simTrack) {
           // int TrackID         = simTrack->trackId();
-          // cout << "TrackID: " << TrackID << endl;
+          // std::cout << "TrackID: " << TrackID << endl;
           int TrackType = simTrack->type();
           if ((TrackType == 11) || (TrackType == -11)) {
                // double TrackPt = sqrt(simTrack->momentum().perp2());
-               // cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
+               // std::cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
                int VtxIndex = simTrack->vertIndex();
                unsigned int ParentTrack = (*simVtcs)[VtxIndex].parentIndex();
                vector<unsigned int>::iterator where = find(ParentVec.begin(), ParentVec.end(), ParentTrack);
                if (where == ParentVec.end()) {
                     ParentVec.push_back(ParentTrack);
-                    // cout << "ParentTrack " << ParentTrack << endl;
+                    // std::cout << "ParentTrack " << ParentTrack << endl;
                     for (simTrack2 = simTracks->begin(); simTrack2 != simTracks->end(); ++simTrack2) {
                          if (simTrack2->trackId() == ParentTrack && (simTrack2->type() == 22) && (sqrt(simTrack2->momentum().perp2()) > 15.0)) {
                               // do not save photons without corresponding gen particle
                               if (!(simTrack2->noGenpart())) {
                                    // int ParentType = simTrack2->type();
                                    // double ParentPt = sqrt(simTrack2->momentum().perp2());
-                                   // cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
-                                   // cout << "ParentTrack " << ParentTrack << endl;
-                                   // cout << "found conversion: " << ParentType << " with pt: " << ParentPt << endl;
+                                   // std::cout << "TrackType: " << TrackType << "TrackPt: " << TrackPt << endl;
+                                   // std::cout << "ParentTrack " << ParentTrack << endl;
+                                   // std::cout << "found conversion: " << ParentType << " with pt: " << ParentPt << endl;
                                    pxl::Particle* part = EvtView->create<pxl::Particle>();
                                    part->setName("SIMConvGamma");
                                    part->setP4(simTrack2->momentum().px(), simTrack2->momentum().py(), simTrack2->momentum().pz(), simTrack2->momentum().energy());
                                    part->setUserRecord("TrackId", ParentTrack);
-                                   // cout << "found conversion with energy: " << simTrack2->momentum().energy() << " pt: " << part->getPt() << " eta: " << part->getEta() << " phi: " << part->getPhi() << endl;
-                                   // cout << "------------------" << endl;
+                                   // std::cout << "found conversion with energy: " << simTrack2->momentum().energy() << " pt: " << part->getPt() << " eta: " << part->getEta() << " phi: " << part->getPhi() << endl;
+                                   // std::cout << "------------------" << endl;
                               }
                          }
                     }
@@ -927,7 +924,7 @@ void MUSiCSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* 
           }
      }
 
-     // cout << "---------NEW EVENT ---------" << endl;
+     // std::cout << "---------NEW EVENT ---------" << endl;
 }
 
 
@@ -1737,10 +1734,6 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
                // Sum Pt of the charged particles in the cone of interest but with particles not originating from the primary vertex(for PU corrections).
                part->setUserRecord("PFIsoR03PU", muonPFIso03.sumPUPt);
                part->setUserRecord("PFIsoR04PU", muonPFIso04.sumPUPt);
-               // TODO: The following two are not available before CMSSW_5_X_Y.
-               // Sum of the neutral hadron Et with a higher threshold for the candidates(1 GeV instead of 0.5).
-               part->setUserRecord("PFIso03NeutralHadronsHighThres", muonPFIso03.sumNeutralHadronEtHighThreshold);
-               part->setUserRecord("PFIso04NeutralHadronsHighThres", muonPFIso04.sumNeutralHadronEtHighThreshold);
                // Sum of the PF photons Et with higher threshold (1 GeV instead of 0.5).
                part->setUserRecord("PFIso03PhotonsHighThres", muonPFIso03.sumPhotonEtHighThreshold);
                part->setUserRecord("PFIso04PhotonsHighThres", muonPFIso04.sumPhotonEtHighThreshold);
@@ -1775,10 +1768,6 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
                part->setUserRecord("chi2", muontrack->chi2());
                part->setUserRecord("ndof", muontrack->ndof());
 
-               // Keep normalized chi^2 for backward compatibility.
-               // TODO: Remove 'NormChi2' variable, once everything is switched to those above.
-               part->setUserRecord("NormChi2", muontrack->normalizedChi2());
-
                // Store info from HitPattern of the global tracker.
 
                // Number of lost ( = invalid) hits on track.
@@ -1805,14 +1794,6 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
                //
                part->setUserRecord("qoverp",      muontrack->qoverp());
                part->setUserRecord("qoverpError", muontrack->qoverpError());
-
-
-               // TODO: These variables are still used in the analysis and should be
-               // replaced with those above in the future.
-               //
-               // error info also used in muon-Met corrections, thus store variable to save info for later re-corrections
-               part->setUserRecord("dPtRelTrack", muontrack->error(0)/(muontrack->qoverp()));
-               part->setUserRecord("dPtRelTrack_off", muontrack->ptError()/muontrack->pt());
 
                // Store also the pt error from the tracker track.
                // (qoverpError() is the same as error(0) for a track.)
@@ -2543,8 +2524,8 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
 // ------------ method called once each job just after ending the event loop  ------------
 
 void MUSiCSkimmer_miniAOD::endJob() {
-     cout << "++++++++++++++++++++++++++++++++++++++" << endl;
-     cout << "analyzed " << fNumEvt << " events " << endl;
+     std::cout << "++++++++++++++++++++++++++++++++++++++" << endl;
+     std::cout << "analyzed " << fNumEvt << " events " << endl;
      // close output file:
      fePaxFile.close();
 
@@ -2589,7 +2570,7 @@ void MUSiCSkimmer_miniAOD::endJob() {
      //  // loop over all error PDFs
      // for (int subpdf = 1; subpdf <= fNumLHgridErrorSets; subpdf++) {
      // initpdf_(subpdf);
-     //  // cout << "Initialized sub PDF " << subpdf << endl;
+     //  // std::cout << "Initialized sub PDF " << subpdf << endl;
      // vector<float>::const_iterator best_fit_iter = best_fit.begin();
      // vector<vector<float> >::iterator weights_iter = weights.begin();
      //  // loop over all PDFInf's
@@ -2618,7 +2599,7 @@ void MUSiCSkimmer_miniAOD::endJob() {
      // pxl::EventView* RecEvtView = event.getObjectOwner().findObject<pxl::EventView>("Rec");
      // unsigned int i = 1;
      // for (vector<float>::const_iterator weight = (*weights_iter).begin(); weight != (*weights_iter).end(); ++weight) {
-     //  // cout << "weight w" << i << "  " << *weight << endl;
+     //  // std::cout << "weight w" << i << "  " << *weight << endl;
      // ostringstream aStream;
      // aStream << "w" << i;
      // string str_i = aStream.str();
