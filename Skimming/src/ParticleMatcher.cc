@@ -1,4 +1,4 @@
-#include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
+#include "MUSiC-Skimmer/Skimming/interface/ParticleMatcher.hh"
 
 #include "TMatrixT.h"
 #include "Pxl/Pxl/interface/pxl/core.hh"
