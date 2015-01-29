@@ -98,7 +98,7 @@
 // Math stuff from Physics tools.
 #include "DataFormats/Math/interface/deltaR.h"
 
-// Private ParticleMatcher.
+// Private ParticleMatcher
 #include "PxlSkimmer/Skimming/interface/ParticleMatcher.hh"
 
 //
