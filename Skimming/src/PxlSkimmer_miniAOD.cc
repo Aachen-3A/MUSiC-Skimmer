@@ -1,10 +1,10 @@
 // -*- C++ -*-
 // Copyright [2015] <RWTH Aachen, III. Phys. Inst. A>
 //
-// Package:    MUSiCProject
-// Class:      MUSiCSkimmer_miniAOD
+// Package:    PxlSkimmer
+// Class:      PxlSkimmer_miniAOD
 //
-// \class MUSiCSkimmer_miniAOD MUSiCProject/Skimming/src/MUSiCSkimmer_miniAOD.cc
+// \class PxlSkimmer_miniAOD PxlSkimmer/Skimming/src/PxlSkimmer_miniAOD.cc
 //
 // Description: Data and MC Skimmer for the Model Unspecific Search in CMS
 //
@@ -17,7 +17,7 @@
 //
 //
 // Own header file.
-#include "MUSiCProject/Skimming/interface/MUSiCSkimmer_miniAOD.h"
+#include "PxlSkimmer/Skimming/interface/PxlSkimmer_miniAOD.h"
 
 // System include files.
 #include <iostream>
@@ -99,12 +99,12 @@
 #include "DataFormats/Math/interface/deltaR.h"
 
 // Private ParticleMatcher.
-#include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
+#include "PxlSkimmer/Skimming/interface/ParticleMatcher.hh"
 
 //
 // constructors and destructor
 //
-MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
+PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     FileName_(iConfig.getUntrackedParameter< string >("FileName")),
 
     fastSim_(iConfig.getParameter<bool>("FastSim")),
@@ -243,7 +243,7 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
         trigger.datastreams = sstring(tmp_streams.begin(), tmp_streams.end());
 
         if (!GenOnly_ && trigger.triggers_names.size() == 0) {
-            edm::LogInfo("MUSiCSkimmer_miniAOD|TRIGGERINFO_MUSIC") << "No Trigger names found in configuration! "
+            edm::LogInfo("PxlSkimmer_miniAOD|TRIGGERINFO_MUSIC") << "No Trigger names found in configuration! "
                                                                    << "Using all (unprescaled) triggers in given datastreams.";
         }
 
@@ -336,7 +336,7 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
 // ------------ MIS Destructor  ------------
 
-MUSiCSkimmer_miniAOD::~MUSiCSkimmer_miniAOD() {
+PxlSkimmer_miniAOD::~PxlSkimmer_miniAOD() {
     // delete m_eleIsolator;
     // delete m_phoIsolator;
     // do anything here that needs to be done at desctruction time
@@ -346,8 +346,8 @@ MUSiCSkimmer_miniAOD::~MUSiCSkimmer_miniAOD() {
 
 // ------------ method called to for each event  ------------
 
-void MUSiCSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-    edm::LogInfo("MUSiCSkimmer_miniAOD|EventInfo") << "Run " << iEvent.id().run()
+void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+    edm::LogInfo("PxlSkimmer_miniAOD|EventInfo") << "Run " << iEvent.id().run()
                                                    << ", EventID = " << iEvent.id().event()
                                                    << ", is MC = " << !iEvent.isRealData();
 
@@ -475,7 +475,7 @@ void MUSiCSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSet
 
 // ------------ reading Generator related Stuff ------------
 
-void MUSiCSkimmer_miniAOD::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void PxlSkimmer_miniAOD::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::EventView* EvtView) {
     // this works at least for RECO. Need to check if this works on AOD or PAT-Ntuplee
 
     edm::Handle< GenEventInfoProduct > genEvtInfo;
@@ -548,12 +548,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::
     } else {
         info << "No PDFInfo in this event." << endl;
     }
-    edm::LogVerbatim("MUSiCSkimmer_miniAOD|PDFInfo") << info.str();
+    edm::LogVerbatim("PxlSkimmer_miniAOD|PDFInfo") << info.str();
 }
 
 // ------------ reading the Generator Stuff ------------
 
-void MUSiCSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
+void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                                           pxl::EventView* EvtView,
                                           std::map< const reco::Candidate*,
                                           pxl::Particle* >& genmap) {
@@ -719,7 +719,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     }  // end of loop over generated particles
 
 
-    edm::LogInfo("MUSiCSkimmer_miniAOD|GenInfo") << "MC Found: " << numMuonMC <<  " muon(s), " << numEleMC << " electron(s), " << numGammaMC << " gamma(s)";
+    edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "MC Found: " << numMuonMC <<  " muon(s), " << numEleMC << " electron(s), " << numGammaMC << " gamma(s)";
     EvtView->setUserRecord("NumMuon", numMuonMC);
     EvtView->setUserRecord("NumEle", numEleMC);
     EvtView->setUserRecord("NumTau", numTauMC);
@@ -758,7 +758,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
 
 // ------------ reading the Generator Jets ------------
 
-void MUSiCSkimmer_miniAOD::analyzeGenJets(const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info) {
+void PxlSkimmer_miniAOD::analyzeGenJets(const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info) {
     // Get the GenJet collections
     edm::Handle<reco::GenJetCollection> GenJets;
     iEvent.getByLabel(jet_info.MCLabel, GenJets);
@@ -806,12 +806,12 @@ void MUSiCSkimmer_miniAOD::analyzeGenJets(const edm::Event &iEvent, pxl::EventVi
         }
     }
     EvtView->setUserRecord("Num"+jet_info.name, numJetMC);
-    edm::LogInfo("MUSiCSkimmer_miniAOD|GenInfo") << "MC Found: " << numJetMC << " jet(s) of type: " << jet_info.name;
+    edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "MC Found: " << numJetMC << " jet(s) of type: " << jet_info.name;
 }
 
 // ------------ reading the Generator MET ------------
 
-// void MUSiCSkimmer_miniAOD::analyzeGenMETs(edm::Event const &iEvent,
+// void PxlSkimmer_miniAOD::analyzeGenMETs(edm::Event const &iEvent,
 // pxl::EventView *GenEvtView
 // ) const {
 // for (VInputTag::const_iterator genMETTag = m_genMETTags.begin(); genMETTag != m_genMETTags.end(); ++genMETTag) {
@@ -820,7 +820,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenJets(const edm::Event &iEvent, pxl::EventVi
 // }
 
 
-void MUSiCSkimmer_miniAOD::analyzeGenMET(edm::Event const &iEvent,
+void PxlSkimmer_miniAOD::analyzeGenMET(edm::Event const &iEvent,
                                          pxl::EventView *GenEvtView) const {
     // take the genMET() refference from the pat met
     edm::Handle< pat::METCollection > METHandle;
@@ -843,7 +843,7 @@ void MUSiCSkimmer_miniAOD::analyzeGenMET(edm::Event const &iEvent,
     part->setUserRecord("HadE", genmet->hadEnergy());
     part->setUserRecord("InvE", genmet->invisibleEnergy());
 
-    edm::LogInfo("MUSiCSkimmer_miniAOD|GenInfo") << "GenMET before muon corr: Px = " << part->getPx()
+    edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "GenMET before muon corr: Px = " << part->getPx()
                                                  << ", Py = " << part->getPy()
                                                  << ", Pt = " << part->getPt();
     // Get systmetShifts:
@@ -861,23 +861,23 @@ void MUSiCSkimmer_miniAOD::analyzeGenMET(edm::Event const &iEvent,
     // vector< pxl::Particle* > GenMuons;
     // pxl::ParticleFilter::apply(GenEvtView->getObjectOwner(), GenMuons, pxl::ParticlePtEtaNameCriterion ("Muon"));
     // for (vector< pxl::Particle* >::const_iterator muon = GenMuons.begin(); muon != GenMuons.end(); ++muon) {
-    // edm::LogInfo("MUSiCSkimmer_miniAOD|GenInfo") << "Correcting with " << (*muon)->getName()
+    // edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "Correcting with " << (*muon)->getName()
     // << ", Px = " << (*muon)->getPx()
     // << ", Py = " << (*muon)->getPy();
     // *part -= **muon;
     // }
-    // edm::LogInfo("MUSiCSkimmer_miniAOD|GenInfo") << "GenMET after muon corr: Px = " << part->getPx()
+    // edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "GenMET after muon corr: Px = " << part->getPx()
     // << ", Py = " << part->getPy()
     // << ", Pt = " << part->getPt();
     // }
     if (METMC_cuts(part)) numMETMC++;
     GenEvtView->setUserRecord("Num" + patMETTag_.label()+"_gen", numMETMC);
-    if (numMETMC) edm::LogInfo("MUSiCSkimmer_miniAOD|GenInfo") << "Event contains MET";
+    if (numMETMC) edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "Event contains MET";
 }
 
 
 // ----------------- SIM -------------------
-void MUSiCSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void PxlSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
     Handle<SimVertexContainer> simVtcs;
     iEvent.getByLabel("g4SimHits" , simVtcs);
     SimVertexContainer::const_iterator simVertex;
@@ -928,7 +928,7 @@ void MUSiCSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* 
 }
 
 
-void MUSiCSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventView* EvtView) {
     // save HCAL noise infos
     edm::Handle< bool > hcal_noise;
     iEvent.getByLabel(hcal_noise_label_, hcal_noise);
@@ -937,7 +937,7 @@ void MUSiCSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::Event
 
 // ------------ reading the Reconstructed MET ------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
+void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
     // for (VInputTag::const_iterator patMETTag = m_patMETTags.begin(); patMETTag != m_patMETTags.end(); ++patMETTag) {
     // analyzeRecPatMET(iEvent, *patMETTag, RecEvtView);
     // }
@@ -949,7 +949,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventVi
 }
 
 
-void MUSiCSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
                                             edm::InputTag const &patMETTag,
                                             pxl::EventView *RecEvtView) const {
     edm::Handle< pat::METCollection > METHandle;
@@ -973,7 +973,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
 }
 
 
-void MUSiCSkimmer_miniAOD::analyzeRecRecoPFMET(edm::Event const &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecRecoPFMET(edm::Event const &iEvent,
                                                edm::InputTag const &recoPFMETTag,
                                                pxl::EventView *RecEvtView) const {
     edm::Handle< reco::PFMETCollection > METHandle;
@@ -994,7 +994,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecRecoPFMET(edm::Event const &iEvent,
 }
 
 
-std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event const &event,
+std::map< std::string, bool > PxlSkimmer_miniAOD::initializeTrigger(edm::Event const &event,
                                                                       edm::EventSetup const &setup,
                                                                       trigger_group &trigger) const {
     // Store if the wanted datastreams were available in this trigger config.
@@ -1008,7 +1008,7 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event
     trigger.triggers_by_datastream.clear();
     trigger.trigger_infos_by_datastream.clear();
 
-    edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "TRIGGER INFO: Using trigger config '" << trigger.config.tableName() << "'";
+    edm::LogInfo("PxlSkimmer|TRIGGERINFO_MUSIC") << "TRIGGER INFO: Using trigger config '" << trigger.config.tableName() << "'";
 
     // Get all the datastreams (aka. datasets) that are available in
     // the current HLT config. (Convert them to a set of strings.)
@@ -1022,12 +1022,12 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event
         // If the list of datastreams in the config is empty, get all (unprescaled)
         // triggers from all datastreams.
         if (trigger.datastreams.empty()) {
-            edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "No datastreams found in configuration! "
+            edm::LogInfo("PxlSkimmer|TRIGGERINFO_MUSIC") << "No datastreams found in configuration! "
                                                            << "Using all (unprescaled) triggers in HLT config.";
 
             // Map all triggers from the HLT menu to their datastreams.
             if (fastSim_) {
-                edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "Using FastSIM configuration! "
+                edm::LogInfo("PxlSkimmer|TRIGGERINFO_MUSIC") << "Using FastSIM configuration! "
                                                                << "No datastreams available in HLT config.";
                 // Since triggers are not assigned to datastreams in FastSIM, fill
                 // all triggers into a single map entry.
@@ -1099,7 +1099,7 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event
         if (trigger.datastreams.empty()) {
             sstring trigIntersect;
             if (fastSim_) {
-                edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "Using FastSIM configuration! "
+                edm::LogInfo("PxlSkimmer|TRIGGERINFO_MUSIC") << "Using FastSIM configuration! "
                                                                << "No datastreams available in HLT config.";
                 // Since triggers are not assigned to datastreams in FastSIM, fill
                 // all specified triggers into a single map entry.
@@ -1140,13 +1140,13 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event
             }
 
             if (trigger.triggers_by_datastream.empty()) {
-                throw cms::Exception("MUSiCSkimmer|TriggerError")
+                throw cms::Exception("PxlSkimmer|TriggerError")
                     << "Cound not find any of the HLT paths specified in "
                     << "'Skimmer.triggers.HLT.HLTriggers'! Please investigate!";
             }
 
         } else {
-            throw cms::Exception("MUSiCSkimmer|TriggerError")
+            throw cms::Exception("PxlSkimmer|TriggerError")
                 << "Specifing both 'HLTriggers' and 'datastreams' in the config "
                 << "does not make sense. Choose ONE of them.";
         }
@@ -1170,7 +1170,7 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event
                 tmp_trigger_infos.push_back(trg);
             } else {
                 // The number is invalid, the trigger path is not in the config
-                edm::LogWarning("MUSiCSkimmer|TriggerWarning") << "In run " << event.run() << " trigger "<< *trg_name
+                edm::LogWarning("PxlSkimmer|TriggerWarning") << "In run " << event.run() << " trigger "<< *trg_name
                                                                << " not found in HLT config, not added to trigger map (so not used).";
             }
         }
@@ -1180,7 +1180,7 @@ std::map< std::string, bool > MUSiCSkimmer_miniAOD::initializeTrigger(edm::Event
     return DSMap;
 }
 
-void MUSiCSkimmer_miniAOD::initializeFilter(edm::Event const &event,
+void PxlSkimmer_miniAOD::initializeFilter(edm::Event const &event,
                                             edm::EventSetup const &setup,
                                             trigger_group &filter) const {
     // Store the wanted filters and if the event has passed them.
@@ -1198,20 +1198,20 @@ void MUSiCSkimmer_miniAOD::initializeFilter(edm::Event const &event,
             filter.trigger_infos.push_back(flt);
         } else {
             // The number is invalid, the filter path is not in the config.
-            edm::LogWarning("MUSiCSkimmer_miniAOD|TriggerWarning") << "In run " << event.run() << " filter "<< *flt_name
+            edm::LogWarning("PxlSkimmer_miniAOD|TriggerWarning") << "In run " << event.run() << " filter "<< *flt_name
                                                                    << " not found in config, not added to filter list (so not used).";
         }
     }
 }
 
-std::set< std::string > MUSiCSkimmer_miniAOD::getTriggers(std::string const DS,
+std::set< std::string > PxlSkimmer_miniAOD::getTriggers(std::string const DS,
                                                           trigger_group const &trigger) const {
     // Get all trigger paths for each datastream.
     vstring const &triggerPaths = trigger.config.datasetContent(DS);
     sstring trigger_names;
     for (vstring::const_iterator triggerPath = triggerPaths.begin(); triggerPath != triggerPaths.end(); ++triggerPath) {
         // Only add trigger paths that begin with the string given
-        // by the PSet name in MUSiCSkimmer_cfi.py, e.g., "HLT".
+        // by the PSet name in PxlSkimmer_cfi.py, e.g., "HLT".
         size_t const pos = (*triggerPath).find(trigger.name);
         if (pos == 0) {
             // Create a set of the triggerPaths.
@@ -1224,7 +1224,7 @@ std::set< std::string > MUSiCSkimmer_miniAOD::getTriggers(std::string const DS,
 }
 
 
-void MUSiCSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
+void PxlSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
                                          const edm::EventSetup &iSetup,
                                          pxl::EventView *EvtView,
                                          trigger_group &filter
@@ -1236,7 +1236,7 @@ void MUSiCSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
     }
 
     if (changed) {
-        edm::LogInfo("MUSiCSkimmer_miniAOD|FilterInfo") << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
+        edm::LogInfo("PxlSkimmer_miniAOD|FilterInfo") << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
                                                         << ", building new filter map for process " << filter.process;
         initializeFilter(iEvent, iSetup, filter);
     }
@@ -1254,7 +1254,7 @@ void MUSiCSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
             EvtView->setUserRecord(filter.name + "_" + filt->name, filterResultsHandle->accept(filt->ID));
 
             if (filterResultsHandle->accept(filt->ID))
-                edm::LogInfo("MUSiCSkimmer_miniAOD|FilterInfo") << "Event in process: '" << filter.process << "' passed filter: '" << filt->name << "'.";
+                edm::LogInfo("PxlSkimmer_miniAOD|FilterInfo") << "Event in process: '" << filter.process << "' passed filter: '" << filt->name << "'.";
         } else {
             // either error or was not run
             if (!wasrun) edm::LogWarning("FilterWarning") << "Filter: " << filt->name << " in process " << filter.process << " was not executed!";
@@ -1264,7 +1264,7 @@ void MUSiCSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
 }
 
 
-void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
+void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                           const edm::EventSetup &iSetup,
                                           const bool &isMC,
                                           pxl::EventView* EvtView,
@@ -1293,7 +1293,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     }
 
     if (changed) {
-        edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
+        edm::LogInfo("PxlSkimmer|TRIGGERINFO_MUSIC") << "TRIGGER INFO: HLT table changed in run " << iEvent.run()
                                                        << ", building new trigger map for process " << process;
         // Initialize the trigger config and re-write the available datastreams.
         availableDS = initializeTrigger(iEvent, iSetup, trigger);
@@ -1343,7 +1343,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
 
                     // debug output
                     if (triggerResultsHandle->accept(trig->ID))
-                        edm::LogInfo("MUSiCSkimmer|TriggerInfo") << "Trigger: " << trig->name << " in menu " << trigger.process << " fired" << endl;
+                        edm::LogInfo("PxlSkimmer|TriggerInfo") << "Trigger: " << trig->name << " in menu " << trigger.process << " fired" << endl;
                 } else {
                     // prescaled!
                     // switch it off
@@ -1358,7 +1358,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 if (error)   edm::LogWarning("TRIGGERWARNING") << "An error occured during execution of Trigger: " << trig->name << " in menu " << trigger.process;
             }
 
-            edm::LogInfo("MUSiCSkimmer|TriggerInfo") << "triggerName: " << trig->name << "  triggerIndex: " << trig->ID << endl
+            edm::LogInfo("PxlSkimmer|TriggerInfo") << "triggerName: " << trig->name << "  triggerIndex: " << trig->ID << endl
                                                      << " Trigger path status:"
                                                      << " WasRun   = " << wasrun
                                                      << " Accept   = " << triggerResultsHandle->accept(trig->ID)
@@ -1385,7 +1385,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
             // assert(nI == nK);
             // size_t n(max(nI, nK));
             // if (n > 5) {
-            // edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "Storing only 5 L3 objects for label/type "
+            // edm::LogInfo("PxlSkimmer|TRIGGERINFO_MUSIC") << "Storing only 5 L3 objects for label/type "
             // << moduleLabel << "/" << trigger.config.moduleType(moduleLabel);
             // n = 5;
             // }
@@ -1396,7 +1396,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
             // part->setName(moduleLabel);
             // part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
             // part->setUserRecord("ID", TO.id());
-            // edm::LogVerbatim("MUSiCSkimmer|TriggerInfo")  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+            // edm::LogVerbatim("PxlSkimmer|TriggerInfo")  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
             // << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
             // << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
             // }
@@ -1409,13 +1409,13 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
         // datastream UserRecord to false.
         if (!unprescaledTriggerinDS) {
             EvtView->setUserRecord("DS_" + trg_infos_by_DS->first, unprescaledTriggerinDS);
-            edm::LogWarning("MUSiCSkimmer|TriggerWarning") << "TRIGGER WARNING: No unprescaled triggers in datastream "
+            edm::LogWarning("PxlSkimmer|TriggerWarning") << "TRIGGER WARNING: No unprescaled triggers in datastream "
                                                            << trg_infos_by_DS->first << " in menu " << trigger.process;
         }
     }
 
     if (!unprescaledTrigger) {
-        throw cms::Exception("MUSiCSkimmer|TriggerError")
+        throw cms::Exception("PxlSkimmer|TriggerError")
             << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
     }
 
@@ -1439,7 +1439,7 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
 
 // ------------ reading Reconstructed Primary Vertices ------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* EvtView) {
+void PxlSkimmer_miniAOD::analyzeRecVertices(const edm::Event& iEvent, pxl::EventView* EvtView) {
     edm::Handle<reco::VertexCollection> vertices;
     iEvent.getByLabel(VertexRecoLabel_, vertices);
 
@@ -1492,7 +1492,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecVertices(const edm::Event& iEvent, pxl::Eve
 }
 
 
-// void MUSiCSkimmer_miniAOD::analyzeRecTracks(edm::Event const &iEvent,
+// void PxlSkimmer_miniAOD::analyzeRecTracks(edm::Event const &iEvent,
 // pxl::EventView *RecEvtView
 // ) const {
 // edm::Handle< reco::TrackCollection > tracksHandle;
@@ -1505,7 +1505,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecVertices(const edm::Event& iEvent, pxl::Eve
 
 // ------------ reading Reconstructed Taus------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecTaus(edm::Event const &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecTaus(edm::Event const &iEvent,
                                           pxl::EventView *RecEvtView) const {
     // for (VInputTag::const_iterator patTauTag = patTauTags_.begin();
     // patTauTag != patTauTags_.end();
@@ -1516,7 +1516,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecTaus(edm::Event const &iEvent,
 }
 
 
-void MUSiCSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
                                              edm::InputTag const &tauTag,
                                              pxl::EventView *RecEvtView) const {
     // Get the wanted pat::Tau's from event:
@@ -1628,7 +1628,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
 
 // ------------ reading Reconstructed Muons ------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
                                            pxl::EventView *RecView,
                                            bool const &MC,
                                            std::map< reco::Candidate const*, pxl::Particle* > &genmap,
@@ -1861,13 +1861,13 @@ void MUSiCSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
         }
     }
     RecView->setUserRecord("NumMuon", numMuonRec);
-    edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "Rec Muons: " << numMuonRec;
+    edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Rec Muons: " << numMuonRec;
 }
 
 
 // ------------ reading Reconstructed Electrons ------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
                                                pxl::EventView *RecView,
                                                const bool &MC,
                                                // EcalClusterLazyTools &lazyTools,
@@ -1902,7 +1902,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
 
     // const unsigned int numIsoVals = m_inputTagIsoValElectronsPFId.size();
 
-    // typedef in MUSiCSkimmer_miniAOD.h
+    // typedef in PxlSkimmer_miniAOD.h
     // IsoDepositVals eleIsoValPFId(numIsoVals);
 
     // for (unsigned int i = 0; i < numIsoVals; ++i) {
@@ -1914,7 +1914,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
     View<pat::Electron>::const_iterator el = electrons->begin();
     for (vector< pat::Electron>::const_iterator patEle = patElectrons.begin() ; patEle != patElectrons.end(); ++patEle) {
         if (Ele_cuts(patEle)) {
-            edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "Electron Energy scale corrected: " << patEle->isEnergyScaleCorrected() << endl;
+            edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Electron Energy scale corrected: " << patEle->isEnergyScaleCorrected() << endl;
 
             // Handle< EcalRecHitCollection > recHits;
 
@@ -2217,12 +2217,12 @@ void MUSiCSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
     }
     RecView->setUserRecord("NumEle", numEleRec);
 
-    edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "Rec Eles: " << numEleRec;
+    edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Rec Eles: " << numEleRec;
 }
 
 // ------------ reading Reconstructed Jets ------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info) {
+void PxlSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info) {
     int numJetRec = 0;
     // get RecoJets
     edm::Handle< std::vector< pat::Jet > > jetHandle;
@@ -2288,13 +2288,13 @@ void MUSiCSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventVi
             const vector< pair< string, float > > &btags = jet->getPairDiscri();
             for (vector< pair< string, float > >::const_iterator btag = btags.begin(); btag != btags.end(); ++btag) {
                 part->setUserRecord(btag->first, btag->second);
-                edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "BTag name: " << btag->first << ", value: " << btag->second;
+                edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "BTag name: " << btag->first << ", value: " << btag->second;
             }
             // jet IDs
 
             stringstream info;
             part->print(0, info);
-            edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "PXL Jet Info: " << info.str();
+            edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "PXL Jet Info: " << info.str();
 
             // store PAT matching info if MC
             if (MC) {
@@ -2309,12 +2309,12 @@ void MUSiCSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventVi
         }
     }
     RecView->setUserRecord("Num"+jet_info.name, numJetRec);
-    edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "Found Rec Jets:  " << numJetRec << " of Type " << jet_info.name;
+    edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Found Rec Jets:  " << numJetRec << " of Type " << jet_info.name;
 }
 
 // ------------ reading Reconstructed Gammas ------------
 
-void MUSiCSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
+void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
                                             pxl::EventView *RecView,
                                             const bool &MC,
                                             // EcalClusterLazyTools &lazyTools,
@@ -2343,7 +2343,7 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
 
     // const unsigned int numIsoVals = m_inputTagIsoValPhotonsPFId.size();
 
-    // typedef in MUSiCSkimmer_miniAOD.h
+    // typedef in PxlSkimmer_miniAOD.h
     // IsoDepositVals phoIsoValPFId(numIsoVals);
 
     // for (unsigned int i = 0; i < numIsoVals; ++i) {
@@ -2517,13 +2517,13 @@ void MUSiCSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
     }
     RecView->setUserRecord("NumGamma", numGammaRec);
 
-    edm::LogInfo("MUSiCSkimmer_miniAOD|RecInfo") << "Rec Gammas: " << numGammaRec;
+    edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Rec Gammas: " << numGammaRec;
 }
 
 
 // ------------ method called once each job just after ending the event loop  ------------
 
-void MUSiCSkimmer_miniAOD::endJob() {
+void PxlSkimmer_miniAOD::endJob() {
     std::cout << "++++++++++++++++++++++++++++++++++++++" << endl;
     std::cout << "analyzed " << fNumEvt << " events " << endl;
     // close output file:
@@ -2541,7 +2541,7 @@ void MUSiCSkimmer_miniAOD::endJob() {
     // if (loc != string::npos) pdfSet = pdfSet.substr(0, loc);
     // pdfSet.append("/");
     // pdfSet.append(fLHgridName);
-    // edm::LogInfo("MUSiCSkimmer_miniAOD|PDFINFO_MUSIC") << "PDF set - " << pdfSet.data();
+    // edm::LogInfo("PxlSkimmer_miniAOD|PDFINFO_MUSIC") << "PDF set - " << pdfSet.data();
     // initpdfset_((char *)pdfSet.data(), pdfSet.size());
 
     //  // load the best fit PDF
@@ -2623,7 +2623,7 @@ void MUSiCSkimmer_miniAOD::endJob() {
 }
 // ------------ method to define MC-TAU-cuts
 
-bool MUSiCSkimmer_miniAOD::TauMC_cuts(const reco::GenParticle *MCtau) const {
+bool PxlSkimmer_miniAOD::TauMC_cuts(const reco::GenParticle *MCtau) const {
     if (MCtau->pt() < min_tau_pt) return false;
     if (fabs(MCtau->eta()) > max_eta) return false;
     return true;
@@ -2631,7 +2631,7 @@ bool MUSiCSkimmer_miniAOD::TauMC_cuts(const reco::GenParticle *MCtau) const {
 
 // ------------ method to define MC-MUON-cuts
 
-bool MUSiCSkimmer_miniAOD::MuonMC_cuts(const reco::GenParticle *MCmuon) const {
+bool PxlSkimmer_miniAOD::MuonMC_cuts(const reco::GenParticle *MCmuon) const {
     if (MCmuon->pt() < min_muon_pt) return false;
     if (fabs(MCmuon->eta()) > max_eta) return false;
     return true;
@@ -2641,7 +2641,7 @@ bool MUSiCSkimmer_miniAOD::MuonMC_cuts(const reco::GenParticle *MCmuon) const {
 
 // ------------ method to define MC-Electron-cuts
 
-bool MUSiCSkimmer_miniAOD::EleMC_cuts(const reco::GenParticle *MCele) const {
+bool PxlSkimmer_miniAOD::EleMC_cuts(const reco::GenParticle *MCele) const {
     if (MCele->pt() < min_ele_pt) return false;
     if (fabs(MCele->eta()) > max_eta) return false;
     return true;
@@ -2649,7 +2649,7 @@ bool MUSiCSkimmer_miniAOD::EleMC_cuts(const reco::GenParticle *MCele) const {
 
 // ------------ method to define MC-Gamma-cuts
 
-bool MUSiCSkimmer_miniAOD::GammaMC_cuts(const reco::GenParticle *MCgamma) const {
+bool PxlSkimmer_miniAOD::GammaMC_cuts(const reco::GenParticle *MCgamma) const {
     if (MCgamma->pt() < min_gamma_pt) return false;
     if (fabs(MCgamma->eta()) > max_eta) return false;
     return true;
@@ -2657,7 +2657,7 @@ bool MUSiCSkimmer_miniAOD::GammaMC_cuts(const reco::GenParticle *MCgamma) const 
 
 // ------------ method to define MC-Jet-cuts
 
-bool MUSiCSkimmer_miniAOD::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
+bool PxlSkimmer_miniAOD::JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const {
     if (MCjet->pt() < min_jet_pt) return false;
     if (fabs(MCjet->eta()) > max_eta) return false;
     return true;
@@ -2665,19 +2665,19 @@ bool MUSiCSkimmer_miniAOD::JetMC_cuts(reco::GenJetCollection::const_iterator MCj
 
 // ------------ method to define MC-MET-cuts
 
-bool MUSiCSkimmer_miniAOD::METMC_cuts(const pxl::Particle* MCmet) const {
+bool PxlSkimmer_miniAOD::METMC_cuts(const pxl::Particle* MCmet) const {
     if (MCmet->getPt() < min_met) return false;
     return true;
 }
 
 // ------------ method to define RecVertex-cuts
-bool MUSiCSkimmer_miniAOD::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
+bool PxlSkimmer_miniAOD::Vertex_cuts(reco::VertexCollection::const_iterator vertex) const {
     return (vertex->ndof() >= vertex_minNDOF
             && fabs(vertex->z()) <= vertex_maxZ
             && vertex->position().rho() <= vertex_maxR);
 }
 
-bool MUSiCSkimmer_miniAOD::PV_vertex_cuts(const reco::Vertex &vertex) const {
+bool PxlSkimmer_miniAOD::PV_vertex_cuts(const reco::Vertex &vertex) const {
     return (vertex.ndof() >= PV_minNDOF
             && fabs(vertex.z()) <= PV_maxZ
             && vertex.position().rho() <= PV_maxR);
@@ -2686,7 +2686,7 @@ bool MUSiCSkimmer_miniAOD::PV_vertex_cuts(const reco::Vertex &vertex) const {
 
 // ------------ method to define TAU-cuts
 
-bool MUSiCSkimmer_miniAOD::Tau_cuts(const pat::Tau &tau) const {
+bool PxlSkimmer_miniAOD::Tau_cuts(const pat::Tau &tau) const {
     // basic preselection cuts
     if (tau.pt() < min_tau_pt)  return false;
     if (fabs(tau.eta()) > max_eta) return false;
@@ -2695,7 +2695,7 @@ bool MUSiCSkimmer_miniAOD::Tau_cuts(const pat::Tau &tau) const {
 
 // ------------ method to define MUON-cuts
 
-bool MUSiCSkimmer_miniAOD::Muon_cuts(const pat::Muon& muon) const {
+bool PxlSkimmer_miniAOD::Muon_cuts(const pat::Muon& muon) const {
     // basic preselection cuts
     if (!muon.isGlobalMuon()) return false;
     if (muon.pt() < min_muon_pt)  return false;
@@ -2706,7 +2706,7 @@ bool MUSiCSkimmer_miniAOD::Muon_cuts(const pat::Muon& muon) const {
 
 // ------------ method to define ELECTRON-cuts
 
-bool MUSiCSkimmer_miniAOD::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
+bool PxlSkimmer_miniAOD::Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const {
     if (ele->pt() < min_ele_pt) return false;
     if (fabs(ele->eta()) > max_eta) return false;
     return true;
@@ -2714,7 +2714,7 @@ bool MUSiCSkimmer_miniAOD::Ele_cuts(std::vector<pat::Electron>::const_iterator e
 
 // ------------ method to define JET-cuts
 
-bool MUSiCSkimmer_miniAOD::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
+bool PxlSkimmer_miniAOD::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const {
     if (jet->pt() < min_jet_pt) return false;
     if (fabs(jet->eta()) > max_eta) return false;
     return true;
@@ -2723,7 +2723,7 @@ bool MUSiCSkimmer_miniAOD::Jet_cuts(std::vector<pat::Jet>::const_iterator jet) c
 
 // ------------ method to define GAMMA-cuts
 
-bool MUSiCSkimmer_miniAOD::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
+bool PxlSkimmer_miniAOD::Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const {
     if (photon->pt() < min_gamma_pt) return false;
     if (fabs(photon->eta()) > max_eta) return false;
     return true;
@@ -2732,7 +2732,7 @@ bool MUSiCSkimmer_miniAOD::Gamma_cuts(std::vector<pat::Photon>::const_iterator p
 
 // ------------ method to define MET-cuts
 
-bool MUSiCSkimmer_miniAOD::MET_cuts(const pxl::Particle* met) const {
+bool PxlSkimmer_miniAOD::MET_cuts(const pxl::Particle* met) const {
     if (met->getPt() < min_met) return false;
     return true;
 }
@@ -2740,7 +2740,7 @@ bool MUSiCSkimmer_miniAOD::MET_cuts(const pxl::Particle* met) const {
 // ------------------------------------------------------------------------------
 
 // FIXME compare to PAT-isolation
-double MUSiCSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
+double PxlSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
                                        double ParticleGenPt,
                                        double ParticleGenEta,
                                        double ParticleGenPhi,
@@ -2785,7 +2785,7 @@ double MUSiCSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
 // (See also: https:// twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation)
 //
 // template< typename T >
-// void MUSiCSkimmer_miniAOD::particleFlowBasedIsolation(IsoDepositVals const &isoValPFId,
+// void PxlSkimmer_miniAOD::particleFlowBasedIsolation(IsoDepositVals const &isoValPFId,
 // PFIsolationEstimator *isolator,
 // Handle< reco::VertexCollection > const &vertices,
 // Handle< reco::PFCandidateCollection > const &pfCandidates,
@@ -2832,7 +2832,7 @@ double MUSiCSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
 // }
 
 
-void MUSiCSkimmer_miniAOD::printEventContent(pxl::EventView const *GenEvtView,
+void PxlSkimmer_miniAOD::printEventContent(pxl::EventView const *GenEvtView,
                                              pxl::EventView const *RecEvtView,
                                              bool const &IsMC) const {
     if (!GenOnly_) {
@@ -2931,7 +2931,7 @@ void MUSiCSkimmer_miniAOD::printEventContent(pxl::EventView const *GenEvtView,
         // }
         info << endl;
 
-        edm::LogVerbatim("MUSiCSkimmer_miniAOD|EventInfo") << info.str();
+        edm::LogVerbatim("PxlSkimmer_miniAOD|EventInfo") << info.str();
     }
 }
 
@@ -2939,4 +2939,4 @@ void MUSiCSkimmer_miniAOD::printEventContent(pxl::EventView const *GenEvtView,
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 // define this as a plug-in
-DEFINE_FWK_MODULE(MUSiCSkimmer_miniAOD);
+DEFINE_FWK_MODULE(PxlSkimmer_miniAOD);

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "MUSiCProject/Pxl/interface/Pxl.h"
+#include "PxlSkimmer/Pxl/interface/Pxl.h"
 
 #ifndef EPSILON
 #define EPSILON 1.0e-9
