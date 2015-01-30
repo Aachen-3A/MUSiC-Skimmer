@@ -1399,10 +1399,12 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 std::vector<std::string> pathNamesLast = obj.pathNames(true);
                 for (unsigned h = 0, n = pathNamesLast.size(); h < n; ++h) {
                     if(obj.hasPathName( pathNamesLast[h], true, true )){
-                        std::cout << "   " << pathNamesLast[h] << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
+                        pxl::Particle *part = EvtView->create< pxl::Particle >();
+                        part->setName(pathNamesLast[h]);
+                        part->setP4(obj.px(), obj.py(), obj.pz(), obj.energy());
+                        // std::cout << "   " << pathNamesLast[h] << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
                     }
                 }
-
             }
         }
 
