@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    MUSiCProject
+// Package:    MUSiC-Skimmer
 // Class:      MUSiCSkimmer_miniAOD
 //
-// \class MUSiCSkimmer_miniAOD MUSiCProject/Skimming/src/MUSiCSkimmer_miniAOD.cc
+// \class MUSiCSkimmer_miniAOD MUSiC-Skimmer/Skimming/src/MUSiCSkimmer_miniAOD.cc
 //
 // Description: Data and MC Skimmer for the Model Unspecific Search in CMS
 //
@@ -15,7 +15,7 @@
 //
 //
 // Own header file.
-#include "MUSiCProject/Skimming/interface/MUSiCSkimmer_miniAOD.h"
+#include "MUSiC-Skimmer/Skimming/interface/MUSiCSkimmer_miniAOD.h"
 
 // System include files.
 #include <iostream>
@@ -97,7 +97,7 @@
 #include "DataFormats/Math/interface/deltaR.h"
 
 // Private ParticleMatcher.
-#include "MUSiCProject/Skimming/interface/ParticleMatcher.hh"
+#include "MUSiC-Skimmer/Skimming/interface/ParticleMatcher.hh"
 
 using namespace std;
 using namespace edm;

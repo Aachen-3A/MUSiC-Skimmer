@@ -79,7 +79,7 @@ class PFIsolationEstimator;
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
 // Private collection defintions.
-#include "MUSiCProject/Skimming/interface/collection_def.h"
+#include "MUSiC-Skimmer/Skimming/interface/collection_def.h"
 
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEffectiveArea.h"

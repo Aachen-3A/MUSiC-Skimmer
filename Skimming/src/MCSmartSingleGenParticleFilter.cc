@@ -1,4 +1,4 @@
-#include "MUSiCProject/Skimming/interface/MCSmartSingleGenParticleFilter.h"
+#include "MUSiC-Skimmer/Skimming/interface/MCSmartSingleGenParticleFilter.h"
 
 #include <iostream>
 
