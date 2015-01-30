@@ -392,7 +392,6 @@ class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
 
         edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
         edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
-        edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescales_;
 
         ParticleMatcher* Matcher;
         // to be used for ePax output
