@@ -46,6 +46,10 @@ Skimmer = cms.EDAnalyzer(
                             cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV50-prePHYS14-25ns-miniAOD")
                            ),
 
+    bits = cms.InputTag("TriggerResults","","HLT"),
+    prescales = cms.InputTag("patTrigger"),
+    objects = cms.InputTag("selectedPatTrigger"),
+
     #ECAL RecHits for supercluster information
     reducedSuperClusterCollection   = cms.InputTag("reducedEgamma","reducedESClusters"),
     reducedEBClusterCollection      = cms.InputTag("reducedEgamma","reducedEBEEClusters"),
@@ -138,7 +142,7 @@ Skimmer = cms.EDAnalyzer(
                                         ##"ZeroBiasParked",
             #),
         ),
-        StoreL3Objects = cms.untracked.bool(False)
+        StoreL3Objects = cms.bool(True)
     ),
 
     # This is used to access the results of all filters that ran.

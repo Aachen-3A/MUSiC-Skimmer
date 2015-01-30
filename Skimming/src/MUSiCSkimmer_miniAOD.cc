@@ -152,6 +152,10 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     rhos_                    = iConfig.getParameter< VInputTag >("rhos");
     eleIDs_                  = iConfig.getParameter< VInputTag >("eleIDs");
 
+    triggerBits_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("bits"));
+    triggerObjects_ = consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("objects"));
+    triggerPrescales_ = consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("prescales"));
+
     for (VInputTag::const_iterator eleIDs_label = eleIDs_.begin(); eleIDs_label != eleIDs_.end(); ++eleIDs_label) {
         edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*eleIDs_label);
         eleID_tokens.push_back(dummy_token);
@@ -167,6 +171,8 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     vector< string > trigger_processes;
     trigger_pset.getParameterSetNames(trigger_processes);
+
+    fStoreL3Objects = trigger_pset.getParameter< bool >("StoreL3Objects");
 
     // get the PSet that contains all jet PSets
     ParameterSet jets_pset = iConfig.getParameter< ParameterSet >("jets");
@@ -1379,43 +1385,60 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 << " Prescale = " << prescale;
 
             // this is not usefull!!!
-            // if (fStoreL3Objects) {
-            // const vector<string> &moduleLabels(trigger.config.moduleLabels(trig->ID));
-            // const unsigned int moduleIndex(triggerResultsHandle->index(trig->ID));
+            if (fStoreL3Objects) {
+                // edm::EDGetTokenT<edm::TriggerResults> triggerBits_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("bits"));
+                // edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_ = consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("objects"));
+                // edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescales_ = consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("prescales"));
+                edm::Handle<edm::TriggerResults> triggerBits;
+                edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
+                edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
 
-            //  // Results from TriggerEvent product - Attention: must look only for
-            //  // modules actually run in this path for this event!
-            //  // Analyze and store the objects which have fired the trigger
-            // for (unsigned int j = 0; j <= moduleIndex; ++j) {
-            // const string &moduleLabel = moduleLabels[j];
-            //  // check whether the module is packed up in TriggerEvent product
-            // const unsigned int filterIndex = triggerEventHandle->filterIndex(InputTag(moduleLabel, "", trigger.process));
-            // if (filterIndex < triggerEventHandle->sizeFilters()) {
-            // const trigger::Vids &VIDS(triggerEventHandle->filterIds( filterIndex));
-            // const trigger::Keys &KEYS(triggerEventHandle->filterKeys(filterIndex));
-            // const size_t nI(VIDS.size());
-            // const size_t nK(KEYS.size());
-            // assert(nI == nK);
-            // size_t n(max(nI, nK));
-            // if (n > 5) {
-            // edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "Storing only 5 L3 objects for label/type "
-            // << moduleLabel << "/" << trigger.config.moduleType(moduleLabel);
-            // n = 5;
-            // }
-            // const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
-            // for (size_t i = 0; i != n; ++i) {
-            // const trigger::TriggerObject &TO = TOC[KEYS[i]];
-            // pxl::Particle *part = EvtView->create< pxl::Particle >();
-            // part->setName(moduleLabel);
-            // part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
-            // part->setUserRecord("ID", TO.id());
-            // edm::LogVerbatim("MUSiCSkimmer|TriggerInfo")  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-            // << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
-            // << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
-            // }
-            // }
-            // }
-            // }
+                iEvent.getByToken(triggerBits_, triggerBits);
+                iEvent.getByToken(triggerObjects_, triggerObjects);
+                iEvent.getByToken(triggerPrescales_, triggerPrescales);
+
+                const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+                std::cout << "\n === TRIGGER PATHS === " << std::endl;
+                for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i) {
+                    std::cout << "Trigger " << names.triggerName(i) <<
+                            ", prescale " << triggerPrescales->getPrescaleForIndex(i) <<
+                            ": " << (triggerBits->accept(i) ? "PASS" : "fail (or not run)")
+                            << std::endl;
+                }
+                std::cout << "\n === TRIGGER OBJECTS === " << std::endl;
+                for (pat::TriggerObjectStandAlone obj : *triggerObjects) { // note: not "const &" since we want to call unpackPathNames
+                    obj.unpackPathNames(names);
+                    std::cout << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
+                    // Print trigger object collection and type
+                    std::cout << "\t   Collection: " << obj.collection() << std::endl;
+                    std::cout << "\t   Type IDs:   ";
+                    for (unsigned h = 0; h < obj.filterIds().size(); ++h) std::cout << " " << obj.filterIds()[h] ;
+                    std::cout << std::endl;
+                    // Print associated trigger filters
+                    std::cout << "\t   Filters:    ";
+                    for (unsigned h = 0; h < obj.filterLabels().size(); ++h) std::cout << " " << obj.filterLabels()[h];
+                    std::cout << std::endl;
+                    std::vector<std::string> pathNamesAll  = obj.pathNames(false);
+                    std::vector<std::string> pathNamesLast = obj.pathNames(true);
+                    // Print all trigger paths, for each one record also if the object is associated to a 'l3' filter (always true for the
+                    // definition used in the PAT trigger producer) and if it's associated to the last filter of a successfull path (which
+                    // means that this object did cause this trigger to succeed; however, it doesn't work on some multi-object triggers)
+                    std::cout << "\t   Paths (" << pathNamesAll.size()<<"/"<<pathNamesLast.size()<<"):    ";
+                    for (unsigned h = 0, n = pathNamesAll.size(); h < n; ++h) {
+                        bool isBoth = obj.hasPathName( pathNamesAll[h], true, true );
+                        bool isL3   = obj.hasPathName( pathNamesAll[h], false, true );
+                        bool isLF   = obj.hasPathName( pathNamesAll[h], true, false );
+                        bool isNone = obj.hasPathName( pathNamesAll[h], false, false );
+                        std::cout << "   " << pathNamesAll[h];
+                        if (isBoth) std::cout << "(L,3)";
+                        if (isL3 && !isBoth) std::cout << "(*,3)";
+                        if (isLF && !isBoth) std::cout << "(L,*)";
+                        if (isNone && !isBoth && !isL3 && !isLF) std::cout << "(*,*)";
+                    }
+                    std::cout << std::endl;
+                }
+                std::cout << std::endl;
+            }
         }  // end trigger loop
 
         // Does the datastream contain any unprescaled triggers? If not set the

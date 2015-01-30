@@ -86,6 +86,12 @@ class PFIsolationEstimator;
 // #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 // #include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
 
+// Trigger stuff
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
+#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
+
 // PXL stuff
 // Has to be included as the last header otherwise there will be a warning concerning the
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
@@ -383,6 +389,10 @@ class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
         std::vector< trigger_group > filters;
 
         bool fStoreL3Objects;
+
+        edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+        edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
+        edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescales_;
 
         ParticleMatcher* Matcher;
         // to be used for ePax output
