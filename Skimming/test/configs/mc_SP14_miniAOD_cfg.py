@@ -21,7 +21,7 @@ if runOnGen and runOnData :
     import sys
     sys.exit( 1 )
 
-import MUSiCProject.Skimming.Tools_miniAOD as Tools_miniAOD
+import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
 process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, verbosityLvl )
 

@@ -35,9 +35,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     # Create an empty path because modules will be added by calling the
     # functions below.
 
-
     process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
-    process.load( 'MUSiCProject.Skimming.MUSiCSkimmer_miniAOD_cfi' )
+    process.load( 'PxlSkimmer.Skimming.PxlSkimmer_miniAOD_cfi' )
 
     process.Skimmer.FastSim = runOnFast
 
@@ -92,13 +91,13 @@ def addElectronIDs( process ):
     # Each of these two example IDs contains all four standard
     # cut-based ID working points (only two WP of the PU20bx25 are actually used here).
 
-    #/user/padeken/CMSSW/CMSSW_7_2_0/src/MUSiCProject/Skimming/python/cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff.py
-    #/user/padeken/CMSSW/CMSSW_7_2_0/src/MUSiCProject/Skimming/python/heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff.py
+    #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff.py
+    #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff.py
     my_id_modules = [
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'
-                     'MUSiCProject.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
-                     'MUSiCProject.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
+                     'PxlSkimmer.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
+                     'PxlSkimmer.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
                      ]
     #Add them to the VID producer
     for idmod in my_id_modules:
@@ -631,8 +630,8 @@ def configureMessenger( process, verbosity = 0 ):
 
 
 
-    process.MessageLogger.categories.append( 'TRIGGERINFO_MUSIC' )
-    process.MessageLogger.categories.append( 'PDFINFO_MUSIC' )
+    process.MessageLogger.categories.append( 'TRIGGERINFO_PXLSKIMMER' )
+    process.MessageLogger.categories.append( 'PDFINFO_PXLSKIMMER' )
 
     if verbosity > 0:
         process.MessageLogger.categories.append( 'EventInfo' )
@@ -641,7 +640,7 @@ def configureMessenger( process, verbosity = 0 ):
         process.MessageLogger.categories.append( 'PDFInfo' )
 
     if verbosity > 1:
-        process.MessageLogger.categories.append( 'MUSiCSkimmer' )
+        process.MessageLogger.categories.append( 'PxlSkimmer' )
 
     if verbosity > 2:
         process.MessageLogger.cerr.INFO = cms.untracked.PSet( limit = cms.untracked.int32( -1 ) )

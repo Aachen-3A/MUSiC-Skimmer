@@ -23,7 +23,7 @@
 <use   name="RecoEgamma/EgammaElectronAlgos"/>
 <use   name="Pxl/Pxl"/>
 <!--
-<use   name="MUSiCProject/Pxl"/>
+<use   name="PxlSkimmer/Pxl"/>
 -->
 <use   name="root"/>
 <use   name="lhapdf"/>

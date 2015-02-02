@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 Skimmer = cms.EDAnalyzer(
-    "MUSiCSkimmer",
+    "PxlSkimmer",
     #output file name
     FileName =  cms.untracked.string("test_run.pxlio"),
     #symbolic name of the processed data
