@@ -3,7 +3,7 @@ runOnData = False
 runOnGen = False
 
 import FWCore.ParameterSet.Config as cms
-
+import sys
 # Choose the type of effective area correction you want to use.
 # Possible values:
 #     NoCorr
@@ -23,7 +23,21 @@ if runOnGen and runOnData :
 
 import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
-process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, verbosityLvl )
+print sys.argv
+for option in sys.argv:
+    splitoption=option.split('=')
+    if "name" in option and len(splitoption) > 1:
+        name = splitoption[1]
+    if "datasetpath" in option and len(splitoption) > 1:
+        datasetpath = splitoption[1]
+    if "globalTag" in option and len(splitoption) > 1:
+        globalTag = splitoption[1]
+
+print "music_crab3 name %s"%name
+print "music_crab3 datasetpath %s"%datasetpath
+print "music_crab3 globalTag %s"%globalTag
+
+process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, name, datasetpath, globalTag, verbosityLvl )
 
 # source
 process.source = cms.Source(
