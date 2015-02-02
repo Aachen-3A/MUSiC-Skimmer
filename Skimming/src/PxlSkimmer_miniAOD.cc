@@ -151,6 +151,9 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     rhos_                    = iConfig.getParameter<VInputTag>("rhos");
     eleIDs_                  = iConfig.getParameter<VInputTag>("eleIDs");
 
+    triggerBits_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("bits"));
+    triggerObjects_ = consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("objects"));
+
     for (VInputTag::const_iterator eleIDs_label = eleIDs_.begin(); eleIDs_label != eleIDs_.end(); ++eleIDs_label) {
         edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*eleIDs_label);
         eleID_tokens.push_back(dummy_token);
@@ -166,6 +169,8 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     vector< string > trigger_processes;
     trigger_pset.getParameterSetNames(trigger_processes);
+
+    fStoreL3Objects = trigger_pset.getParameter< bool >("StoreL3Objects");
 
     // get the PSet that contains all jet PSets
     ParameterSet jets_pset = iConfig.getParameter< ParameterSet >("jets");
@@ -1364,46 +1369,30 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                                      << " Accept   = " << triggerResultsHandle->accept(trig->ID)
                                                      << " Error    = " << error
                                                      << " Prescale = " << prescale;
-
-            // this is not usefull!!!
-            // if (fStoreL3Objects) {
-            // const vector<string> &moduleLabels(trigger.config.moduleLabels(trig->ID));
-            // const unsigned int moduleIndex(triggerResultsHandle->index(trig->ID));
-
-            //  // Results from TriggerEvent product - Attention: must look only for
-            //  // modules actually run in this path for this event!
-            //  // Analyze and store the objects which have fired the trigger
-            // for (unsigned int j = 0; j <= moduleIndex; ++j) {
-            // const string &moduleLabel = moduleLabels[j];
-            //  // check whether the module is packed up in TriggerEvent product
-            // const unsigned int filterIndex = triggerEventHandle->filterIndex(InputTag(moduleLabel, "", trigger.process));
-            // if (filterIndex < triggerEventHandle->sizeFilters()) {
-            // const trigger::Vids &VIDS(triggerEventHandle->filterIds( filterIndex));
-            // const trigger::Keys &KEYS(triggerEventHandle->filterKeys(filterIndex));
-            // const size_t nI(VIDS.size());
-            // const size_t nK(KEYS.size());
-            // assert(nI == nK);
-            // size_t n(max(nI, nK));
-            // if (n > 5) {
-            // edm::LogInfo("PxlSkimmer|TRIGGERINFO_PXLSKIMMER") << "Storing only 5 L3 objects for label/type "
-            // << moduleLabel << "/" << trigger.config.moduleType(moduleLabel);
-            // n = 5;
-            // }
-            // const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
-            // for (size_t i = 0; i != n; ++i) {
-            // const trigger::TriggerObject &TO = TOC[KEYS[i]];
-            // pxl::Particle *part = EvtView->create< pxl::Particle >();
-            // part->setName(moduleLabel);
-            // part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
-            // part->setUserRecord("ID", TO.id());
-            // edm::LogVerbatim("PxlSkimmer|TriggerInfo")  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-            // << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
-            // << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
-            // }
-            // }
-            // }
-            // }
         }  // end trigger loop
+
+        if (fStoreL3Objects) {
+            edm::Handle<edm::TriggerResults> triggerBits;
+            edm::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
+
+            iEvent.getByToken(triggerBits_, triggerBits);
+            iEvent.getByToken(triggerObjects_, triggerObjects);
+
+            const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+
+            for (pat::TriggerObjectStandAlone obj : *triggerObjects) {
+                obj.unpackPathNames(names);
+                std::vector<std::string> pathNamesLast = obj.pathNames(true);
+                for (unsigned h = 0, n = pathNamesLast.size(); h < n; ++h) {
+                    if(obj.hasPathName( pathNamesLast[h], true, true )){
+                        pxl::Particle *part = EvtView->create< pxl::Particle >();
+                        part->setName(pathNamesLast[h]);
+                        part->setP4(obj.px(), obj.py(), obj.pz(), obj.energy());
+                        // std::cout << "   " << pathNamesLast[h] << "\tTrigger object:  pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << std::endl;
+                    }
+                }
+            }
+        }
 
         // Does the datastream contain any unprescaled triggers? If not set the
         // datastream UserRecord to false.
