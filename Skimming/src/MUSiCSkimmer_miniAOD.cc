@@ -111,7 +111,7 @@ MUSiCSkimmer_miniAOD::MUSiCSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     fePaxFile(FileName_) {
     // now do what ever initialization is needed
-    
+
     fePaxFile.setCompressionMode(6);
 
     // Get Physics process
@@ -390,8 +390,8 @@ void MUSiCSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSet
 
     // Generator stuff
     if (IsMC) {
-        analyzeGenInfo(iEvent, GenEvtView, genmap);
         analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
+        analyzeGenInfo(iEvent, GenEvtView, genmap);
         for (vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info) {
             if (jet_info->MCLabel.label() != "") {
                 analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
@@ -579,11 +579,11 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     int numEleMC = 0;
     int numGammaMC = 0;
     int GenId = 0;
+    double BeamEnergy=0.;
 
     // save mother of stable particle
     const reco::GenParticle* p_mother;
     const reco::GenParticle* p_mother_used;
-    int mother = 0;
     std::map< const reco::Candidate*, pxl::Particle* > genMatchMap;
     // loop over all particles
     for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++pa) {
@@ -591,32 +591,56 @@ void MUSiCSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
         const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
         // the following is interesting for GEN studies
-        p_mother = (const reco::GenParticle*) p->mother();
-        if (p_mother) {
+        if(fabs(p->pdgId())==2212 && fabs(p->pz())>BeamEnergy){
+            BeamEnergy=fabs(p->pz());
+        }
+
+        if (p->numberOfMothers() > 0 || fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1 || fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1   ){
+            p_mother = (const reco::GenParticle*) p->mother();
+            if (genMatchMap.count(p_mother) == 0 && !(fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1) && !(fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1)) {
+                continue;
+            }
+            if(p_mother!=0 && p_mother->pdgId()==p->pdgId()){
+                continue;
+            }
+
+            pxl::Particle* part = EvtView->create< pxl::Particle >();
+            genMatchMap[p] = part;
+            part->setName("gen");
+            part->setP4(p->px(), p->py(), p->pz(), p->energy());
             int p_id = p->pdgId();
-            mother = p_mother->pdgId();
-            if (p_id != mother) {
-                pxl::Particle* part = EvtView->create< pxl::Particle >();
-                genMatchMap[p] = part;
-                part->setName("gen");
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                part->setPdgNumber(p_id);
-                if (genMatchMap.count(p_mother) == 1) {
-                    part->linkMother(genMatchMap[p_mother]);
-                } else {
-                    p_mother_used = (const reco::GenParticle*) p->mother();
-                    while (genMatchMap.end() == genMatchMap.find(p_mother_used)) {
-                        p_mother_used = (const reco::GenParticle*) p_mother_used->mother();
-                        if (!p_mother_used) {
-                            break;
+            part->setPdgNumber(p_id);
+
+
+            // look for the rest of the mothers
+            for(size_t imother=0; imother < p->numberOfMothers(); imother++ ){
+                p_mother = (const reco::GenParticle*) p->mother(imother);
+                if (p_mother) {
+                    if (genMatchMap.count(p_mother) == 1) {
+                        part->linkMother(genMatchMap[p_mother]);
+                    } else {
+                        p_mother_used = (const reco::GenParticle*) p->mother();
+                        while (genMatchMap.end() == genMatchMap.find(p_mother_used)) {
+                            bool found=false;
+                            for(size_t jmother=0; jmother < p_mother_used->numberOfMothers(); jmother++ ){
+                                p_mother_used = (const reco::GenParticle*) p_mother_used->mother(jmother);
+                                if (!p_mother_used) {
+                                    found=true;
+                                    break;
+                                }
+                            }
+                            if( found ){
+                                break;
+                            }
                         }
-                    }
-                    if (p_mother_used) {
-                        part->linkMother(genMatchMap[p_mother_used]);
+                        if (p_mother_used) {
+                            part->linkMother(genMatchMap[p_mother_used]);
+                        }
                     }
                 }
             }
         }
+
 
         // fill Gen Muons passing some basic cuts
 
@@ -1366,43 +1390,43 @@ void MUSiCSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                                      << " Prescale = " << prescale;
 
             // this is not usefull!!!
-            // if (fStoreL3Objects) {
-            // const vector<string> &moduleLabels(trigger.config.moduleLabels(trig->ID));
-            // const unsigned int moduleIndex(triggerResultsHandle->index(trig->ID));
+            if (fStoreL3Objects) {
+                const vector<string> &moduleLabels(trigger.config.moduleLabels(trig->ID));
+                const unsigned int moduleIndex(triggerResultsHandle->index(trig->ID));
 
-            //  // Results from TriggerEvent product - Attention: must look only for
-            //  // modules actually run in this path for this event!
-            //  // Analyze and store the objects which have fired the trigger
-            // for (unsigned int j = 0; j <= moduleIndex; ++j) {
-            // const string &moduleLabel = moduleLabels[j];
-            //  // check whether the module is packed up in TriggerEvent product
-            // const unsigned int filterIndex = triggerEventHandle->filterIndex(InputTag(moduleLabel, "", trigger.process));
-            // if (filterIndex < triggerEventHandle->sizeFilters()) {
-            // const trigger::Vids &VIDS(triggerEventHandle->filterIds( filterIndex));
-            // const trigger::Keys &KEYS(triggerEventHandle->filterKeys(filterIndex));
-            // const size_t nI(VIDS.size());
-            // const size_t nK(KEYS.size());
-            // assert(nI == nK);
-            // size_t n(max(nI, nK));
-            // if (n > 5) {
-            // edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "Storing only 5 L3 objects for label/type "
-            // << moduleLabel << "/" << trigger.config.moduleType(moduleLabel);
-            // n = 5;
-            // }
-            // const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
-            // for (size_t i = 0; i != n; ++i) {
-            // const trigger::TriggerObject &TO = TOC[KEYS[i]];
-            // pxl::Particle *part = EvtView->create< pxl::Particle >();
-            // part->setName(moduleLabel);
-            // part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
-            // part->setUserRecord("ID", TO.id());
-            // edm::LogVerbatim("MUSiCSkimmer|TriggerInfo")  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-            // << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
-            // << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
-            // }
-            // }
-            // }
-            // }
+                 // Results from TriggerEvent product - Attention: must look only for
+                 // modules actually run in this path for this event!
+                 // Analyze and store the objects which have fired the trigger
+                for (unsigned int j = 0; j <= moduleIndex; ++j) {
+                    const string &moduleLabel = moduleLabels[j];
+                     // check whether the module is packed up in TriggerEvent product
+                    const unsigned int filterIndex = triggerEventHandle->filterIndex(InputTag(moduleLabel, "", trigger.process));
+                    if (filterIndex < triggerEventHandle->sizeFilters()) {
+                        const trigger::Vids &VIDS(triggerEventHandle->filterIds( filterIndex));
+                        const trigger::Keys &KEYS(triggerEventHandle->filterKeys(filterIndex));
+                        const size_t nI(VIDS.size());
+                        const size_t nK(KEYS.size());
+                        assert(nI == nK);
+                        size_t n(max(nI, nK));
+                        if (n > 5) {
+                            edm::LogInfo("MUSiCSkimmer|TRIGGERINFO_MUSIC") << "Storing only 5 L3 objects for label/type "
+                            << moduleLabel << "/" << trigger.config.moduleType(moduleLabel);
+                            n = 5;
+                        }
+                        const trigger::TriggerObjectCollection &TOC = triggerEventHandle->getObjects();
+                        for (size_t i = 0; i != n; ++i) {
+                            const trigger::TriggerObject &TO = TOC[KEYS[i]];
+                            pxl::Particle *part = EvtView->create< pxl::Particle >();
+                            part->setName(moduleLabel);
+                            part->setP4(TO.px(), TO.py(), TO.pz(), TO.energy());
+                            part->setUserRecord("ID", TO.id());
+                            edm::LogVerbatim("MUSiCSkimmer|TriggerInfo")  << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+                            << " id: " << TO.id() << " pt: " << TO.pt() << " eta: "
+                            << TO.eta() << " phi:" << TO.phi() << " m: " << TO.mass();
+                        }
+                    }
+                }
+            }
         }  // end trigger loop
 
         // Does the datastream contain any unprescaled triggers? If not set the
