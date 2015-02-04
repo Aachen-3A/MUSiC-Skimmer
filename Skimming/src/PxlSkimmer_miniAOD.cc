@@ -111,7 +111,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     fePaxFile(FileName_) {
     // now do what ever initialization is needed
-    
+
     fePaxFile.setCompressionMode(6);
 
     // Get Physics process
@@ -395,8 +395,8 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     // Generator stuff
     if (IsMC) {
-        analyzeGenInfo(iEvent, GenEvtView, genmap);
         analyzeGenRelatedInfo(iEvent, GenEvtView);  // PDFInfo, Process ID, scale, pthat
+        analyzeGenInfo(iEvent, GenEvtView, genmap);
         for (vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info) {
             if (jet_info->MCLabel.label() != "") {
                 analyzeGenJets(iEvent, GenEvtView, genjetmap, *jet_info);
@@ -584,11 +584,11 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     int numEleMC = 0;
     int numGammaMC = 0;
     int GenId = 0;
+    double BeamEnergy=0.;
 
     // save mother of stable particle
     const reco::GenParticle* p_mother;
     const reco::GenParticle* p_mother_used;
-    int mother = 0;
     std::map< const reco::Candidate*, pxl::Particle* > genMatchMap;
     // loop over all particles
     for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++pa) {
@@ -596,32 +596,57 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
         const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
         // the following is interesting for GEN studies
-        p_mother = (const reco::GenParticle*) p->mother();
-        if (p_mother) {
+        if(fabs(p->pdgId())==2212 && fabs(p->pz())>BeamEnergy){
+            BeamEnergy=fabs(p->pz());
+        }
+
+        //find the two partons from the pdf or the mother conected to them
+        if (p->numberOfMothers() > 0 || fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1 || fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1   ){
+            p_mother = (const reco::GenParticle*) p->mother();
+            if (genMatchMap.count(p_mother) == 0 && !(fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1) && !(fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1)) {
+                continue;
+            }
+            if(p_mother!=0 && p_mother->pdgId()==p->pdgId()){
+                continue;
+            }
+
+            pxl::Particle* part = EvtView->create< pxl::Particle >();
+            genMatchMap[p] = part;
+            part->setName("gen");
+            part->setP4(p->px(), p->py(), p->pz(), p->energy());
             int p_id = p->pdgId();
-            mother = p_mother->pdgId();
-            if (p_id != mother) {
-                pxl::Particle* part = EvtView->create< pxl::Particle >();
-                genMatchMap[p] = part;
-                part->setName("gen");
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                part->setPdgNumber(p_id);
-                if (genMatchMap.count(p_mother) == 1) {
-                    part->linkMother(genMatchMap[p_mother]);
-                } else {
-                    p_mother_used = (const reco::GenParticle*) p->mother();
-                    while (genMatchMap.end() == genMatchMap.find(p_mother_used)) {
-                        p_mother_used = (const reco::GenParticle*) p_mother_used->mother();
-                        if (!p_mother_used) {
-                            break;
+            part->setPdgNumber(p_id);
+
+
+            // look for the rest of the mothers
+            for(size_t imother=0; imother < p->numberOfMothers(); imother++ ){
+                p_mother = (const reco::GenParticle*) p->mother(imother);
+                if (p_mother) {
+                    if (genMatchMap.count(p_mother) == 1) {
+                        part->linkMother(genMatchMap[p_mother]);
+                    } else {
+                        p_mother_used = (const reco::GenParticle*) p->mother();
+                        while (genMatchMap.end() == genMatchMap.find(p_mother_used)) {
+                            bool found=false;
+                            for(size_t jmother=0; jmother < p_mother_used->numberOfMothers(); jmother++ ){
+                                p_mother_used = (const reco::GenParticle*) p_mother_used->mother(jmother);
+                                if (!p_mother_used) {
+                                    found=true;
+                                    break;
+                                }
+                            }
+                            if( found ){
+                                break;
+                            }
                         }
-                    }
-                    if (p_mother_used) {
-                        part->linkMother(genMatchMap[p_mother_used]);
+                        if (p_mother_used) {
+                            part->linkMother(genMatchMap[p_mother_used]);
+                        }
                     }
                 }
             }
         }
+
 
         // fill Gen Muons passing some basic cuts
 
