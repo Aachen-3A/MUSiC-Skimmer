@@ -556,6 +556,7 @@ void PxlSkimmer_miniAOD::analyzeGenRelatedInfo(const edm::Event& iEvent, pxl::Ev
     edm::LogVerbatim("PxlSkimmer_miniAOD|PDFInfo") << info.str();
 }
 
+
 // ------------ reading the Generator Stuff ------------
 
 void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
@@ -588,7 +589,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
 
     // save mother of stable particle
     const reco::GenParticle* p_mother;
-    const reco::GenParticle* p_mother_used;
+    //const reco::GenParticle* p_mother_used;
     std::map< const reco::Candidate*, pxl::Particle* > genMatchMap;
     // loop over all particles
     for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++pa) {
@@ -602,10 +603,12 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
 
         //find the two partons from the pdf or the mother conected to them
         if (p->numberOfMothers() > 0 || fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1 || fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1   ){
-            p_mother = (const reco::GenParticle*) p->mother();
-            if (genMatchMap.count(p_mother) == 0 && !(fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1) && !(fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1)) {
+            // look for the rest of the mothers
+            vector<const reco::GenParticle*> mothers=runGenDecayTree(p ,genMatchMap);
+            if (mothers.size() == 0 && !(genMatchMap.size()<2) ) {
                 continue;
             }
+            p_mother = (const reco::GenParticle*) p->mother(0);
             if(p_mother!=0 && p_mother->pdgId()==p->pdgId()){
                 continue;
             }
@@ -617,34 +620,11 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             int p_id = p->pdgId();
             part->setPdgNumber(p_id);
 
-
-            // look for the rest of the mothers
-            for(size_t imother=0; imother < p->numberOfMothers(); imother++ ){
-                p_mother = (const reco::GenParticle*) p->mother(imother);
-                if (p_mother) {
-                    if (genMatchMap.count(p_mother) == 1) {
-                        part->linkMother(genMatchMap[p_mother]);
-                    } else {
-                        p_mother_used = (const reco::GenParticle*) p->mother();
-                        while (genMatchMap.end() == genMatchMap.find(p_mother_used)) {
-                            bool found=false;
-                            for(size_t jmother=0; jmother < p_mother_used->numberOfMothers(); jmother++ ){
-                                p_mother_used = (const reco::GenParticle*) p_mother_used->mother(jmother);
-                                if (!p_mother_used) {
-                                    found=true;
-                                    break;
-                                }
-                            }
-                            if( found ){
-                                break;
-                            }
-                        }
-                        if (p_mother_used) {
-                            part->linkMother(genMatchMap[p_mother_used]);
-                        }
-                    }
-                }
+            //if there are more than 2 mothers the event is still fine, but it is not viewable in tree view of pxl!!
+            for(size_t imother=0; imother < mothers.size(); imother++ ){
+                part->linkMother(genMatchMap[mothers[imother]]);
             }
+
         }
 
 
@@ -2794,6 +2774,30 @@ double PxlSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
     sum -= ParticleGenPt;
 
     return sum;
+}
+
+
+// recrusive mother searcher for gen trees
+vector<const reco::GenParticle*> PxlSkimmer_miniAOD::runGenDecayTree(const reco::GenParticle* part ,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap){
+    vector<const reco::GenParticle*> mothers;
+
+    if((part->numberOfMothers())>2){
+        return mothers;
+    }
+    for(size_t jmother=0; jmother < part->numberOfMothers(); jmother++ ){
+
+        const reco::GenParticle* mother_part = (const reco::GenParticle*) part->mother(jmother);
+
+        if(genMatchMap.end() == genMatchMap.find(mother_part)){
+            vector<const reco::GenParticle*> tmp = runGenDecayTree(mother_part, genMatchMap);
+            for(size_t kmother=0; kmother < tmp.size(); kmother++ ){
+                mothers.push_back(tmp[kmother]);
+            }
+        }else{
+            mothers.push_back(mother_part);
+        }
+    }
+    return mothers;
 }
 // Accessing ParticleFlow based isolation (both methods):
 // (See also: https:// twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation)

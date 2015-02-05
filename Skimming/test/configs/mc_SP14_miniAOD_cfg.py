@@ -14,7 +14,7 @@ import sys
 eleEffAreaTarget = cms.untracked.string( 'Fall11MC' )
 
 # Verbosity: 0 = normal messaging, 1 = human readable, 2 = insane, 3 = INFO from all modules
-verbosityLvl = 3
+verbosityLvl = 0
 
 if runOnGen and runOnData :
     print "runOnData and runOnGen can't be true at the same time!"
@@ -49,7 +49,8 @@ process.source = cms.Source(
     fileNames = cms.untracked.vstring(
         #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
-        'file://0432E62A-7A6C-E411-87BB-002590DB92A8.root'
+        #'file://0432E62A-7A6C-E411-87BB-002590DB92A8.root'
+        "/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root"
         #'file://WprimeTauMiniAOD.root'
         #'/store/mc/Phys14DR/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0432E62A-7A6C-E411-87BB-002590DB92A8.root'
         )

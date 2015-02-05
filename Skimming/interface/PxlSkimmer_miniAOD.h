@@ -260,6 +260,8 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
         bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
         bool MET_cuts(const pxl::Particle* met) const;
 
+        vector<const reco::GenParticle*> runGenDecayTree(const reco::GenParticle* part ,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap);
+
         double IsoGenSum(const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
         // Generic function to write ParticleFlow based isolation into (PXL) photons and
         // electrons. Could be extended to other particles as well.
