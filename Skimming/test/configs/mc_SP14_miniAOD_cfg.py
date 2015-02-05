@@ -24,6 +24,9 @@ if runOnGen and runOnData :
 import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
 print sys.argv
+name="test"
+datasetpath="dummy"
+globalTag="PHYS14_25_V1::All"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:
@@ -46,13 +49,14 @@ process.source = cms.Source(
     fileNames = cms.untracked.vstring(
         #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
+        #'file://0432E62A-7A6C-E411-87BB-002590DB92A8.root'
+        "/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root"
         #'file://WprimeTauMiniAOD.root'
-        'file:///home/home1/institut_3a/padeken/user/DarkMatter_Monojet_M-10_AV_Tune4C_13TeV-madgraph_miniaod/F8D96877-2560-E411-9418-0025902009B8.root'
+        #'/store/mc/Phys14DR/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0432E62A-7A6C-E411-87BB-002590DB92A8.root'
         )
     )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( -1 ) )
-process.GlobalTag.globaltag = cms.string("PHYS14_25_V1::All")
 ###FIXME for miniAOD!!!
 #if not runOnGen:
     #if not runOnData:
