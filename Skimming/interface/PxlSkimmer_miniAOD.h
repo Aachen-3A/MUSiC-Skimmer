@@ -1,5 +1,5 @@
-#ifndef MUSiCSkimmer_miniAOD_H
-#define MUSiCSkimmer_miniAOD_H
+#ifndef PxlSkimmer_miniAOD_H
+#define PxlSkimmer_miniAOD_H
 
 // LHAPDF stuff
 extern "C" {
@@ -79,30 +79,36 @@ class PFIsolationEstimator;
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
 // Private collection defintions.
-#include "MUSiCProject/Skimming/interface/collection_def.h"
+#include "PxlSkimmer/Skimming/interface/collection_def.h"
 
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEffectiveArea.h"
 // #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 // #include "EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h"
 
+// Trigger stuff
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
+#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
+
 // PXL stuff
 // Has to be included as the last header otherwise there will be a warning concerning the
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
 // but PXL can deal with both of them
-// #include "MUSiCProject/Pxl/interface/Pxl.h"
+// #include "PxlSkimmer/Pxl/interface/Pxl.h"
 // #include "Pxl/Pxl/interface/Pxl.h"
 #include "Pxl/Pxl/interface/pxl/core.hh"
 #include "Pxl/Pxl/interface/pxl/hep.hh"
 
-class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
+class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
     public:
         // Why explicit?
         // The explicit keyword prevents the constructor from being invoked
         // implicitly as a conversion (what can be done for constructors with one
         // argument).
-        explicit MUSiCSkimmer_miniAOD(const edm::ParameterSet&);
-        ~MUSiCSkimmer_miniAOD();
+        explicit PxlSkimmer_miniAOD(const edm::ParameterSet&);
+        ~PxlSkimmer_miniAOD();
 
     private:
         typedef std::set< std::string > sstring;
@@ -254,6 +260,8 @@ class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
         bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
         bool MET_cuts(const pxl::Particle* met) const;
 
+        vector<const reco::GenParticle*> runGenDecayTree(const reco::GenParticle* part ,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap);
+
         double IsoGenSum(const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
         // Generic function to write ParticleFlow based isolation into (PXL) photons and
         // electrons. Could be extended to other particles as well.
@@ -383,6 +391,9 @@ class MUSiCSkimmer_miniAOD : public edm::EDAnalyzer {
         std::vector< trigger_group > filters;
 
         bool fStoreL3Objects;
+
+        edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+        edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
 
         ParticleMatcher* Matcher;
         // to be used for ePax output

@@ -12,7 +12,7 @@ declared to have no match. For unmatched particles Match UserRecord is set to -1
 #include <string>
 #include <vector>
 
-#include "MUSiCProject/Skimming/interface/collection_def.h"
+#include "PxlSkimmer/Skimming/interface/collection_def.h"
 
 namespace pxl {
 	class EventView;

@@ -21,7 +21,7 @@ if runOnGen and runOnData :
     import sys
     sys.exit( 1 )
 
-import MUSiCProject.Skimming.Tools as Tools
+import PxlSkimmer.Skimming.Tools as Tools
 
 process = Tools.prepare( runOnGen, runOnData, eleEffAreaTarget, verbosityLvl )
 

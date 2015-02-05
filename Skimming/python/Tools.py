@@ -37,7 +37,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
 
 
     process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
-    process.load( 'MUSiCProject.Skimming.MUSiCSkimmer_cfi' )
+    process.load( 'PxlSkimmer.Skimming.PxlSkimmer_cfi' )
 
     process.Skimmer.FastSim = runOnFast
 
@@ -607,7 +607,7 @@ def configureMessenger( process, verbosity = 0 ):
         process.MessageLogger.categories.append( 'PDFInfo' )
 
     if verbosity > 1:
-        process.MessageLogger.categories.append( 'MUSiCSkimmer' )
+        process.MessageLogger.categories.append( 'PxlSkimmer' )
 
     if verbosity > 2:
         process.MessageLogger.cerr.INFO = cms.untracked.PSet( limit = cms.untracked.int32( -1 ) )

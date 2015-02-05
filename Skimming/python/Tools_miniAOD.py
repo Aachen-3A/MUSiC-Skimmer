@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False ):
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+
+
+def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag , verbosity=0, runOnFast=False ):
     process = cms.Process( 'PATprepare' )
 
     configureMessenger( process, verbosity )
@@ -20,11 +23,11 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     # configureJEC function.
     #
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
-    from Configuration.AlCa.autoCond import autoCond
-    if runOnData:
-        process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
-    else:
-        process.GlobalTag.globaltag = cms.string( autoCond[ 'startup' ] )
+    
+    # The global tag is set in pset file or overidden by the calling 
+    # script (e.g. music_crab3.py9
+    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
+    process.GlobalTag.globaltag = globalTag
 
     process.load( 'Configuration.Geometry.GeometryPilot2_cff' )
     process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
@@ -35,9 +38,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     # Create an empty path because modules will be added by calling the
     # functions below.
 
-
     process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
-    process.load( 'MUSiCProject.Skimming.MUSiCSkimmer_miniAOD_cfi' )
+    process.load( 'PxlSkimmer.Skimming.PxlSkimmer_miniAOD_cfi' )
 
     process.Skimmer.FastSim = runOnFast
 
@@ -56,6 +58,10 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     #process.Skimmer.EleEffAreaTargetLabel = eleEffAreaTarget
 
     addElectronIDs( process )
+    
+    process.Skimmer.FileName = name+'.pxlio'
+    process.Skimmer.Process = name
+    process.Skimmer.Dataset = datasetpath
 
     if not runOnGen:
 
@@ -70,7 +76,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     # The skimmer is in the endpath because then the results of all preceding paths
     # are available. This is used to access the outcome of filters that ran.
     #
-    process.e = cms.EndPath(process.Skimmer )
+    process.e = cms.EndPath( process.Skimmer )
 
     return process
 
@@ -82,7 +88,6 @@ def addElectronIDs( process ):
     # add the ValueMaps with ID decisions into the event data stream
     #
     # Load tools and function definitions
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
     process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
     # overwrite a default parameter: for miniAOD, the collection name is a slimmed one
     process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('slimmedElectrons')
@@ -92,13 +97,13 @@ def addElectronIDs( process ):
     # Each of these two example IDs contains all four standard
     # cut-based ID working points (only two WP of the PU20bx25 are actually used here).
 
-    #/user/padeken/CMSSW/CMSSW_7_2_0/src/MUSiCProject/Skimming/python/cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff.py
-    #/user/padeken/CMSSW/CMSSW_7_2_0/src/MUSiCProject/Skimming/python/heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff.py
+    #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff.py
+    #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff.py
     my_id_modules = [
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
                      #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'
-                     'MUSiCProject.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
-                     'MUSiCProject.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
+                     'PxlSkimmer.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
+                     'PxlSkimmer.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
                      ]
     #Add them to the VID producer
     for idmod in my_id_modules:
@@ -631,8 +636,8 @@ def configureMessenger( process, verbosity = 0 ):
 
 
 
-    process.MessageLogger.categories.append( 'TRIGGERINFO_MUSIC' )
-    process.MessageLogger.categories.append( 'PDFINFO_MUSIC' )
+    process.MessageLogger.categories.append( 'TRIGGERINFO_PXLSKIMMER' )
+    process.MessageLogger.categories.append( 'PDFINFO_PXLSKIMMER' )
 
     if verbosity > 0:
         process.MessageLogger.categories.append( 'EventInfo' )
@@ -641,7 +646,7 @@ def configureMessenger( process, verbosity = 0 ):
         process.MessageLogger.categories.append( 'PDFInfo' )
 
     if verbosity > 1:
-        process.MessageLogger.categories.append( 'MUSiCSkimmer' )
+        process.MessageLogger.categories.append( 'PxlSkimmer' )
 
     if verbosity > 2:
         process.MessageLogger.cerr.INFO = cms.untracked.PSet( limit = cms.untracked.int32( -1 ) )

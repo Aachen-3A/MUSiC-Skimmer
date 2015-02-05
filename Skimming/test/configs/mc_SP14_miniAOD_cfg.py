@@ -3,7 +3,7 @@ runOnData = False
 runOnGen = False
 
 import FWCore.ParameterSet.Config as cms
-
+import sys
 # Choose the type of effective area correction you want to use.
 # Possible values:
 #     NoCorr
@@ -21,9 +21,26 @@ if runOnGen and runOnData :
     import sys
     sys.exit( 1 )
 
-import MUSiCProject.Skimming.Tools_miniAOD as Tools_miniAOD
+import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
-process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, verbosityLvl )
+print sys.argv
+name="test"
+datasetpath="dummy"
+globalTag="PHYS14_25_V1::All"
+for option in sys.argv:
+    splitoption=option.split('=')
+    if "name" in option and len(splitoption) > 1:
+        name = splitoption[1]
+    if "datasetpath" in option and len(splitoption) > 1:
+        datasetpath = splitoption[1]
+    if "globalTag" in option and len(splitoption) > 1:
+        globalTag = splitoption[1]
+
+print "music_crab3 name %s"%name
+print "music_crab3 datasetpath %s"%datasetpath
+print "music_crab3 globalTag %s"%globalTag
+
+process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, name, datasetpath, globalTag, verbosityLvl )
 
 # source
 process.source = cms.Source(
@@ -32,13 +49,14 @@ process.source = cms.Source(
     fileNames = cms.untracked.vstring(
         #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
+        #'file://0432E62A-7A6C-E411-87BB-002590DB92A8.root'
+        "/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root"
         #'file://WprimeTauMiniAOD.root'
-        'file:///home/home1/institut_3a/padeken/user/DarkMatter_Monojet_M-10_AV_Tune4C_13TeV-madgraph_miniaod/F8D96877-2560-E411-9418-0025902009B8.root'
+        #'/store/mc/Phys14DR/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0432E62A-7A6C-E411-87BB-002590DB92A8.root'
         )
     )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( -1 ) )
-process.GlobalTag.globaltag = cms.string("PHYS14_25_V1::All")
 ###FIXME for miniAOD!!!
 #if not runOnGen:
     #if not runOnData:
