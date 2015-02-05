@@ -82,7 +82,11 @@
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "PhysicsTools/SelectorUtils/interface/Selector.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
+#include "DataFormats/JetReco/interface/CATopJetTagInfo.h"
 
+// Tau stuff
+
+#include "DataFormats/PatCandidates/interface/TauPFEssential.h"
 
 // MET stuff.
 #include "DataFormats/METReco/interface/PFMETCollection.h"
@@ -1563,13 +1567,11 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             // GRRRR there is no way to get the jet link at the moment!! Will be fixed in CMSSW_7_1_X!!
             // Information from jet used to reconstruct the tau:
             // (Uncorrected jet pt.)
-            // PFJetRef const &tauJet = tau->pfJetRef();
-            // part->setUserRecord("tauJetpx", tauJet->px());
-            // part->setUserRecord("tauJetpy", tauJet->py());
-            // part->setUserRecord("tauJetpz", tauJet->pz());
-            // part->setUserRecord("tauJetE",  tauJet->energy());
-
-
+            const pat::tau::TauPFEssential  &pfEssential = tau->pfEssential();
+             part->setUserRecord("tauJetpx", pfEssential.p4Jet_.px());
+             part->setUserRecord("tauJetpy", pfEssential.p4Jet_.py());
+             part->setUserRecord("tauJetpz", pfEssential.p4Jet_.pz());
+             part->setUserRecord("tauJetE",  pfEssential.p4Jet_.energy());
 
             reco::CandidatePtr const &leadNeutralCand = tau->leadNeutralCand();
             if (leadNeutralCand.isNonnull())
@@ -2238,35 +2240,28 @@ void PxlSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView
             part->setName(jet_info.name);
             part->setP4(jet->px(), jet->py(), jet->pz(), jet->energy());
             part->setUserRecord("isPFJet", jet->isPFJet());
-            if (jet_info.isPF) {
-                part->setUserRecord("chargedHadronEnergyFraction", jet->chargedHadronEnergyFraction());
-                part->setUserRecord("chargedHadronEnergy",         jet->chargedHadronEnergy());
-                part->setUserRecord("neutralHadronEnergyFraction", jet->neutralHadronEnergyFraction());
-                part->setUserRecord("neutralHadronEnergy",         jet->neutralHadronEnergy());
-                part->setUserRecord("chargedEmEnergyFraction",     jet->chargedEmEnergyFraction());
-                part->setUserRecord("chargedEmEnergy",             jet->chargedEmEnergy());
-                part->setUserRecord("neutralEmEnergyFraction",     jet->neutralEmEnergyFraction());
-                part->setUserRecord("neutralEmEnergy",             jet->neutralEmEnergy());
-                part->setUserRecord("chargedMultiplicity", jet->chargedMultiplicity());
-                part->setUserRecord("nconstituents", jet->numberOfDaughters());
-                part->setUserRecord("uncorrectedPT", jet->pt()*jet->jecFactor("Uncorrected"));
-                part->setUserRecord("pileupDiscriminant", jet->userFloat("pileupJetId:fullDiscriminant"));
+            part->setUserRecord("chargedHadronEnergyFraction", jet->chargedHadronEnergyFraction());
+            part->setUserRecord("chargedHadronEnergy",         jet->chargedHadronEnergy());
+            part->setUserRecord("neutralHadronEnergyFraction", jet->neutralHadronEnergyFraction());
+            part->setUserRecord("neutralHadronEnergy",         jet->neutralHadronEnergy());
+            part->setUserRecord("chargedEmEnergyFraction",     jet->chargedEmEnergyFraction());
+            part->setUserRecord("chargedEmEnergy",             jet->chargedEmEnergy());
+            part->setUserRecord("neutralEmEnergyFraction",     jet->neutralEmEnergyFraction());
+            part->setUserRecord("neutralEmEnergy",             jet->neutralEmEnergy());
+            part->setUserRecord("chargedMultiplicity", jet->chargedMultiplicity());
+            part->setUserRecord("nconstituents", jet->numberOfDaughters());
+            part->setUserRecord("uncorrectedPT", jet->pt()*jet->jecFactor("Uncorrected"));
+            part->setUserRecord("pileupDiscriminant", jet->userFloat("pileupJetId:fullDiscriminant"));
+
+            part->setUserRecord("vtxMass", jet->userFloat("vtxMass"));
+            part->setUserRecord("vtxNtracks", jet->userFloat("vtxNtracks"));
+            part->setUserRecord("vtx3DVal", jet->userFloat("vtx3DVal"));
+            part->setUserRecord("vtx3DSig", jet->userFloat("vtx3DSig"));
 
 
-                for (jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID) {
-                    pat::strbitset ret = ID->second->getBitTemplate();
-                    part->setUserRecord(ID->first, (*(ID->second))(*jet, ret));
-                }
-            } else {
-                //            part->setUserRecord("EmEFrac", jet->emEnergyFraction());
-                //            part->setUserRecord("HadEFrac", jet->energyFractionHadronic());
-                //            part->setUserRecord("N90", jet->n90());
-                //            part->setUserRecord("N60", jet->n60());
-                //            // std::vector <CaloTowerPtr> caloRefs = jet->getCaloConstituents();
-                //            // part->setUserRecord("NCaloRefs", caloRefs.size());
-                //            part->setUserRecord("MaxEEm", jet->maxEInEmTowers());
-                //            part->setUserRecord("MaxEHad", jet->maxEInHadTowers());
-                //            part->setUserRecord("TowersArea", jet->towersArea());
+            for (jet_id_list::const_iterator ID = jet_info.IDs.begin(); ID != jet_info.IDs.end(); ++ID) {
+                pat::strbitset ret = ID->second->getBitTemplate();
+                part->setUserRecord(ID->first, (*(ID->second))(*jet, ret));
             }
 
             // calculate the kinematics with a new vertex
@@ -2275,6 +2270,26 @@ void PxlSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView
             part->setUserRecord("PhysEta", physP4.eta());
             part->setUserRecord("PhysPhi", physP4.phi());
             part->setUserRecord("PhysPt",  physP4.pt());
+            if(jet->hasUserFloat("NjettinessAK8:tau1")){
+                part->setUserRecord("tau1" ,jet->userFloat("NjettinessAK8:tau1"));    //
+                part->setUserRecord("tau2" ,jet->userFloat("NjettinessAK8:tau2"));    //  Access the n-subjettiness variables
+                part->setUserRecord("tau3" ,jet->userFloat("NjettinessAK8:tau3"));    //
+
+                part->setUserRecord("trimmedMass",  jet->userFloat("ak8PFJetsCHSTrimmedLinks"));   // access to trimmed mass
+                part->setUserRecord("prunedMass" ,  jet->userFloat("ak8PFJetsCHSPrunedLinks"));     // access to pruned mass
+                part->setUserRecord("filteredMass", jet->userFloat("ak8PFJetsCHSFilteredLinks")); // access to filtered mass
+
+
+
+                reco::CATopJetTagInfo const * tagInfo =  dynamic_cast<reco::CATopJetTagInfo const *>( jet->tagInfo("caTop"));
+                if ( tagInfo != 0 ) {
+                   part->setUserRecord("minMass", tagInfo->properties().minMass);
+                   part->setUserRecord("topMass", tagInfo->properties().topMass);
+                   part->setUserRecord("nSubJets", tagInfo->properties().nSubJets);
+               }
+            }
+
+
 
             part->setUserRecord("fHPD", jet->jetID().fHPD);
             part->setUserRecord("fRBX", jet->jetID().fRBX);
