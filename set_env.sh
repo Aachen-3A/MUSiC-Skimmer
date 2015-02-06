@@ -18,5 +18,5 @@ if [ -z ${CMSSW_BASE+x} ]; then
     echo "Please source CMSSW before bootstraping the skimmer"; 
 else 
     echo "CMSSW_BASE is set to '$CMSSW_BASE'"; 
-    ln -fs  $DIR $CMSSW_BASE/src/MUSiC-Skimmer
+    ln -fs  $DIR $CMSSW_BASE/src/Pxl/Skimmer
 fi
