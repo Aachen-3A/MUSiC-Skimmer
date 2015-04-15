@@ -42,6 +42,8 @@
 #include "DataFormats/METReco/interface/GenMET.h"
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LesHouches.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 // Special stuff for sim truth of converted photons.
@@ -567,6 +569,32 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                                           pxl::EventView* EvtView,
                                           std::map< const reco::Candidate*,
                                           pxl::Particle* >& genmap) {
+
+
+
+    //LHE INFO for binned samples
+    edm::Handle<LHEEventProduct> lheInfoHandel;
+    iEvent.getByLabel("externalLHEProducer" , lheInfoHandel);
+
+    if(lheInfoHandel.isValid()){
+        lhef::HEPEUP lheParticleInfo = lheInfoHandel->hepeup();
+        //get the five vector
+        //(Px, Py, Pz, E and M in GeV)
+        std::vector<lhef::HEPEUP::FiveVector> allParticles=lheParticleInfo.PUP;
+        std::vector<int> statusCodes=lheParticleInfo.ISTUP;
+
+        double ht=0;
+        for(unsigned int i=0;i<statusCodes.size();i++){
+            if(statusCodes[i]==1){
+                if(  abs(lheParticleInfo.IDUP[i])<11 or abs(lheParticleInfo.IDUP[i])>16 ){
+                    ht+=   sqrt(pow(allParticles[i][0],2)+ pow(allParticles[i][1],2));
+                }
+
+            }
+        }
+        EvtView->setUserRecord("genHT", ht);
+    }
+
     // gen particles
     edm::Handle<reco::GenParticleCollection> genParticleHandel;
     iEvent.getByLabel(genParticleCandidatesLabel_ , genParticleHandel);
