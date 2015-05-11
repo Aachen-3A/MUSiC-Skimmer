@@ -569,7 +569,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                                           pxl::Particle* >& genmap) {
     // gen particles
     edm::Handle<reco::GenParticleCollection> genParticleHandel;
-    iEvent.getByLabel(genParticleCandidatesLabel_ , genParticleHandel);
+    iEvent.getByLabel(genParticleCandidatesLabel_, genParticleHandel);
 
 
     const reco::GenParticle* p = (const reco::GenParticle*) &(*genParticleHandel->begin());  // this is the incoming proton
@@ -589,11 +589,11 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     int numEleMC = 0;
     int numGammaMC = 0;
     int GenId = 0;
-    double BeamEnergy=0.;
+    double BeamEnergy = 0.;
 
     // save mother of stable particle
     const reco::GenParticle* p_mother;
-    //const reco::GenParticle* p_mother_used;
+    // const reco::GenParticle* p_mother_used;
     std::map< const reco::Candidate*, pxl::Particle* > genMatchMap;
     // loop over all particles
     for (reco::GenParticleCollection::const_iterator pa = genParticleHandel->begin(); pa != genParticleHandel->end(); ++pa) {
@@ -601,19 +601,21 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
         const reco::GenParticle* p = (const reco::GenParticle*) &(*pa);
 
         // the following is interesting for GEN studies
-        if(fabs(p->pdgId())==2212 && fabs(p->pz())>BeamEnergy){
-            BeamEnergy=fabs(p->pz());
+        if (fabs(p->pdgId()) == 2212 && fabs(p->pz()) > BeamEnergy) {
+            BeamEnergy = fabs(p->pz());
         }
 
-        //find the two partons from the pdf or the mother conected to them
-        if (p->numberOfMothers() > 0 || fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1 || fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1   ){
+        // find the two partons from the pdf or the mother conected to them
+        if (p->numberOfMothers() > 0
+            || fabs(fabs(p->pz())-EvtView->getUserRecord("x1").toDouble()*BeamEnergy) < 0.1
+            || fabs(fabs(p->pz())-EvtView->getUserRecord("x2").toDouble()*BeamEnergy) < 0.1) {
             // look for the rest of the mothers
-            vector<const reco::GenParticle*> mothers=runGenDecayTree(p ,genMatchMap);
-            if (mothers.size() == 0 && !(genMatchMap.size()<2) ) {
+            vector<const reco::GenParticle*> mothers = runGenDecayTree(p, genMatchMap);
+            if (mothers.size() == 0 && !(genMatchMap.size() < 2)) {
                 continue;
             }
             p_mother = (const reco::GenParticle*) p->mother(0);
-            if(p_mother!=0 && p_mother->pdgId()==p->pdgId()){
+            if (p_mother!= 0 && p_mother->pdgId() == p->pdgId()) {
                 continue;
             }
 
@@ -624,11 +626,10 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             int p_id = p->pdgId();
             part->setPdgNumber(p_id);
 
-            //if there are more than 2 mothers the event is still fine, but it is not viewable in tree view of pxl!!
-            for(size_t imother=0; imother < mothers.size(); imother++ ){
+            // if there are more than 2 mothers the event is still fine, but it is not viewable in tree view of pxl!!
+            for (size_t imother = 0; imother < mothers.size(); imother++) {
                 part->linkMother(genMatchMap[mothers[imother]]);
             }
-
         }
 
 
@@ -893,7 +894,7 @@ void PxlSkimmer_miniAOD::analyzeGenMET(edm::Event const &iEvent,
 // ----------------- SIM -------------------
 void PxlSkimmer_miniAOD::analyzeSIM(const edm::Event& iEvent, pxl::EventView* EvtView) {
     Handle<SimVertexContainer> simVtcs;
-    iEvent.getByLabel("g4SimHits" , simVtcs);
+    iEvent.getByLabel("g4SimHits", simVtcs);
     SimVertexContainer::const_iterator simVertex;
 
     Handle<SimTrackContainer> simTracks;
@@ -1393,7 +1394,7 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 obj.unpackPathNames(names);
                 std::vector<std::string> pathNamesLast = obj.pathNames(true);
                 for (unsigned h = 0, n = pathNamesLast.size(); h < n; ++h) {
-                    if(obj.hasPathName( pathNamesLast[h], true, true )){
+                    if (obj.hasPathName(pathNamesLast[h], true, true)) {
                         pxl::Particle *part = EvtView->create< pxl::Particle >();
                         part->setName(pathNamesLast[h]);
                         part->setP4(obj.px(), obj.py(), obj.pz(), obj.energy());
@@ -2134,7 +2135,16 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
                 pxlEle->setUserRecord(eleIDs_[ii].instance(), Ele_temp_ID);
             }
 
-            // Returns a specific electron ID associated to the pat::Electron given its name For cut-based IDs, the value map has the following meaning: 0: fails, 1: passes electron ID only, 2: passes electron Isolation only, 3: passes electron ID and Isolation only, 4: passes conversion rejection, 5: passes conversion rejection and ID, 6: passes conversion rejection and Isolation, 7: passes the whole selection. For more details have a look at: https:// twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID https:// twiki.cern.ch/twiki/bin/view/CMS/SWGuideCategoryBasedElectronID Note: an exception is thrown if the specified ID is not available
+            // Returns a specific electron ID associated to the pat::Electron
+            // given its name For cut-based IDs, the value map has the following
+            // meaning: 0: fails, 1: passes electron ID only, 2: passes electron
+            // Isolation only, 3: passes electron ID and Isolation only, 4:
+            // passes conversion rejection, 5: passes conversion rejection and
+            // ID, 6: passes conversion rejection and Isolation, 7: passes the
+            // whole selection. For more details have a look at:
+            // https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+            // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCategoryBasedElectronID
+            // Note: an exception is thrown if the specified ID is not available
             const vector< pair< string, float > > &electronIDs = patEle->electronIDs();
             for (vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID) {
                 pxlEle->setUserRecord(electronID->first, electronID->second);
@@ -2152,7 +2162,7 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
             // See also:
             // https:// twiki.cern.ch/twiki/bin/view/CMS/HoverE2012?rev = 11
             //
-            pxlEle->setUserRecord("HoverE2012"          , patEle->hcalOverEcalBc());
+            pxlEle->setUserRecord("HoverE2012", patEle->hcalOverEcalBc());
             pxlEle->setUserRecord("HCALIsoConeDR03_2012", patEle->dr03HcalDepth1TowerSumEtBc());
             pxlEle->setUserRecord("HCALIsoConeDR04_2012", patEle->dr04HcalDepth1TowerSumEtBc());
             // vector< CaloTowerDetId > hcalTowersBehindClusters = m_hcalHelper->hcalTowersBehindClusters(*SCRef);
@@ -2270,18 +2280,18 @@ void PxlSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView
             part->setUserRecord("PhysEta", physP4.eta());
             part->setUserRecord("PhysPhi", physP4.phi());
             part->setUserRecord("PhysPt",  physP4.pt());
-            if(jet->hasUserFloat("NjettinessAK8:tau1")){
-                part->setUserRecord("tau1" ,jet->userFloat("NjettinessAK8:tau1"));    //
-                part->setUserRecord("tau2" ,jet->userFloat("NjettinessAK8:tau2"));    //  Access the n-subjettiness variables
-                part->setUserRecord("tau3" ,jet->userFloat("NjettinessAK8:tau3"));    //
+            if (jet->hasUserFloat("NjettinessAK8:tau1")) {
+                part->setUserRecord("tau1", jet->userFloat("NjettinessAK8:tau1"));    //
+                part->setUserRecord("tau2", jet->userFloat("NjettinessAK8:tau2"));    //  Access the n-subjettiness variables
+                part->setUserRecord("tau3", jet->userFloat("NjettinessAK8:tau3"));    //
 
-                part->setUserRecord("trimmedMass",  jet->userFloat("ak8PFJetsCHSTrimmedLinks"));   // access to trimmed mass
-                part->setUserRecord("prunedMass" ,  jet->userFloat("ak8PFJetsCHSPrunedLinks"));     // access to pruned mass
-                part->setUserRecord("filteredMass", jet->userFloat("ak8PFJetsCHSFilteredLinks")); // access to filtered mass
+                part->setUserRecord("trimmedMass",  jet->userFloat("ak8PFJetsCHSTrimmedLinks"));  // access to trimmed mass
+                part->setUserRecord("prunedMass",  jet->userFloat("ak8PFJetsCHSPrunedLinks"));  // access to pruned mass
+                part->setUserRecord("filteredMass", jet->userFloat("ak8PFJetsCHSFilteredLinks"));  // access to filtered mass
 
 
 
-                reco::CATopJetTagInfo const * tagInfo =  dynamic_cast<reco::CATopJetTagInfo const *>( jet->tagInfo("caTop"));
+                reco::CATopJetTagInfo const * tagInfo =  dynamic_cast<reco::CATopJetTagInfo const *>(jet->tagInfo("caTop"));
                 if ( tagInfo != 0 ) {
                    part->setUserRecord("minMass", tagInfo->properties().minMass);
                    part->setUserRecord("topMass", tagInfo->properties().topMass);
@@ -2454,9 +2464,9 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
                 (HoEm - HoverE2012) *
                 SCRef->energy() / cosh(SCRef->eta());
 
-            pxlPhoton->setUserRecord("HoverE2012"           , HoverE2012);
-            pxlPhoton->setUserRecord("HCALIsoConeDR03_2012" , HCALIsoConeDR03_2012);
-            pxlPhoton->setUserRecord("HCALIsoConeDR04_2012" , HCALIsoConeDR04_2012);
+            pxlPhoton->setUserRecord("HoverE2012", HoverE2012);
+            pxlPhoton->setUserRecord("HCALIsoConeDR03_2012", HCALIsoConeDR03_2012);
+            pxlPhoton->setUserRecord("HCALIsoConeDR04_2012", HCALIsoConeDR04_2012);
 
 
             // Default PF based isolation for charged leptons:
@@ -2763,7 +2773,7 @@ double PxlSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
     // gen particles
     // use the packed particles
     edm::Handle<pat::PackedGenParticleCollection> genParticleHandel;
-    iEvent.getByLabel(genFinalParticlesLabel_ , genParticleHandel);
+    iEvent.getByLabel(genFinalParticlesLabel_, genParticleHandel);
 
     // loop over all particles
     for (pat::PackedGenParticleCollection::const_iterator pa = genParticleHandel->begin();
@@ -2793,22 +2803,21 @@ double PxlSkimmer_miniAOD::IsoGenSum(const edm::Event& iEvent,
 
 
 // recrusive mother searcher for gen trees
-vector<const reco::GenParticle*> PxlSkimmer_miniAOD::runGenDecayTree(const reco::GenParticle* part ,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap){
+vector<const reco::GenParticle*> PxlSkimmer_miniAOD::runGenDecayTree(const reco::GenParticle* part,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap) {
     vector<const reco::GenParticle*> mothers;
 
-    if((part->numberOfMothers())>2){
+    if ((part->numberOfMothers()) > 2) {
         return mothers;
     }
-    for(size_t jmother=0; jmother < part->numberOfMothers(); jmother++ ){
-
+    for (size_t jmother = 0; jmother < part->numberOfMothers(); jmother++) {
         const reco::GenParticle* mother_part = (const reco::GenParticle*) part->mother(jmother);
 
-        if(genMatchMap.end() == genMatchMap.find(mother_part)){
+        if (genMatchMap.end() == genMatchMap.find(mother_part)) {
             vector<const reco::GenParticle*> tmp = runGenDecayTree(mother_part, genMatchMap);
-            for(size_t kmother=0; kmother < tmp.size(); kmother++ ){
+            for (size_t kmother = 0; kmother < tmp.size(); kmother++) {
                 mothers.push_back(tmp[kmother]);
             }
-        }else{
+        } else {
             mothers.push_back(mother_part);
         }
     }
