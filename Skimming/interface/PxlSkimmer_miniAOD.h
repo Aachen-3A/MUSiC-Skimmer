@@ -1,5 +1,8 @@
-#ifndef PxlSkimmer_miniAOD_H
-#define PxlSkimmer_miniAOD_H
+// -*- C++ -*-
+// Copyright [2015] <RWTH Aachen, III. Phys. Inst. A>
+
+#ifndef SKIMMING_INTERFACE_PXLSKIMMER_MINIAOD_H_
+#define SKIMMING_INTERFACE_PXLSKIMMER_MINIAOD_H_
 
 // LHAPDF stuff
 extern "C" {
@@ -13,32 +16,32 @@ extern "C" {
 // EDM related stuff
 // (Don't need headers here, forward declarations are enough!)
 namespace edm {
-    class Event;
-    class EventSetup;
-    class ParameterSet;
-    template< class T > class ESHandle;
+class Event;
+class EventSetup;
+class ParameterSet;
+template< class T > class ESHandle;
 }
 
 // GEN stuff.
 namespace gen {
-    class PdfInfo;
+class PdfInfo;
 }
 
 // RECO forward declarations.
 namespace reco {
-    class Candidate;
-    class GenParticle;
-    class Vertex;
+class Candidate;
+class GenParticle;
+class Vertex;
 }
 
 // PAT related stuff.
 namespace pat {
-    class Electron;
-    class Muon;
-    class Photon;
-    class Jet;
-    class Tau;
-    class PackedCandidate;
+class Electron;
+class Muon;
+class Photon;
+class Jet;
+class Tau;
+class PackedCandidate;
 }
 
 // No namespace for these classes.
@@ -53,6 +56,7 @@ class PFIsolationEstimator;
 #include <set>
 #include <string>
 #include <vector>
+#include <utility>
 
 // CMSSW includes
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -102,335 +106,324 @@ class PFIsolationEstimator;
 #include "Pxl/Pxl/interface/pxl/hep.hh"
 
 class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
-    public:
-        // Why explicit?
-        // The explicit keyword prevents the constructor from being invoked
-        // implicitly as a conversion (what can be done for constructors with one
-        // argument).
-        explicit PxlSkimmer_miniAOD(const edm::ParameterSet&);
-        ~PxlSkimmer_miniAOD();
+  public:
+    // Why explicit?
+    // The explicit keyword prevents the constructor from being invoked
+    // implicitly as a conversion (what can be done for constructors with one
+    // argument).
+    explicit PxlSkimmer_miniAOD(const edm::ParameterSet&);
+    ~PxlSkimmer_miniAOD();
 
-    private:
-        typedef std::set< std::string > sstring;
-        typedef std::vector< std::string > vstring;
-        typedef std::vector< edm::InputTag > VInputTag;
-        // for PF isolation
-        typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
-        // information about one single trigger
-        struct trigger_def {
-            std::string name;
-            unsigned int ID;
-            bool active;
-        };
-        typedef std::vector< trigger_def > vtrigger_def;
-        // information about one trigger group
-        struct trigger_group {
-            std::string   name;
-            std::string   process;
-            edm::InputTag L1_result;
-            edm::InputTag results;
-            edm::InputTag event;
-            HLTConfigProvider config;
-            // std::set because duplicates make no sense here.
-            sstring triggers_names;
-            sstring datastreams;
-            vtrigger_def trigger_infos;
-            // Map the triggers to the corresponding datastream.
-            std::map< string, sstring > triggers_by_datastream;
-            // Map the trigger_def objects to the corresponding datastream.
-            std::map< string, vtrigger_def > trigger_infos_by_datastream;
-        };
+  private:
+    typedef std::set< std::string > sstring;
+    typedef std::vector< std::string > vstring;
+    typedef std::vector< edm::InputTag > VInputTag;
+    // for PF isolation
+    typedef std::vector< edm::Handle< edm::ValueMap< double > > > IsoDepositVals;
+    // information about one single trigger
+    struct trigger_def {
+        std::string name;
+        unsigned int ID;
+        bool active;
+    };
+    typedef std::vector< trigger_def > vtrigger_def;
+    // information about one trigger group
+    struct trigger_group {
+        std::string   name;
+        std::string   process;
+        edm::InputTag L1_result;
+        edm::InputTag results;
+        edm::InputTag event;
+        HLTConfigProvider config;
+        // std::set because duplicates make no sense here.
+        sstring triggers_names;
+        sstring datastreams;
+        vtrigger_def trigger_infos;
+        // Map the triggers to the corresponding datastream.
+        std::map< string, sstring > triggers_by_datastream;
+        // Map the trigger_def objects to the corresponding datastream.
+        std::map< string, vtrigger_def > trigger_infos_by_datastream;
+    };
 
 
-        virtual void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup);
-        virtual void endJob();
-        virtual void analyzeGenInfo(const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genmap);
-        virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
-        virtual void analyzeGenJets(const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info);
+    virtual void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup);
+    virtual void endJob();
+    virtual void analyzeGenInfo(const edm::Event &iEvent, pxl::EventView *EvtView, std::map< const reco::Candidate*, pxl::Particle* > &genmap);
+    virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
+    virtual void analyzeGenJets(const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info);
 
-        // virtual void analyzeGenMETs(edm::Event const &iEvent,
-        // pxl::EventView *EvtView
-        // ) const;
+    // virtual void analyzeGenMETs(edm::Event const &iEvent,
+    // pxl::EventView *EvtView
+    // ) const;
 
-        virtual void analyzeGenMET(edm::Event const &iEvent,
-                pxl::EventView *EvtView
-                ) const;
+    virtual void analyzeGenMET(edm::Event const &iEvent,
+                               pxl::EventView *EvtView) const;
 
-        virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
+    virtual void analyzeSIM(const edm::Event&, pxl::EventView*);
 
-        virtual void initializeFilter(edm::Event const &event,
-                edm::EventSetup const &setup,
-                trigger_group &filter
-                ) const;
+    virtual void initializeFilter(edm::Event const &event,
+                                  edm::EventSetup const &setup,
+                                  trigger_group &filter) const;
 
-        virtual std::map< std::string, bool > initializeTrigger(edm::Event const &event,
-                edm::EventSetup const &setup,
-                trigger_group &trigger
-                ) const;
-        virtual std::set< std::string > getTriggers(std::string const DS,
-                trigger_group const &trigger
-                ) const;
+    virtual std::map< std::string, bool > initializeTrigger(edm::Event const &event,
+                                                            edm::EventSetup const &setup,
+                                                            trigger_group &trigger) const;
+    virtual std::set< std::string > getTriggers(std::string const DS,
+                                                trigger_group const &trigger) const;
 
-        virtual void analyzeFilter(const edm::Event &iEvent,
-                const edm::EventSetup &iSetup,
-                pxl::EventView *EvtView,
-                trigger_group &filter
-                );
+    virtual void analyzeFilter(const edm::Event &iEvent,
+                               const edm::EventSetup &iSetup,
+                               pxl::EventView *EvtView,
+                               trigger_group &filter);
 
-        virtual void analyzeTrigger(const edm::Event &iEvent,
-                const edm::EventSetup &iSetup,
-                const bool &isMC,
-                pxl::EventView *EvtView,
-                trigger_group &trigger
-                );
-        virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
+    virtual void analyzeTrigger(const edm::Event &iEvent,
+                                const edm::EventSetup &iSetup,
+                                const bool &isMC,
+                                pxl::EventView *EvtView,
+                                trigger_group &trigger);
 
-        // virtual void analyzeRecTracks(edm::Event const &iEvent,
-        // pxl::EventView *RecEvtView
-        // ) const;
+    virtual void analyzeRecVertices(const edm::Event&, pxl::EventView*);
 
-        virtual void analyzeRecTaus(edm::Event const &iEvent,
-                pxl::EventView *RecEvtView
-                ) const;
+    // virtual void analyzeRecTracks(edm::Event const &iEvent,
+    // pxl::EventView *RecEvtView
+    // ) const;
 
-        virtual void analyzeRecPatTaus(edm::Event const &iEvent,
-                edm::InputTag const &tauTag,
-                pxl::EventView *RecEvtView
-                ) const;
+    virtual void analyzeRecTaus(edm::Event const &iEvent,
+                                pxl::EventView *RecEvtView) const;
 
-        virtual void analyzeRecMuons(edm::Event const &iEvent,
-                pxl::EventView *RecView,
-                bool const &MC,
-                std::map< reco::Candidate const*, pxl::Particle* > &genmap,
-                reco::Vertex const &PV
-                ) const;
+    virtual void analyzeRecPatTaus(edm::Event const &iEvent,
+                                   edm::InputTag const &tauTag,
+                                   pxl::EventView *RecEvtView) const;
 
-        // virtual void analyzeRecMuons(const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap);
-        virtual void analyzeRecElectrons(const edm::Event &iEvent,
-                pxl::EventView *RecView,
-                const bool &MC,
-                // EcalClusterLazyTools &lazyTools,
-                std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                // const edm::ESHandle< CaloGeometry > &geo,
-                const edm::Handle< reco::VertexCollection > &vertices,
-                const edm::Handle< pat::PackedCandidateCollection > &pfCandidates,
-                const double &rhoFastJet25
-                );
-        virtual void analyzeRecJets(const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info);
+    virtual void analyzeRecMuons(edm::Event const &iEvent,
+                                 pxl::EventView *RecView,
+                                 bool const &MC,
+                                 std::map< reco::Candidate const*, pxl::Particle* > &genmap,
+                                 reco::Vertex const &PV) const;
 
-        virtual void analyzeRecMETs(edm::Event const &iEvent,
-                pxl::EventView *RecEvtView
-                ) const;
+    // virtual void analyzeRecMuons(const edm::Event &iEvent, pxl::EventView *RecView, const bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genmap);
+    virtual void analyzeRecElectrons(const edm::Event &iEvent,
+                                     pxl::EventView *RecView,
+                                     const bool &MC,
+                                     // EcalClusterLazyTools &lazyTools,
+                                     std::map< const reco::Candidate*, pxl::Particle* > &genmap,
+                                     // const edm::ESHandle< CaloGeometry > &geo,
+                                     const edm::Handle< reco::VertexCollection > &vertices,
+                                     const edm::Handle< pat::PackedCandidateCollection > &pfCandidates,
+                                     const double &rhoFastJet25);
 
-        virtual void analyzeRecPatMET(edm::Event const &iEvent,
-                edm::InputTag const &patMETTag,
-                pxl::EventView *RecEvtView
-                ) const;
+    virtual void analyzeRecJets(const edm::Event &iEvent, pxl::EventView *RecView, bool &MC, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info);
 
-        virtual void analyzeRecRecoPFMET(edm::Event const &iEvent,
-                edm::InputTag const &recoPFMETTag,
-                pxl::EventView *RecEvtView
-                ) const;
+    virtual void analyzeRecMETs(edm::Event const &iEvent,
+                                pxl::EventView *RecEvtView) const;
 
-        virtual void analyzeRecGammas(const edm::Event &iEvent,
-                pxl::EventView *RecView,
-                const bool &MC,
-                // EcalClusterLazyTools &lazyTools,
-                std::map< const reco::Candidate*, pxl::Particle* > &genmap,
-                // const edm::ESHandle< CaloGeometry > &geo,
-                const edm::Handle< reco::VertexCollection > &vertices,
-                // const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
-                const edm::Handle< pat::PackedCandidateCollection > &pfCandidates,
-                const double &rhoFastJet25
-                );
-        virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
+    virtual void analyzeRecPatMET(edm::Event const &iEvent,
+                                  edm::InputTag const &patMETTag,
+                                  pxl::EventView *RecEvtView) const;
 
-        bool TauMC_cuts(const reco::GenParticle *MCtau) const;
-        bool MuonMC_cuts(const reco::GenParticle* MCmuon) const;
-        bool EleMC_cuts(const reco::GenParticle* MCele) const;
-        bool GammaMC_cuts(const reco::GenParticle* MCgamma) const;
-        bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
-        bool METMC_cuts(const pxl::Particle* MCmet) const;
-        bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const;
-        bool PV_vertex_cuts(const reco::Vertex &vertex) const;
-        bool Tau_cuts(const pat::Tau &tau) const;
-        bool Muon_cuts(const pat::Muon& muon) const;
-        bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
-        bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
-        bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
-        bool MET_cuts(const pxl::Particle* met) const;
+    virtual void analyzeRecRecoPFMET(edm::Event const &iEvent,
+                                     edm::InputTag const &recoPFMETTag,
+                                     pxl::EventView *RecEvtView) const;
 
-        vector<const reco::GenParticle*> runGenDecayTree(const reco::GenParticle* part ,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap);
+    virtual void analyzeRecGammas(const edm::Event &iEvent,
+                                  pxl::EventView *RecView,
+                                  const bool &MC,
+                                  // EcalClusterLazyTools &lazyTools,
+                                  std::map< const reco::Candidate*, pxl::Particle* > &genmap,
+                                  // const edm::ESHandle< CaloGeometry > &geo,
+                                  const edm::Handle< reco::VertexCollection > &vertices,
+                                  // const edm::Handle< reco::PFCandidateCollection > &pfCandidates,
+                                  const edm::Handle< pat::PackedCandidateCollection > &pfCandidates,
+                                  const double &rhoFastJet25);
 
-        double IsoGenSum(const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
-        // Generic function to write ParticleFlow based isolation into (PXL) photons and
-        // electrons. Could be extended to other particles as well.
-        //
-        // template< typename T >
-        // void particleFlowBasedIsolation(IsoDepositVals const &isoValPFId,
-        // PFIsolationEstimator *isolator,
-        // edm::Handle< reco::VertexCollection > const &vertices,
-        // //edm::Handle< reco::PFCandidateCollection > const &pfCandidates,
-        // const edm::Handle< pat::PackedCandidateCollection > &pfCandidates,
-        // edm::Ref< T > const &ref,
-        // double const &rhoFastJet25,
-        // pxl::Particle &part,
-        // bool const useIsolator = true
-        // ) const;
+    virtual void analyzeHCALNoise(const edm::Event&, pxl::EventView*);
 
-        void printEventContent(pxl::EventView const *GenEvtView,
-                pxl::EventView const *RecEvtView,
-                bool const &IsMC
-                ) const;
+    bool TauMC_cuts(const reco::GenParticle *MCtau) const;
+    bool MuonMC_cuts(const reco::GenParticle* MCmuon) const;
+    bool EleMC_cuts(const reco::GenParticle* MCele) const;
+    bool GammaMC_cuts(const reco::GenParticle* MCgamma) const;
+    bool JetMC_cuts(reco::GenJetCollection::const_iterator MCjet) const;
+    bool METMC_cuts(const pxl::Particle* MCmet) const;
+    bool Vertex_cuts(reco::VertexCollection::const_iterator vertex) const;
+    bool PV_vertex_cuts(const reco::Vertex &vertex) const;
+    bool Tau_cuts(const pat::Tau &tau) const;
+    bool Muon_cuts(const pat::Muon& muon) const;
+    bool Ele_cuts(std::vector<pat::Electron>::const_iterator ele) const;
+    bool Gamma_cuts(std::vector<pat::Photon>::const_iterator photon) const;
+    bool Jet_cuts(std::vector<pat::Jet>::const_iterator jet) const;
+    bool MET_cuts(const pxl::Particle* met) const;
 
-        // ----------member data ---------------------------
+    vector<const reco::GenParticle*> runGenDecayTree(const reco::GenParticle* part ,  std::map< const reco::Candidate*, pxl::Particle* > genMatchMap);
 
-        int fNumEvt;  // used to count the number of events
-        std::string FileName_;
-        std::string Process_;
-        std::string Dataset_;
+    double IsoGenSum(const edm::Event& iEvent, double ParticleGenPt, double ParticleGenEta, double ParticleGenPhi, double iso_DR, double iso_Seed);
+    // Generic function to write ParticleFlow based isolation into (PXL) photons and
+    // electrons. Could be extended to other particles as well.
+    //
+    // template< typename T >
+    // void particleFlowBasedIsolation(IsoDepositVals const &isoValPFId,
+    // PFIsolationEstimator *isolator,
+    // edm::Handle< reco::VertexCollection > const &vertices,
+    // //edm::Handle< reco::PFCandidateCollection > const &pfCandidates,
+    // const edm::Handle< pat::PackedCandidateCollection > &pfCandidates,
+    // edm::Ref< T > const &ref,
+    // double const &rhoFastJet25,
+    // pxl::Particle &part,
+    // bool const useIsolator = true
+    // ) const;
 
-        bool const fastSim_;
-        bool GenOnly_;
-        bool UseSIM_;
+    void printEventContent(pxl::EventView const *GenEvtView,
+                           pxl::EventView const *RecEvtView,
+                           bool const &IsMC) const;
 
-        bool allMuonInfos_;
-        bool allElectronInfos_;
-        bool allGammaInfos_;
-        bool allTauInfos_;
+    // ----------member data ---------------------------
 
-        string LHgridName_;
-        int NumLHgridErrorSets_;
+    int fNumEvt;  // used to count the number of events
+    std::string FileName_;
+    std::string Process_;
+    std::string Dataset_;
 
-        edm::InputTag  genParticleCandidatesLabel_;
-        edm::InputTag  genFinalParticlesLabel_;
-        string VertexRecoLabel_;
+    bool const fastSim_;
+    bool GenOnly_;
+    bool UseSIM_;
 
-        // Get the main particle lables
-        edm::InputTag patMuonLabel_;
-        edm::InputTag patElectronLabel_;
-        edm::InputTag patGammaLabel_;
-        edm::InputTag patTauTag_;
-        edm::InputTag patMETTag_;
-        edm::InputTag patJetTag_;
-        edm::InputTag patPFCandiates_;
+    bool allMuonInfos_;
+    bool allElectronInfos_;
+    bool allGammaInfos_;
+    bool allTauInfos_;
+
+    string LHgridName_;
+    int NumLHgridErrorSets_;
+
+    edm::InputTag  genParticleCandidatesLabel_;
+    edm::InputTag  genFinalParticlesLabel_;
+    string VertexRecoLabel_;
+
+    // Get the main particle lables
+    edm::InputTag patMuonLabel_;
+    edm::InputTag patElectronLabel_;
+    edm::InputTag patGammaLabel_;
+    edm::InputTag patTauTag_;
+    edm::InputTag patMETTag_;
+    edm::InputTag patJetTag_;
+    edm::InputTag patPFCandiates_;
 
 
 
-        // additonal collections
-        edm::InputTag reducedSuperClusterCollection_;
-        edm::InputTag reducedEBClusterCollection_;
+    // additonal collections
+    edm::InputTag reducedSuperClusterCollection_;
+    edm::InputTag reducedEBClusterCollection_;
 
 
-        edm::InputTag conversionsTag_;
-        edm::InputTag conversionsSingleLegTag_;
+    edm::InputTag conversionsTag_;
+    edm::InputTag conversionsSingleLegTag_;
 
-        std::vector< edm::InputTag > rhos_;
-        std::vector< edm::InputTag > eleIDs_;
-        std::vector< edm::EDGetTokenT<edm::ValueMap<bool> > > eleID_tokens;
-        edm::EDGetTokenT<edm::View<pat::Electron> > patElectronLToken_;
+    std::vector< edm::InputTag > rhos_;
+    std::vector< edm::InputTag > eleIDs_;
+    std::vector< edm::EDGetTokenT<edm::ValueMap<bool> > > eleID_tokens;
+    edm::EDGetTokenT<edm::View<pat::Electron> > patElectronLToken_;
 
 
-        // HCAL noise
-        edm::InputTag hcal_noise_label_;
+    // HCAL noise
+    edm::InputTag hcal_noise_label_;
 
 
 
 
-        // //std::string fLHgridName;
-        // //int fNumLHgridErrorSets;
-        // // The labels used in cfg-file
-        // // Generator
-        // std::string genParticleCandidatesLabel_;
-        // //std::string fMETMCLabel;
-        // // HCAL Helper for "new" H/E and HCAL isolation.
-        // //ElectronHcalHelper *m_hcalHelper;
-        // edm::InputTag const m_recoTracksTag;
-        // std::string VertexRecoLabel_;
-        // std::string fPFTauDiscriminator;
-        // // Muon
-        // std::string fMuonRecoLabel;
-        // // Electron
-        // std::string fElectronRecoLabel;
-        // // Taus
-        // VInputTag const m_patTauTags;
-        // // GSF Electrons for vetoing.
-        // edm::InputTag m_gsfElectronsTag;
-        // std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;
-        // std::string m_eleEffAreaTargetLabel;
-        // // Photon
-        // std::string fGammaRecoLabel;
-        // // for PF isolation
-        // std::vector< edm::InputTag > m_inputTagIsoValPhotonsPFId;
-        // edm::InputTag m_particleFlowTag;
-        // // Jets
-        std::vector< jet_def > jet_infos;
-        // //JetIDs
-        typedef std::vector< std::pair< std::string, Selector<pat::Jet>* > > jet_id_list;
-        // // MET labels
-        // VInputTag const m_genMETTags;
-        // VInputTag const m_patMETTags;
-        // VInputTag const m_recoPFMETTags;
+    // //std::string fLHgridName;
+    // //int fNumLHgridErrorSets;
+    // // The labels used in cfg-file
+    // // Generator
+    // std::string genParticleCandidatesLabel_;
+    // //std::string fMETMCLabel;
+    // // HCAL Helper for "new" H/E and HCAL isolation.
+    // //ElectronHcalHelper *m_hcalHelper;
+    // edm::InputTag const m_recoTracksTag;
+    // std::string VertexRecoLabel_;
+    // std::string fPFTauDiscriminator;
+    // // Muon
+    // std::string fMuonRecoLabel;
+    // // Electron
+    // std::string fElectronRecoLabel;
+    // // Taus
+    // VInputTag const m_patTauTags;
+    // // GSF Electrons for vetoing.
+    // edm::InputTag m_gsfElectronsTag;
+    // std::vector< edm::InputTag > m_inputTagIsoValElectronsPFId;
+    // std::string m_eleEffAreaTargetLabel;
+    // // Photon
+    // std::string fGammaRecoLabel;
+    // // for PF isolation
+    // std::vector< edm::InputTag > m_inputTagIsoValPhotonsPFId;
+    // edm::InputTag m_particleFlowTag;
+    // // Jets
+    std::vector< jet_def > jet_infos;
+    // //JetIDs
+    typedef std::vector< std::pair< std::string, Selector<pat::Jet>* > > jet_id_list;
+    // // MET labels
+    // VInputTag const m_genMETTags;
+    // VInputTag const m_patMETTags;
+    // VInputTag const m_recoPFMETTags;
 
-        // // Cluster
-        // edm::InputTag freducedBarrelRecHitCollection;
-        // edm::InputTag freducedEndcapRecHitCollection;
-        // //HCAL noise
-        // edm::InputTag hcal_noise_label;
+    // // Cluster
+    // edm::InputTag freducedBarrelRecHitCollection;
+    // edm::InputTag freducedEndcapRecHitCollection;
+    // //HCAL noise
+    // edm::InputTag hcal_noise_label;
 
-        // // Conversions for vetoing.
-        // edm::InputTag m_conversionsTag;
+    // // Conversions for vetoing.
+    // edm::InputTag m_conversionsTag;
 
-        // All triggers.
-        std::vector< trigger_group > triggers;
-        // Are the datastreams in the HLT menu?
-        std::map< std::string, bool > availableDS;
+    // All triggers.
+    std::vector< trigger_group > triggers;
+    // Are the datastreams in the HLT menu?
+    std::map< std::string, bool > availableDS;
 
-        // All filters.
+    // All filters.
 
-        std::vector< trigger_group > filters;
+    std::vector< trigger_group > filters;
 
-        bool fStoreL3Objects;
+    bool fStoreL3Objects;
 
-        edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
-        edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
+    edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+    edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjects_;
 
-        ParticleMatcher* Matcher;
-        // to be used for ePax output
-        pxl::OutputFile fePaxFile;
-        std::vector<gen::PdfInfo> fpdf_vec;
-        double xfx(const double &x, const double &Q, int fl) {
-            double f[13], mx = x, mQ = Q;
-            evolvepdf_(mx, mQ, f);
-            return f[fl+6];
-        }
+    ParticleMatcher* Matcher;
+    // to be used for ePax output
+    pxl::OutputFile fePaxFile;
+    std::vector<gen::PdfInfo> fpdf_vec;
+    double xfx(const double &x, const double &Q, int fl) {
+        double f[13], mx = x, mQ = Q;
+        evolvepdf_(mx, mQ, f);
+        return f[fl+6];
+    }
 
-        PFIsolationEstimator* m_eleIsolator;
-        PFIsolationEstimator* m_phoIsolator;
+    PFIsolationEstimator* m_eleIsolator;
+    PFIsolationEstimator* m_phoIsolator;
 
-        ElectronEffectiveArea::ElectronEffectiveAreaTarget m_eleEffAreaTarget;
-        ElectronEffectiveArea::ElectronEffectiveAreaType m_eleEffAreaType;
+    ElectronEffectiveArea::ElectronEffectiveAreaTarget m_eleEffAreaTarget;
+    ElectronEffectiveArea::ElectronEffectiveAreaType m_eleEffAreaType;
 
-        // cuts
-        double min_muon_pt,
-               min_ele_pt,
-               min_gamma_pt,
-               min_jet_pt,
-               min_met,
-               min_tau_pt,
-               max_eta,
-               min_rechit_energy,
-               min_rechit_swiss_cross,
-               min_rechit_R19,
-               vertex_minNDOF,
-               vertex_maxZ,
-               vertex_maxR,
-               PV_minNDOF,
-               PV_maxZ,
-               PV_maxR;
+    // cuts
+    double min_muon_pt,
+        min_ele_pt,
+        min_gamma_pt,
+        min_jet_pt,
+        min_met,
+        min_tau_pt,
+        max_eta,
+        min_rechit_energy,
+        min_rechit_swiss_cross,
+        min_rechit_R19,
+        vertex_minNDOF,
+        vertex_maxZ,
+        vertex_maxR,
+        PV_minNDOF,
+        PV_maxZ,
+        PV_maxR;
 
-        // vertex for physics eta, phi, pt
-        reco::BeamSpot::Point the_vertex;
-        reco::BeamSpot::Point the_beamspot;
+    // vertex for physics eta, phi, pt
+    reco::BeamSpot::Point the_vertex;
+    reco::BeamSpot::Point the_beamspot;
 };
-#endif
+
+#endif  // SKIMMING_INTERFACE_PXLSKIMMER_MINIAOD_H_
