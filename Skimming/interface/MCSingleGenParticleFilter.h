@@ -1,5 +1,8 @@
-#ifndef MCSINGLEGENPARTICLEFILTER
-#define MCSINGLEGENPARTICLEFILTER
+// -*- C++ -*-
+// Copyright [2015] <RWTH Aachen, III. Phys. Inst. A>
+
+#ifndef SKIMMING_INTERFACE_MCSINGLEGENPARTICLEFILTER_H_
+#define SKIMMING_INTERFACE_MCSINGLEGENPARTICLEFILTER_H_
 
 //
 // Filter based on the CMSSW "MCSingleParticleFilter".
@@ -12,9 +15,9 @@
 //
 
 namespace edm {
-   class Event;
-   class EventSetup;
-   class ParameterSet;
+class Event;
+class EventSetup;
+class ParameterSet;
 }
 
 #include <vector>
@@ -27,14 +30,14 @@ namespace edm {
 //
 
 class MCSingleGenParticleFilter : public edm::EDFilter {
-public:
-   explicit MCSingleGenParticleFilter(const edm::ParameterSet&);
-   ~MCSingleGenParticleFilter();
+  public:
+    explicit MCSingleGenParticleFilter(const edm::ParameterSet&);
+    ~MCSingleGenParticleFilter();
 
 
-   virtual bool filter(edm::Event&, const edm::EventSetup&);
-private:
-   // ----------member data ---------------------------
+    virtual bool filter(edm::Event&, const edm::EventSetup&);
+  private:
+    // ----------member data ---------------------------
     edm::InputTag label_;
     std::vector< int > particleID;
     std::vector< double > ptMin;
@@ -43,4 +46,4 @@ private:
     std::vector< int > status;
 };
 
-#endif /*MCSINGLEGENPARTICLEFILTER*/
+#endif  // SKIMMING_INTERFACE_MCSINGLEGENPARTICLEFILTER_H_
