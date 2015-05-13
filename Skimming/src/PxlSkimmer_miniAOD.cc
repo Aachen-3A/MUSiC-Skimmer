@@ -103,7 +103,7 @@
 #include "DataFormats/Math/interface/deltaR.h"
 
 // Private ParticleMatcher
-#include "PxlSkimmer/Skimming/interface/ParticleMatcher.hh"
+#include "PxlSkimmer/Skimming/interface/ParticleMatcher.h"
 
 //
 // constructors and destructor

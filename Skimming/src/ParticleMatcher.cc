@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Copyright [2015] <RWTH Aachen, III. Phys. Inst. A>
 
-#include "PxlSkimmer/Skimming/interface/ParticleMatcher.hh"
+#include "PxlSkimmer/Skimming/interface/ParticleMatcher.h"
 
 #include "TMatrixT.h"
 #include "Pxl/Pxl/interface/pxl/core.hh"
