@@ -100,10 +100,8 @@ def addElectronIDs( process ):
     #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff.py
     #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff.py
     my_id_modules = [
-                     #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
-                     #'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff'
-                     'PxlSkimmer.Skimming.cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff',
-                     'PxlSkimmer.Skimming.heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff'
+                     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
+                     'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff'
                      ]
     #Add them to the VID producer
     for idmod in my_id_modules:

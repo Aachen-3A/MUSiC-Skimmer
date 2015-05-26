@@ -84,7 +84,8 @@
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "PhysicsTools/SelectorUtils/interface/Selector.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
-#include "DataFormats/JetReco/interface/CATopJetTagInfo.h"
+// #include "DataFormats/JetReco/interface/CATopJetTagInfo.h"
+#include "DataFormats/BTauReco/interface/CATopJetTagInfo.h"
 
 // Tau stuff
 
@@ -372,7 +373,7 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
     event.setUserRecord("MC", IsMC);  // distinguish between MC and data
     event.setUserRecord("Run", iEvent.run());
     event.setUserRecord("LumiSection", iEvent.luminosityBlock());
-    event.setUserRecord("EventNum", iEvent.id().event());
+    event.setUserRecord("EventNum", static_cast<uint64_t>(iEvent.id().event()));
     event.setUserRecord("BX", iEvent.bunchCrossing());
     event.setUserRecord("Orbit", iEvent.orbitNumber());
     event.setUserRecord("Dataset", Dataset_);
