@@ -1949,6 +1949,10 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
             pxl::Particle *pxlEle = RecView->create< pxl::Particle >();
             pxlEle->setName("Ele");
             pxlEle->setCharge(patEle->charge());
+            // Additional bool for checking consistency of 3 charge estimators GSF, CTF and SC 
+            // reduces charge mis-id by a factor of 10
+            pxlEle->setUserRecord("isGsfCtfScPixConsistent", patEle->chargeInfo().isGsfCtfScPixConsistent);
+            
             pxlEle->setP4(patEle->px(), patEle->py(), patEle->pz(), patEle->ecalEnergy());
             // For the sake of completeness write the HEEP definition of Et.
             // According to:
