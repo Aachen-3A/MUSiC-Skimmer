@@ -1662,7 +1662,7 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
 
     // count muons
     int numMuonRec = 0;
-    // loop over all pat::Muon's but only store GLOBAL MUONs
+    // loop over all pat::Muon's
     for (std::vector<pat::Muon>::const_iterator muon = muons.begin();  muon != muons.end(); ++muon) {
         if (Muon_cuts(*muon)) {
             pxl::Particle* part = RecView->create<pxl::Particle>();
@@ -1690,26 +1690,53 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
                 }
             }
 
+
             // check if muon is Global/Tracker/StandAlone -Muon
             part->setUserRecord("isGlobalMuon", muon->isGlobalMuon());
             part->setUserRecord("isTrackerMuon", muon->isTrackerMuon());
             part->setUserRecord("isStandAloneMuon", muon->isStandAloneMuon());
 
-            // Access all Tight-Muon-ID or High-Pt-Muon-ID cuts at once. For details see:
-            // http:// cmslxr.fnal.gov/lxr/source/DataFormats/MuonReco/src/MuonSelectors.cc
-            // https:// twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev = 48#Tight_Muon
-            // https:// twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev = 48#New_Version_recommended
+            // Check muon-IDs via bool flags. For details see:
+            // https://github.com/cms-sw/cmssw/blob/CMSSW_7_4_2_patchX/DataFormats/MuonReco/src/MuonSelectors.cc
+            // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonId2015?rev=13
+            // will only work for CMSSW version >= 7_4_2
+            part->setUserRecord("isSoftMuon", muon->isSoftMuon(PV));
+            part->setUserRecord("isLooseMuon", muon->isLooseMuon());
+            part->setUserRecord("isMediumMuon", muon->isMediumMuon());
             part->setUserRecord("isTightMuon", muon->isTightMuon(PV));
             part->setUserRecord("isHighPtMuon", muon->isHighPtMuon(PV));
 
+            // Further muon variables used in IDs
+            // for medium ID:
+            part->setUserRecord("chi2LocalPosition", muon->combinedQuality().chi2LocalPosition);
+            part->setUserRecord("trkKink", muon->combinedQuality().trkKink);
+            part->setUserRecord("SegComp", muon::segmentCompatibility(*muon));
+            // for tight/high-pT ID:
+            // store the number of muon stations containing segments
+            part->setUserRecord("NMatchedStations", muon->numberOfMatchedStations());
+            // for soft ID:
+            part->setUserRecord("isGoodTMOneST", muon::isGoodMuon(*muon, muon::TMOneStationTight));
 
-            // official CaloIso and TrkIso
+            // additional muon variables which are not part of any ID
+            // may be good for additional cross-checks (?)
+            // --> possibly not needed
+            part->setUserRecord("CaloComp", muon->caloCompatibility());
+            part->setUserRecord("NumChambers", muon->numberOfChambers());
+            part->setUserRecord("NumMatches", muon->numberOfMatches());
+            part->setUserRecord("EMDeposit", muon->calEnergy().em);
+            part->setUserRecord("HCALDeposit", muon->calEnergy().had);
+            part->setUserRecord("isGood", muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight));
+            part->setUserRecord("isGoodLastST", muon::isGoodMuon(*muon, muon::TMLastStationTight));
+
+
+            // Muon Isolation
+            // CaloIso and TrkIso
             // Def:  aMuon.setCaloIso(aMuon.isolationR03().emEt + aMuon.isolationR03().hadEt + aMuon.isolationR03().hoEt);
             part->setUserRecord("CaloIso", muon->caloIso());
             part->setUserRecord("TrkIso", muon->trackIso());
             part->setUserRecord("ECALIso", muon->ecalIso());
             part->setUserRecord("HCALIso", muon->hcalIso());
-            // save offical isolation information: delta R = 0.3
+            // save constituents for CaloIso and TrkIso with deltaR = 0.3
             const reco::MuonIsolation& muonIsoR03 = muon->isolationR03();
             part->setUserRecord("IsoR3SumPt", muonIsoR03.sumPt);
             part->setUserRecord("IsoR3EmEt", muonIsoR03.emEt);
@@ -1717,7 +1744,7 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
             part->setUserRecord("IsoR3HoEt", muonIsoR03.hoEt);
             part->setUserRecord("IsoR3NTracks", muonIsoR03.nTracks);
             part->setUserRecord("IsoR3NJets", muonIsoR03.nJets);
-            // save offical isolation information: delta R = 0.5
+            // save constituents for CaloIso and TrkIso with deltaR = 0.5
             const reco::MuonIsolation& muonIsoR05 = muon->isolationR05();
             part->setUserRecord("IsoR5SumPt", muonIsoR05.sumPt);
             part->setUserRecord("IsoR5EmEt", muonIsoR05.emEt);
@@ -1725,22 +1752,11 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
             part->setUserRecord("IsoR5HoEt", muonIsoR05.hoEt);
             part->setUserRecord("IsoR5NTracks", muonIsoR05.nTracks);
             part->setUserRecord("IsoR5NJets", muonIsoR05.nJets);
-            // save some stuff related to Muon-ID (Calo-info etc.)
-            part->setUserRecord("CaloComp", muon->caloCompatibility());
-            part->setUserRecord("NumChambers", muon->numberOfChambers());
-            part->setUserRecord("NumMatches", muon->numberOfMatches());
-            part->setUserRecord("EMDeposit", muon->calEnergy().em);
-            part->setUserRecord("HCALDeposit", muon->calEnergy().had);
-            // check good muon method
-            part->setUserRecord("isGood", muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight));
-            part->setUserRecord("lastStationTight", muon::isGoodMuon(*muon, muon::TMLastStationTight));
-            part->setUserRecord("SegComp", muon::segmentCompatibility(*muon));
-            part->setUserRecord("TMOneStationTight", muon::isGoodMuon(*muon, muon::TMOneStationTight));
 
-            // Particle Flow based Isolation (available for samples processed with CMSSW_4_4_X+ otherwise 0).
+            // Particle Flow based Isolation
             const reco::MuonPFIsolation muonPFIso03 = muon->pfIsolationR03();
             const reco::MuonPFIsolation muonPFIso04 = muon->pfIsolationR04();
-
+            // Save constituents of PF Iso for deltaR = 0.3 and deltaR = 0.4
             // Sum Pt of the charged Hadrons.
             part->setUserRecord("PFIsoR03ChargedHadrons", muonPFIso03.sumChargedHadronPt);
             part->setUserRecord("PFIsoR04ChargedHadrons", muonPFIso04.sumChargedHadronPt);
@@ -1761,80 +1777,86 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
             part->setUserRecord("PFIso04PhotonsHighThres", muonPFIso04.sumPhotonEtHighThreshold);
 
 
-
+            // Muon Tracks:
             // save info about quality of track-fit for combined muon (muon system + tracker)
-            reco::TrackRef muontrack = muon->globalTrack();
-            reco::TrackRef trackerTrack = muon->innerTrack();
+            reco::TrackRef globalTrack = muon->globalTrack();
+            reco::TrackRef innerTrack = muon->innerTrack();
             reco::TrackRef outerTrack = muon->outerTrack();
-            reco::TrackRef muonBestTrack = muon->muonBestTrack();
+            reco::TrackRef bestTrack = muon->muonBestTrack();
 
+            // Some variables may be needed for different track types or with respect to the beamspot.
+            // In these casesm the following abbreviations are added to the names:
+            // PV --> primary vertex
+            // BS --> beamspot
+            // IT --> inner track
+            // GT --> global track
+            // BT --> best track
+            if(globalTrack.isAvailable()){
+                // get pt and pt error
+                part->setUserRecord("ptError",     globalTrack->ptError());
+                part->setUserRecord("pt",          globalTrack->pt());
+                // Store the pt and error from the global track.
+                // (qoverpError() is the same as error(0) for a track.)
+                part->setUserRecord("qoverp",      globalTrack->qoverp());
+                part->setUserRecord("qoverpError", globalTrack->qoverpError());
 
-            // get pt and pt error even for slim muons:
+                // Need chi^2 and n.d.f. to calculate fit probability.
+                part->setUserRecord("chi2", globalTrack->chi2());
+                part->setUserRecord("ndof", globalTrack->ndof());
+                part->setUserRecord("normalizedChi2", globalTrack->normalizedChi2());
+                part->setUserRecord("VHitsMuonSys", globalTrack->hitPattern().numberOfValidMuonHits());
 
-            part->setUserRecord("ptError",     muontrack->ptError());
-            part->setUserRecord("pt",          muontrack->pt());
+                // Store information of the impact parameters with respect to the PV
+                part->setUserRecord("DzGT", globalTrack->dz(the_vertex));
+                part->setUserRecord("DxyGT", globalTrack->dxy(the_vertex));
 
+                // Store information of the impact parameters with respect to the BS
+                part->setUserRecord("DzGTBS", globalTrack->dz(the_beamspot));
+                part->setUserRecord("DxyGTBS", globalTrack->dxy(the_beamspot));
 
-            part->setUserRecord("ptErrorTracker",     trackerTrack->ptError());
-            part->setUserRecord("ptTracker",          trackerTrack->pt());
+                // additional muon track variables which are not part of any ID
+                // may be good for additional cross-checks (?)
+                // --> possibly not needed
+                part->setUserRecord("VHits", globalTrack->hitPattern().numberOfValidHits());
+                part->setUserRecord("VHitsTracker", globalTrack->hitPattern().numberOfValidTrackerHits());
+                part->setUserRecord("LHits", globalTrack->hitPattern().numberOfLostHits(reco::HitPattern::HitCategory::TRACK_HITS));
+            }
+            if(innerTrack.isAvailable()){
+                // get pt and pt error even for slim muons:
+                part->setUserRecord("ptErrorTracker",     innerTrack->ptError());
+                part->setUserRecord("ptTracker",          innerTrack->pt());
 
+                // Store also the pt error from the inner track.
+                // (qoverpError() is the same as error(0) for a track.)
+                part->setUserRecord("qoverpTracker",      innerTrack->qoverp());
+                part->setUserRecord("qoverpErrorTracker", innerTrack->qoverpError());
 
-            part->setUserRecord("DszBS", muontrack->dsz(the_beamspot));
-            part->setUserRecord("DxyBS", muontrack->dxy(the_beamspot));
+                // Store info from HitPattern of the global and inner track.
+                part->setUserRecord("PixelLayersWithMeas",   innerTrack->hitPattern().pixelLayersWithMeasurement());
+                part->setUserRecord("TrackerLayersWithMeas", innerTrack->hitPattern().trackerLayersWithMeasurement());
+                part->setUserRecord("VHitsPixel", innerTrack->hitPattern().numberOfValidPixelHits());
 
-            part->setUserRecord("Dz",   trackerTrack->dz(the_vertex));
-            part->setUserRecord("DzBS", trackerTrack->dz(the_beamspot));
+                // Store info about the quality of the inner track.
+                part->setUserRecord("validFraction", innerTrack->validFraction());
+                part->setUserRecord("QualityInnerTrack", innerTrack->quality(reco::TrackBase::highPurity));
 
+                // Store information of the impact parameters with respect to the PV
+                part->setUserRecord("DzIT", innerTrack->dz(the_vertex));
+                part->setUserRecord("DxyIT", innerTrack->dxy(the_vertex));
+            }
+            if(bestTrack.isAvailable()){
+                // get pt and pt error even for slim muons:
+                part->setUserRecord("ptErrorBT",     bestTrack->ptError());
+                part->setUserRecord("ptBT",          bestTrack->pt());
+                part->setUserRecord("Dz", bestTrack->dz(the_vertex));
+                part->setUserRecord("Dxy", bestTrack->dxy(the_vertex));
+                part->setUserRecord("DzBS", bestTrack->dz(the_beamspot));
+                part->setUserRecord("DxyBS", bestTrack->dxy(the_beamspot));
+                // dB returns almost the same value as Dxy, but is more accurate. For more details see:
+                // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonId2015?rev=13
+                part->setUserRecord("dB",    muon->dB());  // Causes the jobs to fail on the grid
+            }
 
-            // Need chi^2 and n.d.f. to calculate fit probability.
-            part->setUserRecord("chi2", muontrack->chi2());
-            part->setUserRecord("ndof", muontrack->ndof());
-
-            // Store info from HitPattern of the global tracker.
-
-            // Number of lost ( = invalid) hits on track.
-            //
-            part->setUserRecord("LHits", muontrack->hitPattern().numberOfLostHits(reco::HitPattern::HitCategory::TRACK_HITS));
-
-            // Valid hit information
-            //
-            part->setUserRecord("VHits", muontrack->hitPattern().numberOfValidHits());
-            part->setUserRecord("VHitsPixel", muontrack->hitPattern().numberOfValidPixelHits());
-            part->setUserRecord("VHitsTracker", muontrack->hitPattern().numberOfValidTrackerHits());
-            part->setUserRecord("VHitsMuonSys", muontrack->hitPattern().numberOfValidMuonHits());
-
-            // Store the number of tracker layers with measurement.
-            //
-            part->setUserRecord("TrackerLayersWithMeas", muontrack->hitPattern().trackerLayersWithMeasurement());
-            part->setUserRecord("PixelLayersWithMeas",   muontrack->hitPattern().pixelLayersWithMeasurement());
-
-            // store the number of muon stations containing segments
-            part->setUserRecord("NMatchedStations", muon->numberOfMatchedStations());
-
-            // Store the pt and error from the global track.
-            // (qoverpError() is the same as error(0) for a track.)
-            //
-            part->setUserRecord("qoverp",      muontrack->qoverp());
-            part->setUserRecord("qoverpError", muontrack->qoverpError());
-
-            // Store also the pt error from the tracker track.
-            // (qoverpError() is the same as error(0) for a track.)
-            //
-            part->setUserRecord("qoverpTracker",      trackerTrack->qoverp());
-            part->setUserRecord("qoverpErrorTracker", trackerTrack->qoverpError());
-
-
-            // Save distance to the primary vertex and the beam spot in z and xy plane, respectively
-            // (i.e. the absolute longitudinal and transverse impact parameter).
-            //
-            part->setUserRecord("Dsz", muontrack->dsz(the_vertex));
-            part->setUserRecord("Dxy", muontrack->dxy(the_vertex));
-
-            part->setUserRecord("DzBT",  muonBestTrack->dz(the_vertex));  // Causes the jobs to fail on the grid
-            part->setUserRecord("DxyBT", muonBestTrack->dxy(the_vertex));  // Causes the jobs to fail on the grid
-            // dB returns almost the same value as DxyBT, but is more accurate. For more details see:
-            // https:// twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev = 48#Tight_Muon
-            part->setUserRecord("dB",    muon->dB());  // Causes the jobs to fail on the grid
 
             // Store information for "cocktail" high energy refit. These are needed
             // for the HighPT Muon ID, for more details see:
@@ -1949,10 +1971,6 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
             pxl::Particle *pxlEle = RecView->create< pxl::Particle >();
             pxlEle->setName("Ele");
             pxlEle->setCharge(patEle->charge());
-            // Additional bool for checking consistency of 3 charge estimators GSF, CTF and SC 
-            // reduces charge mis-id by a factor of 10
-            pxlEle->setUserRecord("isGsfCtfScPixConsistent", patEle->chargeInfo().isGsfCtfScPixConsistent);
-            
             pxlEle->setP4(patEle->px(), patEle->py(), patEle->pz(), patEle->ecalEnergy());
             // For the sake of completeness write the HEEP definition of Et.
             // According to:
@@ -2745,7 +2763,6 @@ bool PxlSkimmer_miniAOD::Tau_cuts(const pat::Tau &tau) const {
 
 bool PxlSkimmer_miniAOD::Muon_cuts(const pat::Muon& muon) const {
     // basic preselection cuts
-    if (!muon.isGlobalMuon()) return false;
     if (muon.pt() < min_muon_pt)  return false;
     if (fabs(muon.eta()) > max_eta) return false;
     return true;
