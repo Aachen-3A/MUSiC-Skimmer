@@ -22,11 +22,11 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     # The global tag is retrieved automatically but can be changed by the
     # configureJEC function.
     #
-    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
+    # process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
     
     # The global tag is set in pset file or overidden by the calling 
     # script (e.g. music_crab3.py9
-    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
+    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     process.GlobalTag.globaltag = globalTag
 
     process.load( 'Configuration.Geometry.GeometryPilot2_cff' )

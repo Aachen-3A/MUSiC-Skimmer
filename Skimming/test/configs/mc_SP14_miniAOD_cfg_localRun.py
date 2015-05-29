@@ -26,7 +26,7 @@ import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 print sys.argv
 name="test"
 datasetpath="dummy"
-globalTag="MCRUN2_74_V9::All"
+globalTag="MCRUN2_74_V9"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:

@@ -19,7 +19,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget, verbosity=0, runOnFast=False
     # The global tag is retrieved automatically but can be changed by the
     # configureJEC function.
     #
-    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
+    process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     from Configuration.AlCa.autoCond import autoCond
     if runOnData:
         process.GlobalTag.globaltag = cms.string( autoCond[ 'com10' ] )
