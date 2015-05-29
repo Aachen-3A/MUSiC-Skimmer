@@ -154,6 +154,17 @@ Skimmer = cms.EDAnalyzer(
         )
     ),
 
+
+    # "borrowed" from IB
+    # for miniIsolation PF-weighted isolation
+    # https://github.com/SUSYDileptonAC/SuSyAachen/blob/master/TagAndProbeTreeWriter/python/isolationFunctor_cfi.py
+    # this version:
+    # https://github.com/SUSYDileptonAC/SuSyAachen/commit/e9f0eaf2fd3828eabe18545d88fa83a9a8eb72f5
+    isolationDefinitions = cms.PSet(
+        rhoSource = cms.InputTag("fixedGridRhoFastjetAll"),
+        candSource = cms.InputTag("packedPFCandidates"),
+    ),
+
     cuts = cms.PSet(
         min_tau_pt  = cms.double( 10 ),
         min_muon_pt = cms.double( 5 ),
