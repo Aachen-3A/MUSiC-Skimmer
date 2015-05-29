@@ -108,15 +108,18 @@
 // Private ParticleMatcher
 #include "PxlSkimmer/Skimming/interface/ParticleMatcher.h"
 
+// Isolation Functor from IB for miniIsolation and PF weighted Isolation
+#include "PxlSkimmer/Skimming/interface/IsolationFunctor.h"
+
 //
 // constructors and destructor
 //
 PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     FileName_(iConfig.getUntrackedParameter< string >("FileName")),
-
     fastSim_(iConfig.getParameter<bool>("FastSim")),
-
-    fePaxFile(FileName_) {
+    fctIsolation_(iConfig.getParameter<edm::ParameterSet>("isolationDefinitions")),
+    fePaxFile(FileName_)
+    {
     // now do what ever initialization is needed
 
     fePaxFile.setCompressionMode(6);
@@ -168,8 +171,10 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     patElectronLToken_ = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("patElectronLabel"));
 
+
     // HCAL noise
     hcal_noise_label_ = iConfig.getParameter< InputTag >("HCALNoise");
+
 
     // get the PSet that contains all trigger PSets
     ParameterSet trigger_pset = iConfig.getParameter< ParameterSet >("triggers");
@@ -399,6 +404,9 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
     // set process name
     GenEvtView->setUserRecord("Process", Process_);
     RecEvtView->setUserRecord("Process", Process_);
+
+    // Isolation Functor from IB for miniIsolation and PF weighted Isolation
+    fctIsolation_.init(iEvent);
 
     // Generator stuff
     if (IsMC) {
@@ -1776,6 +1784,11 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
             part->setUserRecord("PFIso03PhotonsHighThres", muonPFIso03.sumPhotonEtHighThreshold);
             part->setUserRecord("PFIso04PhotonsHighThres", muonPFIso04.sumPhotonEtHighThreshold);
 
+            // mini Isolation
+            // weird call needed to call a non const function in a const one
+            part->setUserRecord("miniIsoEA",const_cast<PxlSkimmer_miniAOD*>(this)->fctIsolation_(*muon,"miniIsoEA"));
+            part->setUserRecord("miniIsoDB",const_cast<PxlSkimmer_miniAOD*>(this)->fctIsolation_(*muon,"miniIsoDB"));
+            part->setUserRecord("miniIsoPFWeight",const_cast<PxlSkimmer_miniAOD*>(this)->fctIsolation_(*muon,"miniIsoPFWeight"));
 
             // Muon Tracks:
             // save info about quality of track-fit for combined muon (muon system + tracker)
@@ -1909,6 +1922,7 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
 }
 
 
+
 // ------------ reading Reconstructed Electrons ------------
 
 void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
@@ -2015,6 +2029,12 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
             // HCAL depth 2 iso deposit with electron footprint removed.
             pxlEle->setUserRecord("HCALIso03d2", patEle->dr03HcalDepth2TowerSumEt());
             pxlEle->setUserRecord("HCALIso04d2", patEle->dr04HcalDepth2TowerSumEt());
+
+            // mini Isolation
+            // weird call needed to call a non const function in a const one
+            pxlEle->setUserRecord("miniIsoEA",const_cast<PxlSkimmer_miniAOD*>(this)->fctIsolation_(*patEle,"miniIsoEA"));
+            pxlEle->setUserRecord("miniIsoDB",const_cast<PxlSkimmer_miniAOD*>(this)->fctIsolation_(*patEle,"miniIsoDB"));
+            pxlEle->setUserRecord("miniIsoPFWeight",const_cast<PxlSkimmer_miniAOD*>(this)->fctIsolation_(*patEle,"miniIsoPFWeight"));
 
             // Track-cluster matching variables.
             //

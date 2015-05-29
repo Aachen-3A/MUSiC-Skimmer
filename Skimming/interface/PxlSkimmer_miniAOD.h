@@ -96,6 +96,9 @@ class PFIsolationEstimator;
 #include "DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 
+// Isolation Functor from IB for miniIsolation and PF weighted Isolation
+#include "PxlSkimmer/Skimming/interface/IsolationFunctor.h"
+
 // PXL stuff
 // Has to be included as the last header otherwise there will be a warning concerning the
 // zlib. According to Steffen there are two different zlib and ROOT can only deal with one of them
@@ -326,6 +329,8 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
     // HCAL noise
     edm::InputTag hcal_noise_label_;
 
+    // IsolationFunctor from IB (needed for miniIsolation / PF Isolation)
+    IsolationFunctor fctIsolation_;
 
 
 
