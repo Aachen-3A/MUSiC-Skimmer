@@ -29,6 +29,7 @@ Skimmer = cms.EDAnalyzer(
     patTauTag          = cms.InputTag( 'slimmedTaus' ),
     patGammaLabel      = cms.InputTag("slimmedPhotons"),
     patMETTag          = cms.InputTag( 'slimmedMETs' ),
+    PUPPIMETTag        = cms.InputTag( 'slimmedMETsPuppi' ),
     patPFCandiates     = cms.InputTag( 'packedPFCandidates' ),
 
     rhos = cms.VInputTag( cms.InputTag( 'fixedGridRhoAll' ),

@@ -155,10 +155,6 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
     virtual void analyzeGenRelatedInfo(const edm::Event&, pxl::EventView*);
     virtual void analyzeGenJets(const edm::Event &iEvent, pxl::EventView *GenEvtView, std::map< const reco::Candidate*, pxl::Particle* > &genjetmap, const jet_def &jet_info);
 
-    // virtual void analyzeGenMETs(edm::Event const &iEvent,
-    // pxl::EventView *EvtView
-    // ) const;
-
     virtual void analyzeGenMET(edm::Event const &iEvent,
                                pxl::EventView *EvtView) const;
 
@@ -224,9 +220,9 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
                                   edm::InputTag const &patMETTag,
                                   pxl::EventView *RecEvtView) const;
 
-    virtual void analyzeRecRecoPFMET(edm::Event const &iEvent,
-                                     edm::InputTag const &recoPFMETTag,
-                                     pxl::EventView *RecEvtView) const;
+    virtual void analyzeRecPUPPIMET(edm::Event const &iEvent,
+                                    edm::InputTag const &recoPUPPIMETTag,
+                                    pxl::EventView *RecEvtView) const;
 
     virtual void analyzeRecGammas(const edm::Event &iEvent,
                                   pxl::EventView *RecView,
@@ -307,6 +303,7 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
     edm::InputTag patGammaLabel_;
     edm::InputTag patTauTag_;
     edm::InputTag patMETTag_;
+    edm::InputTag PUPPIMETTag_;
     edm::InputTag patJetTag_;
     edm::InputTag patPFCandiates_;
 

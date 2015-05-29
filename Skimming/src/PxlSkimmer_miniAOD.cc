@@ -147,6 +147,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     patGammaLabel_               = iConfig.getParameter<edm::InputTag>("patGammaLabel");
     patTauTag_                   = iConfig.getParameter<edm::InputTag>("patTauTag");
     patMETTag_                   = iConfig.getParameter<edm::InputTag>("patMETTag");
+    PUPPIMETTag_                 = iConfig.getParameter<edm::InputTag>("PUPPIMETTag");
     patPFCandiates_              = iConfig.getParameter<edm::InputTag>("patPFCandiates");
 
 
@@ -857,17 +858,6 @@ void PxlSkimmer_miniAOD::analyzeGenJets(const edm::Event &iEvent, pxl::EventView
     edm::LogInfo("PxlSkimmer_miniAOD|GenInfo") << "MC Found: " << numJetMC << " jet(s) of type: " << jet_info.name;
 }
 
-// ------------ reading the Generator MET ------------
-
-// void PxlSkimmer_miniAOD::analyzeGenMETs(edm::Event const &iEvent,
-// pxl::EventView *GenEvtView
-// ) const {
-// for (VInputTag::const_iterator genMETTag = m_genMETTags.begin(); genMETTag != m_genMETTags.end(); ++genMETTag) {
-// analyzeGenMET(iEvent, *genMETTag, GenEvtView);
-// }
-// }
-
-
 void PxlSkimmer_miniAOD::analyzeGenMET(edm::Event const &iEvent,
                                          pxl::EventView *GenEvtView) const {
     // take the genMET() refference from the pat met
@@ -986,14 +976,9 @@ void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventVi
 // ------------ reading the Reconstructed MET ------------
 
 void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
-    // for (VInputTag::const_iterator patMETTag = m_patMETTags.begin(); patMETTag != m_patMETTags.end(); ++patMETTag) {
-    // analyzeRecPatMET(iEvent, *patMETTag, RecEvtView);
-    // }
     analyzeRecPatMET(iEvent, patMETTag_, RecEvtView);
 
-    // for (VInputTag::const_iterator recoPFMETTag = m_recoPFMETTags.begin(); recoPFMETTag != m_recoPFMETTags.end(); ++recoPFMETTag) {
-    // analyzeRecRecoPFMET(iEvent, *recoPFMETTag, RecEvtView);
-    // }
+    analyzeRecPUPPIMET(iEvent, PUPPIMETTag_, RecEvtView);
 }
 
 
@@ -1021,24 +1006,24 @@ void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
 }
 
 
-void PxlSkimmer_miniAOD::analyzeRecRecoPFMET(edm::Event const &iEvent,
-                                               edm::InputTag const &recoPFMETTag,
-                                               pxl::EventView *RecEvtView) const {
-    edm::Handle< reco::PFMETCollection > METHandle;
-    iEvent.getByLabel(recoPFMETTag, METHandle);
+void PxlSkimmer_miniAOD::analyzeRecPUPPIMET(edm::Event const &iEvent,
+                                            edm::InputTag const &recoPUPPIMETTag,
+                                            pxl::EventView *RecEvtView) const {
+    edm::Handle< pat::METCollection > METHandle;
+    iEvent.getByLabel(recoPUPPIMETTag, METHandle);
 
     // There should be only one MET in the event, so take the first element.
-    reco::PFMETCollection::const_iterator met = (*METHandle).begin();
+    pat::METCollection::const_iterator met = (*METHandle).begin();
 
-    int numRecoPFMET = 0;
+    int numPuppiMET = 0;
     pxl::Particle *part = RecEvtView->create< pxl::Particle >();
-    part->setName(recoPFMETTag.label());
+    part->setName(recoPUPPIMETTag.label());
     part->setP4(met->px(), met->py(), met->pz(), met->energy());
     part->setUserRecord("sumEt",  met->sumEt());
     part->setUserRecord("mEtSig", met->mEtSig());
 
-    if (MET_cuts(part)) numRecoPFMET++;
-    RecEvtView->setUserRecord("Num" + recoPFMETTag.label(), numRecoPFMET);
+    if (MET_cuts(part)) numPuppiMET++;
+    RecEvtView->setUserRecord("Num" + recoPUPPIMETTag.label(), numPuppiMET);
 }
 
 

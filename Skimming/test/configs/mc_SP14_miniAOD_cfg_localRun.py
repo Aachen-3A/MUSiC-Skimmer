@@ -3,7 +3,7 @@ runOnData = False
 runOnGen = False
 
 import FWCore.ParameterSet.Config as cms
-
+import sys
 # Choose the type of effective area correction you want to use.
 # Possible values:
 #     NoCorr
@@ -23,7 +23,24 @@ if runOnGen and runOnData :
 
 import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
-process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, verbosityLvl )
+print sys.argv
+name="test"
+datasetpath="dummy"
+globalTag="MCRUN2_74_V9::All"
+for option in sys.argv:
+    splitoption=option.split('=')
+    if "name" in option and len(splitoption) > 1:
+        name = splitoption[1]
+    if "datasetpath" in option and len(splitoption) > 1:
+        datasetpath = splitoption[1]
+    if "globalTag" in option and len(splitoption) > 1:
+        globalTag = splitoption[1]
+
+print "music_crab3 name %s"%name
+print "music_crab3 datasetpath %s"%datasetpath
+print "music_crab3 globalTag %s"%globalTag
+
+process = Tools_miniAOD.prepare( runOnGen, runOnData, eleEffAreaTarget, name, datasetpath, globalTag, verbosityLvl )
 
 # source
 process.source = cms.Source(
@@ -34,8 +51,8 @@ process.source = cms.Source(
         #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
         #'file://WprimeTauMiniAOD.root'
-        # '/store/mc/Spring14miniaod/WprimeToMuNu_M_5800_Tune4C_13TeV_pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/E4AD1244-2809-E411-919F-0025904B1452.root'
-        'file:///disk1/erdweg/MINIAOD_files/0603D444-2D70-E411-AF03-002618943922.root'
+        '/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1600_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/00000/A449BF1F-DCFC-E411-9350-00259073E442.root'
+        # 'file:///disk1/erdweg/MINIAOD_files/0603D444-2D70-E411-AF03-002618943922.root'
         )
     )
 
