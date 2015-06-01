@@ -2310,6 +2310,8 @@ void PxlSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView
             part->setUserRecord("chargedEmEnergy",             jet->chargedEmEnergy());
             part->setUserRecord("neutralEmEnergyFraction",     jet->neutralEmEnergyFraction());
             part->setUserRecord("neutralEmEnergy",             jet->neutralEmEnergy());
+            part->setUserRecord("muonEnergy",                  jet->muonEnergy());
+            part->setUserRecord("muonEnergyFraction",          jet->muonEnergyFraction());
             part->setUserRecord("chargedMultiplicity", jet->chargedMultiplicity());
             part->setUserRecord("nconstituents", jet->numberOfDaughters());
             part->setUserRecord("uncorrectedPT", jet->pt()*jet->jecFactor("Uncorrected"));
