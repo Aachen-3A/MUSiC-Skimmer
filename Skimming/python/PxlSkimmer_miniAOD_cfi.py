@@ -61,7 +61,7 @@ Skimmer = cms.EDAnalyzer(
 
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
-        AK5 = cms.PSet(
+        AK4 = cms.PSet(
             MCLabel = cms.InputTag( "slimmedGenJets" ),
             RecoLabel = cms.InputTag( "slimmedJets" ),
             isPF = cms.bool(True),

@@ -2338,10 +2338,10 @@ void PxlSkimmer_miniAOD::analyzeRecJets(const edm::Event &iEvent, pxl::EventView
                 part->setUserRecord("tau1", jet->userFloat("NjettinessAK8:tau1"));    //
                 part->setUserRecord("tau2", jet->userFloat("NjettinessAK8:tau2"));    //  Access the n-subjettiness variables
                 part->setUserRecord("tau3", jet->userFloat("NjettinessAK8:tau3"));    //
-
-                part->setUserRecord("trimmedMass",  jet->userFloat("ak8PFJetsCHSTrimmedLinks"));  // access to trimmed mass
-                part->setUserRecord("prunedMass",  jet->userFloat("ak8PFJetsCHSPrunedLinks"));  // access to pruned mass
-                part->setUserRecord("filteredMass", jet->userFloat("ak8PFJetsCHSFilteredLinks"));  // access to filtered mass
+                part->setUserRecord("trimmedMass",  jet->userFloat("ak8PFJetsCHSTrimmedMass"));  // access to trimmed mass
+                part->setUserRecord("prunedMass",  jet->userFloat("ak8PFJetsCHSPrunedMass"));  // access to pruned mass
+                part->setUserRecord("filteredMass", jet->userFloat("ak8PFJetsCHSFilteredMass"));  // access to filtered mass
+                part->setUserRecord("softDropMass", jet->userFloat("ak8PFJetsCHSSoftDropMass"));  // access to filtered mass
 
 
 
