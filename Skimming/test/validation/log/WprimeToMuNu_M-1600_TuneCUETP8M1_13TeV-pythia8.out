@@ -1,0 +1,110 @@
+INFO: Using Config file: /user/esch/TAPAS/PxlButcher/Validator/MC.cfg
+ Lumi/Pileup Reweighting: Computed Weights per In-Time Nint 
+   0 0.26853
+   1 0.510415
+   2 7.56531
+   3 0.336444
+   4 0.283747
+   5 0.696631
+   6 0.520726
+   7 0.512864
+   8 0.700904
+   9 1.02254
+   10 1.43216
+   11 1.75231
+   12 1.75582
+   13 1.55182
+   14 1.31775
+   15 1.14452
+   16 1.05298
+   17 1.02327
+   18 1.0404
+   19 1.08476
+   20 1.12635
+   21 1.15301
+   22 1.16888
+   23 1.17309
+   24 1.15694
+   25 1.11347
+   26 1.04279
+   27 0.950609
+   28 0.843407
+   29 0.728037
+   30 0.611409
+   31 0.499593
+   32 0.396649
+   33 0.30564
+   34 0.228445
+   35 0.16597
+   36 0.118606
+   37 0.0852867
+   38 0.0638023
+   39 0.0516183
+   40 0.0462962
+   41 0.0459005
+   42 0.0491052
+   43 0.0551233
+   44 0.0637028
+   45 0.0748071
+   46 0.0886744
+   47 0.105792
+   48 0.126769
+   49 0.152353
+   50 0.183537
+   51 0.221368
+   52 0.267343
+   53 0.323201
+   54 0.390685
+   55 0.472304
+   56 0.570887
+   57 0.690046
+   58 0.833944
+   59 2.12096
+Opening file /user/esch/CMSSW_7_4_2_patch1/src/PxlSkimmer/Skimming/test/validation/WprimeToMuNu_M-1600_TuneCUETP8M1_13TeV-pythia8.pxlio
+Opening time: Wed Jun  3 16:02:43 2015
+1 Events analyzed (0 skipped)
+2 Events analyzed (0 skipped)
+3 Events analyzed (0 skipped)
+4 Events analyzed (0 skipped)
+5 Events analyzed (0 skipped)
+6 Events analyzed (0 skipped)
+7 Events analyzed (0 skipped)
+8 Events analyzed (0 skipped)
+9 Events analyzed (0 skipped)
+10 Events analyzed (0 skipped)
+20 Events analyzed (0 skipped)
+30 Events analyzed (0 skipped)
+40 Events analyzed (0 skipped)
+50 Events analyzed (0 skipped)
+60 Events analyzed (0 skipped)
+70 Events analyzed (0 skipped)
+80 Events analyzed (0 skipped)
+90 Events analyzed (0 skipped)
+100 Events analyzed (0 skipped)
+200 Events analyzed (0 skipped)
+300 Events analyzed (0 skipped)
+400 Events analyzed (0 skipped)
+500 Events analyzed (0 skipped)
+600 Events analyzed (0 skipped)
+700 Events analyzed (0 skipped)
+800 Events analyzed (0 skipped)
+900 Events analyzed (0 skipped)
+1000 Events analyzed (0 skipped)
+2000 Events analyzed (0 skipped)
+3000 Events analyzed (0 skipped)
+4000 Events analyzed (0 skipped)
+5000 Events analyzed (0 skipped)
+6000 Events analyzed (0 skipped)
+7000 Events analyzed (0 skipped)
+8000 Events analyzed (0 skipped)
+Analyzed 8957 Events, skipped 0, elapsed CPU time: 18.9952 (471.54 evts per sec)
+
+
+
+
+--> Process info:
+    -------------
+    CPU time elapsed: 19.9 s
+    Sys time elapsed: 0.5 s
+    Resident memory:  114.8 MB
+    Virtual memory:   310.6 MB
