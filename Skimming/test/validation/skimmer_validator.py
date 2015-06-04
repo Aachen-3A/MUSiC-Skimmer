@@ -16,6 +16,7 @@ from terminalFunctions import *
 import resource
 from datetime import datetime
 from array import array
+from string import Template
 import numpy as np
 import logging
 import multiprocessing
@@ -204,6 +205,12 @@ def opt_parser():
     parser.add_option( '--nogit', metavar = 'NOGIT' , default = False,
                             help = 'Bool if you want to do the repository stuff (commiting, merging and pushing). [default = %default]' )
 
+    parser.add_option( '--template', metavar = 'TEMPLATE' , default = '$CMSSW_BASE/src/PxlSkimmer/Skimming/test/validation/mc_SP14_miniAOD_cfg_template.py',
+                            help = 'Path of the skimmer config template. [default = %default]')
+    parser.add_option( '--globaltag', metavar = 'GLOBALTAG' , default = 'MCRUN2_74_V9',
+                            help = 'Global tag used by the skimmer. [default = %default]')
+    parser.add_option( '--maxevents', metavar = 'MAXEVENTS' , default = -1,
+                            help = 'Maximum number of events to be skimmed per sample. [default = %default]')
 
     ( options, args ) = parser.parse_args()
     if len( args ) != 0:
@@ -757,19 +764,14 @@ def get_sample_list(cfg_file):
 # @param[in] cfg_file Configuration file object
 # @param[in] sample_list List of samples that should be studied
 def run_analysis(options,cfg_file,sample_list):
-    control_output("running the analysis")
-
-    music_prog = options.executable
-    music_opt  = options.exeoption
-    music_cfg  = options.execonfig
-    music_path = cfg_file["basic"]["path"]
+    control_output("running the skimmer")
 
     if not os.path.exists('log/'):
         os.mkdir('log')
 
     item_list = []
     for item in cfg_file["samples"]:
-        item_list.append([music_prog,"-o %s"%(item[item.find("/")+1:-6]),music_opt,music_cfg,music_path+item])
+        item_list.append([options.template,item,options.globaltag,options.maxevents])
     pool = multiprocessing.Pool()
     pool.map_async(run_analysis_task, item_list)
     while True:
@@ -778,14 +780,16 @@ def run_analysis(options,cfg_file,sample_list):
     pool.close()
     pool.join()
 
-    #for item in item_list:
-    #    run_analysis_task(item)
+    # for item in item_list:
+        # run_analysis_task(item)
 
     if not os.path.exists(options.Output):
         os.mkdir(options.Output)
 
     p = subprocess.Popen("hadd -f9 %s/%s *_mem_log.root"%(options.Output,"log.root"),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
+
+    raw_input('123')
 
     for item in sample_list:
         sample_files = []
@@ -802,9 +806,37 @@ def run_analysis(options,cfg_file,sample_list):
     p4 = subprocess.Popen("rm *.root",shell=True,stdout=subprocess.PIPE)
     output = p4.communicate()[0]
 
-## Function that runs one analysis task and measures its performance
+## Function to create a skimmer config file
 #
-# This function is called in parallel to run one analysis job on
+# Depending on the parameters a skimmer config file is created from
+# a gicen template file.
+# @param[in] infile Name of the input file
+# @param[in] globaltag Name of the global tag
+# @param[in] template Name of the template file
+# @param[in] maxevents Number of maximum of events to be skimmed
+# @param[out] cfg_name Name of the created config file
+def create_cfg_for_skimmer(infile, globaltag, template, maxevents):
+    d = dict(
+        OUTNAME='%s'%(infile.replace('.root','').replace('/','')),
+        GLOBALTAG='%s'%(globaltag),
+        INFILE='%s'%(infile),
+        MAXEVENTS='%i'%int(maxevents),
+    )
+
+    file=open(os.path.expandvars(template),"r")
+    text=file.read()
+    file.close()
+    newText=Template(text).safe_substitute(d)
+    cfg_name = "log/mc_SP14_miniAOD_%s_cfg.py"%(infile.replace('.root','').replace('/',''))
+    fileNew=open(cfg_name,"w+")
+    fileNew.write(newText)
+    fileNew.close()
+
+    return cfg_name
+
+## Function that runs one skimmer task and measures its performance
+#
+# This function is called in parallel to run one skimming job on
 # one file. It also measures its performance (memory usage and run
 # time) and saves them into a root file.
 # defined in the config file. The resulting output files are then
@@ -817,11 +849,13 @@ def run_analysis_task(item):
         rssList = []
         virtual = []
         other = []
-        cmd = [item[0], item[1], item[2], item[3], item[4]]
-        log.debug(" ".join(cmd))
-        f_out = open("log/"+item[1][3:]+".out","w")
-        f_err = open("log/"+item[1][3:]+".err","w")
-        p = subprocess.Popen(" ".join(cmd), shell=True,stdout=f_out,stderr=f_err)
+
+        f_out = open("log/"+item[1][:-5].replace('/','')+".out","w")
+        f_err = open("log/"+item[1][:-5].replace('/','')+".err","w")
+
+        cfg_name = create_cfg_for_skimmer(item[1], item[2], item[0], item[3])
+
+        p = subprocess.Popen("cmsRun %s"%cfg_name, shell=True,stdout=f_out,stderr=f_err)
         pid = p.pid
         while True:
             if p.poll() != None:
@@ -865,14 +899,14 @@ def run_analysis_task(item):
         graphRSS.SetMarkerColor(kBlue)
         graphRSS.SetMarkerStyle(21)
     
-        dummy_file = TFile(item[1][3:]+"_mem_log.root","RECREATE")
+        dummy_file = TFile(item[1][:-5].replace('/','')+"_mem_log.root","RECREATE")
     
-        graphRSS.Write(item[1][3:]+"_rss")
-        graphVirtual.Write(item[1][3:]+"_vir")
+        graphRSS.Write(item[1][:-5].replace('/','')+"_rss")
+        graphVirtual.Write(item[1][:-5].replace('/','')+"_vir")
     
         dummy_file.Close()
     except:
-        print("Unexpected error in the running the analysis on %s:"%(item[1][3:]))
+        print("Unexpected error in the running the analysis on %s:"%(item[1][:]))
         print(sys.exc_info()[0])
         print(sys.exc_info()[1])
         print(sys.exc_info()[2])

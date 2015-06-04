@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./skimmer_validator.py --cfgfile=config.cfg --nogit=True
+./skimmer_validator.py --cfgfile=config.cfg --nogit=True --debug=DEBUG
