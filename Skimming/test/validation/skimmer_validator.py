@@ -14,6 +14,7 @@
 import optparse, time, os, subprocess, sys
 from terminalFunctions import *
 import resource
+import shutil
 from datetime import datetime
 from array import array
 from string import Template
@@ -754,11 +755,11 @@ def get_sample_list(cfg_file):
             sample_list.append(cfg_file["samples"][item]["label"])
     return sample_list
 
-## Function to run the analysis over all samples
+## Function to run the skimmer over all samples
 #
-# Function to run the analysis parallelized over all samples as
+# Function to run the skimmer parallelized over all samples as
 # defined in the config file. The resulting output files are then
-# merged for each sample and collected in the output directory.
+# collected in the output directory.
 # After that everything is cleaned up.
 # @param[in] options Command line options object
 # @param[in] cfg_file Configuration file object
@@ -789,22 +790,15 @@ def run_analysis(options,cfg_file,sample_list):
     p = subprocess.Popen("hadd -f9 %s/%s *_mem_log.root"%(options.Output,"log.root"),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
-    raw_input('123')
+    p = subprocess.Popen("rm *_mem_log.root",shell=True,stdout=subprocess.PIPE)
+    output = p.communicate()[0]
 
     for item in sample_list:
-        sample_files = []
-        sample_folders = []
+        if not os.path.exists(options.Output + '/' + item):
+            os.mkdir(options.Output + '/' + item)
         for item2 in cfg_file["samples"]:
             if cfg_file["samples"][item2]["label"] == item:
-                sample_files.append(item2[item2.find("/")+1:-6]+"/SpecialHistos.root")
-                sample_folders.append(item2[item2.find("/")+1:-6])
-        p3 = subprocess.Popen("hadd -f9 %s/%s.root "%(options.Output,item)+" ".join(sample_files),shell=True,stdout=subprocess.PIPE)
-        output = p3.communicate()[0]
-        for item2 in sample_folders:
-            p2 = subprocess.Popen("rm -r %s"%item2,shell=True,stdout=subprocess.PIPE)
-            output = p2.communicate()[0]
-    p4 = subprocess.Popen("rm *.root",shell=True,stdout=subprocess.PIPE)
-    output = p4.communicate()[0]
+                shutil.move(item2.replace('.root','.pxlio').replace('/',''), options.Output + '/' + item + '/' + item2.replace('.root','.pxlio').replace('/',''))
 
 ## Function to create a skimmer config file
 #
@@ -1427,6 +1421,8 @@ def main():
     sample_list = get_sample_list(cfg_file)
 
     run_analysis(options,cfg_file,sample_list)
+
+    raw_input('123')
 
     get_analysis_output(options)
 
