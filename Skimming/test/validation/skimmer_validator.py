@@ -599,71 +599,6 @@ def comparison_performance(options):
         compare_results.update({"performance":[True,diff_time,diff_rss]})
         return True
 
-## Function to make the Chi2 comparison between two distributions
-#
-# Read in the distributions from the validation run and from
-# the reference, calculate the Chi2 of this two distributions.
-# If the Chi2 == 0 the comparison is successfull otherwise it
-# failed.
-# @param[in] item Name of the histogram group that should be studied
-# @param[in] hist Name of the histogram the should be studied
-# @param[in] fname Name of the sample that should be studied
-# @param[out] bool Boolean if the Chi2 comparision is successfull
-def comparison_norm(item,hist,fname):
-    log.debug("comparing the normalization of distributions")
-
-    log.debug("Now reading: " +item+"/"+hist + " from: comparison_dir/old/%s.root"%(fname))
-    comp_file = TFile("comparison_dir/old/%s.root"%(fname),"READ")
-    ref_hist = TH1F()
-    ref_hist = comp_file.Get(item+"/"+hist)
-    ref_hist.SetDirectory(0)
-    comp_file.Close()
-    new_file = TFile("comparison_dir/new/%s.root"%(fname),"READ")
-    new_hist = TH1F()
-    new_hist = new_file.Get(item+"/"+hist)
-    new_hist.SetDirectory(0)
-    new_file.Close()
-
-    if ref_hist.GetEntries() == 0 and new_hist.GetEntries() == 0:
-        compare_results[fname + "_" + item + "_" + hist] = [True,0,0]
-        return True
-
-    chi2 = Chi2_calcer(ref_hist,new_hist)
-
-    if chi2 == 0.0:
-        compare_results[fname + "_" + item + "_" + hist] = [True,0,0]
-        return True
-    else:
-        compare_results[fname + "_" + item + "_" + hist] = [False,chi2,0]
-        return False
-
-## Function to compare the number of events between two distributions
-#
-# Read in the distributions from the validation run and from
-# the reference, get the number of events for both distributions
-# and save the difference.
-# @param[in] item Name of the histogram group that should be studied
-# @param[in] hist Name of the histogram the should be studied
-# @param[in] fname Name of the sample that should be studied
-def comparison_events(item,hist,fname):
-    log.debug("comparing the number of events in the distribution")
-
-    log.debug("Now reading: " +item+"/"+hist + " from: comparison_dir/old/%s.root"%(fname))
-    comp_file = TFile("comparison_dir/old/%s.root"%(fname),"READ")
-    ref_hist = TH1F()
-    ref_hist = comp_file.Get(item+"/"+hist)
-    ref_hist.SetDirectory(0)
-    comp_file.Close()
-    new_file = TFile("comparison_dir/new/%s.root"%(fname),"READ")
-    new_hist = TH1F()
-    new_hist = new_file.Get(item+"/"+hist)
-    new_hist.SetDirectory(0)
-    new_file.Close()
-
-    diff = ref_hist.GetEntries() - new_hist.GetEntries()
-
-    compare_results[fname + "_" + item + "_" + hist] = [compare_results[fname + "_" + item + "_" + hist][0],compare_results[fname + "_" + item + "_" + hist][1],diff]
-
 ## Function to do the comparison between reference and new run
 #
 # Function to call the performance comparison, and then loop over
@@ -681,38 +616,6 @@ def do_comparison(options,cfg_file,sample_list):
     control_output("performance")
     control_output("performance",c_performance)
 
-    histos = {}
-    for group in cfg_file["basic"]["hist_groups"]:
-        dummy_histos = []
-        for item in cfg_file["histos"]:
-            if cfg_file["histos"][item]["folder"] == group:
-                dummy_histos.append(item)
-                log.debug("Now adding histogram: " + item)
-        histos.update({group:dummy_histos})
-    log.debug(histos)
-
-    all_samples = True
-    for i_sample in sample_list:
-        all_hists = True
-        fname = i_sample
-        for item in histos:
-            control_output(item)
-            group = True
-            for hist in histos[item]:
-                log.debug("Now comparing: " + hist)
-                compare_results.update({i_sample + "_" + item + "_" + hist:[False,0,0]})
-                c_norm = comparison_norm(item,hist,fname)
-                control_output(hist,c_norm)
-                group = group and c_norm
-                if not c_norm:
-                    comparison_events(item,hist,fname)
-            all_hists = all_hists and group
-        control_output("All histograms")
-        control_output("All histograms",all_hists)
-        all_samples = all_samples and all_hists
-    control_output("All samples")
-    control_output("All samples",all_samples)
-    return all_samples
 
 ## Function to collect the reference output
 #
@@ -1429,9 +1332,9 @@ def main():
 
     get_reference_output(options)
 
-    raw_input('123')
+    do_comparison(options,cfg_file,sample_list)
 
-    all_samples = do_comparison(options,cfg_file,sample_list)
+    raw_input('123')
 
     run_pxlana_validation()
 
