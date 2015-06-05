@@ -989,40 +989,6 @@ def make_val_compilation(options):
         log.info(bcolors.OKGREEN+" Everything done"+bcolors.ENDC)
         log.info(" ")
 
-## Function to compile the PxlAnalyzer without the validation options
-#
-# To use the original specialAna without the validation package, it
-# has to be recompiled in the PxlAnalyzer. This can be done manually
-# with 'make' or by this function. With the option nocompilation this
-# step is skipped, while with the option cleancompilation as a first
-# step a 'make clean' is called.
-# @param[in] options Command line options object
-def make_compilation(options):
-    if not options.nocompilation:
-        control_output("Compiling your analysis")
-        pwd_ = os.getcwd()
-        var = 'MUSIC_BASE'
-        music_path = os.getenv( var )
-        os.chdir(music_path)
-        if options.cleancompilation:
-            log.info(" ")
-            log.info(" But first cleaning everything up")
-            log.info(" ")
-            p = subprocess.Popen(['make','clean'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            output = p.communicate()[0]
-            log.debug(output)
-        log.info(" ")
-        log.info(" Now we will compile")
-        log.info(" ")
-        os.system('export MYPXLANA=%s'%mypxlana)
-        p = subprocess.Popen(['make','-j8'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        output = p.communicate()[0]
-        log.debug(output)
-        os.chdir(pwd_)
-        log.info(" ")
-        log.info(bcolors.OKGREEN+" Everything done"+bcolors.ENDC)
-        log.info(" ")
-
 ## Function to create a config file for the PxlAnalyzer validator
 #
 # The different files that were skimmed are collected in a config file
@@ -1108,10 +1074,6 @@ def main():
             make_commits(options,cfg_file)
 
     clean_up(options)
-
-    raw_input('123')
-
-    # make_compilation(options)
 
     t1 = time.time()
 
