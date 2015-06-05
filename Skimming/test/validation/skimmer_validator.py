@@ -741,7 +741,7 @@ def get_analysis_output(options):
     if not os.path.exists("comparison_dir/new"):
         os.mkdir("comparison_dir/new")
 
-    p = subprocess.Popen("cp %s/*.root comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen("cp %s/*/*.pxlio comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
 ## Function to get the list of samples from the config file
@@ -1422,9 +1422,9 @@ def main():
 
     run_analysis(options,cfg_file,sample_list)
 
-    raw_input('123')
-
     get_analysis_output(options)
+
+    raw_input('123')
 
     get_reference_output(options)
 
