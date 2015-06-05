@@ -245,7 +245,7 @@ def make_new_reference(options,sample_list):
         p = subprocess.Popen(['cp','%s/%s.root'%(options.Output,item),'%s/%s.root'%(options.compdir,item)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output = p.communicate()[0]
         log.debug(output)
-    p = subprocess.Popen(['cp','%s/log.root'%(options.Output),'%s/log.root'%(options.compdir)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p = subprocess.Popen(['cp','%s/log_skimmer.root'%(options.Output),'%s/log_skimmer.root'%(options.compdir)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     output = p.communicate()[0]
     log.debug(output)
     log.info(" ")
@@ -282,7 +282,7 @@ def make_commits(options,sample_list):
             p = subprocess.Popen(['git','add','Validator/old/%s.root'%(item)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             output = p.communicate()[0]
             log.debug(output)
-        p = subprocess.Popen(['git','add','Validator/old/log.root'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        p = subprocess.Popen(['git','add','Validator/old/log_skimmer.root'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output = p.communicate()[0]
         log.debug(output)
         p = subprocess.Popen(['git','commit','-m','Included the results of the validation process'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -347,7 +347,7 @@ def final_user_decision(ctr_string):
     log.info(" will be interpreted as if the validation has failed.")
     log.info(" ")
 
-    p = subprocess.Popen(["evince","test.pdf"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p = subprocess.Popen(["evince","test1.pdf"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     output = p.communicate()[0]
     log.debug(output)
 
@@ -495,7 +495,7 @@ def comparison_performance(options):
     log.debug("comparing the programs performance")
 
     log.debug("reading the comparison histos")
-    comp_log_file = TFile("comparison_dir/old/log.root","READ")
+    comp_log_file = TFile("comparison_dir/old/log_skimmer.root","READ")
 
     old_rss_histos = []
     old_rss_time = []
@@ -522,7 +522,7 @@ def comparison_performance(options):
     comp_log_file.Close()
 
     log.debug("reading the new histos")
-    new__log_file = TFile("comparison_dir/new/log.root","READ")
+    new__log_file = TFile("comparison_dir/new/log_skimmer.root","READ")
 
     new_rss_histos = []
     new_rss_time = []
@@ -589,7 +589,7 @@ def comparison_performance(options):
         text.set_zorder(20)
 
     plt.show()
-    plt.savefig("comparison_dir/mem_comparison.pdf",facecolor='white',edgecolor='white')
+    plt.savefig("comparison_dir/mem_comparison_skimmer.pdf",facecolor='white',edgecolor='white')
 
     if diff_time < -1 * options.timetolerance:
         compare_results.update({"performance":[False,diff_time,diff_rss]})
@@ -646,7 +646,7 @@ def get_analysis_output(options):
     p = subprocess.Popen("cp %s/*/*.pxlio comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
-    p = subprocess.Popen("cp %s/log.root comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen("cp %s/log_skimmer.root comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
 ## Function to run the skimmer over all samples
@@ -680,10 +680,10 @@ def run_analysis(options,cfg_file):
     if not os.path.exists(options.Output):
         os.mkdir(options.Output)
 
-    p = subprocess.Popen("hadd -f9 %s/%s *_mem_log.root"%(options.Output,"log.root"),shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen("hadd -f9 %s/%s *_mem_log_skimmer.root"%(options.Output,"log_skimmer.root"),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
-    p = subprocess.Popen("rm *_mem_log.root",shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen("rm *_mem_log_skimmer.root",shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
     sample_list = []
@@ -791,7 +791,7 @@ def run_analysis_task(item):
         graphRSS.SetMarkerColor(kBlue)
         graphRSS.SetMarkerStyle(21)
     
-        dummy_file = TFile(item[1][:-5].replace('/','')+"_mem_log.root","RECREATE")
+        dummy_file = TFile(item[1][:-5].replace('/','')+"_mem_log_skimmer.root","RECREATE")
     
         graphRSS.Write(item[1][:-5].replace('/','')+"_rss")
         graphVirtual.Write(item[1][:-5].replace('/','')+"_vir")
@@ -823,7 +823,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 # @param[in] options Command line options object
 # @param[out] content Modified content of the .tex summary file
 # @param[out] ctr_string Random control string
-def create_tex_summary(content,sample_list,cfg_file,options):
+def create_tex_summary(content,cfg_file,options):
     log.debug("Now creating the title page for the .tex document")
 ## Create the Title page
     content += r'''
@@ -856,32 +856,6 @@ This is the summary of the validation from \today
 \item Performance: {\color{red}False  } Run time difference (percent): %.2f    Memory usage difference (percent): %.2f"
 \end{itemize}
 '''%(compare_results["performance"][1],compare_results["performance"][2])
-    for sample in sample_list:
-        content += r'''
-\subsection{%s}
-'''%(sample)
-        for folder in cfg_file["basic"]["hist_groups"]:
-            content += r'''
-\subsubsection{%s}
-\begin{itemize}
-'''%(folder)
-            for i in compare_results:
-                if sample in i and folder in i:
-                    dummy_string = ""
-                    if compare_results[i][0]:
-                        if options.allplots:
-                            dummy_string += "{\color{darkgreen}True} Fig.~\\ref{fig:%s!%s!%s}"%(sample,folder,i[i.find(folder)+len(folder)+1:].replace("_","!"))
-                        else:
-                            dummy_string += "{\color{darkgreen}True}"
-                    else:
-                        dummy_string += '''{\color{red}False  } Fig.~\\ref{fig:%s!%s!%s}\\\\
-$\chi^{2}$: %.2f \hspace{1cm} $N!{events}^{reference} - N!{events}^{new}: $%.2f'''%(sample,folder,i[i.find(folder)+len(folder)+1:].replace("_","!"),compare_results[i][1],compare_results[i][2])
-                    content += r'''
-\item %s: %s
-'''%(i[i.find(folder)+len(folder)+1:],dummy_string)
-            content += r'''
-\end{itemize}
-'''
     ctr_string = id_generator()
     content += r'''
 \pagebreak
@@ -897,88 +871,11 @@ $\chi^{2}$: %.2f \hspace{1cm} $N!{events}^{reference} - N!{events}^{new}: $%.2f'
 \pagebreak
 '''
 
-## Include Plot with Chi2 distribution
-    content += r'''
-\section{Overview}
-\includegraphics[width=15cm]{%s}
-'''%("comparison!dir/chi2!distribution.pdf")
-
-    log.debug("Creating the comparison plots for the .tex file")
 ## Include the performance Plots
     content += r'''
 \section{Performance}
 \includegraphics[width=15cm]{%s}
-'''%("comparison!dir/mem!comparison.pdf")
-    chi2_vals = []
-    file_folder_num = len(sample_list) * len(cfg_file["basic"]["hist_groups"])
-    file_folder_count = 0
-## Create the different histograms
-    for sample in sample_list:
-        content += r'''
-\section{%s}
-'''%(sample)
-        for folder in cfg_file["basic"]["hist_groups"]:
-            log.debug("Now working on %s"%(folder))
-            hist_list = []
-            for i in compare_results:
-                if sample in i and folder in i:
-                    if compare_results[i][1] != 0.0 and not options.allplots:
-                        hist_list.append([sample,folder,i,options])
-                    elif options.allplots:
-                        hist_list.append([sample,folder,i,options])
-            new_hist_list = []
-            #for i in hist_list:
-                #dummy= make_comparison_plot(i)
-                #new_hist_list.append(dummy)
-            if len(hist_list) > 0:
-                pool = multiprocessing.Pool()
-                test = pool.map_async(make_comparison_plot, hist_list)
-                while True:
-                    time.sleep(1)
-                    if not pool._cache: break
-                pool.close()
-                pool.join()
-                try:
-                    new_hist_list = test.get(timeout=1)
-                except:
-                    time.sleep(5)
-                    try:
-                        new_hist_list = test.get(timeout=1)
-                    except:
-                        log.error("Could not get the plotting output, try restarting the validator")
-                        sys.exit(1)
-            for i in new_hist_list:
-                if i[0] == "NONE":
-                    log.debug(" ")
-                else:
-                    for j in i[2]:
-                        if j[0] == "debug":
-                            log.debug(j[1])
-                        elif j[0] == "info":
-                            log.info(j[1])
-                        else:
-                            log.error(j[1])
-            hist_list = sorted(new_hist_list, key=lambda hist: hist[1], reverse=True)
-            if len(hist_list) > 0:
-                content += r'''
-\subsubsection{%s}
-'''%(folder)
-                for i in hist_list:
-                    content += r'''
-    \begin{figure}[H]
-    \centering
-    \includegraphics[width=15cm]{%s}
-    \caption{%s}
-    \label{fig:%s!%s!%s}
-    \end{figure}
-    '''%(i[0].replace("_","!"),i[0],sample,folder,i[0][i[0].find(folder)+len(folder)+1:-4].replace("_","!"))
-                    chi2_vals.append(i[1])
-            log.debug("done")
-            update_progress(float(file_folder_count)/float(file_folder_num))
-            file_folder_count += 1
-    log.debug("done")
-
-    make_chi2_distribution(chi2_vals)
+'''%("comparison!dir/mem!comparison!skimmer.pdf")
 
     return content,ctr_string
 
@@ -990,7 +887,7 @@ $\chi^{2}$: %.2f \hspace{1cm} $N!{events}^{reference} - N!{events}^{new}: $%.2f'
 # @param[in] cfg_file Configuration file object
 # @param[in] options Command line options object
 # @param[out] ctr_string Random control string
-def make_output_file(sample_list,cfg_file,options):
+def make_output_file(cfg_file,options):
     control_output("Creating the summary file")
 
     content = r'''\documentclass[12pt]{article}
@@ -1008,29 +905,29 @@ def make_output_file(sample_list,cfg_file,options):
 
 \begin{document}'''
 
-    content,ctr_string = create_tex_summary(content,sample_list,cfg_file,options)
+    content,ctr_string = create_tex_summary(content,cfg_file,options)
 
     content += r'''
 \end{document}
 '''
     content = content.replace("_","\_")
     content = content.replace("!","_")
-    tex_file = open("test.tex","w")
+    tex_file = open("test1.tex","w")
     tex_file.write(content)
     tex_file.close()
 
     log.debug("Compiling .tex document")
-    p = subprocess.Popen("pdflatex -interaction=batchmode test.tex",shell=True,stdout=subprocess.PIPE)
+    p = subprocess.Popen("pdflatex -interaction=batchmode test1.tex",shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
     log.debug(output)
 
     log.debug("Second compilation of .tex file")
-    p1 = subprocess.Popen("pdflatex -interaction=batchmode test.tex",shell=True,stdout=subprocess.PIPE)
+    p1 = subprocess.Popen("pdflatex -interaction=batchmode test1.tex",shell=True,stdout=subprocess.PIPE)
     output = p1.communicate()[0]
     log.debug(output)
 
     log.debug("done. Now cleaning up")
-    p2 = subprocess.Popen("rm test.tex test.toc test.aux test.log test.out",shell=True,stdout=subprocess.PIPE)
+    p2 = subprocess.Popen("rm test1.tex test1.toc test1.aux test1.log test1.out",shell=True,stdout=subprocess.PIPE)
     output = p2.communicate()[0]
     log.debug(output)
     log.debug("done")
@@ -1154,6 +1051,23 @@ def create_cfg_for_validator(options,cfg_file):
 
     return os.path.abspath(cfg_name)
 
+## Function to call the validator of the PxlAnalyzer
+#
+# Here the validator is called and the options for that are set.
+# @param[in] cfg_file_name Name of the config file for the validator
+# @param[in] options Command line options object
+# @param[out] result Boolean result of the validation
+def run_pxlana_validation(cfg_file_name,options):
+    lib_path = os.path.expandvars('$MUSIC_BASE/Validator/')
+    sys.path.append( lib_path )
+    import validator as val9000
+
+    dummy_args = sys.argv
+    sys.argv = ['validator.py','--cfgfile=%s'%cfg_file_name,'--compdir=%s'%(os.path.expandvars('$PWD/old/')),'--noasciiart=True','--nogit=True','--debug=%s'%options.debug]
+    result = val9000.main(sys.argv)
+    sys.argv = dummy_args
+    return result
+
 ## Main function to call the different sub functions
 def main():
     t0 = time.time()
@@ -1174,11 +1088,15 @@ def main():
 
     do_comparison(options,cfg_file)
 
-    # cfg_file_name = create_cfg_for_validator(options,cfg_file)
-    print(create_cfg_for_validator(options,cfg_file))
-    raw_input('123')
+    cfg_file_name = create_cfg_for_validator(options,cfg_file)
 
-    run_pxlana_validation()
+    pxlana_result = run_pxlana_validation(cfg_file_name,options)
+
+    ctr_string = make_output_file(cfg_file,options)
+
+    decision = final_user_decision(ctr_string)
+
+    raw_input('123')
 
     # if decision == True or all_samples == True:
         # make_new_reference(options,sample_list)
