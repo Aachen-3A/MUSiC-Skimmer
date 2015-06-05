@@ -236,7 +236,6 @@ def opt_parser():
 #
 # After the validation is successfull this function creates the new
 # reference distributions and files for the next validation cycle.
-# @todo include functionallity
 # @param[in] options Command line options object
 def make_new_reference(options):
     control_output("making new reference plots")
@@ -261,23 +260,31 @@ def check_authorization():
 # the end push everything to the remote repository.
 # @todo include functionallity
 # @param[in] options Command line options object
-# @param[in] sample_list List of samples that should be studied
-def make_commits(options,sample_list):
+# @param[in] cfg_file Configuration file object
+def make_commits(options,cfg_file):
     if not options.nogit:
         control_output("Now making the final commits")
-        var = 'MUSIC_BASE'
+        var = 'CMSSW_BASE'
+        pwd_ = os.getcwd()
         music_path = os.getenv( var )
-        os.chdir(music_path)
+        os.chdir(music_path + '/src/PxlSkimmer/Skimming')
         # First get a repo status for debugging cases
         p = subprocess.Popen(['git','status'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output = p.communicate()[0]
         log.debug(output)
+        sample_list = []
+        for item in cfg_file["samples"]:
+            if cfg_file["samples"][item]["label"] not in sample_list:
+                sample_list.append(cfg_file["samples"][item]["label"])
         # Add the new refernce files to the repo
         for item in sample_list:
-            p = subprocess.Popen(['git','add','Validator/old/%s.root'%(item)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            p = subprocess.Popen(['git','add','test/validation/old/%s.root'%(item)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             output = p.communicate()[0]
             log.debug(output)
-        p = subprocess.Popen(['git','add','Validator/old/log_skimmer.root'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        p = subprocess.Popen(['git','add','test/validation/old/log.root'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        output = p.communicate()[0]
+        log.debug(output)
+        p = subprocess.Popen(['git','add','test/validation/old/log_skimmer.root'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output = p.communicate()[0]
         log.debug(output)
         p = subprocess.Popen(['git','commit','-m','Included the results of the validation process'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -310,6 +317,7 @@ def make_commits(options,sample_list):
         p = subprocess.Popen(['git','checkout',c_branch],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         output = p.communicate()[0]
         log.debug(output)
+        os.chdir(pwd_)
 
 ## Function to get the current branch of the repository
 #
@@ -934,7 +942,6 @@ def make_output_file(cfg_file,options):
 # Function to clean every tempory file at the end of the
 # validation, this can be skipped with the command line
 # option nocleanup.
-# @todo include functionallity
 # @param[in] options Command line options object
 def clean_up(options):
     if not options.nocleanup:
@@ -942,12 +949,13 @@ def clean_up(options):
         # Clean up the repository
         if not options.nogit:
             c_branch = get_current_branch()
-            p = subprocess.Popen(['git','checkout','dev'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            output = p.communicate()[0]
-            log.debug(output)
-            p = subprocess.Popen(['git','branch','-d',c_branch],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            output = p.communicate()[0]
-            log.debug(output)
+            if c_branch != 'master' and c_branch != 'dev':
+                p = subprocess.Popen(['git','checkout','dev'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                output = p.communicate()[0]
+                log.debug(output)
+                p = subprocess.Popen(['git','branch','-d',c_branch],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                output = p.communicate()[0]
+                log.debug(output)
 
 ## Function to compile the PxlSkimmer
 #
@@ -1094,14 +1102,14 @@ def main():
     if decision == True and pxlana_result == True:
         make_new_reference(options)
 
-        raw_input('123')
-
         authorization = check_authorization()
 
-        # if authorization == True:
-            # make_commits(options,sample_list)
+        if authorization == True:
+            make_commits(options,cfg_file)
 
     clean_up(options)
+
+    raw_input('123')
 
     # make_compilation(options)
 
