@@ -744,6 +744,9 @@ def get_analysis_output(options):
     p = subprocess.Popen("cp %s/*/*.pxlio comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
+    p = subprocess.Popen("cp %s/log.root comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+
 ## Function to get the list of samples from the config file
 #
 # @param[in] cfg_file Configuration file object
@@ -1424,9 +1427,9 @@ def main():
 
     get_analysis_output(options)
 
-    raw_input('123')
-
     get_reference_output(options)
+
+    raw_input('123')
 
     all_samples = do_comparison(options,cfg_file,sample_list)
 
