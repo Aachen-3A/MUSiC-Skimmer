@@ -212,6 +212,8 @@ def opt_parser():
                             help = 'Global tag used by the skimmer. [default = %default]')
     parser.add_option( '--maxevents', metavar = 'MAXEVENTS' , default = -1,
                             help = 'Maximum number of events to be skimmed per sample. [default = %default]')
+    parser.add_option( '--valtemplate', metavar = 'VALTEMPLATE' , default = '$CMSSW_BASE/src/PxlSkimmer/Skimming/test/validation/config_template.cfg',
+                            help = 'Path of the PxlAnalyzer validator config template. [default = %default]')
 
     ( options, args ) = parser.parse_args()
     if len( args ) != 0:
@@ -607,15 +609,12 @@ def comparison_performance(options):
 # is called. All this results are saved and printed to the terminal.
 # @param[in] options Command line options object
 # @param[in] cfg_file Configuration file object
-# @param[in] sample_list List of samples that should be studied
-# @param[out] all_samples Boolean if there are deviations in all samples
-def do_comparison(options,cfg_file,sample_list):
+def do_comparison(options,cfg_file):
     control_output("doing the comparison")
 
     c_performance = comparison_performance(options)
     control_output("performance")
     control_output("performance",c_performance)
-
 
 ## Function to collect the reference output
 #
@@ -650,17 +649,6 @@ def get_analysis_output(options):
     p = subprocess.Popen("cp %s/log.root comparison_dir/new/"%(options.Output),shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
 
-## Function to get the list of samples from the config file
-#
-# @param[in] cfg_file Configuration file object
-# @param[out] sample_list List of samples
-def get_sample_list(cfg_file):
-    sample_list = []
-    for item in cfg_file["samples"]:
-        if cfg_file["samples"][item]["label"] not in sample_list:
-            sample_list.append(cfg_file["samples"][item]["label"])
-    return sample_list
-
 ## Function to run the skimmer over all samples
 #
 # Function to run the skimmer parallelized over all samples as
@@ -669,8 +657,7 @@ def get_sample_list(cfg_file):
 # After that everything is cleaned up.
 # @param[in] options Command line options object
 # @param[in] cfg_file Configuration file object
-# @param[in] sample_list List of samples that should be studied
-def run_analysis(options,cfg_file,sample_list):
+def run_analysis(options,cfg_file):
     control_output("running the skimmer")
 
     if not os.path.exists('log/'):
@@ -698,6 +685,11 @@ def run_analysis(options,cfg_file,sample_list):
 
     p = subprocess.Popen("rm *_mem_log.root",shell=True,stdout=subprocess.PIPE)
     output = p.communicate()[0]
+
+    sample_list = []
+    for item in cfg_file["samples"]:
+        if cfg_file["samples"][item]["label"] not in sample_list:
+            sample_list.append(cfg_file["samples"][item]["label"])
 
     for item in sample_list:
         if not os.path.exists(options.Output + '/' + item):
@@ -990,167 +982,6 @@ $\chi^{2}$: %.2f \hspace{1cm} $N!{events}^{reference} - N!{events}^{new}: $%.2f'
 
     return content,ctr_string
 
-## Function to create the Chi2 overview plot
-#
-# This function creates the plot with all different Chi2 values
-# that are present in the distributions.
-# @param[in] chi2_vals Array of Chi2 values that should be plotted
-def make_chi2_distribution(chi2_vals):
-    log.debug("Now plotting: Chi2 distribution")
-    fig = plt.figure(figsize=(8, 8), dpi=20, facecolor='white')
-    ax = fig.add_subplot(111)
-    make_axis(ax,"$\chi^{2} values$","Number of Distributions","")
-    min_val = 0.1 * np.min(chi2_vals)
-    if min_val == 0:
-        min_val = 0.000001
-    binning = np.logspace(np.log10(min_val), np.log10(np.max(chi2_vals)), num=100, base=10.)
-    log.debug(binning,np.log10(min_val),np.log10(np.max(chi2_vals)))
-    n, bins, patches = plt.hist(chi2_vals, bins=binning, facecolor='green', alpha=0.75)
-    plt.grid(True)
-    ax.set_xscale("symlog")
-    plt.show()
-    plt.savefig("comparison_dir/chi2_distribution.pdf",facecolor='white',edgecolor='white')
-
-## Function to create one comparison plot
-#
-# This function creates one comparison plot, for a given
-# distribution. It produces the normal plot with both
-# distributions (the reference and the new one). Also a
-# ratio plot and a significance plot are created and saved.
-# @param[in] i Array of parameters for the plot creation
-# @param[out] name Path to the plot that was created and saved
-# @param[out] chi2 Chi2 value of this comparison
-# @param[out] to_be_logged Array of mesages to be logged
-def make_comparison_plot(i):
-    counting = 0
-    limit = 10
-    while(True):
-        try:
-            sample = i[0]
-            folder = i[1]
-            key = i[2]
-            hist = key[key.find(folder)+len(folder)+1:]
-            to_be_logged = []
-            to_be_logged.append(["debug","Now plotting: " +folder+"/"+hist + " from: comparison_dir/old/%s.root"%(sample)])
-            comp_file = TFile("comparison_dir/old/%s.root"%(sample),"READ")
-            ref_hist = TH1F()
-            ref_hist = comp_file.Get(folder+"/"+hist)
-            ref_hist.SetDirectory(0)
-            ref_hist.SetLineColor(ro.kGreen)
-            comp_file.Close()
-            new_file = TFile("comparison_dir/new/%s.root"%(sample),"READ")
-            new_hist = TH1F()
-            new_hist = new_file.Get(folder+"/"+hist)
-            new_hist.SetDirectory(0)
-            new_hist.SetLineColor(ro.kRed)
-            new_file.Close()
-    
-            if ref_hist.GetNbinsX() > 500:
-                ref_hist.Rebin(10)
-                new_hist.Rebin(10)
-    
-            if not i[3].allplots:
-                if ref_hist.GetEntries() == 0 and new_hist.GetEntries() == 0:
-                    return ["NONE",0.0,["NONE",""]]
-    
-            chi2 = Chi2_calcer(ref_hist,new_hist)
-    
-            temp_x_vals = []
-            temp_x_err = []
-            temp_y_vals = []
-            temp_y_err = []
-            temp_new_x_vals = []
-            temp_new_x_err = []
-            temp_new_y_vals = []
-            temp_new_y_err = []
-            temp_ratio = []
-            temp_ratio_err = []
-            temp_sig = []
-            temp_sig_err = []
-            range_x_vals = []
-            range_y_vals = []
-            for j in range(1,ref_hist.GetNbinsX()+1):
-                temp_x_vals.append(ref_hist.GetBinCenter(j))
-                temp_x_err.append(ref_hist.GetBinWidth(j)/2.)
-                temp_y_vals.append(ref_hist.GetBinContent(j))
-                if ref_hist.GetBinContent(j) != 0.0:
-                    range_x_vals.append(ref_hist.GetBinCenter(j))
-                    range_y_vals.append(ref_hist.GetBinContent(j))
-                temp_y_err.append(ref_hist.GetBinError(j))
-                temp_new_x_vals.append(new_hist.GetBinCenter(j))
-                temp_new_x_err.append(new_hist.GetBinWidth(j)/2.)
-                temp_new_y_vals.append(new_hist.GetBinContent(j))
-                if new_hist.GetBinContent(j) != 0.0:
-                    range_x_vals.append(new_hist.GetBinCenter(j))
-                    range_y_vals.append(new_hist.GetBinContent(j))
-                temp_new_y_err.append(new_hist.GetBinError(j))
-                if ref_hist.GetBinContent(j) != 0.0:# and new_hist.GetBinContent(j) != 0.0:
-                    temp_ratio.append(temp_new_y_vals[-1]/temp_y_vals[-1])
-                    temp_ratio_err.append(sqrt(pow(temp_new_y_err[-1]/temp_y_vals[-1],2) + pow(temp_new_y_vals[-1]*temp_y_err[-1]/temp_y_vals[-1]/temp_y_vals[-1],2)))
-                    temp_sig.append((temp_new_y_vals[-1] - temp_y_vals[-1]) / sqrt(pow(temp_new_y_err[-1],2) + pow(temp_y_err[-1],2)))
-                    temp_sig_err.append(1.)
-                else:
-                    temp_ratio.append(0.)
-                    temp_ratio_err.append(0.)
-                    temp_sig.append(0.)
-                    temp_sig_err.append(0.)
-            if len(range_x_vals) < 1:
-                range_x_vals.append(0)
-                range_x_vals.append(1)
-            if len(range_y_vals) < 1:
-                range_y_vals.append(0)
-                range_y_vals.append(1)
-    
-            fig = plt.figure(figsize=(8, 10), dpi=20, facecolor='white')
-            ax = fig.add_subplot(3,1,1,axisbg='white')
-            make_axis(ax,"$"+ref_hist.GetXaxis().GetTitle().replace("#","\\")+"$","$Events$","")
-            ax.set_yscale("symlog")
-            to_be_logged.append(["debug",hist + ":   " + str((np.min(range_y_vals) - 1)*0.8) +"  "+ str((np.max(range_y_vals) + 1)*1.2)])
-            plt.xlim( np.min(range_x_vals)*0.95, np.max(range_x_vals)*1.05 )
-            plt.ylim( (np.min(range_y_vals) - 1)*0.95, (np.max(range_y_vals) + 1)*1.05 )
-            plt.errorbar(temp_x_vals, temp_y_vals, xerr = temp_x_err, yerr = temp_y_err, color='chartreuse',marker="o",linestyle="-",linewidth=1,label='Reference')
-            plt.errorbar(temp_new_x_vals, temp_new_y_vals, xerr = temp_new_x_err, yerr = temp_new_y_err, color='red',marker="o",linestyle="-",linewidth=1,label='New (for validation)')
-            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,ncol=2, mode="expand", borderaxespad=0.)
-    
-            t_label = '%.2f'%(chi2)
-            t_label2 = r'$chi^{2}$/Ndf: %s'%(t_label)
-
-            text = ax.text(0.8,0.9, t_label2, color='limegreen', transform=ax.transAxes,
-                        va='bottom', ha='center')
-
-            ax = fig.add_subplot(3,1,2,axisbg='white')
-            make_axis(ax,"$"+ref_hist.GetXaxis().GetTitle().replace("#","\\")+"$","$(N_{events}^{new} - N_{events}^{old}) / \sigma$","")
-            plt.xlim( np.min(range_x_vals)*0.95, np.max(range_x_vals)*1.05 )
-            plt.errorbar(temp_new_x_vals, temp_sig, xerr = temp_new_x_err, yerr = temp_sig_err, color='y',marker="o",linestyle="-",linewidth=1)
-    
-            ax = fig.add_subplot(3,1,3,axisbg='white')
-            make_axis(ax,"$"+ref_hist.GetXaxis().GetTitle().replace("#","\\")+"$","$N_{events}^{new} / N_{events}^{old}$","")
-            plt.xlim( np.min(range_x_vals)*0.95, np.max(range_x_vals)*1.05 )
-            plt.errorbar(temp_new_x_vals, temp_ratio, xerr = temp_new_x_err, yerr = temp_ratio_err, color='y',marker="o",linestyle="-",linewidth=1)
-    
-            name = "comparison_dir/" + sample + "_" + folder + "_" + hist + ".pdf"
-            plt.show()
-            plt.savefig(name,facecolor='white',edgecolor='white')
-        except:
-            counting += 1
-            time.sleep(1)
-            log.debug("Unexpected error in the plotting of %s:"%(i[2]))
-            log.debug(sys.exc_info()[0])
-            log.debug(sys.exc_info()[1])
-            log.debug(sys.exc_info()[2])
-            if counting < limit:
-                log.debug("Retrying now!")
-                continue
-            else:
-                log.debug("Unexpected error in the plotting of %s:"%(i[2]))
-                log.debug(sys.exc_info()[0])
-                log.debug(sys.exc_info()[1])
-                log.debug(sys.exc_info()[2])
-                log.error("tried ten times")
-                return ["NONE",0.0,["NONE",""]]
-        else:
-            return [name,chi2,to_be_logged]
-
 ## Function to create and compile the summary file
 #
 # Function that created the .tex summary file, compiles it
@@ -1205,26 +1036,6 @@ def make_output_file(sample_list,cfg_file,options):
     log.debug("done")
 
     return ctr_string
-
-## Function to calculate the chi2 of two histograms
-#
-# Function to calculate the chi2 of two histograms, if
-# both are empty zero will be returned, if one of the
-# histograms is empty the number of entries divided by
-# the number of bins. Otherwise the chi2 test from root
-# is called.
-# @param[in] hist1 First histogram
-# @param[in] hist2 Second histogram
-# @param[in] chi2 Returned Chi2 value
-def Chi2_calcer(hist1,hist2):
-    if hist1.GetEntries() == 0 and hist2.GetEntries() == 0:
-        return 0.0
-    elif hist1.GetEntries() == 0:
-        return float(hist2.GetEntries())/hist2.GetNbinsX()
-    elif hist2.GetEntries() == 0:
-        return float(hist1.GetEntries())/hist1.GetNbinsX()
-    else:
-        return hist1.Chi2Test(hist2,"WW CHI2/NDF")
 
 ## Function clean everything up at the end of the validation
 #
@@ -1312,6 +1123,37 @@ def make_compilation(options):
         log.info(bcolors.OKGREEN+" Everything done"+bcolors.ENDC)
         log.info(" ")
 
+## Function to create a config file for the PxlAnalyzer validator
+#
+# The different files that were skimmed are collected in a config file
+# so that the PxlAnalyzer will run over them.
+# @param[in] options Command line options object
+# @param[in] cfg_file Configuration file object
+# @param[out] cfg_name Name of the Config file for the PxlAnalyzer validator
+def create_cfg_for_validator(options,cfg_file):
+    sample_text = ''
+
+    for item in cfg_file["samples"]:
+        sample_text += '    [[%s]]\n'%item.replace('/','').replace('.root','.pxlio')
+        sample_text += '        label = %s\n'%cfg_file["samples"][item]["label"]
+        sample_text += '\n'
+
+    d = dict(
+        PATH=os.path.abspath("comparison_dir/new/")+'/',
+        FILES=sample_text,
+    )
+
+    file=open(os.path.expandvars(options.valtemplate),"r")
+    text=file.read()
+    file.close()
+    newText=Template(text).safe_substitute(d)
+    cfg_name = "log/config.cfg"
+    fileNew=open(cfg_name,"w+")
+    fileNew.write(newText)
+    fileNew.close()
+
+    return os.path.abspath(cfg_name)
+
 ## Main function to call the different sub functions
 def main():
     t0 = time.time()
@@ -1324,16 +1166,16 @@ def main():
 
     make_val_compilation(options)
 
-    sample_list = get_sample_list(cfg_file)
-
-    run_analysis(options,cfg_file,sample_list)
+    run_analysis(options,cfg_file)
 
     get_analysis_output(options)
 
     get_reference_output(options)
 
-    do_comparison(options,cfg_file,sample_list)
+    do_comparison(options,cfg_file)
 
+    # cfg_file_name = create_cfg_for_validator(options,cfg_file)
+    print(create_cfg_for_validator(options,cfg_file))
     raw_input('123')
 
     run_pxlana_validation()
