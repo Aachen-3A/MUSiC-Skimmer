@@ -24,9 +24,9 @@ if runOnGen and runOnData :
 import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
 print sys.argv
-name="test"
+name="$OUTNAME"
 datasetpath="dummy"
-globalTag="MCRUN2_74_V9"
+globalTag="$GLOBALTAG"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:
@@ -48,11 +48,11 @@ process.source = cms.Source(
     skipEvents = cms.untracked.uint32( 0 ),
     duplicateCheckMode = cms.untracked.string( "noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
-        "/store/mc/RunIISpring15DR74/WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/0E885FA4-FF01-E511-B2DB-002590A3C95E.root"
+        "$INFILE"
         )
     )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( -1 ) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( $MAXEVENTS ) )
 
 ###FIXME for miniAOD!!!
 #if not runOnGen:
