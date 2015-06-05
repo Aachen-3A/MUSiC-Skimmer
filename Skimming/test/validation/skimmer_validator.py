@@ -238,13 +238,8 @@ def opt_parser():
 # reference distributions and files for the next validation cycle.
 # @todo include functionallity
 # @param[in] options Command line options object
-# @param[in] sample_list List of samples that should be studied
-def make_new_reference(options,sample_list):
+def make_new_reference(options):
     control_output("making new reference plots")
-    for item in sample_list:
-        p = subprocess.Popen(['cp','%s/%s.root'%(options.Output,item),'%s/%s.root'%(options.compdir,item)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        output = p.communicate()[0]
-        log.debug(output)
     p = subprocess.Popen(['cp','%s/log_skimmer.root'%(options.Output),'%s/log_skimmer.root'%(options.compdir)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     output = p.communicate()[0]
     log.debug(output)
@@ -1096,10 +1091,12 @@ def main():
 
     decision = final_user_decision(ctr_string)
 
-    raw_input('123')
+    if decision == True and pxlana_result == True:
+        make_new_reference(options)
 
-    # if decision == True or all_samples == True:
-        # make_new_reference(options,sample_list)
+        raw_input('123')
+
+        authorization = check_authorization()
 
         # if authorization == True:
             # make_commits(options,sample_list)
