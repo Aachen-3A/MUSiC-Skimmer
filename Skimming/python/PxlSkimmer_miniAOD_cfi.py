@@ -29,6 +29,7 @@ Skimmer = cms.EDAnalyzer(
     patTauTag          = cms.InputTag( 'slimmedTaus' ),
     patGammaLabel      = cms.InputTag("slimmedPhotons"),
     patMETTag          = cms.InputTag( 'slimmedMETs' ),
+    PUPPIMETTag        = cms.InputTag( 'slimmedMETsPuppi' ),
     patPFCandiates     = cms.InputTag( 'packedPFCandidates' ),
 
     rhos = cms.VInputTag( cms.InputTag( 'fixedGridRhoAll' ),
@@ -39,11 +40,11 @@ Skimmer = cms.EDAnalyzer(
                        cms.InputTag( 'fixedGridRhoFastjetCentralNeutral' )
                        ),
 
-    eleIDs = cms.VInputTag( cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto"),
-                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose"),
-                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium"),
-                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight"),
-                            cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV50-prePHYS14-25ns-miniAOD")
+    eleIDs = cms.VInputTag( cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-loose"),
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-medium"),
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight"),
+                            cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto"),
+                            cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV51")
                            ),
 
     bits = cms.InputTag("TriggerResults","","HLT"),
@@ -60,7 +61,7 @@ Skimmer = cms.EDAnalyzer(
 
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
-        AK5 = cms.PSet(
+        AK4 = cms.PSet(
             MCLabel = cms.InputTag( "slimmedGenJets" ),
             RecoLabel = cms.InputTag( "slimmedJets" ),
             isPF = cms.bool(True),
@@ -152,6 +153,17 @@ Skimmer = cms.EDAnalyzer(
             results = cms.string( 'TriggerResults' ),
             paths = cms.vstring()
         )
+    ),
+
+
+    # "borrowed" from IB
+    # for miniIsolation PF-weighted isolation
+    # https://github.com/SUSYDileptonAC/SuSyAachen/blob/master/TagAndProbeTreeWriter/python/isolationFunctor_cfi.py
+    # this version:
+    # https://github.com/SUSYDileptonAC/SuSyAachen/commit/e9f0eaf2fd3828eabe18545d88fa83a9a8eb72f5
+    isolationDefinitions = cms.PSet(
+        rhoSource = cms.InputTag("fixedGridRhoFastjetAll"),
+        candSource = cms.InputTag("packedPFCandidates"),
     ),
 
     cuts = cms.PSet(

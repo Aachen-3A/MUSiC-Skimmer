@@ -26,7 +26,7 @@ import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 print sys.argv
 name="test"
 datasetpath="dummy"
-globalTag="PHYS14_25_V1::All"
+globalTag="PHYS14_25_V1"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:
@@ -47,12 +47,8 @@ process.source = cms.Source(
     'PoolSource',
     skipEvents = cms.untracked.uint32( 0 ),
     fileNames = cms.untracked.vstring(
-        #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
-        #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
-        #'file://0432E62A-7A6C-E411-87BB-002590DB92A8.root'
-        "/store/mc/Phys14DR/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/00C90EFC-3074-E411-A845-002590DB9262.root"
-        #'file://WprimeTauMiniAOD.root'
-        #'/store/mc/Phys14DR/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/0432E62A-7A6C-E411-87BB-002590DB92A8.root'
+        "/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1000_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/3056AD52-BAFB-E411-A8E7-0025905A612C.root"
+        # 'file://3056AD52-BAFB-E411-A8E7-0025905A612C.root'
         )
     )
 

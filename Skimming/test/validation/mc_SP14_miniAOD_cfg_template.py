@@ -24,9 +24,9 @@ if runOnGen and runOnData :
 import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 
 print sys.argv
-name="test"
+name="$OUTNAME"
 datasetpath="dummy"
-globalTag="MCRUN2_74_V9"
+globalTag="$GLOBALTAG"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:
@@ -48,15 +48,11 @@ process.source = cms.Source(
     skipEvents = cms.untracked.uint32( 0 ),
     duplicateCheckMode = cms.untracked.string( "noDuplicateCheck"),
     fileNames = cms.untracked.vstring(
-        #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
-        #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
-        #'file://WprimeTauMiniAOD.root'
-        '/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1600_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/00000/A449BF1F-DCFC-E411-9350-00259073E442.root'
-        # 'file:///disk1/erdweg/MINIAOD_files/0603D444-2D70-E411-AF03-002618943922.root'
+        "$INFILE"
         )
     )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( -1 ) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32( $MAXEVENTS ) )
 
 ###FIXME for miniAOD!!!
 #if not runOnGen:
