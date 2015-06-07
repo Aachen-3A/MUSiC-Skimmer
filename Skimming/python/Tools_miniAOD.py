@@ -23,8 +23,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     # configureJEC function.
     #
     # process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
-    
-    # The global tag is set in pset file or overidden by the calling 
+
+    # The global tag is set in pset file or overidden by the calling
     # script (e.g. music_crab3.py9
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     process.GlobalTag.globaltag = globalTag
@@ -58,7 +58,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     #process.Skimmer.EleEffAreaTargetLabel = eleEffAreaTarget
 
     addElectronIDs( process )
-    
+    addGammaIDs( process )
+
     process.Skimmer.FileName = name+'.pxlio'
     process.Skimmer.Process = name
     process.Skimmer.Dataset = datasetpath
@@ -79,6 +80,18 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     process.e = cms.EndPath( process.Skimmer )
 
     return process
+
+def addGammaIDs( process ):
+
+    # based on https://github.com/ikrav/EgammaWork/blob/ntupler_and_VID_demos/PhotonNtupler/test/runPhotons_VID_CutBased_PHYS14_demo.py
+    switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
+
+    # define which IDs we want to produce
+    my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
+    for idmod in my_id_modules:
+         setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+
+    process.p = cms.Path(process.egmPhotonIDSequence )
 
 def addElectronIDs( process ):
     #https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=11
