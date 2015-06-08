@@ -29,7 +29,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     process.GlobalTag.globaltag = globalTag
 
-    process.load("Configuration.StandardSequences.GeometryDB_cff")
+    process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
     process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
 
     # do we need this ?
