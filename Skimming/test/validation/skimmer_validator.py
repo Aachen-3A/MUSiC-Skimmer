@@ -759,46 +759,76 @@ def run_analysis_task(item):
             output = p2.communicate()[0]
             if output != '':
                 if "m" in output.split()[5]:
-                    rssList.append(output.split()[5].split("m")[0]) 
+                    rssList.append(output.split()[5].split("m")[0])
+                elif "g" in output.split()[5]:
+                    rssList.append(float(output.split()[5].split("g")[0])*1000)
                 else:
                     rssList.append(output.split()[5]) 
                 if "m" in output.split()[4]:
-                    virtual.append(output.split()[4].split("m")[0]) 
+                    virtual.append(output.split()[4].split("m")[0])
+                elif "g" in output.split()[4]:
+                    virtual.append(float(output.split()[4].split("g")[0])*1000)
                 else:
                     virtual.append(output.split()[4])
             time.sleep(1)
-    
+
         output = p.communicate()[0]
         f_out.close()
         f_err.close()
         exitCode = p.returncode
         if exitCode != 0:
             log.error("exitCode: " + str(exitCode))
-            log.error(output,p.communicate()[1])
+            try:
+                log.error(output,p.communicate()[1])
+            except(TypeError):
+                print(output)
+                print(p.communicate()[1])
         else:
             log.debug("exitCode: " + str(exitCode))
             log.debug(output)
         usage_end = resource.getrusage(resource.RUSAGE_CHILDREN)
         cpu_time = usage_end.ru_utime - usage_start.ru_utime
-    
+
+        skipper = []
+        counter = 0
+        for item12 in rssList:
+            try:
+                bla = float(item12)
+            except(ValueError):
+                skipper.append(counter)
+            counter += 1
+        counter = 0
+        for item12 in virtual:
+            try:
+                bla = float(item12)
+            except(ValueError):
+                skipper.append(counter)
+            counter += 1
+
+        skipper = list(set(skipper))
+
+        for item12 in skipper:
+            rssList.pop(item12)
+            virtual.pop(item12)
+
         rssArray = np.array(rssList,"d")
         virtualArray = np.array(virtual,"d")
         xAxis = []
         for i in range(0,len(rssArray)):
             xAxis.append(i*(cpu_time/len(rssArray)))
-    
+
         xAxisArray = np.array(xAxis,"d")
         graphRSS = TGraph(len(rssArray),xAxisArray,rssArray)
         graphVirtual = TGraph(len(virtualArray),xAxisArray,virtualArray)
-    
+
         graphRSS.SetMarkerColor(kBlue)
         graphRSS.SetMarkerStyle(21)
-    
+
         dummy_file = TFile(item[1][:-5].replace('/','')+"_mem_log_skimmer.root","RECREATE")
-    
+
         graphRSS.Write(item[1][:-5].replace('/','')+"_rss")
         graphVirtual.Write(item[1][:-5].replace('/','')+"_vir")
-    
+
         dummy_file.Close()
     except:
         print("Unexpected error in the running the analysis on %s:"%(item[1][:]))
