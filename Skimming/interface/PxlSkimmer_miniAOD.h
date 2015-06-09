@@ -319,8 +319,11 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
 
     std::vector< edm::InputTag > rhos_;
     std::vector< edm::InputTag > eleIDs_;
+    std::vector< edm::InputTag > gammaIDs_;
     std::vector< edm::EDGetTokenT<edm::ValueMap<bool> > > eleID_tokens;
+    std::vector< edm::EDGetTokenT<edm::ValueMap<bool> > > gammaID_tokens;
     edm::EDGetTokenT<edm::View<pat::Electron> > patElectronLToken_;
+    edm::EDGetTokenT<edm::View<pat::Photon> > patGammaLToken_;
 
 
     // HCAL noise

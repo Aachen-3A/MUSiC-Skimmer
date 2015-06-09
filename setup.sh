@@ -17,6 +17,7 @@ cd ${CMSSW_BASE}/src
 
 # Add the recommended electron idenfitication source files
 svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/RecoEgamma/ElectronIdentification RecoEgamma/ElectronIdentification
+svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/RecoEgamma/PhotonIdentification RecoEgamma/PhotonIdentification
 svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/RecoEgamma/EgammaTools RecoEgamma/EgammaTools
 svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/PhysicsTools/SelectorUtils PhysicsTools/SelectorUtils
 

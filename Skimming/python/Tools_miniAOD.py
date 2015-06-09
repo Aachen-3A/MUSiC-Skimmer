@@ -23,13 +23,13 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     # configureJEC function.
     #
     # process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
-    
-    # The global tag is set in pset file or overidden by the calling 
+
+    # The global tag is set in pset file or overidden by the calling
     # script (e.g. music_crab3.py9
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     process.GlobalTag.globaltag = globalTag
 
-    process.load( 'Configuration.Geometry.GeometryPilot2_cff' )
+    process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
     process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
 
     # do we need this ?
@@ -58,7 +58,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     #process.Skimmer.EleEffAreaTargetLabel = eleEffAreaTarget
 
     addElectronIDs( process )
-    
+    addGammaIDs( process )
+
     process.Skimmer.FileName = name+'.pxlio'
     process.Skimmer.Process = name
     process.Skimmer.Dataset = datasetpath
@@ -80,25 +81,22 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
     return process
 
-def addElectronIDs( process ):
-    #https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=11
-    # START ELECTRON ID SECTION
-    #
-    # Set up everything that is needed to compute electron IDs and
-    # add the ValueMaps with ID decisions into the event data stream
-    #
-    # Load tools and function definitions
-    process.load("RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi")
-    # overwrite a default parameter: for miniAOD, the collection name is a slimmed one
-    process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag('slimmedElectrons')
-    from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
-    process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDs)
-    # Define which IDs we want to produce
-    # Each of these two example IDs contains all four standard
-    # cut-based ID working points (only two WP of the PU20bx25 are actually used here).
+def addGammaIDs( process ):
 
-    #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/cutBasedElectronID_PHYS14_PU20bx25_V0_miniAOD_cff.py
-    #/user/padeken/CMSSW/CMSSW_7_2_0/src/PxlSkimmer/Skimming/python/heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD_cff.py
+    # based on https://github.com/ikrav/EgammaWork/blob/ntupler_and_VID_demos/PhotonNtupler/test/runPhotons_VID_CutBased_PHYS14_demo.py
+    switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
+
+    # define which IDs we want to produce
+    my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
+    for idmod in my_id_modules:
+         setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+
+    process.p = cms.Path(process.egmPhotonIDSequence )
+
+def addElectronIDs( process ):
+    switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
+
+    # define which IDs we want to produce
     my_id_modules = [
                      'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
                      'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff'
@@ -106,17 +104,8 @@ def addElectronIDs( process ):
     #Add them to the VID producer
     for idmod in my_id_modules:
         setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
-    # Do not forget to add the egmGsfElectronIDSequence to the path!
-    #
-    process.p = cms.Path(process.egmGsfElectronIDSequence)
-    # END ELECTRON ID SECTION
-    #egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-veto
-    #egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-loose
-    #egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-medium
-    #egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V0-miniAOD-standalone-tight
-    #egmGsfElectronIDs:heepElectronID-HEEPV50-prePHYS14-25ns-miniAOD
 
-
+    process.p = cms.Path( process.egmGsfElectronIDSequence )
 
 def configurePAT( process, runOnData ):
     # PAT Layer 0+1
