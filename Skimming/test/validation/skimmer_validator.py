@@ -749,7 +749,7 @@ def run_analysis_task(item):
         f_err = open("log/"+item[1][:-5].replace('/','')+".err","w")
 
         cfg_name = create_cfg_for_skimmer(item[1], item[2], item[0], item[3])
-
+        log.debug('Now running: cmsRun %s'%cfg_name)
         p = subprocess.Popen("cmsRun %s"%cfg_name, shell=True,stdout=f_out,stderr=f_err)
         pid = p.pid
         while True:
@@ -779,7 +779,8 @@ def run_analysis_task(item):
         if exitCode != 0:
             log.error("exitCode: " + str(exitCode))
             try:
-                log.error(output,p.communicate()[1])
+                log.error(output)
+                log.error(p.communicate()[1])
             except(TypeError):
                 print(output)
                 print(p.communicate()[1])
