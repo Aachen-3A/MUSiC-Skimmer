@@ -795,14 +795,14 @@ def run_analysis_task(item):
         for item12 in rssList:
             try:
                 bla = float(item12)
-            except(ValueError):
+            except(exceptions.ValueError):
                 skipper.append(counter)
             counter += 1
         counter = 0
         for item12 in virtual:
             try:
                 bla = float(item12)
-            except(ValueError):
+            except(exceptions.ValueError):
                 skipper.append(counter)
             counter += 1
 
