@@ -47,7 +47,8 @@ process.source = cms.Source(
     'PoolSource',
     skipEvents = cms.untracked.uint32( 0 ),
     fileNames = cms.untracked.vstring(
-        "/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1000_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/3056AD52-BAFB-E411-A8E7-0025905A612C.root"
+        #"/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1000_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/3056AD52-BAFB-E411-A8E7-0025905A612C.root"
+        '/store/mc/RunIISpring15DR74/ADDmonoPhoton_MD-3_d-3_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/70000/223B42A3-8A05-E511-8DAE-002590D0AFD8.root'
         # 'file://3056AD52-BAFB-E411-A8E7-0025905A612C.root'
         )
     )

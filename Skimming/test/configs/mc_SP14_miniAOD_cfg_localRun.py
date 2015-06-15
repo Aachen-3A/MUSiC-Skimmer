@@ -51,7 +51,8 @@ process.source = cms.Source(
         #'/store/mc/Spring14dr/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/AODSIM/PU_S14_POSTLS170_V6-v1/00000/124EBB03-F1E6-E311-9837-002590A8DC50.root'
         #'/store/cmst3/user/gpetrucc/miniAOD/v1/DYJetsToLL_M-50_13TeV-madgraph-pythia8_Flat20to50_PAT.root'
         #'file://WprimeTauMiniAOD.root'
-        '/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1600_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/00000/A449BF1F-DCFC-E411-9350-00259073E442.root'
+        #'/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1600_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/00000/A449BF1F-DCFC-E411-9350-00259073E442.root'
+        '/store/mc/RunIISpring15DR74/ADDmonoPhoton_MD-3_d-3_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/70000/223B42A3-8A05-E511-8DAE-002590D0AFD8.root'
         # 'file:///disk1/erdweg/MINIAOD_files/0603D444-2D70-E411-AF03-002618943922.root'
         )
     )

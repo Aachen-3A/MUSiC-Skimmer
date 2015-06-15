@@ -16,9 +16,11 @@ echo ""
 cd ${CMSSW_BASE}/src
 
 # Add the recommended electron idenfitication source files
-svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/RecoEgamma/ElectronIdentification RecoEgamma/ElectronIdentification
-svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/RecoEgamma/EgammaTools RecoEgamma/EgammaTools
-svn export https://github.com/ikrav/cmssw/branches/egm_id_74X_v1/PhysicsTools/SelectorUtils PhysicsTools/SelectorUtils
+git cms-merge-topic 9003 #this is the version that is in CMSSW_7_4_X
+rm -rf RecoEgamma/ElectronIdentification/data
+git clone https://github.com/cms-data/RecoEgamma-ElectronIdentification.git RecoEgamma/ElectronIdentification/data
+rm -rf RecoEgamma/PhotonIdentification/data
+git clone https://github.com/cms-data/RecoEgamma-PhotonIdentification.git RecoEgamma/PhotonIdentification/data
 
 # Pxl installation
 hg clone https://forge.physik.rwth-aachen.de/hg/cmssw-modules/Pxl

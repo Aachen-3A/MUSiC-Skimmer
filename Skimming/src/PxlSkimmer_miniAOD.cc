@@ -161,6 +161,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     rhos_                    = iConfig.getParameter<VInputTag>("rhos");
     eleIDs_                  = iConfig.getParameter<VInputTag>("eleIDs");
+    gammaIDs_                = iConfig.getParameter<VInputTag>("gammaIDs");
 
     triggerBits_ = consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("bits"));
     triggerObjects_ = consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("objects"));
@@ -170,7 +171,13 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
         eleID_tokens.push_back(dummy_token);
     }
 
+    for (VInputTag::const_iterator gammaIDs_label = gammaIDs_.begin(); gammaIDs_label != gammaIDs_.end(); ++gammaIDs_label) {
+        edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*gammaIDs_label);
+		gammaID_tokens.push_back(dummy_token);
+    }
+
     patElectronLToken_ = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("patElectronLabel"));
+    patGammaLToken_ = consumes<edm::View<pat::Photon> >(iConfig.getParameter<edm::InputTag>("patGammaLabel"));
 
 
     // HCAL noise
@@ -2402,6 +2409,13 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
     iEvent.getByLabel(patGammaLabel_, photonHandle);
     const vector< pat::Photon > &patPhotons = *photonHandle;
 
+    // fill vectors for gamma ID decsisons
+    std::vector<edm::Handle<edm::ValueMap<bool> > > gamma_id_decisions;
+    for (uint ii = 0; ii < gammaID_tokens.size(); ii++) {
+        edm::Handle<edm::ValueMap<bool> > gammaID;
+        iEvent.getByToken(gammaID_tokens[ii], gammaID);
+        gamma_id_decisions.push_back(gammaID);
+    }
     // Handle< EcalRecHitCollection > barrelRecHits;
     // iEvent.getByLabel(freducedBarrelRecHitCollection, barrelRecHits);
 
@@ -2425,6 +2439,9 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
 
     int numGammaRec = 0;
     int numGammaAll = 0;
+    Handle<edm::View<pat::Photon> > photons;
+    iEvent.getByToken(patGammaLToken_, photons);
+    View<pat::Photon>::const_iterator ph = photons->begin();
     for (vector< pat::Photon >::const_iterator patPhoton = patPhotons.begin(); patPhoton != patPhotons.end(); ++patPhoton) {
         if (Gamma_cuts(patPhoton)) {
             Handle< EcalRecHitCollection > recHits;
@@ -2444,6 +2461,13 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             pxlPhoton->setUserRecord("isEndcap", isEndcap);
             pxlPhoton->setUserRecord("Gap", patPhoton->isEBGap() || patPhoton->isEEGap() || patPhoton->isEBEEGap());
 
+
+            // Write ID decisions to particle
+            const Ptr<pat::Photon> phPtr(photons, ph - photons->begin());
+            for (uint ii = 0; ii < gammaID_tokens.size(); ii++) {
+                bool Gamma_temp_ID = (*gamma_id_decisions[ii])[ phPtr ];
+                pxlPhoton->setUserRecord(gammaIDs_[ii].instance(), Gamma_temp_ID);
+            }
             // Store Photon info corrected for primary vertex (this changes direction but leaves energy of SC unchanged).
             pat::Photon localPho(*patPhoton);
             // Set event vertex
@@ -2481,11 +2505,14 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             pxlPhoton->setUserRecord("TrackNum03", patPhoton->nTrkSolidConeDR03());
             pxlPhoton->setUserRecord("TrackNum04", patPhoton->nTrkSolidConeDR04());
 
-            // Store ID information.
-            const vector< pair< string, bool > > &photonIDs = patPhoton->photonIDs();
-            for (vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID) {
-                pxlPhoton->setUserRecord(photonID->first, photonID->second);
-            }
+            // Store miniAOD photon IDs
+
+
+            // Store old ID PAT information.
+            //const vector< pair< string, bool > > &photonIDs = patPhoton->photonIDs();
+            //for (vector< pair< string, bool > >::const_iterator photonID = photonIDs.begin(); photonID != photonIDs.end(); ++photonID) {
+            //    pxlPhoton->setUserRecord(photonID->first, photonID->second);
+            //}
             pxlPhoton->setUserRecord("pfMVA", patPhoton->pfMVA());
 
             pxlPhoton->setUserRecord("seedId", patPhoton->seed()->seed().rawId());
@@ -2549,8 +2576,6 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
 
             // Store information about converted state.
             pxlPhoton->setUserRecord("Converted", patPhoton->hasConversionTracks());
-
-
 
             pxlPhoton->setUserRecord("etaWidth", SCRef->etaWidth());
             pxlPhoton->setUserRecord("phiWidth", SCRef->phiWidth());

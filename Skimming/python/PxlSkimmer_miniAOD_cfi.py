@@ -46,6 +46,11 @@ Skimmer = cms.EDAnalyzer(
                             cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto"),
                             cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV51")
                            ),
+                           
+    gammaIDs = cms.VInputTag( cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-loose"),
+                              cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-medium"),
+                              cms.InputTag("egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-tight")
+                             ),
 
     bits = cms.InputTag("TriggerResults","","HLT"),
     objects = cms.InputTag("selectedPatTrigger"),
