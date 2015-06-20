@@ -32,5 +32,7 @@ After cloning the PxlSkimmer, one has to execute the `setup.sh` script inside th
 PxlSkimmer directory, which will take care of the remaining additions required
 to run the skimmer.
 
+## Using the Skimmer on the GRID
+The submission of Jobs to the GRID can be done using the script music_crab3, see https://github.com/Aachen-3A/tools3a/wiki/music_crab3/
 # Coding conventions
 TODO
