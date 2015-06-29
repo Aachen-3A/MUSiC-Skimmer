@@ -2498,6 +2498,8 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             // https:// twiki.cern.ch/twiki/bin/view/CMS/EgammaIDInputVariables
             //
 
+            pxlPhoton->setUserRecord("SCeta",  patPhoton->caloPosition().eta());
+            
             // Isolation variables:
             //
             // The following are there to have the same variable naming for all
@@ -2582,11 +2584,6 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
                 }
             }
 
-            // Calorimeter information.
-            //
-            pxlPhoton->setUserRecord("iEta_iEta", patPhoton->sigmaIetaIeta());
-            pxlPhoton->setUserRecord("r9",        patPhoton->r9());
-
 
             // Whether or not the SuperCluster has a matched pixel seed (electron veto).
             pxlPhoton->setUserRecord("HasSeed", patPhoton->hasPixelSeed());
@@ -2603,11 +2600,30 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             // Energy deposited in preshower.
             pxlPhoton->setUserRecord("preshowerEnergy", SCRef->preshowerEnergy());
 
-
-
-
-            pxlPhoton->setUserRecord("e5x5", patPhoton->e5x5());
+            // Shower shape variables
             pxlPhoton->setUserRecord("e1x5", patPhoton->e1x5());
+            pxlPhoton->setUserRecord("e2x5", patPhoton->e2x5());
+            pxlPhoton->setUserRecord("e3x5", patPhoton->e3x5());
+            pxlPhoton->setUserRecord("e5x5", patPhoton->e5x5());
+            pxlPhoton->setUserRecord("maxEnergyXtal", patPhoton->maxEnergyXtal());
+            pxlPhoton->setUserRecord("sigma_Eta_Eta", patPhoton->sigmaEtaEta());
+            pxlPhoton->setUserRecord("sigma_iEta_iEta", patPhoton->sigmaIetaIeta());
+            pxlPhoton->setUserRecord("r1x5", patPhoton->r1x5());
+            pxlPhoton->setUserRecord("r2x5", patPhoton->r2x5());
+            pxlPhoton->setUserRecord("r9",        patPhoton->r9());
+            // full5x5 Shower shape variables
+            pxlPhoton->setUserRecord("full5x5_e1x5", patPhoton->full5x5_e1x5());
+            pxlPhoton->setUserRecord("full5x5_e2x5", patPhoton->full5x5_e2x5());
+            pxlPhoton->setUserRecord("full5x5_e3x5", patPhoton->full5x5_e3x5());
+            pxlPhoton->setUserRecord("full5x5_e5x5", patPhoton->full5x5_e5x5());
+            pxlPhoton->setUserRecord("full5x5_maxEnergyXtal", patPhoton->full5x5_maxEnergyXtal());
+            pxlPhoton->setUserRecord("full5x5_sigma_Eta_Eta", patPhoton->full5x5_sigmaEtaEta());
+            pxlPhoton->setUserRecord("full5x5_sigma_iEta_iEta", patPhoton->full5x5_sigmaIetaIeta());
+            pxlPhoton->setUserRecord("full5x5_r1x5", patPhoton->full5x5_r1x5());
+            pxlPhoton->setUserRecord("full5x5_r2x5", patPhoton->full5x5_r2x5());
+            pxlPhoton->setUserRecord("full5x5_r9",        patPhoton->full5x5_r9());
+            
+            
             // pxlPhoton->setUserRecord("scE2x5Max", patPhoton->scE2x5Max());
             // pxlPhoton->setUserRecord("E2x5Max",   patpatPhotonEle->E2x5Max());
 
@@ -2625,6 +2641,7 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             // conversionsHandle,
             // the_beamspot);
             // pxlPhoton->setUserRecord("hasMatchedPromptElectron", hasMatchedPromptElectron);
+            pxlPhoton->setUserRecord("passElectronVeto", patPhoton->passElectronVeto());
 
             numGammaRec++;
         }
