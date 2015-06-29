@@ -1605,8 +1605,6 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             else
                 part->setUserRecord("LeadingNeutralPt", -1.0);
 
-            // Saving all discriminators
-
 
             // part->setUserRecord("EMFraction", tau->emFraction());  // Ecal/Hcal Cluster Energy
 
@@ -2059,6 +2057,25 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
             // Energy inside 5x5 in etaxphi around the seed Xtal.
             pxlEle->setUserRecord("e5x5", patEle->e5x5());
             // hcal over ecal seed cluster energy using first hcal depth (hcal is energy of towers within dR = 0.15).
+
+
+
+            pxlEle->setUserRecord("full5x5_e1x5", patEle->full5x5_e1x5());
+            pxlEle->setUserRecord("full5x5_e2x5Max", patEle->full5x5_e2x5Max());
+            pxlEle->setUserRecord("full5x5_e5x5", patEle->full5x5_e5x5());
+            pxlEle->setUserRecord("full5x5_hcalDepth1OverEcal", patEle->full5x5_hcalDepth1OverEcal());
+            pxlEle->setUserRecord("full5x5_hcalDepth1OverEcalBc", patEle->full5x5_hcalDepth1OverEcalBc());
+            pxlEle->setUserRecord("full5x5_hcalDepth2OverEcal", patEle->full5x5_hcalDepth2OverEcal());
+            pxlEle->setUserRecord("full5x5_hcalDepth2OverEcalBc", patEle->full5x5_hcalDepth2OverEcalBc());
+            pxlEle->setUserRecord("full5x5_hcalOverEcal", patEle->full5x5_hcalOverEcal());
+            pxlEle->setUserRecord("full5x5_hcalOverEcalBc", patEle->full5x5_hcalOverEcalBc());
+            pxlEle->setUserRecord("full5x5_r9", patEle->full5x5_r9());
+            pxlEle->setUserRecord("full5x5_sigmaEtaEta", patEle->full5x5_sigmaEtaEta());
+            pxlEle->setUserRecord("full5x5_sigmaIetaIeta", patEle->full5x5_sigmaIetaIeta());
+            pxlEle->setUserRecord("full5x5_sigmaIetaIphi", patEle->full5x5_sigmaIetaIphi());
+            pxlEle->setUserRecord("full5x5_sigmaIphiIphi", patEle->full5x5_sigmaIphiIphi());
+
+
             pxlEle->setUserRecord("HCALOverECALd1", patEle->hcalDepth1OverEcal());
             // hadronicOverEm() = hcalDepth1OverEcal() + hcalDepth2OverEcal()
             const double HoEm = patEle->hadronicOverEm();
