@@ -2603,7 +2603,7 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             // Shower shape variables
             pxlPhoton->setUserRecord("e1x5", patPhoton->e1x5());
             pxlPhoton->setUserRecord("e2x5", patPhoton->e2x5());
-            pxlPhoton->setUserRecord("e3x5", patPhoton->e3x5());
+            pxlPhoton->setUserRecord("e3x3", patPhoton->e3x3());
             pxlPhoton->setUserRecord("e5x5", patPhoton->e5x5());
             pxlPhoton->setUserRecord("maxEnergyXtal", patPhoton->maxEnergyXtal());
             pxlPhoton->setUserRecord("sigma_Eta_Eta", patPhoton->sigmaEtaEta());
@@ -2614,7 +2614,7 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             // full5x5 Shower shape variables
             pxlPhoton->setUserRecord("full5x5_e1x5", patPhoton->full5x5_e1x5());
             pxlPhoton->setUserRecord("full5x5_e2x5", patPhoton->full5x5_e2x5());
-            pxlPhoton->setUserRecord("full5x5_e3x5", patPhoton->full5x5_e3x5());
+            pxlPhoton->setUserRecord("full5x5_e3x3", patPhoton->full5x5_e3x3());
             pxlPhoton->setUserRecord("full5x5_e5x5", patPhoton->full5x5_e5x5());
             pxlPhoton->setUserRecord("full5x5_maxEnergyXtal", patPhoton->full5x5_maxEnergyXtal());
             pxlPhoton->setUserRecord("full5x5_sigma_Eta_Eta", patPhoton->full5x5_sigmaEtaEta());
