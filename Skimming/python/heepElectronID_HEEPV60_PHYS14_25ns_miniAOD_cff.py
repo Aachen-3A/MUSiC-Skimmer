@@ -102,5 +102,4 @@ heepElectronID_HEEPV60 = cms.PSet(
 
 
 
-central_id_registry.register(heepElectronID_HEEPV50_prePHYS14_25ns_miniAOD.idName,
-                             '7a2921be9172f08ce8359be4b672b7f5')
+central_id_registry.register(heepElectronID_HEEPV60.idName,"df10ac7e3a9c22f63fa7936573beaafb")
