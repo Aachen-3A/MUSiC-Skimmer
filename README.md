@@ -5,8 +5,8 @@
 # Setup and source CMSSW
 export SCRAM_ARCH=slc6_amd64_gcc491
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cmsrel CMSSW_7_4_2_patch1
-cd CMSSW_7_4_2_patch1/src
+cmsrel CMSSW_7_4_6_patch2
+cd CMSSW_7_4_6_patch2/src
 cmsenv
 
 # Miscellaneous setup
