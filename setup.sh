@@ -15,12 +15,8 @@ echo "${bold}Setting up the skimmer ..."
 echo ""
 cd ${CMSSW_BASE}/src
 
-# Add the recommended electron idenfitication source files
-#git cms-merge-topic 9003 #this is the version that is in CMSSW_7_4_X
-#rm -rf RecoEgamma/ElectronIdentification/data
-#git clone https://github.com/cms-data/RecoEgamma-ElectronIdentification.git RecoEgamma/ElectronIdentification/data
-#rm -rf RecoEgamma/PhotonIdentification/data
-#git clone https://github.com/cms-data/RecoEgamma-PhotonIdentification.git RecoEgamma/PhotonIdentification/data
+
+git cms-merge-topic padeken:heep60update
 
 # Pxl installation
 hg clone https://forge.physik.rwth-aachen.de/hg/cmssw-modules/Pxl
