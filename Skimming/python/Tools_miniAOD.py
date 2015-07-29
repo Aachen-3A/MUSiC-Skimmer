@@ -64,6 +64,50 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     process.Skimmer.Process = name
     process.Skimmer.Dataset = datasetpath
 
+    if runOnData:
+        process.Skimmer.triggers.HLT.datastreams=cms.vstring(
+                                            #"AlCaLumiPixels",
+                                            #"AlCaP0",
+                                            #"AlCaPhiSym",
+                                            "BTagCSV",
+                                            "BTagMu",
+                                            #"Charmonium",
+                                            #"Commissioning",
+                                            #"DisplacedJet",
+                                            "DoubleEG",
+                                            "DoubleMuon",
+                                            "DoubleMuonLowMass",
+                                            "EcalLaser",
+                                            #"EventDisplay",
+                                            #"ExpressPhysics",
+                                            #"FullTrack",
+                                            #"HINCaloJetsOther",
+                                            #"HINMuon",
+                                            #"HINPFJetsOther",
+                                            #"HINPhoton",
+                                            #"HLTPhysics",
+                                            "HTMHT",
+                                            #"HcalHPDNoise",
+                                            #"HcalNZS",
+                                            #"HighMultiplicity",
+                                            "JetHT",
+                                            #"L1Accept",
+                                            #"LookAreaPD",
+                                            "MET",
+                                            "MuOnia",
+                                            "MuonEG",
+                                            #"NoBPTX",
+                                            #"OnlineMonitor",
+                                            #"RPCMonitor",
+                                            "SingleElectron",
+                                            "SingleMuon",
+                                            "SinglePhoton",
+                                            "Tau",
+                                            #"TestEnablesEcalHcal",
+                                            #"TestEnablesEcalHcalDQM",
+                                            #"ZeroBias",
+                                        )
+
     if not runOnGen:
 
         #postfix = ''
