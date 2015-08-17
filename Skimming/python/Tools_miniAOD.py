@@ -59,6 +59,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
     addElectronIDs( process )
     addGammaIDs( process )
+    addNoHFMET( process ,runOnData)
 
     process.Skimmer.FileName = name+'.pxlio'
     process.Skimmer.Process = name
@@ -112,7 +113,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
         #postfix = ''
         #configurePFJet( process, runOnData, postfix )
-
+        addHCALnoiseFilter( process )
         addHCALLaserEventFilter( process )
 
     process.Skimmer.filters.AllFilters.paths = process.Skimmer.filterlist
@@ -475,6 +476,32 @@ def addScrapingFilter( process ):
     process.p_scrapingFilter = cms.Path( process.scrapingFilter )
     process.Skimmer.filterlist.append( 'p_scrapingFilter' )
 
+def addNoHFMET( process , runOnData):
+    jecUncertaintyFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt"
+    process.noHFCands = cms.EDFilter("CandPtrSelector",
+                                     src=cms.InputTag("packedPFCandidates"),
+                                     cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
+                                     )
+
+    from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+    #default configuration for miniAOD reprocessing, change the isData flag to run on data
+    #for a full met computation, remove the pfCandColl input
+    runMetCorAndUncFromMiniAOD(process,
+                               isData=runOnData,
+                               jecUncFile=jecUncertaintyFile,
+                               postfix="newUncert"
+                               )
+
+    #if not useHFCandidates:
+    runMetCorAndUncFromMiniAOD(process,
+                               isData=runOnData,
+                               pfCandColl=cms.InputTag("noHFCands"),
+                               jecUncFile=jecUncertaintyFile,
+                               postfix="NoHF"
+                               )
+
+
+
 
 def addMuGenFilter( process, pt ):
     mugenfilterName = 'mugenfilter' + str( pt )
@@ -546,26 +573,18 @@ def addBFilter( process ):
 def addHCALnoiseFilter( process ):
     # Store the result of the HCAL noise info.
     # (HCAL DPG recommended baseline filter.)
-    #
-    process.HBHENoiseFilterResultProducer = cms.EDProducer(
-        'HBHENoiseFilterResultProducer',
-        noiselabel = cms.InputTag( 'hcalnoise' ),
-        minRatio = cms.double( -999 ),
-        maxRatio = cms.double( 999 ),
-        minHPDHits = cms.int32( 17 ),
-        minRBXHits = cms.int32( 999 ),
-        minHPDNoOtherHits = cms.int32( 10 ),
-        minZeros = cms.int32( 10 ),
-        minHighEHitTime = cms.double( -9999.0 ),
-        maxHighEHitTime = cms.double( 9999.0 ),
-        maxRBXEMF = cms.double( -999.0 ),
-        minNumIsolatedNoiseChannels = cms.int32( 9999 ),
-        minIsolatedNoiseSumE = cms.double( 9999 ),
-        minIsolatedNoiseSumEt = cms.double( 9999 ),
-        useTS4TS5 = cms.bool( True )
-        )
+    ##___________________________HCAL_Noise_Filter________________________________||
+    process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+    process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
 
-    #process.p += process.HBHENoiseFilterResultProducer
+    process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
+       inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
+       reverseDecision = cms.bool(False)
+    )
+
+    process.p += process.HBHENoiseFilterResultProducer
+    process.p += process.ApplyBaselineHBHENoiseFilter
+
 
 
 def addKinematicsFilter( process ):

@@ -148,6 +148,8 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     patTauTag_                   = iConfig.getParameter<edm::InputTag>("patTauTag");
     patMETTag_                   = iConfig.getParameter<edm::InputTag>("patMETTag");
     PUPPIMETTag_                 = iConfig.getParameter<edm::InputTag>("PUPPIMETTag");
+    noHFMETTag_                 = iConfig.getParameter<edm::InputTag>("noHFMETTag");
+    newUncertMETTag_                 = iConfig.getParameter<edm::InputTag>("newUncertMETTag");
     patPFCandiates_              = iConfig.getParameter<edm::InputTag>("patPFCandiates");
 
 
@@ -397,13 +399,17 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
     event.setIndex("Gen", GenEvtView);
     pxl::EventView* TrigEvtView = event.create<pxl::EventView>();
     event.setIndex("Trig", TrigEvtView);
+    pxl::EventView* FilterEvtView = event.create<pxl::EventView>();
+    event.setIndex("Filter", FilterEvtView);
     GenEvtView->setName("Gen");
     RecEvtView->setName("Rec");
     TrigEvtView->setName("Trig");
+    FilterEvtView->setName("Filter");
 
     GenEvtView->setUserRecord("Type", (string) "Gen");
     RecEvtView->setUserRecord("Type", (string) "Rec");
     TrigEvtView->setUserRecord("Type", (string) "Trig");
+    FilterEvtView->setUserRecord("Type", (string) "Filter");
 
     // maps for matching
     std::map< const reco::Candidate*, pxl::Particle* > genmap;
@@ -472,6 +478,8 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
         for (vector< trigger_group >::iterator filt = filters.begin(); filt != filters.end(); ++filt) {
             analyzeFilter(iEvent, iSetup, RecEvtView, *filt);
         }
+
+        analyseMETFilter(iEvent,FilterEvtView);
 
         // Reconstructed stuff
         analyzeRecVertices(iEvent, RecEvtView);
@@ -984,7 +992,8 @@ void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventVi
 
 void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
     analyzeRecPatMET(iEvent, patMETTag_, RecEvtView);
-
+    analyzeRecPatMET(iEvent, noHFMETTag_, RecEvtView);
+    analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
     analyzeRecPUPPIMET(iEvent, PUPPIMETTag_, RecEvtView);
 }
 
@@ -1262,6 +1271,30 @@ std::set< std::string > PxlSkimmer_miniAOD::getTriggers(std::string const DS,
     // Map the trigger names to the corresponding datastream.
     return trigger_names;
 }
+
+
+void PxlSkimmer_miniAOD::analyseMETFilter(const edm::Event &iEvent,
+                                         //const edm::EventSetup &iSetup,
+                                         pxl::EventView *EvtView
+    ) {
+
+    edm::Handle< edm::TriggerResults > filterResultsHandle;
+    try {
+        iEvent.getByLabel(edm::InputTag("TriggerResults","","PAT"), filterResultsHandle);
+    }
+    catch(...) {
+        iEvent.getByLabel(edm::InputTag("TriggerResults","","RECO"), filterResultsHandle);
+    }
+
+    const edm::TriggerNames &names = iEvent.triggerNames(*filterResultsHandle);
+    for (unsigned int i = 0, n = filterResultsHandle->size(); i < n; ++i) {
+        EvtView->setUserRecord(names.triggerName(i), filterResultsHandle->accept(i));
+    }
+
+
+
+}
+
 
 
 void PxlSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
