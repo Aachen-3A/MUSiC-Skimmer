@@ -1380,6 +1380,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // triggers to their datastreams) contains any unprescaled triggers.
     bool unprescaledTrigger = false;
 
+    // Use bool to see if any DS with the provided names exist!
+    bool prescaledDS = false;
+
     // Loop over selected datastreams.
     for (std::map< string, vtrigger_def >::iterator trg_infos_by_DS = trigger.trigger_infos_by_datastream.begin();
          trg_infos_by_DS != trigger.trigger_infos_by_datastream.end(); ++trg_infos_by_DS) {
@@ -1405,6 +1408,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 if (isMC) prescale = 1;
                 else       prescale = trigger.config.prescaleValue(iEvent, iSetup, trig->name);
 
+                //The DS is there! We can say it has any kind of triggger!
+                prescaledDS=true;
+
                 // we can only use unprescaled triggers
                 if (prescale == 1) {
                     // unprescaled, so store it
@@ -1421,9 +1427,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                     // prescaled!
                     // switch it off
                     trig->active = false;
-                    edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
-                                                      << " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
-                                                      << " - Event " << iEvent.id().event();
+                    //edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
+                                                      //<< " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
+                                                      //<< " - Event " << iEvent.id().event();
                 }
             } else {
                 // either error or was not run
@@ -1471,7 +1477,10 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
         }
     }
 
-    if (!unprescaledTrigger) {
+    if (!unprescaledTrigger and !prescaledDS and !isMC) {
+        edm::LogWarning("PxlSkimmer|TriggerWarning")
+            << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
+    }else if (!unprescaledTrigger) {
         throw cms::Exception("PxlSkimmer|TriggerError")
             << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
     }
