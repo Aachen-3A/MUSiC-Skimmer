@@ -17,6 +17,7 @@ cd ${CMSSW_BASE}/src
 
 
 git cms-merge-topic padeken:heep60update
+git cms-merge-topic -u cms-met:METCorUnc74X
 
 # Pxl installation
 hg clone https://forge.physik.rwth-aachen.de/hg/cmssw-modules/Pxl
