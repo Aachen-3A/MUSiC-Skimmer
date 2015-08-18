@@ -1279,12 +1279,12 @@ void PxlSkimmer_miniAOD::analyseMETFilter(const edm::Event &iEvent,
     ) {
 
     edm::Handle< edm::TriggerResults > filterResultsHandle;
-    try {
-        iEvent.getByLabel(edm::InputTag("TriggerResults","","PAT"), filterResultsHandle);
-    }
-    catch(...) {
+    //try {
+        //iEvent.getByLabel(edm::InputTag("TriggerResults","","PAT"), filterResultsHandle);
+    //}
+    //catch(...) {
         iEvent.getByLabel(edm::InputTag("TriggerResults","","RECO"), filterResultsHandle);
-    }
+    //}
 
     const edm::TriggerNames &names = iEvent.triggerNames(*filterResultsHandle);
     for (unsigned int i = 0, n = filterResultsHandle->size(); i < n; ++i) {
@@ -2541,7 +2541,7 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             //
 
             pxlPhoton->setUserRecord("SCeta",  patPhoton->caloPosition().eta());
-            
+
             // Isolation variables:
             //
             // The following are there to have the same variable naming for all
@@ -2664,8 +2664,8 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             pxlPhoton->setUserRecord("full5x5_r1x5", patPhoton->full5x5_r1x5());
             pxlPhoton->setUserRecord("full5x5_r2x5", patPhoton->full5x5_r2x5());
             pxlPhoton->setUserRecord("full5x5_r9",        patPhoton->full5x5_r9());
-            
-            
+
+
             // pxlPhoton->setUserRecord("scE2x5Max", patPhoton->scE2x5Max());
             // pxlPhoton->setUserRecord("E2x5Max",   patpatPhotonEle->E2x5Max());
 
