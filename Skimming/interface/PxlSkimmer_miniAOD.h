@@ -332,6 +332,7 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
 
     // HCAL noise
     edm::InputTag hcal_noise_label_;
+    edm::InputTag METFilterTag_;
 
     // IsolationFunctor from IB (needed for miniIsolation / PF Isolation)
     IsolationFunctor fctIsolation_;

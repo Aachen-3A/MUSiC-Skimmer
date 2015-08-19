@@ -183,7 +183,8 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
 
     // HCAL noise
-    hcal_noise_label_ = iConfig.getParameter< InputTag >("HCALNoise");
+    hcal_noise_label_ = iConfig.getParameter< edm::InputTag >("HCALNoise");
+    METFilterTag_ = iConfig.getParameter< edm::InputTag >("METFilterTag");
 
 
     // get the PSet that contains all trigger PSets
@@ -1279,12 +1280,7 @@ void PxlSkimmer_miniAOD::analyseMETFilter(const edm::Event &iEvent,
     ) {
 
     edm::Handle< edm::TriggerResults > filterResultsHandle;
-    //try {
-        //iEvent.getByLabel(edm::InputTag("TriggerResults","","PAT"), filterResultsHandle);
-    //}
-    //catch(...) {
-        iEvent.getByLabel(edm::InputTag("TriggerResults","","RECO"), filterResultsHandle);
-    //}
+    iEvent.getByLabel(METFilterTag_, filterResultsHandle);
 
     const edm::TriggerNames &names = iEvent.triggerNames(*filterResultsHandle);
     for (unsigned int i = 0, n = filterResultsHandle->size(); i < n; ++i) {

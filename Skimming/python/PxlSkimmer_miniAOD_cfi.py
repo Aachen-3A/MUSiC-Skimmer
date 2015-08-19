@@ -62,7 +62,8 @@ Skimmer = cms.EDAnalyzer(
     reducedSuperClusterCollection   = cms.InputTag("reducedEgamma","reducedESClusters"),
     reducedEBClusterCollection      = cms.InputTag("reducedEgamma","reducedEBEEClusters"),
     #HCAL noise
-    HCALNoise                       = cms.InputTag( 'hcalnoise' ),
+    HCALNoise                      = cms.InputTag( 'hcalnoise' ),
+    METFilterTag                   = cms.InputTag("TriggerResults","","PAT"),
 
     conversionsTag                  = cms.InputTag( "reducedEgamma","reducedConversions" ),
     conversionsSingleLegTag         = cms.InputTag("reducedEgamma","reducedSingleLegConversions" ),

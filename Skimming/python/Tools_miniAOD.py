@@ -108,6 +108,8 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
                                             #"TestEnablesEcalHcalDQM",
                                             #"ZeroBias",
                                         )
+        if "PromptReco" in datasetpath:
+            process.Skimmer.METFilterTag=cms.InputTag("TriggerResults","","RECO")
 
     if not runOnGen:
 
