@@ -493,7 +493,7 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
 
         analyzeRecMETs(iEvent, RecEvtView);
 
-        // if (not m_fastSim) analyzeHCALNoise(iEvent, RecEvtView);
+        if (not fastSim_) analyzeHCALNoise(iEvent, RecEvtView);
         analyzeRecGammas(iEvent, RecEvtView, IsMC, genmap, vertices, pfCandidates, rho25);
     }
 
