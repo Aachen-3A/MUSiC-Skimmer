@@ -682,31 +682,23 @@ def configureTaus( process ):
 #
 def configureMessenger( process, verbosity = 0 ):
     process.load( 'FWCore.MessageLogger.MessageLogger_cfi' )
-    process.MessageLogger = cms.Service("MessageLogger",
-       destinations   = cms.untracked.vstring('error_messages.txt'),
-       statistics     = cms.untracked.vstring('statistics1', 'runstats'),
-       statistics1 = cms.untracked.PSet(threshold = cms.untracked.string('WARNING')),
-       runstats  = cms.untracked.PSet(reset = cms.untracked.bool(True))
-    )
-    process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-    #process.MessageLogger.cerr.threshold = 'INFO'
-    #process.MessageLogger.cerr.default.limit = -1
-    #process.MessageLogger.cerr.FwkReport.limit = 100
-    #process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-    #process.MessageLogger.runstats = cms.untracked.bool(True)
+    process.MessageLogger.cerr.threshold = 'INFO'
+    process.MessageLogger.cerr.default.limit = -1
+    process.MessageLogger.cerr.FwkReport.limit = 100
+    process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
-    #process.MessageLogger.categories.append( 'TRIGGERINFO_PXLSKIMMER' )
-    #process.MessageLogger.categories.append( 'PDFINFO_PXLSKIMMER' )
+    process.MessageLogger.categories.append( 'TRIGGERINFO_PXLSKIMMER' )
+    process.MessageLogger.categories.append( 'PDFINFO_PXLSKIMMER' )
 
-    #if verbosity > 0:
-        #process.MessageLogger.categories.append( 'EventInfo' )
-        #process.MessageLogger.categories.append( 'FilterInfo' )
-        #process.MessageLogger.categories.append( 'TriggerInfo' )
-        #process.MessageLogger.categories.append( 'PDFInfo' )
+    if verbosity > 0:
+        process.MessageLogger.categories.append( 'EventInfo' )
+        process.MessageLogger.categories.append( 'FilterInfo' )
+        process.MessageLogger.categories.append( 'TriggerInfo' )
+        process.MessageLogger.categories.append( 'PDFInfo' )
 
-    #if verbosity > 1:
-        #process.MessageLogger.categories.append( 'PxlSkimmer' )
+    if verbosity > 1:
+        process.MessageLogger.categories.append( 'PxlSkimmer' )
 
-    #if verbosity > 2:
-        #process.MessageLogger.cerr.INFO = cms.untracked.PSet( limit = cms.untracked.int32( -1 ) )
+    if verbosity > 2:
+        process.MessageLogger.cerr.INFO = cms.untracked.PSet( limit = cms.untracked.int32( -1 ) )
