@@ -10,6 +10,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
     import FWCore.Framework.test.cmsExceptionsFatalOption_cff
     process.options = cms.untracked.PSet(
+        allowUnscheduled = cms.untracked.bool(True),
         wantSummary = cms.untracked.bool( True ),
         # Open file in NOMERGE mode to avoid a memory leak.
         #
@@ -479,11 +480,39 @@ def addScrapingFilter( process ):
     process.Skimmer.filterlist.append( 'p_scrapingFilter' )
 
 def addNoHFMET( process , runOnData):
+    import os
+    if runOnData:
+        era="Summer15_50nsV5_DATA"
+    else:
+        era="Summer15_50nsV2_MC"
+
+
     jecUncertaintyFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt"
     process.noHFCands = cms.EDFilter("CandPtrSelector",
                                      src=cms.InputTag("packedPFCandidates"),
                                      cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
                                      )
+
+
+    from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+
+    dBFile = os.path.expandvars("$CMSSW_BASE/src/PxlSkimmer/Skimming/data/"+era+".db")
+    process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
+                               connect = cms.string( "sqlite_file://"+dBFile ),
+                               toGet =  cms.VPSet(
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PF"),
+                label= cms.untracked.string("AK4PF")
+                ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
+                label= cms.untracked.string("AK4PFchs")
+                ),
+            )
+                               )
+    process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
 
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
     #default configuration for miniAOD reprocessing, change the isData flag to run on data
