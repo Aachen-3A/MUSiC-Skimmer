@@ -484,7 +484,7 @@ def addNoHFMET( process , runOnData):
     if runOnData:
         era="Summer15_50nsV5_DATA"
     else:
-        era="Summer15_50nsV2_MC"
+        era="Summer15_50nsV5_MC"
 
 
     jecUncertaintyFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt"
@@ -513,6 +513,26 @@ def addNoHFMET( process , runOnData):
             )
                                )
     process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
+
+
+    process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
+    process.patJetCorrFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
+        src = cms.InputTag("slimmedJets"),
+        levels = ['L1FastJet',
+                'L2Relative',
+                'L3Absolute'],
+        payload = 'AK4PFchs',
+       ) # Make sure to choose the appropriate levels and payload here!
+
+    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+    process.patJetsReapplyJEC = process.patJetsUpdated.clone(
+      jetSource = cms.InputTag("slimmedJets"),
+      jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC")),
+      )
+
+    process.p += cms.Sequence( process.patJetCorrFactorsReapplyJEC + process. patJetsReapplyJEC )
+
+
 
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
     #default configuration for miniAOD reprocessing, change the isData flag to run on data

@@ -70,6 +70,14 @@ Skimmer = cms.EDAnalyzer(
 
     jets = cms.PSet(
         # REMARK: The names of the following PSets will be used as the names for the PXL particles that are the jets
+        AK4Corr = cms.PSet(
+            MCLabel = cms.InputTag( "slimmedGenJets" ),
+            RecoLabel = cms.InputTag( "patJetsUpdated" ),
+            isPF = cms.bool(True),
+            # the following vector must hold the names of the IDs in the same sequence
+            # as the qualities in PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h
+            IDs = cms.vstring( 'LOOSE', 'TIGHT' )
+            ),
         AK4 = cms.PSet(
             MCLabel = cms.InputTag( "slimmedGenJets" ),
             RecoLabel = cms.InputTag( "slimmedJets" ),
