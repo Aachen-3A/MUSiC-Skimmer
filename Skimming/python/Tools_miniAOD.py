@@ -147,7 +147,6 @@ def addElectronIDs( process ):
     # define which IDs we want to produce
     my_id_modules = [
                      'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
-                     'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff',
                      'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff',
                      ]
     #Add them to the VID producer

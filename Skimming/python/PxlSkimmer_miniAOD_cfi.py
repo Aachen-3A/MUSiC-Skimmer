@@ -46,7 +46,6 @@ Skimmer = cms.EDAnalyzer(
                             cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-medium"),
                             cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight"),
                             cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto"),
-                            cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV51"),
                             cms.InputTag("egmGsfElectronIDs:heepElectronID-HEEPV60")
                            ),
 
