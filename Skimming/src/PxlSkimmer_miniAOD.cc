@@ -672,6 +672,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             pxl::Particle* part = EvtView->create< pxl::Particle >();
             genMatchMap[p] = part;
             part->setName("gen");
+            part->setUserRecord("Accepted", false);
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
             int p_id = p->pdgId();
             part->setPdgNumber(p_id);
@@ -682,29 +683,24 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             }
         }
 
-
         // fill Gen Muons passing some basic cuts
-
         if (abs((p)->pdgId()) == 13) {
             if (MuonMC_cuts(p)) {
                 // set a soft link if the particle is already stored
                 if (genMatchMap.end() == genMatchMap.find(p)) {
                     continue;
                 }
-                pxl::Particle* part = EvtView->create<pxl::Particle>();
-                part->linkSoft(genMatchMap[p], "genParticle");
-                genmap[p] = part;  // fill genmap
-                part->setName("Muon");
-                part->setCharge(p->charge());
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                part->setUserRecord("Vtx_X", p->vx());
-                part->setUserRecord("Vtx_Y", p->vy());
-                part->setUserRecord("Vtx_Z", p->vz());
+                genmap[p] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(p->charge());
+                genMatchMap[p]->setUserRecord("Vtx_X", p->vx());
+                genMatchMap[p]->setUserRecord("Vtx_Y", p->vy());
+                genMatchMap[p]->setUserRecord("Vtx_Z", p->vz());
 
                 // TEMPORARY: calculate isolation ourselves FIXME still needed???
                 // FIXME: make this at least comparable with pat/lepton isolation
                 double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
-                part->setUserRecord("GenIso", GenIso);
+                genMatchMap[p]->setUserRecord("GenIso", GenIso);
                 numMuonMC++;
             }
         }
@@ -716,18 +712,15 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                 if (genMatchMap.end() == genMatchMap.find(p)) {
                     continue;
                 }
-                pxl::Particle* part = EvtView->create<pxl::Particle>();
-                part->linkSoft(genMatchMap[p], "genParticle");
-                genmap[p] = part;  // fill genmap
-                part->setName("Ele");
-                part->setCharge(p->charge());
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                part->setUserRecord("Vtx_X", p->vx());
-                part->setUserRecord("Vtx_Y", p->vy());
-                part->setUserRecord("Vtx_Z", p->vz());
+                genmap[p] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(p->charge());
+                genMatchMap[p]->setUserRecord("Vtx_X", p->vx());
+                genMatchMap[p]->setUserRecord("Vtx_Y", p->vy());
+                genMatchMap[p]->setUserRecord("Vtx_Z", p->vz());
                 // TEMPORARY: calculate isolation ourselves  FIXME still needed???
                 double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
-                part->setUserRecord("GenIso", GenIso);
+                genMatchMap[p]->setUserRecord("GenIso", GenIso);
                 // set a soft link if the particle is already stored
                 numEleMC++;
             }
@@ -740,16 +733,12 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                 if (genMatchMap.end() == genMatchMap.find(p)) {
                     continue;
                 }
-                pxl::Particle* part = EvtView->create<pxl::Particle>();
-                part->linkSoft(genMatchMap[p], "genParticle");
-
-                genmap[p] = part;  // fill genmap
-                part->setName("Gamma");
-                part->setCharge(0);
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
+                genmap[p] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(0);
                 // TEMPORARY: calculate isolation ourselves FIXME still needed???
                 double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5);  // 0. since gamma not charged!
-                part->setUserRecord("GenIso", GenIso);
+                genMatchMap[p]->setUserRecord("GenIso", GenIso);
                 numGammaMC++;
             }
         }
@@ -765,17 +754,12 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                 }
             }
             if (isfinal) {
-                pxl::Particle *part = EvtView->create< pxl::Particle >();
-                genmap[ p ] = part;  // fill genmap
-                part->setName("Tau");
-                part->setCharge(p->charge());
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                if (genMatchMap.end() != genMatchMap.find(p)) {
-                    part->linkSoft(genMatchMap[p], "genParticle");
-                }
-                part->setUserRecord("Vtx_X", p->vx());
-                part->setUserRecord("Vtx_Y", p->vy());
-                part->setUserRecord("Vtx_Z", p->vz());
+                genmap[ p ] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(p->charge());
+                genMatchMap[p]->setUserRecord("Vtx_X", p->vx());
+                genMatchMap[p]->setUserRecord("Vtx_Y", p->vy());
+                genMatchMap[p]->setUserRecord("Vtx_Z", p->vz());
                 numTauMC++;
             }
         }
