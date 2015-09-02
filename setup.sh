@@ -15,14 +15,12 @@ echo "${bold}Setting up the skimmer ..."
 echo ""
 cd ${CMSSW_BASE}/src
 
-
-git cms-merge-topic padeken:heep60update
-git cms-merge-topic -u cms-met:METCorUnc74X
+git cms-merge-topic padeken:EleIDUpdate
 
 # Pxl installation
 hg clone https://forge.physik.rwth-aachen.de/hg/cmssw-modules/Pxl
 cd Pxl/
-hg up pxl-3.5.1
+hg up pxl-3.5.2
 cd ..
 
 echo ""
