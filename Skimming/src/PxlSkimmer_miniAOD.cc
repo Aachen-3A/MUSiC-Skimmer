@@ -676,6 +676,16 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
             int p_id = p->pdgId();
             part->setPdgNumber(p_id);
+            part->setUserRecord("Status", p->status());
+            part->setUserRecord("isPromptFinalState", p->isPromptFinalState());
+            part->setUserRecord("isPromptDecayed", p->isPromptDecayed());
+            part->setUserRecord("isDirectPromptTauDecayProductFinalState", p->isDirectPromptTauDecayProductFinalState());
+            GenStatusFlags gsf = p->statusFlags();
+            part->setUserRecord("isTauDecayProduct", gsf.isTauDecayProduct());
+            part->setUserRecord("isPromptTauDecayProduct", gsf.isPromptTauDecayProduct());
+            part->setUserRecord("isDirectTauDecayProduct", gsf.isDirectTauDecayProduct());
+            part->setUserRecord("isDirectPromptTauDecayProduct", gsf.isDirectPromptTauDecayProduct());
+            part->setUserRecord("isDirectHadronDecayProduct", gsf.isDirectHadronDecayProduct());
 
             // if there are more than 2 mothers the event is still fine, but it is not viewable in tree view of pxl!!
             for (size_t imother = 0; imother < mothers.size(); imother++) {
