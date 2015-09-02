@@ -2243,21 +2243,6 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
                 pxlEle->setUserRecord(eleIDs_[ii].instance(), Ele_temp_ID);
             }
 
-            // Returns a specific electron ID associated to the pat::Electron
-            // given its name For cut-based IDs, the value map has the following
-            // meaning: 0: fails, 1: passes electron ID only, 2: passes electron
-            // Isolation only, 3: passes electron ID and Isolation only, 4:
-            // passes conversion rejection, 5: passes conversion rejection and
-            // ID, 6: passes conversion rejection and Isolation, 7: passes the
-            // whole selection. For more details have a look at:
-            // https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-            // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCategoryBasedElectronID
-            // Note: an exception is thrown if the specified ID is not available
-            const vector< pair< string, float > > &electronIDs = patEle->electronIDs();
-            for (vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID) {
-                pxlEle->setUserRecord(electronID->first, electronID->second);
-            }
-
             // Conversion veto for electron ID.
             // https:// twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
             //
