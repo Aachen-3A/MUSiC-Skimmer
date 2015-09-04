@@ -504,7 +504,7 @@ def addNoHFMET( process , runOnData):
     from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
 
     dBFile =  era+".db"
-    print dBFile
+    print "If the file "+dBFile+" is not found copy them to your running dir!"
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
                                connect = cms.string( "sqlite_file:"+dBFile ),
                                toGet =  cms.VPSet(
