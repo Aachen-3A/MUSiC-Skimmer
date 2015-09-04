@@ -135,7 +135,10 @@ def addGammaIDs( process ):
     switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
     # define which IDs we want to produce
-    my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
+    my_id_modules = [
+    'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff',
+    'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring15_50ns_V1_cff',
+    ]
     for idmod in my_id_modules:
          setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
@@ -146,6 +149,7 @@ def addElectronIDs( process ):
 
     # define which IDs we want to produce
     my_id_modules = [
+                     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_50ns_V1_cff',
                      'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
                      'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring15_25ns_nonTrig_V1_cff',
                      'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff',
@@ -480,6 +484,9 @@ def addScrapingFilter( process ):
     process.Skimmer.filterlist.append( 'p_scrapingFilter' )
 
 def addNoHFMET( process , runOnData):
+
+
+    ####this is not nice and can be removed once the JECs are official in the GT
     import os
     if runOnData:
         era="Summer15_50nsV5_DATA"
@@ -496,9 +503,10 @@ def addNoHFMET( process , runOnData):
 
     from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
 
-    dBFile = os.path.expandvars("$CMSSW_BASE/src/PxlSkimmer/Skimming/data/"+era+".db")
+    dBFile =  era+".db"
+    print dBFile
     process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
-                               connect = cms.string( "sqlite_file://"+dBFile ),
+                               connect = cms.string( "sqlite_file:"+dBFile ),
                                toGet =  cms.VPSet(
             cms.PSet(
                 record = cms.string("JetCorrectionsRecord"),
