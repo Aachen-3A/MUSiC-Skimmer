@@ -170,7 +170,7 @@ Skimmer = cms.EDAnalyzer(
                                          ##"ZeroBiasParked",
              #),
         ),
-        StoreL3Objects = cms.bool(True)
+        StoreL3Objects = cms.bool(False)
     ),
 
     # This is used to access the results of all filters that ran.
