@@ -10,6 +10,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
     import FWCore.Framework.test.cmsExceptionsFatalOption_cff
     process.options = cms.untracked.PSet(
+        allowUnscheduled = cms.untracked.bool(True),
         wantSummary = cms.untracked.bool( True ),
         # Open file in NOMERGE mode to avoid a memory leak.
         #
@@ -59,16 +60,63 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
     addElectronIDs( process )
     addGammaIDs( process )
+    addNoHFMET( process ,runOnData)
 
     process.Skimmer.FileName = name+'.pxlio'
     process.Skimmer.Process = name
     process.Skimmer.Dataset = datasetpath
 
+    if runOnData:
+        process.Skimmer.triggers.HLT.datastreams=cms.vstring(
+                                            #"AlCaLumiPixels",
+                                            #"AlCaP0",
+                                            #"AlCaPhiSym",
+                                            "BTagCSV",
+                                            "BTagMu",
+                                            #"Charmonium",
+                                            #"Commissioning",
+                                            #"DisplacedJet",
+                                            "DoubleEG",
+                                            "DoubleMuon",
+                                            "DoubleMuonLowMass",
+                                            "EcalLaser",
+                                            #"EventDisplay",
+                                            #"ExpressPhysics",
+                                            #"FullTrack",
+                                            #"HINCaloJetsOther",
+                                            #"HINMuon",
+                                            #"HINPFJetsOther",
+                                            #"HINPhoton",
+                                            #"HLTPhysics",
+                                            "HTMHT",
+                                            #"HcalHPDNoise",
+                                            #"HcalNZS",
+                                            #"HighMultiplicity",
+                                            "JetHT",
+                                            #"L1Accept",
+                                            #"LookAreaPD",
+                                            "MET",
+                                            #"MuOnia",
+                                            "MuonEG",
+                                            #"NoBPTX",
+                                            #"OnlineMonitor",
+                                            #"RPCMonitor",
+                                            "SingleElectron",
+                                            "SingleMuon",
+                                            "SinglePhoton",
+                                            "Tau",
+                                            #"TestEnablesEcalHcal",
+                                            #"TestEnablesEcalHcalDQM",
+                                            #"ZeroBias",
+                                        )
+        if "PromptReco" in datasetpath:
+            process.Skimmer.METFilterTag=cms.InputTag("TriggerResults","","RECO")
+
     if not runOnGen:
 
         #postfix = ''
         #configurePFJet( process, runOnData, postfix )
-
+        addHCALnoiseFilter( process )
         addHCALLaserEventFilter( process )
 
     process.Skimmer.filters.AllFilters.paths = process.Skimmer.filterlist
@@ -87,7 +135,10 @@ def addGammaIDs( process ):
     switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
     # define which IDs we want to produce
-    my_id_modules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
+    my_id_modules = [
+    'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff',
+    'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring15_50ns_V1_cff',
+    ]
     for idmod in my_id_modules:
          setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
@@ -98,8 +149,9 @@ def addElectronIDs( process ):
 
     # define which IDs we want to produce
     my_id_modules = [
-                     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
-                     'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff',
+                     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_50ns_V1_cff',
+                     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
+                     'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring15_25ns_nonTrig_V1_cff',
                      'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff',
                      ]
     #Add them to the VID producer
@@ -431,6 +483,84 @@ def addScrapingFilter( process ):
     process.p_scrapingFilter = cms.Path( process.scrapingFilter )
     process.Skimmer.filterlist.append( 'p_scrapingFilter' )
 
+def addNoHFMET( process , runOnData):
+
+
+    ####this is not nice and can be removed once the JECs are official in the GT
+    import os
+    if runOnData:
+        era="Summer15_50nsV5_DATA"
+    else:
+        era="Summer15_50nsV5_MC"
+
+
+    jecUncertaintyFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt"
+    process.noHFCands = cms.EDFilter("CandPtrSelector",
+                                     src=cms.InputTag("packedPFCandidates"),
+                                     cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
+                                     )
+
+
+    from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+
+    dBFile =  era+".db"
+    print "If the file "+dBFile+" is not found copy them to your running dir!"
+    process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
+                               connect = cms.string( "sqlite_file:"+dBFile ),
+                               toGet =  cms.VPSet(
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PF"),
+                label= cms.untracked.string("AK4PF")
+                ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
+                label= cms.untracked.string("AK4PFchs")
+                ),
+            )
+                               )
+    process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
+
+
+    process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
+    process.patJetCorrFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
+        src = cms.InputTag("slimmedJets"),
+        levels = ['L1FastJet',
+                'L2Relative',
+                'L3Absolute'],
+        payload = 'AK4PFchs',
+       ) # Make sure to choose the appropriate levels and payload here!
+
+    from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+    process.patJetsReapplyJEC = process.patJetsUpdated.clone(
+      jetSource = cms.InputTag("slimmedJets"),
+      jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC")),
+      )
+
+    process.p += cms.Sequence( process.patJetCorrFactorsReapplyJEC + process. patJetsReapplyJEC )
+
+
+
+    from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+    #default configuration for miniAOD reprocessing, change the isData flag to run on data
+    #for a full met computation, remove the pfCandColl input
+    runMetCorAndUncFromMiniAOD(process,
+                               isData=runOnData,
+                               jecUncFile=jecUncertaintyFile,
+                               postfix="newUncert"
+                               )
+
+    #if not useHFCandidates:
+    runMetCorAndUncFromMiniAOD(process,
+                               isData=runOnData,
+                               pfCandColl=cms.InputTag("noHFCands"),
+                               jecUncFile=jecUncertaintyFile,
+                               postfix="NoHF"
+                               )
+
+
+
 
 def addMuGenFilter( process, pt ):
     mugenfilterName = 'mugenfilter' + str( pt )
@@ -502,26 +632,18 @@ def addBFilter( process ):
 def addHCALnoiseFilter( process ):
     # Store the result of the HCAL noise info.
     # (HCAL DPG recommended baseline filter.)
-    #
-    process.HBHENoiseFilterResultProducer = cms.EDProducer(
-        'HBHENoiseFilterResultProducer',
-        noiselabel = cms.InputTag( 'hcalnoise' ),
-        minRatio = cms.double( -999 ),
-        maxRatio = cms.double( 999 ),
-        minHPDHits = cms.int32( 17 ),
-        minRBXHits = cms.int32( 999 ),
-        minHPDNoOtherHits = cms.int32( 10 ),
-        minZeros = cms.int32( 10 ),
-        minHighEHitTime = cms.double( -9999.0 ),
-        maxHighEHitTime = cms.double( 9999.0 ),
-        maxRBXEMF = cms.double( -999.0 ),
-        minNumIsolatedNoiseChannels = cms.int32( 9999 ),
-        minIsolatedNoiseSumE = cms.double( 9999 ),
-        minIsolatedNoiseSumEt = cms.double( 9999 ),
-        useTS4TS5 = cms.bool( True )
-        )
+    ##___________________________HCAL_Noise_Filter________________________________||
+    process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
+    process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
 
-    #process.p += process.HBHENoiseFilterResultProducer
+    process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
+       inputLabel = cms.InputTag('HBHENoiseFilterResultProducer','HBHENoiseFilterResult'),
+       reverseDecision = cms.bool(False)
+    )
+
+    process.p += process.HBHENoiseFilterResultProducer
+    process.p += process.ApplyBaselineHBHENoiseFilter
+
 
 
 def addKinematicsFilter( process ):
@@ -621,7 +743,6 @@ def configureMessenger( process, verbosity = 0 ):
     process.MessageLogger.cerr.default.limit = -1
     process.MessageLogger.cerr.FwkReport.limit = 100
     process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-
 
 
     process.MessageLogger.categories.append( 'TRIGGERINFO_PXLSKIMMER' )

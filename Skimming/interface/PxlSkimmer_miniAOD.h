@@ -175,6 +175,8 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
                                pxl::EventView *EvtView,
                                trigger_group &filter);
 
+    virtual void analyseMETFilter(const edm::Event &iEvent,pxl::EventView *EvtView);
+
     virtual void analyzeTrigger(const edm::Event &iEvent,
                                 const edm::EventSetup &iSetup,
                                 const bool &isMC,
@@ -304,6 +306,8 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
     edm::InputTag patTauTag_;
     edm::InputTag patMETTag_;
     edm::InputTag PUPPIMETTag_;
+    edm::InputTag noHFMETTag_;
+    edm::InputTag newUncertMETTag_;
     edm::InputTag patJetTag_;
     edm::InputTag patPFCandiates_;
 
@@ -328,6 +332,7 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
 
     // HCAL noise
     edm::InputTag hcal_noise_label_;
+    edm::InputTag METFilterTag_;
 
     // IsolationFunctor from IB (needed for miniIsolation / PF Isolation)
     IsolationFunctor fctIsolation_;

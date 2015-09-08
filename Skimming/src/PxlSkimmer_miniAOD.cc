@@ -148,6 +148,8 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     patTauTag_                   = iConfig.getParameter<edm::InputTag>("patTauTag");
     patMETTag_                   = iConfig.getParameter<edm::InputTag>("patMETTag");
     PUPPIMETTag_                 = iConfig.getParameter<edm::InputTag>("PUPPIMETTag");
+    noHFMETTag_                 = iConfig.getParameter<edm::InputTag>("noHFMETTag");
+    newUncertMETTag_                 = iConfig.getParameter<edm::InputTag>("newUncertMETTag");
     patPFCandiates_              = iConfig.getParameter<edm::InputTag>("patPFCandiates");
 
 
@@ -181,7 +183,8 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
 
     // HCAL noise
-    hcal_noise_label_ = iConfig.getParameter< InputTag >("HCALNoise");
+    hcal_noise_label_ = iConfig.getParameter< edm::InputTag >("HCALNoise");
+    METFilterTag_ = iConfig.getParameter< edm::InputTag >("METFilterTag");
 
 
     // get the PSet that contains all trigger PSets
@@ -397,13 +400,17 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
     event.setIndex("Gen", GenEvtView);
     pxl::EventView* TrigEvtView = event.create<pxl::EventView>();
     event.setIndex("Trig", TrigEvtView);
+    pxl::EventView* FilterEvtView = event.create<pxl::EventView>();
+    event.setIndex("Filter", FilterEvtView);
     GenEvtView->setName("Gen");
     RecEvtView->setName("Rec");
     TrigEvtView->setName("Trig");
+    FilterEvtView->setName("Filter");
 
     GenEvtView->setUserRecord("Type", (string) "Gen");
     RecEvtView->setUserRecord("Type", (string) "Rec");
     TrigEvtView->setUserRecord("Type", (string) "Trig");
+    FilterEvtView->setUserRecord("Type", (string) "Filter");
 
     // maps for matching
     std::map< const reco::Candidate*, pxl::Particle* > genmap;
@@ -473,6 +480,8 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
             analyzeFilter(iEvent, iSetup, RecEvtView, *filt);
         }
 
+        analyseMETFilter(iEvent,FilterEvtView);
+
         // Reconstructed stuff
         analyzeRecVertices(iEvent, RecEvtView);
         analyzeRecTaus(iEvent, RecEvtView);
@@ -484,7 +493,7 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
 
         analyzeRecMETs(iEvent, RecEvtView);
 
-        // if (not m_fastSim) analyzeHCALNoise(iEvent, RecEvtView);
+        if (not fastSim_) analyzeHCALNoise(iEvent, RecEvtView);
         analyzeRecGammas(iEvent, RecEvtView, IsMC, genmap, vertices, pfCandidates, rho25);
     }
 
@@ -663,9 +672,20 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             pxl::Particle* part = EvtView->create< pxl::Particle >();
             genMatchMap[p] = part;
             part->setName("gen");
+            part->setUserRecord("Accepted", false);
             part->setP4(p->px(), p->py(), p->pz(), p->energy());
             int p_id = p->pdgId();
             part->setPdgNumber(p_id);
+            part->setUserRecord("Status", p->status());
+            part->setUserRecord("isPromptFinalState", p->isPromptFinalState());
+            part->setUserRecord("isPromptDecayed", p->isPromptDecayed());
+            part->setUserRecord("isDirectPromptTauDecayProductFinalState", p->isDirectPromptTauDecayProductFinalState());
+            GenStatusFlags gsf = p->statusFlags();
+            part->setUserRecord("isTauDecayProduct", gsf.isTauDecayProduct());
+            part->setUserRecord("isPromptTauDecayProduct", gsf.isPromptTauDecayProduct());
+            part->setUserRecord("isDirectTauDecayProduct", gsf.isDirectTauDecayProduct());
+            part->setUserRecord("isDirectPromptTauDecayProduct", gsf.isDirectPromptTauDecayProduct());
+            part->setUserRecord("isDirectHadronDecayProduct", gsf.isDirectHadronDecayProduct());
 
             // if there are more than 2 mothers the event is still fine, but it is not viewable in tree view of pxl!!
             for (size_t imother = 0; imother < mothers.size(); imother++) {
@@ -673,29 +693,24 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             }
         }
 
-
         // fill Gen Muons passing some basic cuts
-
         if (abs((p)->pdgId()) == 13) {
             if (MuonMC_cuts(p)) {
                 // set a soft link if the particle is already stored
                 if (genMatchMap.end() == genMatchMap.find(p)) {
                     continue;
                 }
-                pxl::Particle* part = EvtView->create<pxl::Particle>();
-                part->linkSoft(genMatchMap[p], "genParticle");
-                genmap[p] = part;  // fill genmap
-                part->setName("Muon");
-                part->setCharge(p->charge());
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                part->setUserRecord("Vtx_X", p->vx());
-                part->setUserRecord("Vtx_Y", p->vy());
-                part->setUserRecord("Vtx_Z", p->vz());
+                genmap[p] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(p->charge());
+                genMatchMap[p]->setUserRecord("Vtx_X", p->vx());
+                genMatchMap[p]->setUserRecord("Vtx_Y", p->vy());
+                genMatchMap[p]->setUserRecord("Vtx_Z", p->vz());
 
                 // TEMPORARY: calculate isolation ourselves FIXME still needed???
                 // FIXME: make this at least comparable with pat/lepton isolation
                 double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
-                part->setUserRecord("GenIso", GenIso);
+                genMatchMap[p]->setUserRecord("GenIso", GenIso);
                 numMuonMC++;
             }
         }
@@ -707,18 +722,15 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                 if (genMatchMap.end() == genMatchMap.find(p)) {
                     continue;
                 }
-                pxl::Particle* part = EvtView->create<pxl::Particle>();
-                part->linkSoft(genMatchMap[p], "genParticle");
-                genmap[p] = part;  // fill genmap
-                part->setName("Ele");
-                part->setCharge(p->charge());
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                part->setUserRecord("Vtx_X", p->vx());
-                part->setUserRecord("Vtx_Y", p->vy());
-                part->setUserRecord("Vtx_Z", p->vz());
+                genmap[p] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(p->charge());
+                genMatchMap[p]->setUserRecord("Vtx_X", p->vx());
+                genMatchMap[p]->setUserRecord("Vtx_Y", p->vy());
+                genMatchMap[p]->setUserRecord("Vtx_Z", p->vz());
                 // TEMPORARY: calculate isolation ourselves  FIXME still needed???
                 double GenIso = IsoGenSum(iEvent, p->pt(), p->eta(), p->phi(), 0.3, 1.5);
-                part->setUserRecord("GenIso", GenIso);
+                genMatchMap[p]->setUserRecord("GenIso", GenIso);
                 // set a soft link if the particle is already stored
                 numEleMC++;
             }
@@ -731,16 +743,12 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                 if (genMatchMap.end() == genMatchMap.find(p)) {
                     continue;
                 }
-                pxl::Particle* part = EvtView->create<pxl::Particle>();
-                part->linkSoft(genMatchMap[p], "genParticle");
-
-                genmap[p] = part;  // fill genmap
-                part->setName("Gamma");
-                part->setCharge(0);
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
+                genmap[p] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(0);
                 // TEMPORARY: calculate isolation ourselves FIXME still needed???
                 double GenIso = IsoGenSum(iEvent, 0., p->eta(), p->phi(), 0.3, 1.5);  // 0. since gamma not charged!
-                part->setUserRecord("GenIso", GenIso);
+                genMatchMap[p]->setUserRecord("GenIso", GenIso);
                 numGammaMC++;
             }
         }
@@ -756,17 +764,12 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
                 }
             }
             if (isfinal) {
-                pxl::Particle *part = EvtView->create< pxl::Particle >();
-                genmap[ p ] = part;  // fill genmap
-                part->setName("Tau");
-                part->setCharge(p->charge());
-                part->setP4(p->px(), p->py(), p->pz(), p->energy());
-                if (genMatchMap.end() != genMatchMap.find(p)) {
-                    part->linkSoft(genMatchMap[p], "genParticle");
-                }
-                part->setUserRecord("Vtx_X", p->vx());
-                part->setUserRecord("Vtx_Y", p->vy());
-                part->setUserRecord("Vtx_Z", p->vz());
+                genmap[ p ] = genMatchMap[p];  // fill genmap
+                genMatchMap[p]->setUserRecord("Accepted", true);
+                genMatchMap[p]->setCharge(p->charge());
+                genMatchMap[p]->setUserRecord("Vtx_X", p->vx());
+                genMatchMap[p]->setUserRecord("Vtx_Y", p->vy());
+                genMatchMap[p]->setUserRecord("Vtx_Z", p->vz());
                 numTauMC++;
             }
         }
@@ -984,7 +987,8 @@ void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventVi
 
 void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
     analyzeRecPatMET(iEvent, patMETTag_, RecEvtView);
-
+    analyzeRecPatMET(iEvent, noHFMETTag_, RecEvtView);
+    analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
     analyzeRecPUPPIMET(iEvent, PUPPIMETTag_, RecEvtView);
 }
 
@@ -1264,6 +1268,25 @@ std::set< std::string > PxlSkimmer_miniAOD::getTriggers(std::string const DS,
 }
 
 
+void PxlSkimmer_miniAOD::analyseMETFilter(const edm::Event &iEvent,
+                                         //const edm::EventSetup &iSetup,
+                                         pxl::EventView *EvtView
+    ) {
+
+    edm::Handle< edm::TriggerResults > filterResultsHandle;
+    iEvent.getByLabel(METFilterTag_, filterResultsHandle);
+
+    const edm::TriggerNames &names = iEvent.triggerNames(*filterResultsHandle);
+    for (unsigned int i = 0, n = filterResultsHandle->size(); i < n; ++i) {
+        EvtView->setUserRecord(names.triggerName(i), filterResultsHandle->accept(i));
+    }
+
+
+
+}
+
+
+
 void PxlSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
                                          const edm::EventSetup &iSetup,
                                          pxl::EventView *EvtView,
@@ -1347,6 +1370,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // triggers to their datastreams) contains any unprescaled triggers.
     bool unprescaledTrigger = false;
 
+    // Use bool to see if any DS with the provided names exist!
+    bool prescaledDS = false;
+
     // Loop over selected datastreams.
     for (std::map< string, vtrigger_def >::iterator trg_infos_by_DS = trigger.trigger_infos_by_datastream.begin();
          trg_infos_by_DS != trigger.trigger_infos_by_datastream.end(); ++trg_infos_by_DS) {
@@ -1372,6 +1398,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 if (isMC) prescale = 1;
                 else       prescale = trigger.config.prescaleValue(iEvent, iSetup, trig->name);
 
+                //The DS is there! We can say it has any kind of triggger!
+                prescaledDS=true;
+
                 // we can only use unprescaled triggers
                 if (prescale == 1) {
                     // unprescaled, so store it
@@ -1388,9 +1417,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                     // prescaled!
                     // switch it off
                     trig->active = false;
-                    edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
-                                                      << " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
-                                                      << " - Event " << iEvent.id().event();
+                    //edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
+                                                      //<< " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
+                                                      //<< " - Event " << iEvent.id().event();
                 }
             } else {
                 // either error or was not run
@@ -1438,7 +1467,10 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
         }
     }
 
-    if (!unprescaledTrigger) {
+    if (!unprescaledTrigger and !prescaledDS and !isMC) {
+        edm::LogWarning("PxlSkimmer|TriggerWarning")
+            << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
+    }else if (!unprescaledTrigger) {
         throw cms::Exception("PxlSkimmer|TriggerError")
             << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
     }
@@ -2211,21 +2243,6 @@ void PxlSkimmer_miniAOD::analyzeRecElectrons(const Event &iEvent,
                 pxlEle->setUserRecord(eleIDs_[ii].instance(), Ele_temp_ID);
             }
 
-            // Returns a specific electron ID associated to the pat::Electron
-            // given its name For cut-based IDs, the value map has the following
-            // meaning: 0: fails, 1: passes electron ID only, 2: passes electron
-            // Isolation only, 3: passes electron ID and Isolation only, 4:
-            // passes conversion rejection, 5: passes conversion rejection and
-            // ID, 6: passes conversion rejection and Isolation, 7: passes the
-            // whole selection. For more details have a look at:
-            // https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-            // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideCategoryBasedElectronID
-            // Note: an exception is thrown if the specified ID is not available
-            const vector< pair< string, float > > &electronIDs = patEle->electronIDs();
-            for (vector< pair< string, float > >::const_iterator electronID = electronIDs.begin(); electronID != electronIDs.end(); ++electronID) {
-                pxlEle->setUserRecord(electronID->first, electronID->second);
-            }
-
             // Conversion veto for electron ID.
             // https:// twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
             //
@@ -2499,7 +2516,7 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             //
 
             pxlPhoton->setUserRecord("SCeta",  patPhoton->caloPosition().eta());
-            
+
             // Isolation variables:
             //
             // The following are there to have the same variable naming for all
@@ -2622,8 +2639,8 @@ void PxlSkimmer_miniAOD::analyzeRecGammas(const Event &iEvent,
             pxlPhoton->setUserRecord("full5x5_r1x5", patPhoton->full5x5_r1x5());
             pxlPhoton->setUserRecord("full5x5_r2x5", patPhoton->full5x5_r2x5());
             pxlPhoton->setUserRecord("full5x5_r9",        patPhoton->full5x5_r9());
-            
-            
+
+
             // pxlPhoton->setUserRecord("scE2x5Max", patPhoton->scE2x5Max());
             // pxlPhoton->setUserRecord("E2x5Max",   patpatPhotonEle->E2x5Max());
 
