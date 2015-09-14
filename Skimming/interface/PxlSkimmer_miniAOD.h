@@ -304,6 +304,7 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
     edm::InputTag patElectronLabel_;
     edm::InputTag patGammaLabel_;
     edm::InputTag patTauTag_;
+    edm::InputTag patBoostedTauTag_;
     edm::InputTag patMETTag_;
     edm::InputTag PUPPIMETTag_;
     edm::InputTag noHFMETTag_;

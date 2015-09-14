@@ -27,6 +27,7 @@ Skimmer = cms.EDAnalyzer(
     patMuonLabel       = cms.InputTag("slimmedMuons"),
     patElectronLabel   = cms.InputTag("slimmedElectrons"),
     patTauTag          = cms.InputTag( 'slimmedTaus' ),
+    patBoostedTauTag          = cms.InputTag( 'slimmedTausBoosted' ),
     patGammaLabel      = cms.InputTag("slimmedPhotons"),
     patMETTag          = cms.InputTag( 'slimmedMETs' ),
     PUPPIMETTag        = cms.InputTag( 'slimmedMETsPuppi' ),

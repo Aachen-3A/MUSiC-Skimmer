@@ -146,6 +146,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
     patElectronLabel_            = iConfig.getParameter<edm::InputTag>("patElectronLabel");
     patGammaLabel_               = iConfig.getParameter<edm::InputTag>("patGammaLabel");
     patTauTag_                   = iConfig.getParameter<edm::InputTag>("patTauTag");
+    patBoostedTauTag_                   = iConfig.getParameter<edm::InputTag>("patBoostedTauTag");
     patMETTag_                   = iConfig.getParameter<edm::InputTag>("patMETTag");
     PUPPIMETTag_                 = iConfig.getParameter<edm::InputTag>("PUPPIMETTag");
     noHFMETTag_                 = iConfig.getParameter<edm::InputTag>("noHFMETTag");
@@ -1568,6 +1569,7 @@ void PxlSkimmer_miniAOD::analyzeRecTaus(edm::Event const &iEvent,
     // ++patTauTag
     // ) {
     analyzeRecPatTaus(iEvent, patTauTag_, RecEvtView);
+    analyzeRecPatTaus(iEvent, patBoostedTauTag_, RecEvtView); //Testing Boosted Taus
     // }
 }
 
@@ -1587,8 +1589,9 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
         ) {
         if (Tau_cuts(*tau)) {
             pxl::Particle *part = RecEvtView->create< pxl::Particle >();
-            // The label defines the name of this pxl object!
-
+            
+            
+            // The label defines the name of this pxl object!	
             part->setName(tauTag.label());
             part->setCharge(tau->charge());
             part->setP4(tau->px(), tau->py(), tau->pz(), tau->energy());
