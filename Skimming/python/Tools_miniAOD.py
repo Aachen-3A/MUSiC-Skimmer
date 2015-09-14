@@ -611,7 +611,6 @@ def addHCALnoiseFilter( process ):
     )
 
     process.p += process.HBHENoiseFilterResultProducer
-    process.p += process.ApplyBaselineHBHENoiseFilter
 
 
 
