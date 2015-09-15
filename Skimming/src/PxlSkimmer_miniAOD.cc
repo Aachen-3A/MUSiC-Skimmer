@@ -471,7 +471,10 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
         // Trigger bits
         for (vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg) {
             // analyzeTrigger(iEvent, iSetup, IsMC, RecEvtView, *trg);
-            analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg);
+            // analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg);
+            if ( analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg) == false ) {
+                return;
+            }
         }
 
         // Filters more info see above.
@@ -1327,12 +1330,15 @@ void PxlSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
 }
 
 
-void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
+bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                           const edm::EventSetup &iSetup,
                                           const bool &isMC,
                                           pxl::EventView* EvtView,
                                           trigger_group &trigger
     ) {
+        
+    bool accepted = false;
+    
     // edm::Handle< trigger::TriggerEvent > triggerEventHandle;
     edm::Handle< edm::TriggerResults >   triggerResultsHandle;
     // iEvent.getByLabel(trigger.event, triggerEventHandle);
@@ -1406,6 +1412,7 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                     // unprescaled, so store it
                     if (triggerResultsHandle->accept(trig->ID)) {
                         EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        accepted = true;
                     }
                     unprescaledTrigger     = true;
                     unprescaledTriggerinDS = true;
@@ -1475,6 +1482,10 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
             << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
     }
 
+    //if (!unprescaledTrigger) {
+    //    return false;
+    //}
+
     // get the L1 data
     // edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
     // iEvent.getByLabel(trigger.L1_result, gtReadoutRecord);
@@ -1491,6 +1502,8 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // EvtView->setUserRecord(trigger.name+"_L1_41", tech_word[ 41 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_42", tech_word[ 42 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_43", tech_word[ 43 ]);
+    
+    return accepted;
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
