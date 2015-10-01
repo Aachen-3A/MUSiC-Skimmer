@@ -758,7 +758,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             // check whether the tau is final or radiates a tau
             bool isfinal = true;
             for (reco::GenParticle::const_iterator daughter = p->begin(); daughter != p->end(); ++daughter) {
-                if (daughter->pdgId() == 15) {
+                if (abs(daughter->pdgId()) == 15) {
                     isfinal = false;
                     break;
                 }
