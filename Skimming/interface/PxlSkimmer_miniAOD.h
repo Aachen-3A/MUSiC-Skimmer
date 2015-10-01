@@ -177,7 +177,7 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
 
     virtual void analyseMETFilter(const edm::Event &iEvent,pxl::EventView *EvtView);
 
-    virtual void analyzeTrigger(const edm::Event &iEvent,
+    virtual bool analyzeTrigger(const edm::Event &iEvent,
                                 const edm::EventSetup &iSetup,
                                 const bool &isMC,
                                 pxl::EventView *EvtView,
