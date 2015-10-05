@@ -790,7 +790,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     // take care of the pile-up in the event
     //
     Handle< std::vector< PileupSummaryInfo > >  PUInfo;
-    iEvent.getByLabel(InputTag("addPileupInfo"), PUInfo);
+    iEvent.getByLabel(InputTag("slimmedAddPileupInfo"), PUInfo);
 
     vector< PileupSummaryInfo >::const_iterator PUiter;
 
@@ -1012,8 +1012,8 @@ void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
     part->setUserRecord("sumEt",  met->sumEt());
     part->setUserRecord("mEtSig", met->mEtSig());
 
-    part->setUserRecord("uncorrectedPhi", met->uncorrectedPhi());
-    part->setUserRecord("uncorrectedPt", met->uncorrectedPt());
+    part->setUserRecord("uncorrectedPhi", met->uncorPhi());
+    part->setUserRecord("uncorrectedPt", met->uncorPt());
 
     if (MET_cuts(part)) numPatMET++;
     RecEvtView->setUserRecord("Num" + patMETTag.label(), numPatMET);
