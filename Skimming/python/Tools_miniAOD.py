@@ -60,7 +60,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
 
     addElectronIDs( process )
     addGammaIDs( process )
-    addNoHFMET( process ,runOnData)
+    addNoHFMET( process, runOnData )
 
     process.Skimmer.FileName = name+'.pxlio'
     process.Skimmer.Process = name
@@ -483,45 +483,14 @@ def addScrapingFilter( process ):
     process.p_scrapingFilter = cms.Path( process.scrapingFilter )
     process.Skimmer.filterlist.append( 'p_scrapingFilter' )
 
-def addNoHFMET( process , runOnData):
-
-
-    ####this is not nice and can be removed once the JECs are official in the GT
+def addNoHFMET( process, runOnData ):
     import os
-    if runOnData:
-        era="Summer15_50nsV5_DATA"
-    else:
-        era="Summer15_50nsV5_MC"
-
 
     jecUncertaintyFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt"
     process.noHFCands = cms.EDFilter("CandPtrSelector",
                                      src=cms.InputTag("packedPFCandidates"),
                                      cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
                                      )
-
-
-    from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-
-    dBFile =  era+".db"
-    print "If the file "+dBFile+" is not found copy them to your running dir!"
-    process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
-                               connect = cms.string( "sqlite_file:"+dBFile ),
-                               toGet =  cms.VPSet(
-            cms.PSet(
-                record = cms.string("JetCorrectionsRecord"),
-                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PF"),
-                label= cms.untracked.string("AK4PF")
-                ),
-            cms.PSet(
-                record = cms.string("JetCorrectionsRecord"),
-                tag = cms.string("JetCorrectorParametersCollection_"+era+"_AK4PFchs"),
-                label= cms.untracked.string("AK4PFchs")
-                ),
-            )
-                               )
-    process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
-
 
     process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
     process.patJetCorrFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
@@ -642,7 +611,6 @@ def addHCALnoiseFilter( process ):
     )
 
     process.p += process.HBHENoiseFilterResultProducer
-    process.p += process.ApplyBaselineHBHENoiseFilter
 
 
 

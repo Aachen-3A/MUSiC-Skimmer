@@ -761,7 +761,7 @@ def run_analysis_task(item):
                 if "m" in output.split()[5]:
                     rssList.append(output.split()[5].split("m")[0])
                 elif "k" in output.split()[5]:
-                    rssList.append(float(output.split()[5].split("g")[0])/1000)
+                    rssList.append(float(output.split()[5].split("k")[0])/1000)
                 elif "g" in output.split()[5]:
                     rssList.append(float(output.split()[5].split("g")[0])*1000)
                 else:
@@ -769,7 +769,7 @@ def run_analysis_task(item):
                 if "m" in output.split()[4]:
                     virtual.append(output.split()[4].split("m")[0])
                 elif "k" in output.split()[4]:
-                    virtual.append(float(output.split()[4].split("g")[0])/1000)
+                    virtual.append(float(output.split()[4].split("k")[0])/1000)
                 elif "g" in output.split()[4]:
                     virtual.append(float(output.split()[4].split("g")[0])*1000)
                 else:

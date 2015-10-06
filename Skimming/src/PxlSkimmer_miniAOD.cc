@@ -472,7 +472,10 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
         // Trigger bits
         for (vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg) {
             // analyzeTrigger(iEvent, iSetup, IsMC, RecEvtView, *trg);
-            analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg);
+            // analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg);
+            if ( analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg) == false ) {
+                return;
+            }
         }
 
         // Filters more info see above.
@@ -1328,12 +1331,15 @@ void PxlSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
 }
 
 
-void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
+bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                           const edm::EventSetup &iSetup,
                                           const bool &isMC,
                                           pxl::EventView* EvtView,
                                           trigger_group &trigger
     ) {
+        
+    bool accepted = false;
+    
     // edm::Handle< trigger::TriggerEvent > triggerEventHandle;
     edm::Handle< edm::TriggerResults >   triggerResultsHandle;
     // iEvent.getByLabel(trigger.event, triggerEventHandle);
@@ -1407,6 +1413,7 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                     // unprescaled, so store it
                     if (triggerResultsHandle->accept(trig->ID)) {
                         EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        accepted = true;
                     }
                     unprescaledTrigger     = true;
                     unprescaledTriggerinDS = true;
@@ -1476,6 +1483,10 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
             << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
     }
 
+    //if (!unprescaledTrigger) {
+    //    return false;
+    //}
+
     // get the L1 data
     // edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
     // iEvent.getByLabel(trigger.L1_result, gtReadoutRecord);
@@ -1492,6 +1503,8 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // EvtView->setUserRecord(trigger.name+"_L1_41", tech_word[ 41 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_42", tech_word[ 42 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_43", tech_word[ 43 ]);
+    
+    return accepted;
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
@@ -1650,7 +1663,37 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             // part->setUserRecord("PrimVtx_X", tau_primary_vertex->x());
             // part->setUserRecord("PrimVtx_Y", tau_primary_vertex->y());
             // part->setUserRecord("PrimVtx_Z", tau_primary_vertex->z());
-
+            
+            
+			for(size_t i = 0; i < tau->signalChargedHadrCands().size(); i++){
+				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+				part_tmp->setName("signalChargedHadrCands");
+				part_tmp->setP4(tau->signalChargedHadrCands()[i]->px(), 
+								tau->signalChargedHadrCands()[i]->py(), 
+								tau->signalChargedHadrCands()[i]->pz(), 
+								tau->signalChargedHadrCands()[i]->energy());
+				part->linkFlat(part_tmp);
+			}
+			
+			for(size_t i = 0; i < tau->signalNeutrHadrCands().size(); i++){
+				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+				part_tmp->setName("signalNeutrHadrCands");
+				part_tmp->setP4(tau->signalNeutrHadrCands()[i]->px(), 
+								tau->signalNeutrHadrCands()[i]->py(), 
+								tau->signalNeutrHadrCands()[i]->pz(), 
+								tau->signalNeutrHadrCands()[i]->energy());
+				part->linkFlat(part_tmp);
+			}
+			
+			for(size_t i = 0; i < tau->signalGammaCands().size(); i++){
+				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+				part_tmp->setName("signalGammaCands");
+				part_tmp->setP4(tau->signalGammaCands()[i]->px(), 
+								tau->signalGammaCands()[i]->py(), 
+								tau->signalGammaCands()[i]->pz(), 
+								tau->signalGammaCands()[i]->energy());
+				part->linkFlat(part_tmp);
+			}
 
             reco::CandidatePtrVector const &signalGammaCands = tau->signalGammaCands();
             try {
