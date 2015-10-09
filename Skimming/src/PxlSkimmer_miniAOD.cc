@@ -175,7 +175,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     for (VInputTag::const_iterator gammaIDs_label = gammaIDs_.begin(); gammaIDs_label != gammaIDs_.end(); ++gammaIDs_label) {
         edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*gammaIDs_label);
-		gammaID_tokens.push_back(dummy_token);
+        gammaID_tokens.push_back(dummy_token);
     }
 
     patElectronLToken_ = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("patElectronLabel"));
@@ -1667,37 +1667,37 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             // part->setUserRecord("PrimVtx_X", tau_primary_vertex->x());
             // part->setUserRecord("PrimVtx_Y", tau_primary_vertex->y());
             // part->setUserRecord("PrimVtx_Z", tau_primary_vertex->z());
-            
-            
-			for(size_t i = 0; i < tau->signalChargedHadrCands().size(); i++){
-				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
-				part_tmp->setName("signalChargedHadrCands");
-				part_tmp->setP4(tau->signalChargedHadrCands()[i]->px(), 
-								tau->signalChargedHadrCands()[i]->py(), 
-								tau->signalChargedHadrCands()[i]->pz(), 
-								tau->signalChargedHadrCands()[i]->energy());
-				part->linkFlat(part_tmp);
-			}
-			
-			for(size_t i = 0; i < tau->signalNeutrHadrCands().size(); i++){
-				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
-				part_tmp->setName("signalNeutrHadrCands");
-				part_tmp->setP4(tau->signalNeutrHadrCands()[i]->px(), 
-								tau->signalNeutrHadrCands()[i]->py(), 
-								tau->signalNeutrHadrCands()[i]->pz(), 
-								tau->signalNeutrHadrCands()[i]->energy());
-				part->linkFlat(part_tmp);
-			}
-			
-			for(size_t i = 0; i < tau->signalGammaCands().size(); i++){
-				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
-				part_tmp->setName("signalGammaCands");
-				part_tmp->setP4(tau->signalGammaCands()[i]->px(), 
-								tau->signalGammaCands()[i]->py(), 
-								tau->signalGammaCands()[i]->pz(), 
-								tau->signalGammaCands()[i]->energy());
-				part->linkFlat(part_tmp);
-			}
+
+
+            for(size_t i = 0; i < tau->signalChargedHadrCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalChargedHadrCands");
+                part_tmp->setP4(tau->signalChargedHadrCands()[i]->px(),
+                                tau->signalChargedHadrCands()[i]->py(),
+                                tau->signalChargedHadrCands()[i]->pz(),
+                                tau->signalChargedHadrCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
+
+            for(size_t i = 0; i < tau->signalNeutrHadrCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalNeutrHadrCands");
+                part_tmp->setP4(tau->signalNeutrHadrCands()[i]->px(),
+                                tau->signalNeutrHadrCands()[i]->py(),
+                                tau->signalNeutrHadrCands()[i]->pz(),
+                                tau->signalNeutrHadrCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
+
+            for(size_t i = 0; i < tau->signalGammaCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalGammaCands");
+                part_tmp->setP4(tau->signalGammaCands()[i]->px(),
+                                tau->signalGammaCands()[i]->py(),
+                                tau->signalGammaCands()[i]->pz(),
+                                tau->signalGammaCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
 
             reco::CandidatePtrVector const &signalGammaCands = tau->signalGammaCands();
             try {
