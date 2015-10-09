@@ -1,4 +1,5 @@
 runOnData = False
+#runOnData = True
 #run on GEN sample
 runOnGen = False
 
@@ -26,7 +27,7 @@ import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 print sys.argv
 name="test"
 datasetpath="dummy"
-globalTag="PHYS14_25_V1"
+globalTag="74X_dataRun2_v2"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:
@@ -49,8 +50,11 @@ process.source = cms.Source(
     fileNames = cms.untracked.vstring(
         #"/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1000_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/3056AD52-BAFB-E411-A8E7-0025905A612C.root"
         #'/store/mc/RunIISpring15DR74/ADDmonoPhoton_MD-3_d-3_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/70000/223B42A3-8A05-E511-8DAE-002590D0AFD8.root'
-        '/store/mc/RunIISpring15DR74/WprimeToTauNu_M-5200_TuneCUETP8M1_13TeV-pythia8-tauola/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/00000/80E435AB-F90B-E511-9A3E-B499BAABF1D6.root'
-        # 'file://3056AD52-BAFB-E411-A8E7-0025905A612C.root'
+        #'/store/mc/RunIISpring15DR74/WprimeToTauNu_M-5200_TuneCUETP8M1_13TeV-pythia8-tauola/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/00000/80E435AB-F90B-E511-9A3E-B499BAABF1D6.root'
+        #'/store/data/Run2015D/SingleElectron/MINIAOD/PromptReco-v3/000/256/675/00000/D8CD44FA-9C5F-E511-8B24-02163E0134DD.root'
+        ## 'file://3056AD52-BAFB-E411-A8E7-0025905A612C.root'
+         #'file://D8CD44FA-9C5F-E511-8B24-02163E0134DD.root'
+         '/store/data/Run2015B/SingleElectron/MINIAOD/23Sep2015-v1/50000/A47DA508-5963-E511-9734-0025905A610C.root'
         )
     )
 

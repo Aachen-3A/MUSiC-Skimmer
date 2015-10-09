@@ -991,7 +991,7 @@ void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventVi
 void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
     analyzeRecPatMET(iEvent, patMETTag_, RecEvtView);
     analyzeRecPatMET(iEvent, noHFMETTag_, RecEvtView);
-    analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
+    //analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
     analyzeRecPUPPIMET(iEvent, PUPPIMETTag_, RecEvtView);
 }
 
@@ -999,11 +999,13 @@ void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView
 void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
                                             edm::InputTag const &patMETTag,
                                             pxl::EventView *RecEvtView) const {
-    edm::Handle< pat::METCollection > METHandle;
+    edm::Handle<edm::View<pat::MET> > METHandle;
+    //edm::Handle< pat::METCollection > METHandle;
+    //std::cout<<patMETTag<<std::endl;
     iEvent.getByLabel(patMETTag, METHandle);
 
     // There should be only one MET in the event, so take the first element.
-    pat::METCollection::const_iterator met = (*METHandle).begin();
+    edm::View<pat::MET>::const_iterator met = (*METHandle).begin();
 
     int numPatMET = 0;
     pxl::Particle *part = RecEvtView->create< pxl::Particle >();
@@ -1336,9 +1338,9 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                           pxl::EventView* EvtView,
                                           trigger_group &trigger
     ) {
-        
+
     bool accepted = false;
-    
+
     // edm::Handle< trigger::TriggerEvent > triggerEventHandle;
     edm::Handle< edm::TriggerResults >   triggerResultsHandle;
     // iEvent.getByLabel(trigger.event, triggerEventHandle);
@@ -1411,7 +1413,8 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 if (prescale == 1) {
                     // unprescaled, so store it
                     if (triggerResultsHandle->accept(trig->ID)) {
-                        EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        //EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        EvtView->setUserRecord(trigger.name+"_"+trig->name, 1.);
                         accepted = true;
                     }
                     unprescaledTrigger     = true;
@@ -1423,7 +1426,11 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 } else {
                     // prescaled!
                     // switch it off
-                    trig->active = false;
+                    if (triggerResultsHandle->accept(trig->ID)) {
+                        EvtView->setUserRecord(trigger.name+"_"+trig->name, prescale);
+                        accepted = true;
+                    }
+                    //trig->active = false;
                     //edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
                                                       //<< " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
                                                       //<< " - Event " << iEvent.id().event();
@@ -1502,7 +1509,7 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // EvtView->setUserRecord(trigger.name+"_L1_41", tech_word[ 41 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_42", tech_word[ 42 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_43", tech_word[ 43 ]);
-    
+
     return accepted;
 }
 
