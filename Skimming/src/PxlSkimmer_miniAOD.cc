@@ -65,7 +65,6 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 
-
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
@@ -79,6 +78,12 @@
 #include "DataFormats/MuonReco/interface/MuonCocktails.h"
 #include "DataFormats/MuonReco/interface/MuonIsolation.h"
 #include "DataFormats/TrackReco/interface/HitPattern.h"
+#include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
+#include "RecoVertex/VertexTools/interface/InvariantMassFromVertex.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+
 
 // Jet stuff.
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
@@ -488,7 +493,7 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
         // Reconstructed stuff
         analyzeRecVertices(iEvent, RecEvtView);
         analyzeRecTaus(iEvent, RecEvtView);
-        analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap, vertices->at(0));
+        analyzeRecMuons(iEvent, iSetup, RecEvtView, IsMC, genmap, vertices->at(0));
         analyzeRecElectrons(iEvent, RecEvtView, IsMC, genmap, vertices, pfCandidates, rho25);
         for (vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info) {
             analyzeRecJets(iEvent, RecEvtView, IsMC, genjetmap, *jet_info);
@@ -1731,6 +1736,7 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
 // ------------ reading Reconstructed Muons ------------
 
 void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
+                                         edm::EventSetup const &iSetup,
                                            pxl::EventView *RecView,
                                            bool const &MC,
                                            std::map< reco::Candidate const*, pxl::Particle* > &genmap,
@@ -1742,10 +1748,17 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
 
     // count muons
     int numMuonRec = 0;
+
+    // vector for muon refits
+    std::vector<std::pair<const pat::Muon *, pxl::Particle *>> refit_vec;
+
     // loop over all pat::Muon's
     for (std::vector<pat::Muon>::const_iterator muon = muons.begin();  muon != muons.end(); ++muon) {
         if (Muon_cuts(*muon)) {
             pxl::Particle* part = RecView->create<pxl::Particle>();
+            // make pair of pxl and pat muon for vertex refitting
+            refit_vec.push_back(std::make_pair(&(*muon), part));
+
             part->setName("Muon");
             part->setCharge(muon->charge());
             part->setP4(muon->px(), muon->py(), muon->pz(), muon->energy());
@@ -1991,6 +2004,67 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
     }
     RecView->setUserRecord("NumMuon", numMuonRec);
     edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Rec Muons: " << numMuonRec;
+
+    // Refit muon pairs to a single vertex
+    if (numMuonRec >= 2) {
+        edm::ESHandle<TransientTrackBuilder> ttkb;
+        iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", ttkb);
+
+        for (std::vector<std::pair<const pat::Muon *, pxl::Particle *>>::iterator it1 = refit_vec.begin();
+             it1 != refit_vec.end() - 1; ++it1) {
+            const pat::Muon * muon1 = it1->first;
+            // Get the track reference for the first muon
+            const reco::TrackRef& tk1 = muon1->tunePMuonBestTrack().isAvailable() ?
+                    muon1->tunePMuonBestTrack() :
+                    muon1->globalTrack();
+            if (!tk1.isAvailable() || tk1->pt() < 20.0)
+                continue;
+
+            for (std::vector<std::pair<const pat::Muon *, pxl::Particle *>>::iterator it2 = it1 + 1;
+                 it2 != refit_vec.end() - 1; ++it2) {
+                const pat::Muon * muon2 = it2->first;
+                // Get the track reference for the second muon
+                const reco::TrackRef& tk2 = muon2->tunePMuonBestTrack().isAvailable() ?
+                        muon2->tunePMuonBestTrack() :
+                        muon2->globalTrack();
+                if (!tk2.isAvailable() || tk2->pt() < 20.0)
+                    continue;
+
+                std::vector<reco::TransientTrack> ttv;
+                ttv.push_back(ttkb->build(tk1));
+                ttv.push_back(ttkb->build(tk2));
+
+                KalmanVertexFitter kvf(true);
+                CachingVertex<5> cv = kvf.vertex(ttv);
+
+                if (!cv.isValid())
+                    continue;
+
+                // Store the information in a vertex
+                pxl::Vertex * vtx = RecView->create<pxl::Vertex>();
+                vtx->setName("RefitVtx");
+                vtx->setXYZ(cv.position().x(), cv.position().y(), cv.position().z());
+                vtx->setUserRecord("chi2", cv.totalChiSquared());
+                vtx->setUserRecord("ndof", cv.degreesOfFreedom());
+
+                InvariantMassFromVertex imfv;
+                const double muon_mass = 0.1056583;
+                InvariantMassFromVertex::LorentzVector p4 = imfv.p4(cv, muon_mass);
+                Measurement1D mass = imfv.invariantMass(cv, muon_mass);
+
+                vtx->setUserRecord("px", p4.X());
+                vtx->setUserRecord("py", p4.Y());
+                vtx->setUserRecord("pz", p4.Z());
+
+                vtx->setUserRecord("mass", mass.value());
+                vtx->setUserRecord("massError", mass.error());
+
+                // set soft relations to muons
+                vtx->setUserRecord("daughterId1", (it1->second)->getId().toString());
+                vtx->setUserRecord("daughterId2", (it2->second)->getId().toString());
+            }
+        }
+    }
 }
 
 
