@@ -31,7 +31,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     process.GlobalTag.globaltag = globalTag
 
     process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-    process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
+    process.load('Configuration.StandardSequences.MagneticField_cff')
 
     # do we need this ?
     #process.content = cms.EDAnalyzer( 'EventContentAnalyzer' )
