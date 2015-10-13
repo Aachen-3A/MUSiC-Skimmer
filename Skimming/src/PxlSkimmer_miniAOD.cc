@@ -175,7 +175,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     for (VInputTag::const_iterator gammaIDs_label = gammaIDs_.begin(); gammaIDs_label != gammaIDs_.end(); ++gammaIDs_label) {
         edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*gammaIDs_label);
-		gammaID_tokens.push_back(dummy_token);
+        gammaID_tokens.push_back(dummy_token);
     }
 
     patElectronLToken_ = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("patElectronLabel"));
@@ -471,7 +471,10 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
         // Trigger bits
         for (vector< trigger_group >::iterator trg = triggers.begin(); trg != triggers.end(); ++trg) {
             // analyzeTrigger(iEvent, iSetup, IsMC, RecEvtView, *trg);
-            analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg);
+            // analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg);
+            if ( analyzeTrigger(iEvent, iSetup, IsMC, TrigEvtView, *trg) == false ) {
+                return;
+            }
         }
 
         // Filters more info see above.
@@ -758,7 +761,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
             // check whether the tau is final or radiates a tau
             bool isfinal = true;
             for (reco::GenParticle::const_iterator daughter = p->begin(); daughter != p->end(); ++daughter) {
-                if (daughter->pdgId() == 15) {
+                if (abs(daughter->pdgId()) == 15) {
                     isfinal = false;
                     break;
                 }
@@ -787,7 +790,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     // take care of the pile-up in the event
     //
     Handle< std::vector< PileupSummaryInfo > >  PUInfo;
-    iEvent.getByLabel(InputTag("addPileupInfo"), PUInfo);
+    iEvent.getByLabel(InputTag("slimmedAddPileupInfo"), PUInfo);
 
     vector< PileupSummaryInfo >::const_iterator PUiter;
 
@@ -988,7 +991,7 @@ void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventVi
 void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
     analyzeRecPatMET(iEvent, patMETTag_, RecEvtView);
     analyzeRecPatMET(iEvent, noHFMETTag_, RecEvtView);
-    analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
+    //analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
     analyzeRecPUPPIMET(iEvent, PUPPIMETTag_, RecEvtView);
 }
 
@@ -996,11 +999,13 @@ void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView
 void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
                                             edm::InputTag const &patMETTag,
                                             pxl::EventView *RecEvtView) const {
-    edm::Handle< pat::METCollection > METHandle;
+    edm::Handle<edm::View<pat::MET> > METHandle;
+    //edm::Handle< pat::METCollection > METHandle;
+    //std::cout<<patMETTag<<std::endl;
     iEvent.getByLabel(patMETTag, METHandle);
 
     // There should be only one MET in the event, so take the first element.
-    pat::METCollection::const_iterator met = (*METHandle).begin();
+    edm::View<pat::MET>::const_iterator met = (*METHandle).begin();
 
     int numPatMET = 0;
     pxl::Particle *part = RecEvtView->create< pxl::Particle >();
@@ -1009,8 +1014,8 @@ void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
     part->setUserRecord("sumEt",  met->sumEt());
     part->setUserRecord("mEtSig", met->mEtSig());
 
-    part->setUserRecord("uncorrectedPhi", met->uncorrectedPhi());
-    part->setUserRecord("uncorrectedPt", met->uncorrectedPt());
+    part->setUserRecord("uncorrectedPhi", met->uncorPhi());
+    part->setUserRecord("uncorrectedPt", met->uncorPt());
 
     if (MET_cuts(part)) numPatMET++;
     RecEvtView->setUserRecord("Num" + patMETTag.label(), numPatMET);
@@ -1327,12 +1332,15 @@ void PxlSkimmer_miniAOD::analyzeFilter(const edm::Event &iEvent,
 }
 
 
-void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
+bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                           const edm::EventSetup &iSetup,
                                           const bool &isMC,
                                           pxl::EventView* EvtView,
                                           trigger_group &trigger
     ) {
+
+    bool accepted = false;
+
     // edm::Handle< trigger::TriggerEvent > triggerEventHandle;
     edm::Handle< edm::TriggerResults >   triggerResultsHandle;
     // iEvent.getByLabel(trigger.event, triggerEventHandle);
@@ -1405,7 +1413,9 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 if (prescale == 1) {
                     // unprescaled, so store it
                     if (triggerResultsHandle->accept(trig->ID)) {
-                        EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        //EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        EvtView->setUserRecord(trigger.name+"_"+trig->name, 1.);
+                        accepted = true;
                     }
                     unprescaledTrigger     = true;
                     unprescaledTriggerinDS = true;
@@ -1416,7 +1426,11 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 } else {
                     // prescaled!
                     // switch it off
-                    trig->active = false;
+                    if (triggerResultsHandle->accept(trig->ID)) {
+                        EvtView->setUserRecord(trigger.name+"_"+trig->name, prescale);
+                        accepted = true;
+                    }
+                    //trig->active = false;
                     //edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
                                                       //<< " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
                                                       //<< " - Event " << iEvent.id().event();
@@ -1475,6 +1489,10 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
             << "Could not find any unprescaled triggers in menu " << trigger.process << ". Check your configuration!";
     }
 
+    //if (!unprescaledTrigger) {
+    //    return false;
+    //}
+
     // get the L1 data
     // edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
     // iEvent.getByLabel(trigger.L1_result, gtReadoutRecord);
@@ -1491,6 +1509,8 @@ void PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // EvtView->setUserRecord(trigger.name+"_L1_41", tech_word[ 41 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_42", tech_word[ 42 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_43", tech_word[ 43 ]);
+
+    return accepted;
 }
 
 // ------------ reading Reconstructed Primary Vertices ------------
@@ -1648,6 +1668,36 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             // part->setUserRecord("PrimVtx_Y", tau_primary_vertex->y());
             // part->setUserRecord("PrimVtx_Z", tau_primary_vertex->z());
 
+
+            for(size_t i = 0; i < tau->signalChargedHadrCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalChargedHadrCands");
+                part_tmp->setP4(tau->signalChargedHadrCands()[i]->px(),
+                                tau->signalChargedHadrCands()[i]->py(),
+                                tau->signalChargedHadrCands()[i]->pz(),
+                                tau->signalChargedHadrCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
+
+            for(size_t i = 0; i < tau->signalNeutrHadrCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalNeutrHadrCands");
+                part_tmp->setP4(tau->signalNeutrHadrCands()[i]->px(),
+                                tau->signalNeutrHadrCands()[i]->py(),
+                                tau->signalNeutrHadrCands()[i]->pz(),
+                                tau->signalNeutrHadrCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
+
+            for(size_t i = 0; i < tau->signalGammaCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalGammaCands");
+                part_tmp->setP4(tau->signalGammaCands()[i]->px(),
+                                tau->signalGammaCands()[i]->py(),
+                                tau->signalGammaCands()[i]->pz(),
+                                tau->signalGammaCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
 
             reco::CandidatePtrVector const &signalGammaCands = tau->signalGammaCands();
             try {
