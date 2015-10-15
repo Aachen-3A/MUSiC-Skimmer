@@ -25,13 +25,16 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     #
     # process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
 
+    # Transient track builder is used for the muon vertex refit in the ADD analysis
+    process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
+
     # The global tag is set in pset file or overidden by the calling
     # script (e.g. music_crab3.py9
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     process.GlobalTag.globaltag = globalTag
 
     process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-    process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
+    process.load('Configuration.StandardSequences.MagneticField_cff')
 
     # do we need this ?
     #process.content = cms.EDAnalyzer( 'EventContentAnalyzer' )

@@ -1,5 +1,16 @@
+## Data skimming config
+#
+# This config is meant to be used for data files. This means that the sample is
+# a data sample and does not contain the GEN information. Thus both runOnData is
+# True and runOnGen is False by default.
+#
+# The fileNames variable contains the explicit file names for local testing. One
+# can either choose locally stored files or those that are kept on the CERN
+# tiers.
+
+# Run on data
 runOnData = True
-#run on GEN sample
+# Run on GEN sample
 runOnGen = False
 
 import FWCore.ParameterSet.Config as cms
@@ -26,7 +37,6 @@ import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 print sys.argv
 name="test"
 datasetpath="dummy"
-#globalTag="74X_dataRun2_Prompt_v1"
 globalTag="74X_dataRun2_v2"
 for option in sys.argv:
     splitoption=option.split('=')
@@ -48,11 +58,7 @@ process.source = cms.Source(
     'PoolSource',
     skipEvents = cms.untracked.uint32( 0 ),
     fileNames = cms.untracked.vstring(
-        #"/store/mc/RunIISpring15DR74/WprimeToMuNu_M-1000_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/60000/3056AD52-BAFB-E411-A8E7-0025905A612C.root"
-        #'/store/mc/RunIISpring15DR74/ADDmonoPhoton_MD-3_d-3_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/70000/223B42A3-8A05-E511-8DAE-002590D0AFD8.root'
-        #'/store/data/Run2015B/SingleMuon/MINIAOD/17Jul2015-v1/30000/16B50792-172E-E511-B0C8-0025905C43EC.root'
-        '/store/data/Run2015D/SingleElectron/MINIAOD/PromptReco-v3/000/256/675/00000/D8CD44FA-9C5F-E511-8B24-02163E0134DD.root',
-        # 'file://3056AD52-BAFB-E411-A8E7-0025905A612C.root'
+        '/store/data/Run2015B/SingleElectron/MINIAOD/23Sep2015-v1/50000/A47DA508-5963-E511-9734-0025905A610C.root'
         )
     )
 

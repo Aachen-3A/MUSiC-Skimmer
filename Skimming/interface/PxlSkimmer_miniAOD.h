@@ -197,6 +197,7 @@ class PxlSkimmer_miniAOD : public edm::EDAnalyzer {
                                    pxl::EventView *RecEvtView) const;
 
     virtual void analyzeRecMuons(edm::Event const &iEvent,
+                                 edm::EventSetup const &iSetup,
                                  pxl::EventView *RecView,
                                  bool const &MC,
                                  std::map< reco::Candidate const*, pxl::Particle* > &genmap,
