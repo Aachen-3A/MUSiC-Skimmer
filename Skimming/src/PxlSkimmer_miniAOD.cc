@@ -65,7 +65,6 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 
-
 // EGamma stuff.
 #include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
 #include "DataFormats/EgammaReco/interface/SuperCluster.h"
@@ -79,6 +78,12 @@
 #include "DataFormats/MuonReco/interface/MuonCocktails.h"
 #include "DataFormats/MuonReco/interface/MuonIsolation.h"
 #include "DataFormats/TrackReco/interface/HitPattern.h"
+#include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
+#include "RecoVertex/VertexTools/interface/InvariantMassFromVertex.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+
 
 // Jet stuff.
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
@@ -176,7 +181,7 @@ PxlSkimmer_miniAOD::PxlSkimmer_miniAOD(edm::ParameterSet const &iConfig) :
 
     for (VInputTag::const_iterator gammaIDs_label = gammaIDs_.begin(); gammaIDs_label != gammaIDs_.end(); ++gammaIDs_label) {
         edm::EDGetTokenT<edm::ValueMap<bool> > dummy_token = consumes<edm::ValueMap<bool> >(*gammaIDs_label);
-		gammaID_tokens.push_back(dummy_token);
+        gammaID_tokens.push_back(dummy_token);
     }
 
     patElectronLToken_ = consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("patElectronLabel"));
@@ -489,7 +494,7 @@ void PxlSkimmer_miniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
         // Reconstructed stuff
         analyzeRecVertices(iEvent, RecEvtView);
         analyzeRecTaus(iEvent, RecEvtView);
-        analyzeRecMuons(iEvent, RecEvtView, IsMC, genmap, vertices->at(0));
+        analyzeRecMuons(iEvent, iSetup, RecEvtView, IsMC, genmap, vertices->at(0));
         analyzeRecElectrons(iEvent, RecEvtView, IsMC, genmap, vertices, pfCandidates, rho25);
         for (vector< jet_def >::const_iterator jet_info = jet_infos.begin(); jet_info != jet_infos.end(); ++jet_info) {
             analyzeRecJets(iEvent, RecEvtView, IsMC, genjetmap, *jet_info);
@@ -791,7 +796,7 @@ void PxlSkimmer_miniAOD::analyzeGenInfo(const edm::Event& iEvent,
     // take care of the pile-up in the event
     //
     Handle< std::vector< PileupSummaryInfo > >  PUInfo;
-    iEvent.getByLabel(InputTag("addPileupInfo"), PUInfo);
+    iEvent.getByLabel(InputTag("slimmedAddPileupInfo"), PUInfo);
 
     vector< PileupSummaryInfo >::const_iterator PUiter;
 
@@ -992,7 +997,7 @@ void PxlSkimmer_miniAOD::analyzeHCALNoise(const edm::Event& iEvent, pxl::EventVi
 void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView *RecEvtView) const {
     analyzeRecPatMET(iEvent, patMETTag_, RecEvtView);
     analyzeRecPatMET(iEvent, noHFMETTag_, RecEvtView);
-    analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
+    //analyzeRecPatMET(iEvent, newUncertMETTag_, RecEvtView);
     analyzeRecPUPPIMET(iEvent, PUPPIMETTag_, RecEvtView);
 }
 
@@ -1000,11 +1005,13 @@ void PxlSkimmer_miniAOD::analyzeRecMETs(edm::Event const &iEvent, pxl::EventView
 void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
                                             edm::InputTag const &patMETTag,
                                             pxl::EventView *RecEvtView) const {
-    edm::Handle< pat::METCollection > METHandle;
+    edm::Handle<edm::View<pat::MET> > METHandle;
+    //edm::Handle< pat::METCollection > METHandle;
+    //std::cout<<patMETTag<<std::endl;
     iEvent.getByLabel(patMETTag, METHandle);
 
     // There should be only one MET in the event, so take the first element.
-    pat::METCollection::const_iterator met = (*METHandle).begin();
+    edm::View<pat::MET>::const_iterator met = (*METHandle).begin();
 
     int numPatMET = 0;
     pxl::Particle *part = RecEvtView->create< pxl::Particle >();
@@ -1013,8 +1020,8 @@ void PxlSkimmer_miniAOD::analyzeRecPatMET(edm::Event const &iEvent,
     part->setUserRecord("sumEt",  met->sumEt());
     part->setUserRecord("mEtSig", met->mEtSig());
 
-    part->setUserRecord("uncorrectedPhi", met->uncorrectedPhi());
-    part->setUserRecord("uncorrectedPt", met->uncorrectedPt());
+    part->setUserRecord("uncorrectedPhi", met->uncorPhi());
+    part->setUserRecord("uncorrectedPt", met->uncorPt());
 
     if (MET_cuts(part)) numPatMET++;
     RecEvtView->setUserRecord("Num" + patMETTag.label(), numPatMET);
@@ -1337,9 +1344,9 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                                           pxl::EventView* EvtView,
                                           trigger_group &trigger
     ) {
-        
+
     bool accepted = false;
-    
+
     // edm::Handle< trigger::TriggerEvent > triggerEventHandle;
     edm::Handle< edm::TriggerResults >   triggerResultsHandle;
     // iEvent.getByLabel(trigger.event, triggerEventHandle);
@@ -1412,7 +1419,8 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 if (prescale == 1) {
                     // unprescaled, so store it
                     if (triggerResultsHandle->accept(trig->ID)) {
-                        EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        //EvtView->setUserRecord(trigger.name+"_"+trig->name, triggerResultsHandle->accept(trig->ID));
+                        EvtView->setUserRecord(trigger.name+"_"+trig->name, 1.);
                         accepted = true;
                     }
                     unprescaledTrigger     = true;
@@ -1424,7 +1432,11 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
                 } else {
                     // prescaled!
                     // switch it off
-                    trig->active = false;
+                    if (triggerResultsHandle->accept(trig->ID)) {
+                        EvtView->setUserRecord(trigger.name+"_"+trig->name, prescale);
+                        accepted = true;
+                    }
+                    //trig->active = false;
                     //edm::LogWarning("TRIGGERWARNING") << "TRIGGER WARNING: Prescaled " << trig->name << " in menu " << trigger.process
                                                       //<< " in run " << iEvent.run() << " - LS " << iEvent.luminosityBlock()
                                                       //<< " - Event " << iEvent.id().event();
@@ -1503,7 +1515,7 @@ bool PxlSkimmer_miniAOD::analyzeTrigger(const edm::Event &iEvent,
     // EvtView->setUserRecord(trigger.name+"_L1_41", tech_word[ 41 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_42", tech_word[ 42 ]);
     // EvtView->setUserRecord(trigger.name+"_L1_43", tech_word[ 43 ]);
-    
+
     return accepted;
 }
 
@@ -1663,37 +1675,37 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
             // part->setUserRecord("PrimVtx_X", tau_primary_vertex->x());
             // part->setUserRecord("PrimVtx_Y", tau_primary_vertex->y());
             // part->setUserRecord("PrimVtx_Z", tau_primary_vertex->z());
-            
-            
-			for(size_t i = 0; i < tau->signalChargedHadrCands().size(); i++){
-				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
-				part_tmp->setName("signalChargedHadrCands");
-				part_tmp->setP4(tau->signalChargedHadrCands()[i]->px(), 
-								tau->signalChargedHadrCands()[i]->py(), 
-								tau->signalChargedHadrCands()[i]->pz(), 
-								tau->signalChargedHadrCands()[i]->energy());
-				part->linkFlat(part_tmp);
-			}
-			
-			for(size_t i = 0; i < tau->signalNeutrHadrCands().size(); i++){
-				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
-				part_tmp->setName("signalNeutrHadrCands");
-				part_tmp->setP4(tau->signalNeutrHadrCands()[i]->px(), 
-								tau->signalNeutrHadrCands()[i]->py(), 
-								tau->signalNeutrHadrCands()[i]->pz(), 
-								tau->signalNeutrHadrCands()[i]->energy());
-				part->linkFlat(part_tmp);
-			}
-			
-			for(size_t i = 0; i < tau->signalGammaCands().size(); i++){
-				pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
-				part_tmp->setName("signalGammaCands");
-				part_tmp->setP4(tau->signalGammaCands()[i]->px(), 
-								tau->signalGammaCands()[i]->py(), 
-								tau->signalGammaCands()[i]->pz(), 
-								tau->signalGammaCands()[i]->energy());
-				part->linkFlat(part_tmp);
-			}
+
+
+            for(size_t i = 0; i < tau->signalChargedHadrCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalChargedHadrCands");
+                part_tmp->setP4(tau->signalChargedHadrCands()[i]->px(),
+                                tau->signalChargedHadrCands()[i]->py(),
+                                tau->signalChargedHadrCands()[i]->pz(),
+                                tau->signalChargedHadrCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
+
+            for(size_t i = 0; i < tau->signalNeutrHadrCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalNeutrHadrCands");
+                part_tmp->setP4(tau->signalNeutrHadrCands()[i]->px(),
+                                tau->signalNeutrHadrCands()[i]->py(),
+                                tau->signalNeutrHadrCands()[i]->pz(),
+                                tau->signalNeutrHadrCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
+
+            for(size_t i = 0; i < tau->signalGammaCands().size(); i++){
+                pxl::Particle *part_tmp = RecEvtView->create<pxl::Particle>();
+                part_tmp->setName("signalGammaCands");
+                part_tmp->setP4(tau->signalGammaCands()[i]->px(),
+                                tau->signalGammaCands()[i]->py(),
+                                tau->signalGammaCands()[i]->pz(),
+                                tau->signalGammaCands()[i]->energy());
+                part->linkFlat(part_tmp);
+            }
 
             reco::CandidatePtrVector const &signalGammaCands = tau->signalGammaCands();
             try {
@@ -1727,6 +1739,7 @@ void PxlSkimmer_miniAOD::analyzeRecPatTaus(edm::Event const &iEvent,
 // ------------ reading Reconstructed Muons ------------
 
 void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
+                                         edm::EventSetup const &iSetup,
                                            pxl::EventView *RecView,
                                            bool const &MC,
                                            std::map< reco::Candidate const*, pxl::Particle* > &genmap,
@@ -1738,10 +1751,17 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
 
     // count muons
     int numMuonRec = 0;
+
+    // vector for muon refits
+    std::vector<std::pair<const pat::Muon *, pxl::Particle *>> refit_vec;
+
     // loop over all pat::Muon's
     for (std::vector<pat::Muon>::const_iterator muon = muons.begin();  muon != muons.end(); ++muon) {
         if (Muon_cuts(*muon)) {
             pxl::Particle* part = RecView->create<pxl::Particle>();
+            // make pair of pxl and pat muon for vertex refitting
+            refit_vec.push_back(std::make_pair(&(*muon), part));
+
             part->setName("Muon");
             part->setCharge(muon->charge());
             part->setP4(muon->px(), muon->py(), muon->pz(), muon->energy());
@@ -1987,6 +2007,67 @@ void PxlSkimmer_miniAOD::analyzeRecMuons(edm::Event const &iEvent,
     }
     RecView->setUserRecord("NumMuon", numMuonRec);
     edm::LogInfo("PxlSkimmer_miniAOD|RecInfo") << "Rec Muons: " << numMuonRec;
+
+    // Refit muon pairs to a single vertex
+    if (numMuonRec >= 2) {
+        edm::ESHandle<TransientTrackBuilder> ttkb;
+        iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", ttkb);
+
+        for (std::vector<std::pair<const pat::Muon *, pxl::Particle *>>::iterator it1 = refit_vec.begin();
+             it1 != refit_vec.end() - 1; ++it1) {
+            const pat::Muon * muon1 = it1->first;
+            // Get the track reference for the first muon
+            const reco::TrackRef& tk1 = muon1->tunePMuonBestTrack().isAvailable() ?
+                    muon1->tunePMuonBestTrack() :
+                    muon1->globalTrack();
+            if (!tk1.isAvailable() || tk1->pt() < 20.0)
+                continue;
+
+            for (std::vector<std::pair<const pat::Muon *, pxl::Particle *>>::iterator it2 = it1 + 1;
+                 it2 != refit_vec.end() - 1; ++it2) {
+                const pat::Muon * muon2 = it2->first;
+                // Get the track reference for the second muon
+                const reco::TrackRef& tk2 = muon2->tunePMuonBestTrack().isAvailable() ?
+                        muon2->tunePMuonBestTrack() :
+                        muon2->globalTrack();
+                if (!tk2.isAvailable() || tk2->pt() < 20.0)
+                    continue;
+
+                std::vector<reco::TransientTrack> ttv;
+                ttv.push_back(ttkb->build(tk1));
+                ttv.push_back(ttkb->build(tk2));
+
+                KalmanVertexFitter kvf(true);
+                CachingVertex<5> cv = kvf.vertex(ttv);
+
+                if (!cv.isValid())
+                    continue;
+
+                // Store the information in a vertex
+                pxl::Vertex * vtx = RecView->create<pxl::Vertex>();
+                vtx->setName("RefitVtx");
+                vtx->setXYZ(cv.position().x(), cv.position().y(), cv.position().z());
+                vtx->setUserRecord("chi2", cv.totalChiSquared());
+                vtx->setUserRecord("ndof", cv.degreesOfFreedom());
+
+                InvariantMassFromVertex imfv;
+                const double muon_mass = 0.1056583;
+                InvariantMassFromVertex::LorentzVector p4 = imfv.p4(cv, muon_mass);
+                Measurement1D mass = imfv.invariantMass(cv, muon_mass);
+
+                vtx->setUserRecord("px", p4.X());
+                vtx->setUserRecord("py", p4.Y());
+                vtx->setUserRecord("pz", p4.Z());
+
+                vtx->setUserRecord("mass", mass.value());
+                vtx->setUserRecord("massError", mass.error());
+
+                // set soft relations to muons
+                vtx->setUserRecord("daughterId1", (it1->second)->getId().toString());
+                vtx->setUserRecord("daughterId2", (it2->second)->getId().toString());
+            }
+        }
+    }
 }
 
 

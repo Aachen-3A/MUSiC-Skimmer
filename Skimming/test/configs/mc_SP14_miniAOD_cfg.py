@@ -1,5 +1,16 @@
+## MC simulation skimming config
+#
+# This config is meant to be used for MC files. This means that the sample is
+# not a data sample and usually means that it contains more than just the GEN
+# information. Thus both runOnData and runOnGen are False by default.
+#
+# The fileNames variable contains the explicit file names for local testing. One
+# can either choose locally stored files or those that are kept on the CERN
+# tiers.
+
+# Run on data
 runOnData = False
-#run on GEN sample
+# Run on GEN sample
 runOnGen = False
 
 import FWCore.ParameterSet.Config as cms
@@ -26,7 +37,7 @@ import PxlSkimmer.Skimming.Tools_miniAOD as Tools_miniAOD
 print sys.argv
 name="test"
 datasetpath="dummy"
-globalTag="PHYS14_25_V1"
+globalTag="74X_mcRun2_asymptotic_realisticBS_v1"
 for option in sys.argv:
     splitoption=option.split('=')
     if "name" in option and len(splitoption) > 1:
@@ -47,9 +58,8 @@ process.source = cms.Source(
     'PoolSource',
     skipEvents = cms.untracked.uint32( 0 ),
     fileNames = cms.untracked.vstring(
-        
-        #~ 'file:///user/esch/BoostedTaus/CMSSW_7_4_1/src/B2G-RunIISpring15DR74-00001_MuTau.root'
-        'file://XToHHTobbtautauMINIAODSIM.root'
+        # 'file://3056AD52-BAFB-E411-A8E7-0025905A612C.root'
+        '/store/mc/RunIISpring15MiniAODv2/ZToMuMu_NNPDF30_13TeV-powheg_M_1400_2300/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/30000/EA2F4FC8-5771-E511-B1C4-6CC2173D9AB0.root'
         )
     )
 

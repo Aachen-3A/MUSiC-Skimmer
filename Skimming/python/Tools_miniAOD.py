@@ -25,13 +25,16 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
     #
     # process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_cff' )
 
+    # Transient track builder is used for the muon vertex refit in the ADD analysis
+    process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
+
     # The global tag is set in pset file or overidden by the calling
     # script (e.g. music_crab3.py9
     process.load( 'Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff' )
     process.GlobalTag.globaltag = globalTag
 
     process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-    process.load( 'Configuration.StandardSequences.MagneticField_38T_cff' )
+    process.load('Configuration.StandardSequences.MagneticField_cff')
 
     # do we need this ?
     #process.content = cms.EDAnalyzer( 'EventContentAnalyzer' )
@@ -109,7 +112,7 @@ def prepare( runOnGen, runOnData, eleEffAreaTarget,name ,datasetpath ,globalTag 
                                             #"TestEnablesEcalHcalDQM",
                                             #"ZeroBias",
                                         )
-        if "PromptReco" in datasetpath:
+        if not "July17" in datasetpath:
             process.Skimmer.METFilterTag=cms.InputTag("TriggerResults","","RECO")
 
     if not runOnGen:
@@ -486,29 +489,46 @@ def addScrapingFilter( process ):
 def addNoHFMET( process, runOnData ):
     import os
 
-    jecUncertaintyFile="PhysicsTools/PatUtils/data/Summer15_50nsV4_DATA_UncertaintySources_AK4PFchs.txt"
+    jecUncertaintyFile="PxlSkimmer/Skimming/data/Summer15_25nsV5_DATA_Uncertainty_AK4PFchs.txt"
     process.noHFCands = cms.EDFilter("CandPtrSelector",
                                      src=cms.InputTag("packedPFCandidates"),
                                      cut=cms.string("abs(pdgId)!=1 && abs(pdgId)!=2 && abs(eta)<3.0")
                                      )
 
+    if True:
+        from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+        dBFile =  "Summer15_25nsV5_DATA.db"
+        print "If the file "+dBFile+" is not found copy them to your running dir!"
+        process.jec = cms.ESSource("PoolDBESSource",CondDBSetup,
+                               connect = cms.string( "sqlite_file:"+dBFile ),
+                               toGet =  cms.VPSet(
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_Summer15_25nsV5_DATA_AK4PF"),
+                label= cms.untracked.string("AK4PF")
+                ),
+            cms.PSet(
+                record = cms.string("JetCorrectionsRecord"),
+                tag = cms.string("JetCorrectorParametersCollection_Summer15_25nsV5_DATA_AK4PFchs"),
+                label= cms.untracked.string("AK4PFchs")
+                ),
+            )
+        )
+        process.es_prefer_jec = cms.ESPrefer("PoolDBESSource",'jec')
+
+
     process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
     process.patJetCorrFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
-        src = cms.InputTag("slimmedJets"),
-        levels = ['L1FastJet',
-                'L2Relative',
-                'L3Absolute'],
-        payload = 'AK4PFchs',
-       ) # Make sure to choose the appropriate levels and payload here!
+          src = cms.InputTag("slimmedJets"),
+          levels = ['L1FastJet', 'L2Relative', 'L3Absolute'],
+          payload = 'AK4PFchs' ) # Make sure to choose the appropriate levels and payload here!
 
     from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
     process.patJetsReapplyJEC = process.patJetsUpdated.clone(
-      jetSource = cms.InputTag("slimmedJets"),
-      jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC")),
-      )
-
+          jetSource = cms.InputTag("slimmedJets"),
+          jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
+          )
     process.p += cms.Sequence( process.patJetCorrFactorsReapplyJEC + process. patJetsReapplyJEC )
-
 
 
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
@@ -525,7 +545,7 @@ def addNoHFMET( process, runOnData ):
                                isData=runOnData,
                                pfCandColl=cms.InputTag("noHFCands"),
                                jecUncFile=jecUncertaintyFile,
-                               postfix="NoHF"
+                               postfix="NoHFhomeMade"
                                )
 
 

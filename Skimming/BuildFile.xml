@@ -21,6 +21,9 @@
 <use   name="RecoEcal/EgammaCoreTools"/>
 <use   name="HLTrigger/HLTcore"/>
 <use   name="RecoEgamma/EgammaElectronAlgos"/>
+<use   name="RecoVertex/KalmanVertexFit"/>
+<use   name="TrackingTools/TransientTrack"/>
+<use   name="TrackingTools/Records"/>
 <use   name="Pxl/Pxl"/>
 <!--
 <use   name="PxlSkimmer/Pxl"/>
